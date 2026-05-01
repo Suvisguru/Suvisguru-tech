@@ -249,6 +249,42 @@ Color variables are CSS custom properties on `:root`, shadowed under `[data-them
 - Dark mode and scroll-progress bar are standard chrome.
 - The recap card is the closing pattern, not "you're done."
 
+## Kubernetes-specific conventions
+
+Established in K-COM Lesson 01 (`preview-kubernetes-lesson-01.html`). When in doubt, copy from there.
+
+### Pod state colors
+
+Pods render via the `pod-tile` primitive (`/library/primitives/kubernetes/pod-tile.svg`). State is encoded in the header bar fill, the status dot color, and the body border:
+
+- **Running** — header `#3F4A5E` (slate), dot `#5DCAA5` (healthy green), body cream `#F4F4F0`. The default.
+- **Pending** — header `#5E4A8E` (purple), dot `#FAC775` (gold), body `#FFFCF5`. Pulses (1.4s opacity loop) to communicate "waiting / starting."
+- **Failed** — header `#8E2A2A` (deep red), dot `#E24B4A` (failure red), body `#FBE8E8` with red border. Reserved for terminal failure states.
+- **Terminating** — header `#9D9D9D` (gray), dot gray, body `#F0F0F0` with **dashed** border. Communicates "ending / being removed."
+- **Drift** — header `#B85829` (warn coral), dot gold, body `#FBEDE3`. Used when a pod exists outside the Deployment's ownerReferences (e.g., created by hand) and the controller is about to remove it.
+
+Coral (#B85829) for drift extends the existing storage I/O coral family — both communicate "an in-flight thing the system is acting on." Distinct from failure red (#E24B4A) which means terminal.
+
+### Control plane vs hypervisor band
+
+Both the VMware `hypervisor-layer` and the Kubernetes `control-plane-band` primitives use the same slate fill (`#3F4A5E`) — software-layer abstractions per the original 2026-04-29 decision. They are visually distinguished by their decoration:
+
+- **Hypervisor band:** three horizontal hairlines (`#536179` at 0.6 opacity) — suggests "code layer."
+- **Control plane band:** four small "component dots" along its length, labelled `kube-apiserver`, `etcd`, `kube-scheduler`, `controller-manager` — suggests "this band is composed of multiple coordinating services."
+
+### Subtopic header accent colors (per-subtopic structure)
+
+When a lesson uses the per-subtopic format, each subtopic's header carries a distinct left-border accent so the reader can recognise "I'm in subtopic 3" from peripheral vision. The first ten accent colors:
+
+- s1 `#3F4A5E` slate · s2 `#5E4A8E` purple · s3 `#2E7A8C` teal · s4 `#1F8A60` green · s5 `#B85829` coral
+- s6 `#8E2A2A` deep red · s7 `#1A6FA8` blue · s8 `#5C7A1F` olive · s9 `#2E5A8E` indigo · s10 `#B85C9E` magenta
+
+Same palette is used for the hero "journey" station numbers so the journey colors match each subtopic's later left-border.
+
+### Preview filename per domain
+
+VMware previews use `preview-lesson-NN.html` (existing series). Kubernetes previews use `preview-kubernetes-lesson-NN.html` so the two domain sequences don't collide at the repo root. Future domains follow the same pattern: `preview-{domain}-lesson-NN.html`.
+
 ## What never changes
 
 - The packet/request motion track follows the visible cable/connection trajectory exactly. No exceptions.

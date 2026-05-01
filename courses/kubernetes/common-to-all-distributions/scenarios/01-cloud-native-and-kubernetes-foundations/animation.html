@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animation — Lesson 01: The Reconciliation Loop</title>
+<style>
+  :root {
+    --bg: #FAFBFC;
+    --bg-card: #FFFFFF;
+    --text: #1F2937;
+    --text-muted: #5A6B81;
+    --border: #D5DCE6;
+    --accent: #3F4A5E;
+    --accent-light: #5E6E89;
+    --green: #1F8A60;
+    --green-soft: #E5F3EC;
+    --red: #8E2A2A;
+    --warn: #B85829;
+    --gold: #F2C94C;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 16px; line-height: 1.5; }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 18px; font-weight: 600; color: var(--text); }
+  .sub { color: var(--text-muted); font-size: 12px; margin-bottom: 14px; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; padding: 10px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; }
+  .mode-btn { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 6px 12px; font-size: 12px; border-radius: 999px; cursor: pointer; font-weight: 500; transition: all .15s; font-family: inherit; }
+  .mode-btn:hover { background: #F0F2F8; }
+  .mode-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .play-btn { background: var(--green); color: #fff; border: 0; padding: 6px 14px; font-size: 12px; border-radius: 999px; cursor: pointer; font-weight: 600; font-family: inherit; }
+  .play-btn:hover { filter: brightness(1.1); }
+  .speed { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
+  .speed input { width: 80px; }
+  .stage { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px; margin-bottom: 10px; font-size: 13px; color: var(--text); }
+  .stage strong { color: var(--accent); margin-right: 8px; }
+  .anim-frame { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+  .anim-frame svg { width: 100%; height: auto; display: block; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--text-muted); margin-top: 10px; padding: 8px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .paused .ctrl-arrows-anim { animation-play-state: paused !important; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The reconciliation loop in motion</h1>
+  <p class="sub">Three modes. Pick one and watch the controller close the gap. Same loop every time.</p>
+
+  <div class="controls">
+    <span style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;">Mode:</span>
+    <button class="mode-btn active" data-mode="scale-up">Scale up (1 → 3)</button>
+    <button class="mode-btn" data-mode="self-heal">Self-heal on failure</button>
+    <button class="mode-btn" data-mode="drift">Drift correction</button>
+    <span style="flex:1"></span>
+    <button class="play-btn" id="play-btn">⏸ Pause</button>
+    <span class="speed">Speed <input type="range" id="speed" min="0.3" max="2" step="0.1" value="1"> <span id="speed-label">1.0×</span></span>
+  </div>
+
+  <div class="stage" id="stage-readout"><strong id="stage-mode">Scale-up</strong><span id="stage-text">Desired = 3 replicas. Actual = 1. Controller is about to act.</span></div>
+
+  <div class="anim-frame">
+    <svg viewBox="0 0 1040 420" xmlns="http://www.w3.org/2000/svg" id="anim-svg" role="img" aria-label="Animated reconciliation loop">
+      <defs>
+        <marker id="a-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#3F4A5E"/>
+        </marker>
+        <marker id="a-arr-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#1F8A60"/>
+        </marker>
+        <marker id="a-arr-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#B85829"/>
+        </marker>
+      </defs>
+
+      <!-- ===== Desired state card (left) ===== -->
+      <g transform="translate(40,80)">
+        <rect width="240" height="240" rx="10" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.4"/>
+        <rect width="240" height="32" rx="10 10 0 0" fill="#3F4A5E"/>
+        <text x="120" y="21" font-family="sans-serif" font-size="13" font-weight="500"
+              fill="#FFFFFF" text-anchor="middle">desired state</text>
+        <g transform="translate(16,52)" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#3A3A3A">
+          <text y="14">apiVersion: apps/v1</text>
+          <text y="32">kind: Deployment</text>
+          <text y="50">metadata:</text>
+          <text x="14" y="68">name: web</text>
+          <text y="86">spec:</text>
+          <text x="14" y="104" font-weight="700" fill="#3F4A5E">replicas: <tspan id="desired-num" fill="#3F4A5E">3</tspan></text>
+          <text x="14" y="122">selector:</text>
+          <text x="28" y="138">matchLabels:</text>
+          <text x="42" y="154">app: web</text>
+          <text x="14" y="172">template: …</text>
+        </g>
+      </g>
+
+      <!-- ===== Controller (center) ===== -->
+      <g transform="translate(440,140)">
+        <g class="ctrl-arrows-anim" style="transform-origin: 60px 60px; animation: spin 4s linear infinite;">
+          <path d="M 60 8 A 52 52 0 0 1 107 41 L 99 45 A 44 44 0 0 0 60 16 Z" fill="#5E6E89"/>
+          <path d="M 107 79 A 52 52 0 0 1 60 112 L 60 104 A 44 44 0 0 0 99 75 Z" fill="#5E6E89"/>
+          <path d="M 13 79 A 52 52 0 0 1 13 41 L 21 45 A 44 44 0 0 0 21 75 Z" fill="#5E6E89"/>
+        </g>
+        <circle cx="60" cy="60" r="36" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.4" id="ctrl-disc"/>
+        <text x="60" y="56" font-family="sans-serif" font-size="11" font-weight="500"
+              fill="#E8E8E0" text-anchor="middle" letter-spacing="1">CONTROLLER</text>
+        <text x="60" y="71" font-family="sans-serif" font-size="9"
+              fill="#A8B0C0" text-anchor="middle">deployment</text>
+        <text x="60" y="138" font-family="sans-serif" font-size="11"
+              fill="#3F4A5E" text-anchor="middle" font-style="italic">observe → diff → act</text>
+      </g>
+
+      <!-- ===== Actual state cluster (right) ===== -->
+      <g transform="translate(700,80)">
+        <rect width="300" height="240" rx="10" fill="#FFFFFF" stroke="#1F8A60" stroke-width="1.4"/>
+        <rect width="300" height="32" rx="10 10 0 0" fill="#1F8A60"/>
+        <text x="150" y="21" font-family="sans-serif" font-size="13" font-weight="500"
+              fill="#FFFFFF" text-anchor="middle">actual state · live cluster</text>
+
+        <!-- Pod grid (3 slots, populated by JS) -->
+        <g id="pod-grid" transform="translate(20,46)">
+          <!-- pod slots will appear/disappear with animation -->
+          <g class="pod-slot" data-slot="0" transform="translate(0,0)">
+            <rect width="80" height="64" rx="5" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1"/>
+            <rect width="80" height="16" rx="5 5 0 0" fill="#3F4A5E"/>
+            <text x="6" y="12" font-family="sans-serif" font-size="9" fill="#FFFFFF">web-7f-aa</text>
+            <rect x="8" y="22" width="14" height="14" rx="2" fill="#3F4A5E"/>
+            <text x="15" y="32" font-family="sans-serif" font-size="8" fill="#FFFFFF" text-anchor="middle">C</text>
+            <text x="26" y="34" font-family="sans-serif" font-size="9" fill="#3A3A3A">running</text>
+            <text x="6" y="50" font-family="sans-serif" font-size="8" fill="#5A6B81">node-a · 10.244.1.5</text>
+            <text x="6" y="60" font-family="sans-serif" font-size="8" fill="#1F8A60" font-weight="500">Running</text>
+            <circle cx="73" cy="8" r="2.4" fill="#5DCAA5"/>
+          </g>
+        </g>
+
+        <!-- Status line -->
+        <text x="150" y="200" font-family="sans-serif" font-size="12" font-weight="500"
+              fill="#1F8A60" text-anchor="middle" id="actual-line">1 / 3 replicas · gap = 2</text>
+        <text x="150" y="220" font-family="sans-serif" font-size="10"
+              fill="#5A6B81" text-anchor="middle" id="event-line">event: controller observed gap, scheduling 2 new pods</text>
+      </g>
+
+      <!-- ===== Loop arrows ===== -->
+      <!-- desired → controller -->
+      <path d="M 280 200 L 440 200" stroke="#3F4A5E" stroke-width="2.4" fill="none" marker-end="url(#a-arr)"/>
+      <text x="360" y="190" font-family="sans-serif" font-size="11" fill="#3F4A5E" text-anchor="middle">read</text>
+
+      <!-- actual → controller -->
+      <path d="M 700 220 L 560 220" stroke="#1F8A60" stroke-width="2.4" fill="none" marker-end="url(#a-arr-g)"/>
+      <text x="630" y="236" font-family="sans-serif" font-size="11" fill="#1F8A60" text-anchor="middle">observe</text>
+
+      <!-- controller → cluster (act) -->
+      <path d="M 560 170 C 580 110, 720 70, 800 78" stroke="#1F8A60" stroke-width="2.4" fill="none" marker-end="url(#a-arr-g)" id="act-arrow"/>
+      <text x="700" y="60" font-family="sans-serif" font-size="11" fill="#1F8A60" text-anchor="middle" font-style="italic" id="act-label">act · create pods</text>
+
+      <!-- ===== Bottom row: cycle counter ===== -->
+      <g transform="translate(40,360)">
+        <rect width="960" height="38" rx="6" fill="#FAFAF6" stroke="#D5DCE6" stroke-width="1"/>
+        <text x="14" y="23" font-family="sans-serif" font-size="11" font-weight="500" fill="#3F4A5E">cycle:</text>
+        <text x="60" y="23" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#3F4A5E" id="cycle-num">0</text>
+        <text x="120" y="23" font-family="sans-serif" font-size="11" fill="#5A6B81">·  the loop never stops · it observes, diffs, and acts on every tick · this is what makes self-healing automatic</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="legend-swatch" style="background:#3F4A5E"></span> Slate = control plane / desired state</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#1F8A60"></span> Green = healthy / actual state / controller acting</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#B85829"></span> Coral = drift / extra pods to remove</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#E24B4A"></span> Red = failed pod (in self-heal mode)</span>
+  </div>
+</div>
+
+<script>
+  // ===== Mode definitions =====
+  // Each mode is a sequence of frames. Each frame mutates the actual-state pod set
+  // and updates labels, then waits for the next tick.
+  const modes = {
+    'scale-up': {
+      label: 'Scale-up',
+      frames: [
+        { pods: [{ id: 'a', state: 'running', node: 'node-a' }],
+          actualText: '1 / 3 replicas · gap = 2',
+          eventText: 'controller observed gap, scheduling 2 new pods',
+          stageText: 'Desired = 3 replicas. Actual = 1. Controller is about to act.' },
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'b', state: 'pending', node: 'node-b' }],
+          actualText: '1 / 3 replicas · 1 pending',
+          eventText: 'pod web-7f-bb scheduled to node-b',
+          stageText: 'Controller created pod 2. Kubelet on node-b is starting it.' },
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'b', state: 'running', node: 'node-b' },
+            { id: 'c', state: 'pending', node: 'node-c' }],
+          actualText: '2 / 3 replicas · 1 pending',
+          eventText: 'pod web-7f-cc scheduled to node-c',
+          stageText: 'Controller created pod 3. One more startup to go.' },
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'b', state: 'running', node: 'node-b' },
+            { id: 'c', state: 'running', node: 'node-c' }],
+          actualText: '3 / 3 replicas · gap = 0',
+          eventText: 'desired = actual · loop continues to observe',
+          stageText: 'Convergence. Desired = actual. Loop keeps running.' }
+      ],
+      desired: 3,
+      actLabel: 'act · create pods',
+      actColor: '#1F8A60'
+    },
+    'self-heal': {
+      label: 'Self-heal',
+      frames: [
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'b', state: 'running', node: 'node-b' },
+            { id: 'c', state: 'running', node: 'node-c' }],
+          actualText: '3 / 3 replicas · gap = 0',
+          eventText: 'steady state',
+          stageText: 'Desired = 3, actual = 3. Steady state — for now.' },
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'b', state: 'failed', node: 'node-b' },
+            { id: 'c', state: 'running', node: 'node-c' }],
+          actualText: '2 / 3 replicas · 1 failed',
+          eventText: 'pod web-7f-bb died — node-b kubelet reported failure',
+          stageText: 'A pod just died on node-b. Actual dropped to 2. Controller will see this on its next observe.' },
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'c', state: 'running', node: 'node-c' },
+            { id: 'd', state: 'pending', node: 'node-a' }],
+          actualText: '2 / 3 replicas · 1 pending',
+          eventText: 'controller created replacement web-7f-dd on node-a',
+          stageText: 'Controller created a new pod to bring actual back to 3.' },
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'c', state: 'running', node: 'node-c' },
+            { id: 'd', state: 'running', node: 'node-a' }],
+          actualText: '3 / 3 replicas · gap = 0',
+          eventText: 'self-healed · no human action needed',
+          stageText: 'Self-healed. The on-call engineer slept through it.' }
+      ],
+      desired: 3,
+      actLabel: 'act · create replacement',
+      actColor: '#1F8A60'
+    },
+    'drift': {
+      label: 'Drift correction',
+      frames: [
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'b', state: 'running', node: 'node-b' },
+            { id: 'c', state: 'running', node: 'node-c' }],
+          actualText: '3 / 3 replicas · gap = 0',
+          eventText: 'steady state',
+          stageText: 'Desired = 3, actual = 3. Steady state.' },
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'b', state: 'running', node: 'node-b' },
+            { id: 'c', state: 'running', node: 'node-c' },
+            { id: 'x', state: 'drift', node: 'node-c' }],
+          actualText: '4 / 3 replicas · drift = +1',
+          eventText: 'someone ran kubectl run web-rogue — extra pod appeared',
+          stageText: 'A rogue pod was created by hand. Actual = 4, desired = 3. Drift.' },
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'b', state: 'running', node: 'node-b' },
+            { id: 'c', state: 'running', node: 'node-c' },
+            { id: 'x', state: 'terminating', node: 'node-c' }],
+          actualText: '3 / 3 replicas · drift removed',
+          eventText: 'controller deleting web-rogue · ownerReferences mismatch',
+          stageText: 'Controller picked up the drift and is removing the unmanaged pod.' },
+        { pods: [
+            { id: 'a', state: 'running', node: 'node-a' },
+            { id: 'b', state: 'running', node: 'node-b' },
+            { id: 'c', state: 'running', node: 'node-c' }],
+          actualText: '3 / 3 replicas · gap = 0',
+          eventText: 'drift resolved · cluster matches desired',
+          stageText: 'Drift removed. The loop won — and it didn\'t need anyone\'s permission.' }
+      ],
+      desired: 3,
+      actLabel: 'act · delete drift',
+      actColor: '#B85829'
+    }
+  };
+
+  // ===== State =====
+  let currentMode = 'scale-up';
+  let frameIdx = 0;
+  let cycleCount = 0;
+  let isPlaying = true;
+  let speed = 1.0;
+  let timer = null;
+
+  // ===== DOM refs =====
+  const modeBtns = document.querySelectorAll('.mode-btn');
+  const playBtn = document.getElementById('play-btn');
+  const speedSlider = document.getElementById('speed');
+  const speedLabel = document.getElementById('speed-label');
+  const stageMode = document.getElementById('stage-mode');
+  const stageText = document.getElementById('stage-text');
+  const desiredNum = document.getElementById('desired-num');
+  const actualLine = document.getElementById('actual-line');
+  const eventLine = document.getElementById('event-line');
+  const cycleNum = document.getElementById('cycle-num');
+  const podGrid = document.getElementById('pod-grid');
+  const actLabel = document.getElementById('act-label');
+  const actArrow = document.getElementById('act-arrow');
+  const ctrlDisc = document.getElementById('ctrl-disc');
+  const animSvg = document.getElementById('anim-svg');
+
+  // ===== Render a frame =====
+  const POD_W = 80, POD_H = 64, GAP_X = 90, COLS = 3;
+  function renderFrame(f, modeKey) {
+    const mode = modes[modeKey];
+    desiredNum.textContent = mode.desired;
+    actualLine.textContent = f.actualText;
+    eventLine.textContent = 'event: ' + f.eventText;
+    stageMode.textContent = mode.label;
+    stageText.textContent = f.stageText;
+    actLabel.textContent = mode.actLabel;
+    actArrow.setAttribute('stroke', mode.actColor);
+    actArrow.setAttribute('marker-end', mode.actColor === '#B85829' ? 'url(#a-arr-r)' : 'url(#a-arr-g)');
+    actLabel.setAttribute('fill', mode.actColor);
+
+    // Briefly flash the controller disc to indicate it's acting
+    ctrlDisc.setAttribute('fill', '#5DCAA5');
+    setTimeout(() => ctrlDisc.setAttribute('fill', '#3F4A5E'), 350 / speed);
+
+    // Render pods
+    podGrid.innerHTML = '';
+    f.pods.forEach((p, i) => {
+      const col = i % COLS;
+      const row = Math.floor(i / COLS);
+      const x = col * GAP_X;
+      const y = row * 80;
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'pod-slot');
+      g.setAttribute('transform', `translate(${x},${y})`);
+      const stateConfig = {
+        running:     { headerFill: '#3F4A5E', dot: '#5DCAA5', label: 'Running',     labelFill: '#1F8A60', containerFill: '#3F4A5E', bodyStroke: '#5F5E5A', bodyFill: '#F4F4F0' },
+        pending:     { headerFill: '#5E4A8E', dot: '#FAC775', label: 'Pending',     labelFill: '#5E4A8E', containerFill: '#5E4A8E', bodyStroke: '#9D9D9D', bodyFill: '#FFFCF5' },
+        failed:      { headerFill: '#8E2A2A', dot: '#E24B4A', label: 'Failed',      labelFill: '#8E2A2A', containerFill: '#E24B4A', bodyStroke: '#E24B4A', bodyFill: '#FBE8E8' },
+        drift:       { headerFill: '#B85829', dot: '#FAC775', label: 'Drift',       labelFill: '#B85829', containerFill: '#B85829', bodyStroke: '#B85829', bodyFill: '#FBEDE3' },
+        terminating: { headerFill: '#9D9D9D', dot: '#9D9D9D', label: 'Terminating', labelFill: '#9D9D9D', containerFill: '#9D9D9D', bodyStroke: '#9D9D9D', bodyFill: '#F0F0F0' }
+      }[p.state];
+      g.innerHTML = `
+        <rect width="${POD_W}" height="${POD_H}" rx="5" fill="${stateConfig.bodyFill}" stroke="${stateConfig.bodyStroke}" stroke-width="1" ${p.state === 'terminating' ? 'stroke-dasharray="3,2"' : ''}/>
+        <rect width="${POD_W}" height="16" rx="5 5 0 0" fill="${stateConfig.headerFill}"/>
+        <text x="6" y="12" font-family="sans-serif" font-size="9" fill="#FFFFFF">web-7f-${p.id}${p.id}</text>
+        <rect x="8" y="22" width="14" height="14" rx="2" fill="${stateConfig.containerFill}"/>
+        <text x="15" y="32" font-family="sans-serif" font-size="8" fill="#FFFFFF" text-anchor="middle">C</text>
+        <text x="26" y="34" font-family="sans-serif" font-size="9" fill="#3A3A3A">${p.state}</text>
+        <text x="6" y="50" font-family="sans-serif" font-size="8" fill="#5A6B81">${p.node} · 10.244.1.${5 + i}</text>
+        <text x="6" y="60" font-family="sans-serif" font-size="8" fill="${stateConfig.labelFill}" font-weight="500">${stateConfig.label}</text>
+        <circle cx="${POD_W - 7}" cy="8" r="2.4" fill="${stateConfig.dot}"/>
+      `;
+      podGrid.appendChild(g);
+    });
+  }
+
+  function tick() {
+    const mode = modes[currentMode];
+    renderFrame(mode.frames[frameIdx], currentMode);
+    frameIdx = (frameIdx + 1) % mode.frames.length;
+    if (frameIdx === 0) {
+      cycleCount++;
+      cycleNum.textContent = cycleCount;
+    }
+  }
+
+  function startTimer() {
+    if (timer) clearInterval(timer);
+    if (!isPlaying) return;
+    timer = setInterval(tick, 2000 / speed);
+  }
+
+  function setMode(m) {
+    currentMode = m;
+    frameIdx = 0;
+    cycleCount = 0;
+    cycleNum.textContent = cycleCount;
+    modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+    tick();
+    startTimer();
+  }
+
+  // Wire up controls
+  modeBtns.forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+  playBtn.addEventListener('click', () => {
+    isPlaying = !isPlaying;
+    playBtn.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+    if (isPlaying) {
+      animSvg.classList.remove('paused');
+      startTimer();
+    } else {
+      animSvg.classList.add('paused');
+      if (timer) clearInterval(timer);
+    }
+  });
+  speedSlider.addEventListener('input', e => {
+    speed = parseFloat(e.target.value);
+    speedLabel.textContent = speed.toFixed(1) + '×';
+    document.querySelectorAll('.ctrl-arrows-anim').forEach(el => {
+      el.style.animationDuration = (4 / speed) + 's';
+    });
+    if (isPlaying) startTimer();
+  });
+
+  // Boot
+  renderFrame(modes[currentMode].frames[0], currentMode);
+  startTimer();
+</script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Primitive: node-tile
+  Domain: kubernetes
+  Status: draft, lesson 01 production (Cloud-Native and Kubernetes Foundations).
+
+  Description: A Kubernetes worker Node — a physical or virtual machine that
+  runs the kubelet and hosts pods. Renders as a small server-like card with
+  a header bar (node name + role), a body area where pod-tiles dock, and a
+  status pill at the bottom (Ready / NotReady / SchedulingDisabled).
+
+  Default viewBox: 240 x 180. The body area is sized so 4 pod-tiles (110x78)
+  can sit two-up in two rows: 2 x 110 = 220 across, 2 x 78 = 156 down.
+
+  Slot anchors:
+    name_text:    (10, 16)  node name in header bar
+    role_pill:    (160, 5)  role pill (worker / control-plane), 70 x 16
+    pod_dock:     (10, 26)  top-left of pod-tile docking area (220 x 144)
+    status_pill:  (10, 162) bottom-left of status pill (220 x 16)
+    capacity_meter_x: 10
+    capacity_meter_y: 162
+    Cordoned overlay: a 40% gray rect over the body when SchedulingDisabled.
+
+  States:
+    ready             Header fill #3F4A5E, status pill green.
+    notready          Header fill #5F5E5A, status pill red.
+    cordoned          Body has a diagonal hatch overlay. Status pill gold.
+    drained           Body empty (no pods). Status pill gold.
+
+  Color: header band uses slate #3F4A5E (software-layer abstraction). Body
+  uses warm cream #F4F4F0 (consistent with pod-tile, vm-tile).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" width="240" height="180">
+
+  <symbol id="node-tile" overflow="visible">
+    <!-- Node body -->
+    <rect x="0" y="0" width="240" height="180" rx="8"
+          fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.4"/>
+    <!-- Header bar (top 22px) -->
+    <path d="M 0 22 L 0 8 Q 0 0 8 0 L 232 0 Q 240 0 240 8 L 240 22 Z"
+          fill="#3F4A5E"/>
+    <text x="10" y="16" font-family="sans-serif" font-size="12" font-weight="500" fill="#FFFFFF">node-name</text>
+    <!-- Role pill -->
+    <rect x="160" y="5" width="70" height="13" rx="6.5" fill="#5E6E89"/>
+    <text x="195" y="14" font-family="sans-serif" font-size="9" font-weight="500"
+          fill="#FFFFFF" text-anchor="middle">worker</text>
+    <!-- Pod docking area (subtle inner border) -->
+    <rect x="10" y="26" width="220" height="130" rx="4"
+          fill="#FAFAF6" stroke="#D5DCE6" stroke-width="0.8" stroke-dasharray="3,3"/>
+    <text x="120" y="92" font-family="sans-serif" font-size="11" fill="#9D9D9D"
+          text-anchor="middle" opacity="0.7">pods dock here</text>
+    <!-- Status pill -->
+    <rect x="10" y="160" width="80" height="14" rx="3" fill="#1F8A60" class="node-status"/>
+    <text x="50" y="170" font-family="sans-serif" font-size="9" font-weight="500"
+          fill="#FFFFFF" text-anchor="middle" class="node-status-label">Ready</text>
+    <!-- Capacity meters -->
+    <text x="100" y="170" font-family="sans-serif" font-size="9" fill="#5F5E5A">CPU 45%</text>
+    <text x="158" y="170" font-family="sans-serif" font-size="9" fill="#5F5E5A">MEM 60%</text>
+  </symbol>
+
+  <use href="#node-tile"/>
+</svg>

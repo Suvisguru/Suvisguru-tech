@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Primitive: controller-icon
+  Domain: kubernetes
+  Status: draft, lesson 01 production (Cloud-Native and Kubernetes Foundations).
+
+  Description: An icon representing a Kubernetes controller — the brain of a
+  reconciliation loop. A controller watches the API for objects of a kind it
+  cares about, observes the actual state, and takes action to drive actual
+  toward desired. Used wherever a lesson narrates a control loop:
+  Deployment controller, ReplicaSet controller, Node controller, custom
+  operators.
+
+  Visual: a circular slate disc with three rotation arrows around it,
+  evoking "loop" + "spinning" + "always running." Optional center letter
+  slot for the controller's identity (D=Deployment, R=ReplicaSet, N=Node, C=Custom).
+
+  Default viewBox: 64 x 64. The disc is centered at (32, 32) with r=14.
+
+  Slot anchors:
+    center_letter: (32, 36) centered letter for controller identity
+    label_below:   (32, 60) optional label below the icon
+
+  States:
+    idle     Disc fill #3F4A5E, arrows #5E6E89.
+    active   Disc fill #5DCAA5, arrows #1F8A60. Use during animation when this
+             controller is firing.
+    failed   Disc fill #E24B4A, arrows red.
+
+  Animation: the three arrows rotate continuously around the disc via SMIL
+  animateTransform. Default rotation period 4.0s (clockwise). Per the
+  DECISIONS.md 2026-04-29 SMIL rule, the wrapping <g> does not carry
+  transform-origin — the rotate origin lives inside animateTransform.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+
+  <symbol id="controller-icon" overflow="visible">
+    <!-- Rotating arrow ring -->
+    <g class="ctrl-arrows">
+      <path d="M 32 8 A 24 24 0 0 1 53.6 22.5 L 50 25 A 20 20 0 0 0 32 12 Z"
+            fill="#5E6E89"/>
+      <path d="M 53.6 41.5 A 24 24 0 0 1 32 56 L 32 52 A 20 20 0 0 0 50 39 Z"
+            fill="#5E6E89"/>
+      <path d="M 10.4 41.5 A 24 24 0 0 1 10.4 22.5 L 14 25 A 20 20 0 0 0 14 39 Z"
+            fill="#5E6E89"/>
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate"
+                        from="0 32 32" to="360 32 32" dur="4s" repeatCount="indefinite"/>
+    </g>
+    <!-- Central disc -->
+    <circle cx="32" cy="32" r="14" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.2" class="ctrl-disc"/>
+    <text x="32" y="37" font-family="sans-serif" font-size="14" font-weight="500"
+          fill="#E8E8E0" text-anchor="middle" class="ctrl-letter">C</text>
+  </symbol>
+
+  <use href="#controller-icon"/>
+</svg>

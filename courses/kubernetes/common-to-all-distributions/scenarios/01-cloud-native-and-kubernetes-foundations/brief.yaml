@@ -1,0 +1,203 @@
+# Intake brief — Lesson 01, Common to all Kubernetes distributions
+# Topic: Cloud-Native and Kubernetes Foundations (Module 1 of K-COM)
+# Format: PER-SUBTOPIC structure.
+
+lesson:
+  title: "Cloud-Native and Kubernetes Foundations"
+  slug: "01-cloud-native-and-kubernetes-foundations"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 1
+  granularity: "sub-topic"
+  brief_drafted_on: "2026-05-01"
+  pedagogical_format: "per-subtopic"
+
+learner_profile:
+  prerequisites:
+    - "Has used a computer professionally. Knows what a server is and what an application does."
+    - "Has heard the words 'cloud' and 'container' but does not need a working definition."
+    - "No prior Kubernetes exposure of any kind."
+  assumed_zero_knowledge_of:
+    - "Cloud-native software and what makes it cloud-native (vs cloud-hosted)."
+    - "Declarative vs imperative configuration."
+    - "Reconciliation loops, controllers, desired state, actual state."
+    - "Pets vs cattle, horizontal scaling, failure-as-normal design."
+    - "Twelve-factor apps. Microservices. Modular monoliths."
+    - "When Kubernetes is the right tool and when it's overkill."
+    - "GitOps, platform engineering, SRE, service ownership, multi-tenancy."
+    - "The Borg → Omega → Kubernetes lineage and what each contributed."
+    - "CNCF, the Kubernetes release cadence, KEPs, feature gates, conformance."
+
+learning_outcomes_overall:
+  - "Learner can explain what 'cloud-native' actually means and why reconciliation loops are at the heart of it."
+  - "Learner can describe declarative config and contrast it with imperative scripts."
+  - "Learner can articulate desired vs actual state and what a controller does between them."
+  - "Learner can explain pets vs cattle and why cloud-native treats failure as normal."
+  - "Learner can summarise twelve-factor apps and the difference between a microservice and a modular monolith."
+  - "Learner can decide whether a given workload is a fit for Kubernetes or whether it's overkill."
+  - "Learner can describe the GitOps operating model and how it relates to platform engineering and SRE."
+  - "Learner can sketch the Borg → Omega → Kubernetes lineage and explain the modern release cadence (~3 minor releases/year), KEPs, and feature gates (alpha → beta → GA)."
+
+subtopics:
+  - id: 1
+    slug: "cloud-native-principles"
+    title: "Cloud-native principles — reconciliation, desired state, pets vs cattle"
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy:
+        primary: "Thermostat"
+        direction: "A thermostat is a reconciliation loop. You set the desired temperature (desired state). The thermostat reads the room (actual state). It runs the heater or AC (controller action) to close the gap. It never stops doing this. Kubernetes is a building full of thermostats — one per kind of resource."
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 90 }
+      eli10: { target_words: 220 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+      illustrations:
+        - "Reconciliation loop with desired state, actual state, controller, observe-diff-act arrows"
+        - "Pets vs cattle — one named server with bandages vs a herd of identical replaceable nodes"
+        - "Imperative recipe (step list) vs declarative recipe (final dish photo)"
+
+  - id: 2
+    slug: "twelve-factor-and-microservices"
+    title: "Twelve-factor apps; microservices vs modular monoliths"
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 90 }
+      analogy:
+        primary: "Shipping containers"
+        direction: "A twelve-factor app is a standard shipping container — config plugs in from outside, dependencies are bolted in at build time, logs come out one fixed slot, the container runs the same on a truck or a ship or in a warehouse. A non-twelve-factor app is bespoke crating that needs custom handling at every transfer."
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 90 }
+      eli10: { target_words: 220 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+      illustrations:
+        - "Twelve-factor checklist as a shipping-container manifest"
+        - "Monolith vs microservices vs modular monolith side-by-side"
+
+  - id: 3
+    slug: "when-k8s-fits-when-it-doesnt"
+    title: "When Kubernetes is useful — and when it's overkill"
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 90 }
+      analogy:
+        primary: "Industrial kitchen vs home kitchen"
+        direction: "Kubernetes is an industrial kitchen — many cooks, big ovens, line orders, prep stations, service standards, head chef coordinating. Beautiful when you're feeding 800 people. Wildly overkill when you're making toast for yourself in the morning."
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 90 }
+      eli10: { target_words: 220 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+      illustrations:
+        - "Decision tree — Kubernetes fit vs not"
+        - "Workload-shape grid: spiky/24x7/batch/edge × small/medium/big with K8s-fit shaded"
+
+  - id: 4
+    slug: "gitops-platform-eng-sre"
+    title: "GitOps, platform engineering, SRE, service ownership, multi-tenancy"
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy:
+        primary: "Library catalog"
+        direction: "GitOps is a library where every change to the shelves starts with a card in the catalog (a Git commit). A librarian (the controller) reads new cards, walks to the shelf, and makes the change. Nobody walks past the librarian and rearranges books — and if they do, the librarian notices and puts the books back."
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 90 }
+      eli10: { target_words: 220 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+      illustrations:
+        - "GitOps loop: Git → controller → cluster → drift detection → pull back to Git state"
+        - "Platform team (paved road) vs product teams stack diagram"
+        - "Multi-tenancy spectrum: shared cluster → namespaces → vClusters → dedicated clusters"
+
+  - id: 5
+    slug: "history-cncf-releases-keps"
+    title: "Kubernetes lineage, CNCF, release cadence, KEPs, feature gates"
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy:
+        primary: "Train-line testing"
+        direction: "New Kubernetes features go through alpha → beta → GA the way new train signals get tested on a quiet branch line first, then on a moderately busy line, then on the main intercity route. By the time you ride the main line, the signals are boring on purpose."
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 90 }
+      eli10: { target_words: 220 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+      illustrations:
+        - "Borg → Omega → Kubernetes timeline with key contributions from each"
+        - "Release cadence calendar — three minor releases / year, supported window"
+        - "Feature lifecycle: alpha → beta → GA with feature-gate flag default"
+
+shared_artifacts:
+  static_diagram:
+    purpose: "A 5-station map of the lesson — one station per subtopic — anchored by a giant central reconciliation loop with desired-state YAML on the left and live cluster state on the right."
+    file: "diagram.svg"
+  animated_illustration:
+    purpose: "The reconciliation loop in motion. Desired YAML declares 3 replicas. A controller observes 1 actual replica, computes the diff, scales up. A node fails — actual drops to 2. Controller observes, scales up again. The loop is the spine of cloud-native operation."
+    mode_toggles: ["scale-up", "self-heal-on-failure", "drift-correction"]
+    file: "animation.html"
+  flashcards:
+    file: "flashcards.yaml"
+    structure: "Grouped by subtopic. 15 cards total (3 per subtopic × 5 subtopics)."
+  quiz:
+    file: "quiz.yaml"
+    structure: "Grouped by subtopic. 10 questions total (2 per subtopic × 5 subtopics)."
+  recap_card:
+    placement: "End of preview page."
+    content: "Cross-subtopic synthesis emphasising the reconciliation-loop spine, with a one-sentence bridge into Lesson 02 (Containers)."
+
+interactive_preview_page:
+  file: "/preview-kubernetes-lesson-01.html"
+  hero_widget: "Interactive thermostat demo: drag a slider to change desired state (replica count); watch the controller act on the diff; click 'kill a pod' and see the loop self-heal."
+  toc_at_top: "Sticky sub-nav listing all 5 subtopics."
+  subtopic_section_header: "Subtopic N of 5: <title>"
+  hover_to_define_terms:
+    - "cloud-native"
+    - "declarative"
+    - "imperative"
+    - "reconciliation loop"
+    - "controller"
+    - "desired state"
+    - "actual state"
+    - "pets vs cattle"
+    - "horizontal scaling"
+    - "twelve-factor"
+    - "microservice"
+    - "monolith"
+    - "modular monolith"
+    - "GitOps"
+    - "platform engineering"
+    - "SRE"
+    - "service ownership"
+    - "multi-tenancy"
+    - "KEP"
+    - "feature gate"
+    - "alpha · beta · GA"
+    - "conformance"
+    - "CNCF"
+
+estimated_scope:
+  subtopics: 5
+  total_flashcards: 15
+  total_quiz_questions: 10
+  total_quick_checks: 5
+
+fact_check_anchors:
+  - "kubernetes.io/docs/concepts/overview/ — what Kubernetes is"
+  - "kubernetes.io/docs/concepts/architecture/controller/ — controllers and reconciliation"
+  - "12factor.net — the canonical 12-factor manifesto"
+  - "github.com/cncf/landscape — CNCF landscape"
+  - "kubernetes.io/releases/ — release cadence (~3 minor/year, ~14 months patch support)"
+  - "github.com/kubernetes/enhancements — KEP process"
+  - "kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/ — feature gates and graduation stages"
+  - "research.google/pubs/large-scale-cluster-management-at-google-with-borg/ — Borg paper (2015)"
+  - "research.google/pubs/omega-flexible-scalable-schedulers-for-large-compute-clusters/ — Omega paper (2013)"

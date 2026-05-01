@@ -1,0 +1,83 @@
+# Flashcards — Lesson 01, Cloud-Native and Kubernetes Foundations
+# Total: 15 cards (3 per subtopic × 5 subtopics)
+
+cards:
+  # Subtopic 1 — Cloud-native principles
+  - id: 1
+    subtopic: cloud-native-principles
+    front: "What is a reconciliation loop?"
+    back: "A controller program that reads desired state, observes actual state, and takes the minimum action to close the gap — repeatedly, forever. The spine of Kubernetes operation."
+
+  - id: 2
+    subtopic: cloud-native-principles
+    front: "Declarative vs imperative configuration?"
+    back: "Declarative says what the world should look like (3 replicas of nginx). Imperative says how to get there (install nginx then start 3 copies). Kubernetes is declarative."
+
+  - id: 3
+    subtopic: cloud-native-principles
+    front: "What does pets vs cattle mean?"
+    back: "A pet is a hand-tuned named server you'd mourn. Cattle are identical replaceable units. Cloud-native systems treat servers and pods as cattle so failure is routine and recoverable."
+
+  # Subtopic 2 — Twelve-factor and microservices
+  - id: 4
+    subtopic: twelve-factor-and-microservices
+    front: "What is a twelve-factor app?"
+    back: "An app written to twelve specific guidelines (codebase, dependencies, config, backing services, build/release/run, processes, port binding, concurrency, disposability, dev/prod parity, logs, admin processes) that make it run cleanly on dynamic platforms."
+
+  - id: 5
+    subtopic: twelve-factor-and-microservices
+    front: "Microservices vs modular monolith — what's the trade?"
+    back: "Microservices split across the network for independent deploy/scale/fail at the cost of coordination overhead. A modular monolith splits inside one deployable for simpler operations at the cost of needing strict discipline to keep boundaries clean."
+
+  - id: 6
+    subtopic: twelve-factor-and-microservices
+    front: "Why is 'stateless processes' a twelve-factor rule?"
+    back: "Because the platform can stop, move, restart, or replace any process at any time. Anything that lives only inside the process disappears with it. State must live in attached backing services — DB, cache, object store."
+
+  # Subtopic 3 — When K8s fits
+  - id: 7
+    subtopic: when-k8s-fits-when-it-doesnt
+    front: "Three signals that Kubernetes is the right fit?"
+    back: "Many services to operate; multiple teams sharing infrastructure; dynamic workloads that scale and reschedule; need for workload portability across environments; existing operational maturity to run a cluster."
+
+  - id: 8
+    subtopic: when-k8s-fits-when-it-doesnt
+    front: "Three signals that Kubernetes is overkill?"
+    back: "Single application that rarely changes; no platform engineering capacity; latency-sensitive sub-millisecond workloads; the team's current pain is application architecture rather than orchestration."
+
+  - id: 9
+    subtopic: when-k8s-fits-when-it-doesnt
+    front: "Why doesn't moving a small app to K8s make it easier to operate?"
+    back: "Kubernetes solves the count problem — running many things — not the per-app complexity problem. A single app on Kubernetes pays the cluster operational cost without the benefit; on a single VM, you'd skip the cost entirely."
+
+  # Subtopic 4 — GitOps, platform eng, SRE
+  - id: 10
+    subtopic: gitops-platform-eng-sre
+    front: "What are the four GitOps principles?"
+    back: "Declarative; versioned and immutable in Git; pulled automatically by an agent; continuously reconciled. Per opengitops.dev (the formal definition from the CNCF GitOps Working Group)."
+
+  - id: 11
+    subtopic: gitops-platform-eng-sre
+    front: "Platform engineering vs SRE — what's the difference?"
+    back: "Platform engineering builds the platform product (the paved road that product teams ride on). SRE is a reliability practice (SLIs / SLOs / error budgets, automate ops as code). They overlap heavily but answer different questions."
+
+  - id: 12
+    subtopic: gitops-platform-eng-sre
+    front: "Soft vs hard multi-tenancy?"
+    back: "Soft: trusted tenants share one cluster, isolation via namespaces + RBAC + ResourceQuotas + NetworkPolicy. Hard: untrusted tenants need separate clusters or virtual clusters (vCluster), strict admission policy, dedicated nodes."
+
+  # Subtopic 5 — History, CNCF, releases, KEPs
+  - id: 13
+    subtopic: history-cncf-releases-keps
+    front: "What is the Kubernetes lineage?"
+    back: "Borg (Google internal since early 2000s, paper 2015) → Omega (Google research, paper 2013) → Kubernetes (open-sourced 2014, 1.0 July 2015, CNCF first graduated project March 2018). 'K8s' = K + 8 letters + s."
+
+  - id: 14
+    subtopic: history-cncf-releases-keps
+    front: "What's the current Kubernetes release cadence and support window?"
+    back: "Roughly 3 minor releases per year (since 2023; was 4/year before). Each minor release is patched for ~14 months (12 months active + ~2 months EOL transition). The most recent 3 minors are supported at any time."
+
+  - id: 15
+    subtopic: history-cncf-releases-keps
+    front: "What does 'alpha' feature gate mean and what's the production rule?"
+    back: "Alpha = off by default, may change incompatibly or be removed without deprecation, may be buggy. Production rule: use only GA features (and explicitly vetted beta features); reserve alpha for dev/test clusters."
