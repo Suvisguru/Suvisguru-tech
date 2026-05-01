@@ -1,203 +1,111 @@
 # Intake brief — Lesson 01, Common to all Kubernetes distributions
-# Topic: Cloud-Native and Kubernetes Foundations (Module 1 of K-COM)
-# Format: PER-SUBTOPIC structure.
+# Topic: How Kubernetes fixes things on its own (the reconciliation loop, drawn as a thermostat)
+#
+# Scope note (2026-05-02 redesign):
+#   Original brief tried to cover all of Module 1 (cloud-native principles +
+#   12-factor + when-to-use + GitOps + history) in one lesson with
+#   per-subtopic structure. Founder reviewed and called it "super super super
+#   confusing — would skip in a heartbeat — visuals mediocre."
+#
+#   This brief is the rescoped lesson. Module 1 now spans Lessons 01-05 of
+#   K-COM, each focused on one idea with deep visual treatment.
 
 lesson:
-  title: "Cloud-Native and Kubernetes Foundations"
+  title: "How does Kubernetes know to fix things on its own?"
   slug: "01-cloud-native-and-kubernetes-foundations"
   domain: "kubernetes"
   course_slug: "common-to-all-distributions"
   position: 1
-  granularity: "sub-topic"
-  brief_drafted_on: "2026-05-01"
-  pedagogical_format: "per-subtopic"
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  pedagogical_format: "single-concept · drawn-metaphor"
+  central_metaphor: "thermostat"
+  one_sentence_promise: |
+    Kubernetes works exactly like the thermostat in your house: you set what
+    you want, it reads what is, and it closes the gap forever. Once you see
+    that, the rest of Kubernetes is variations on the same loop.
 
 learner_profile:
   prerequisites:
-    - "Has used a computer professionally. Knows what a server is and what an application does."
-    - "Has heard the words 'cloud' and 'container' but does not need a working definition."
-    - "No prior Kubernetes exposure of any kind."
+    - "Has used a computer professionally."
+    - "Knows that web apps run on servers."
+    - "No prior Kubernetes exposure of any kind. Has maybe heard the word."
   assumed_zero_knowledge_of:
-    - "Cloud-native software and what makes it cloud-native (vs cloud-hosted)."
+    - "Reconciliation loops, controllers, desired vs actual state."
+    - "Pets vs cattle."
     - "Declarative vs imperative configuration."
-    - "Reconciliation loops, controllers, desired state, actual state."
-    - "Pets vs cattle, horizontal scaling, failure-as-normal design."
-    - "Twelve-factor apps. Microservices. Modular monoliths."
-    - "When Kubernetes is the right tool and when it's overkill."
-    - "GitOps, platform engineering, SRE, service ownership, multi-tenancy."
-    - "The Borg → Omega → Kubernetes lineage and what each contributed."
-    - "CNCF, the Kubernetes release cadence, KEPs, feature gates, conformance."
+    - "Pods, deployments, the entire Kubernetes API surface."
 
-learning_outcomes_overall:
-  - "Learner can explain what 'cloud-native' actually means and why reconciliation loops are at the heart of it."
-  - "Learner can describe declarative config and contrast it with imperative scripts."
-  - "Learner can articulate desired vs actual state and what a controller does between them."
-  - "Learner can explain pets vs cattle and why cloud-native treats failure as normal."
-  - "Learner can summarise twelve-factor apps and the difference between a microservice and a modular monolith."
-  - "Learner can decide whether a given workload is a fit for Kubernetes or whether it's overkill."
-  - "Learner can describe the GitOps operating model and how it relates to platform engineering and SRE."
-  - "Learner can sketch the Borg → Omega → Kubernetes lineage and explain the modern release cadence (~3 minor releases/year), KEPs, and feature gates (alpha → beta → GA)."
+learning_outcomes:
+  - "Learner can explain in one sentence why Kubernetes self-heals."
+  - "Learner can name desired state, actual state, and controller — and point at the analogous parts of a thermostat."
+  - "Learner can explain pets vs cattle and declarative vs imperative without jargon."
+  - "Learner is curious about Lesson 02 (containers) instead of exhausted."
 
-subtopics:
-  - id: 1
-    slug: "cloud-native-principles"
-    title: "Cloud-native principles — reconciliation, desired state, pets vs cattle"
-    pedagogical_block:
-      concept: { target_words: 240 }
-      before_after: { target_words_each_side: 90 }
-      analogy:
-        primary: "Thermostat"
-        direction: "A thermostat is a reconciliation loop. You set the desired temperature (desired state). The thermostat reads the room (actual state). It runs the heater or AC (controller action) to close the gap. It never stops doing this. Kubernetes is a building full of thermostats — one per kind of resource."
-      quick_check: { type: "multiple_choice", options: 4 }
-      eli5: { target_words_max: 90 }
-      eli10: { target_words: 220 }
-      real_world: { count: 1 }
-      flashcards: { count: 3 }
-      quiz: { count: 2 }
-      illustrations:
-        - "Reconciliation loop with desired state, actual state, controller, observe-diff-act arrows"
-        - "Pets vs cattle — one named server with bandages vs a herd of identical replaceable nodes"
-        - "Imperative recipe (step list) vs declarative recipe (final dish photo)"
+deferred_to_later_lessons:
+  - "Twelve-factor apps and microservices vs modular monoliths → Lesson 02 of Module 1 (or absorbed into Lesson 02 of K-COM Containers if scope fits)."
+  - "When Kubernetes fits / overkill → Lesson 03 of Module 1."
+  - "GitOps, platform engineering, SRE, service ownership, multi-tenancy → Lesson 04 of Module 1."
+  - "Borg → Omega → Kubernetes lineage, CNCF, releases, KEPs, feature gates → Lesson 05 of Module 1."
 
-  - id: 2
-    slug: "twelve-factor-and-microservices"
-    title: "Twelve-factor apps; microservices vs modular monoliths"
-    pedagogical_block:
-      concept: { target_words: 220 }
-      before_after: { target_words_each_side: 90 }
-      analogy:
-        primary: "Shipping containers"
-        direction: "A twelve-factor app is a standard shipping container — config plugs in from outside, dependencies are bolted in at build time, logs come out one fixed slot, the container runs the same on a truck or a ship or in a warehouse. A non-twelve-factor app is bespoke crating that needs custom handling at every transfer."
-      quick_check: { type: "multiple_choice", options: 4 }
-      eli5: { target_words_max: 90 }
-      eli10: { target_words: 220 }
-      real_world: { count: 1 }
-      flashcards: { count: 3 }
-      quiz: { count: 2 }
-      illustrations:
-        - "Twelve-factor checklist as a shipping-container manifest"
-        - "Monolith vs microservices vs modular monolith side-by-side"
-
-  - id: 3
-    slug: "when-k8s-fits-when-it-doesnt"
-    title: "When Kubernetes is useful — and when it's overkill"
-    pedagogical_block:
-      concept: { target_words: 220 }
-      before_after: { target_words_each_side: 90 }
-      analogy:
-        primary: "Industrial kitchen vs home kitchen"
-        direction: "Kubernetes is an industrial kitchen — many cooks, big ovens, line orders, prep stations, service standards, head chef coordinating. Beautiful when you're feeding 800 people. Wildly overkill when you're making toast for yourself in the morning."
-      quick_check: { type: "multiple_choice", options: 4 }
-      eli5: { target_words_max: 90 }
-      eli10: { target_words: 220 }
-      real_world: { count: 1 }
-      flashcards: { count: 3 }
-      quiz: { count: 2 }
-      illustrations:
-        - "Decision tree — Kubernetes fit vs not"
-        - "Workload-shape grid: spiky/24x7/batch/edge × small/medium/big with K8s-fit shaded"
-
-  - id: 4
-    slug: "gitops-platform-eng-sre"
-    title: "GitOps, platform engineering, SRE, service ownership, multi-tenancy"
-    pedagogical_block:
-      concept: { target_words: 240 }
-      before_after: { target_words_each_side: 90 }
-      analogy:
-        primary: "Library catalog"
-        direction: "GitOps is a library where every change to the shelves starts with a card in the catalog (a Git commit). A librarian (the controller) reads new cards, walks to the shelf, and makes the change. Nobody walks past the librarian and rearranges books — and if they do, the librarian notices and puts the books back."
-      quick_check: { type: "multiple_choice", options: 4 }
-      eli5: { target_words_max: 90 }
-      eli10: { target_words: 220 }
-      real_world: { count: 1 }
-      flashcards: { count: 3 }
-      quiz: { count: 2 }
-      illustrations:
-        - "GitOps loop: Git → controller → cluster → drift detection → pull back to Git state"
-        - "Platform team (paved road) vs product teams stack diagram"
-        - "Multi-tenancy spectrum: shared cluster → namespaces → vClusters → dedicated clusters"
-
-  - id: 5
-    slug: "history-cncf-releases-keps"
-    title: "Kubernetes lineage, CNCF, release cadence, KEPs, feature gates"
-    pedagogical_block:
-      concept: { target_words: 240 }
-      before_after: { target_words_each_side: 90 }
-      analogy:
-        primary: "Train-line testing"
-        direction: "New Kubernetes features go through alpha → beta → GA the way new train signals get tested on a quiet branch line first, then on a moderately busy line, then on the main intercity route. By the time you ride the main line, the signals are boring on purpose."
-      quick_check: { type: "multiple_choice", options: 4 }
-      eli5: { target_words_max: 90 }
-      eli10: { target_words: 220 }
-      real_world: { count: 1 }
-      flashcards: { count: 3 }
-      quiz: { count: 2 }
-      illustrations:
-        - "Borg → Omega → Kubernetes timeline with key contributions from each"
-        - "Release cadence calendar — three minor releases / year, supported window"
-        - "Feature lifecycle: alpha → beta → GA with feature-gate flag default"
+structure:
+  hero:
+    type: "interactive thermostat widget"
+    description: |
+      Drawn round thermostat with a draggable orange-dot pointer on a 16-26°
+      dial sweep. Beside it, a house cross-section showing a living room with
+      a thermometer and a basement furnace. As the user drags the dial, the
+      furnace flames animate when there's a gap; the thermometer mercury
+      rises as the room warms; the chimney puffs subtle smoke when heating.
+      Three preset buttons (cold day 18° · cozy 23° · heat wave 26°) plus
+      "open a window" which forces actual to drop and demonstrates self-heal.
+  sections:
+    - "What just happened? — story prose, no jargon, naming the loop."
+    - "So you've used Kubernetes — translation table mapping each thermostat element to its K8s name (4 row pairs with mini-illustrations)."
+    - "Why this saves your weekend — one real-world story, vivid, ends on 'the thermostat ate the page.'"
+    - "Two more pictures — pets vs cattle (drawn pets/cattle), declarative vs imperative (recipe scroll vs photo of dish)."
+    - "Three quick checks — pause-the-thermostat questions."
+    - "Glossary — collapsible footer reference (NOT a top-of-page gate)."
+    - "Recap — one sentence + bridge to Lesson 02."
+  jargon_used_in_lesson_body:
+    - "desired state (mapped to dial)"
+    - "actual state (mapped to thermometer)"
+    - "controller (mapped to brain inside thermostat)"
+    - "pod (defined inline as 'a small box that runs your app')"
+    - "deployment (defined inline as 'YAML that says I want N copies')"
+    - "self-healing (used in the recap)"
+    - "pets vs cattle (entire mini-section)"
+    - "declarative (entire mini-section)"
+  jargon_explicitly_NOT_used_in_lesson_body:
+    - "kube-apiserver, etcd, kube-scheduler, kube-controller-manager (deferred to Lesson 03 K-COM Architecture)"
+    - "ReplicaSet, StatefulSet, DaemonSet (deferred to Lesson 06 Workloads)"
+    - "kubelet, CNI, CSI, CRI (deferred to architecture and component lessons)"
+    - "KEP, feature gate, alpha/beta/GA, conformance, CNCF (moved to Module 1 Lesson 05)"
+    - "GitOps, Argo CD, Flux, platform engineering, SRE (moved to Module 1 Lesson 04)"
+    - "Twelve-factor (moved to Module 1 Lesson 02 or K-COM Containers Lesson 02)"
 
 shared_artifacts:
-  static_diagram:
-    purpose: "A 5-station map of the lesson — one station per subtopic — anchored by a giant central reconciliation loop with desired-state YAML on the left and live cluster state on the right."
-    file: "diagram.svg"
-  animated_illustration:
-    purpose: "The reconciliation loop in motion. Desired YAML declares 3 replicas. A controller observes 1 actual replica, computes the diff, scales up. A node fails — actual drops to 2. Controller observes, scales up again. The loop is the spine of cloud-native operation."
-    mode_toggles: ["scale-up", "self-heal-on-failure", "drift-correction"]
-    file: "animation.html"
-  flashcards:
-    file: "flashcards.yaml"
-    structure: "Grouped by subtopic. 15 cards total (3 per subtopic × 5 subtopics)."
-  quiz:
-    file: "quiz.yaml"
-    structure: "Grouped by subtopic. 10 questions total (2 per subtopic × 5 subtopics)."
-  recap_card:
-    placement: "End of preview page."
-    content: "Cross-subtopic synthesis emphasising the reconciliation-loop spine, with a one-sentence bridge into Lesson 02 (Containers)."
-
-interactive_preview_page:
-  file: "/preview-kubernetes-lesson-01.html"
-  hero_widget: "Interactive thermostat demo: drag a slider to change desired state (replica count); watch the controller act on the diff; click 'kill a pod' and see the loop self-heal."
-  toc_at_top: "Sticky sub-nav listing all 5 subtopics."
-  subtopic_section_header: "Subtopic N of 5: <title>"
-  hover_to_define_terms:
-    - "cloud-native"
-    - "declarative"
-    - "imperative"
-    - "reconciliation loop"
-    - "controller"
-    - "desired state"
-    - "actual state"
-    - "pets vs cattle"
-    - "horizontal scaling"
-    - "twelve-factor"
-    - "microservice"
-    - "monolith"
-    - "modular monolith"
-    - "GitOps"
-    - "platform engineering"
-    - "SRE"
-    - "service ownership"
-    - "multi-tenancy"
-    - "KEP"
-    - "feature gate"
-    - "alpha · beta · GA"
-    - "conformance"
-    - "CNCF"
+  preview_page:
+    file: "/preview-kubernetes-lesson-01.html"
+    central_widget: "Interactive thermostat with house cross-section"
+    visual_style: "Hand-drawn-feeling. Warm cream backgrounds. Drawn metaphors not block diagrams."
+  diagram: { file: "diagram.svg", purpose: "Static reference of the loop, kept for the lesson folder but not embedded in preview." }
+  animation: { file: "animation.html", purpose: "K8s-specific 3-mode animation. Optionally linked but not embedded — the hero thermostat does the work." }
+  flashcards: { file: "flashcards.yaml", structure: "5 cards total." }
+  quiz: { file: "quiz.yaml", structure: "3 pause-the-thermostat questions." }
+  lesson_md: { file: "lesson.md", structure: "Single narrative — no per-subtopic blocks." }
 
 estimated_scope:
-  subtopics: 5
-  total_flashcards: 15
-  total_quiz_questions: 10
-  total_quick_checks: 5
+  flashcards: 5
+  quiz_questions: 3
+  reading_time_minutes: 8
+  interactive_minutes: 5
+
+bar:
+  - "First-timer can explain the lesson back in one sentence."
+  - "First-timer is curious about Lesson 02, not exhausted."
+  - "Visuals look like an explorable, not a textbook."
 
 fact_check_anchors:
   - "kubernetes.io/docs/concepts/overview/ — what Kubernetes is"
   - "kubernetes.io/docs/concepts/architecture/controller/ — controllers and reconciliation"
-  - "12factor.net — the canonical 12-factor manifesto"
-  - "github.com/cncf/landscape — CNCF landscape"
-  - "kubernetes.io/releases/ — release cadence (~3 minor/year, ~14 months patch support)"
-  - "github.com/kubernetes/enhancements — KEP process"
-  - "kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/ — feature gates and graduation stages"
-  - "research.google/pubs/large-scale-cluster-management-at-google-with-borg/ — Borg paper (2015)"
-  - "research.google/pubs/omega-flexible-scalable-schedulers-for-large-compute-clusters/ — Omega paper (2013)"

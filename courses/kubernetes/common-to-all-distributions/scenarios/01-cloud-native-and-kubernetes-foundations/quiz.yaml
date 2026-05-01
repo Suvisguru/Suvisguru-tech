@@ -1,129 +1,37 @@
-# Quiz — Lesson 01, Cloud-Native and Kubernetes Foundations
-# Total: 10 questions (2 per subtopic × 5 subtopics)
-# Style: pause-the-animation prompts where the lesson has an animation;
-# mental-model questions everywhere else (per QUALITY.md).
+# Quiz — Lesson 01, How Kubernetes fixes things on its own
+# Total: 3 questions (single-concept lesson)
+# Style: pause-the-thermostat prompts (the hero widget is the animation).
 
 questions:
-  # Subtopic 1 — Cloud-native principles
   - id: 1
-    subtopic: cloud-native-principles
-    pause_animation_in_mode: "scale-up"
-    prompt: "The animation shows the desired state set to 3 replicas. The actual state is 1. The controller is about to fire. What action will it take, and why?"
+    pause_widget: "thermostat"
+    prompt: |
+      You set the dial to 23°. The room is at 18°. The furnace is firing.
+      What does the thermostat do when the room reaches 23°?
     answer: |
-      The controller will create two more pods of the same template, bringing actual to 3.
-      The action is the minimum needed to close the gap — it doesn't recreate the existing
-      pod, doesn't delete anything, doesn't restart. It just creates what's missing.
-      That minimum-diff principle is what makes the loop converge cleanly without thrashing.
+      It stops the furnace. The gap is closed. But it doesn't walk away —
+      it keeps reading the thermometer. As soon as the room drops below 23°
+      again, it'll fire the furnace right back up. The loop never ends.
 
   - id: 2
-    subtopic: cloud-native-principles
-    pause_animation_in_mode: null
-    prompt: "Why does treating servers as cattle make a system more reliable than treating them as pets?"
+    pause_widget: "thermostat"
+    prompt: |
+      You walk over and open a window in the room. The dial is still at 23°.
+      What happens, and what does this teach about Kubernetes?
     answer: |
-      Pets have unique state and unique knowledge that lives only on that machine. When a
-      pet dies, you have to recreate it from incomplete documentation. Cattle are identical
-      and described declaratively — when one dies, the platform replaces it from the same
-      description. Reliability comes from "any machine can do this job and the platform
-      will replace any that dies," not from "this specific machine never fails."
+      The room cools down. The thermostat sees the gap and fires the furnace,
+      again and again, fighting the open window. In Kubernetes terms: a
+      "node failed" or "a pod got killed by hand" is the same as opening a
+      window — the controller will keep trying to close the gap.
+      Self-healing, automatically.
 
-  # Subtopic 2 — Twelve-factor and microservices
   - id: 3
-    subtopic: twelve-factor-and-microservices
-    pause_animation_in_mode: null
+    pause_widget: null
     prompt: |
-      A team is moving a Python app to Kubernetes. The app currently reads database
-      credentials from /etc/app/db.conf, written by a Chef recipe at provisioning time.
-      Which twelve-factor rule does this violate, and what's the cleanest fix?
+      Why is it described as "the thermostat is the entire idea behind
+      Kubernetes"?
     answer: |
-      Violates "Config — stored in the environment, never in code or in baked-in files."
-      Cleanest fix: store credentials as a Kubernetes Secret, mount or inject as
-      environment variables. The app reads os.environ['DB_PASSWORD']. The Chef recipe
-      goes away. The platform supplies config; the image stays generic.
-
-  - id: 4
-    subtopic: twelve-factor-and-microservices
-    pause_animation_in_mode: null
-    prompt: "Why is a modular monolith often a better starting architecture than microservices for a young team?"
-    answer: |
-      Microservices push complexity from inside the codebase to the network — distributed
-      tracing, retries, idempotency, service discovery, separate dashboards, separate on-call.
-      A young team rarely has the operational maturity to absorb that. A modular monolith
-      lets you keep clear internal boundaries with a fraction of the operational tax.
-      You can split out a service later when one module's scale or team boundary actually
-      justifies it.
-
-  # Subtopic 3 — When Kubernetes fits
-  - id: 5
-    subtopic: when-k8s-fits-when-it-doesnt
-    pause_animation_in_mode: null
-    prompt: |
-      A 6-engineer team has one Django app, one Postgres, two background workers, and a
-      Redis cache. They're considering Kubernetes. What questions should drive the decision?
-    answer: |
-      How many services do they expect to add in 12 months? How many independent teams
-      will own deploys? Do they need workload portability (cloud A → cloud B → on-prem)?
-      Do they have time for cluster operations (upgrades, observability, cost)? If the
-      answers are mostly "stays small," "one team," "no portability need," "no platform
-      time" — they should not adopt yet. If at least three answers point toward growth,
-      adopt.
-
-  - id: 6
-    subtopic: when-k8s-fits-when-it-doesnt
-    pause_animation_in_mode: null
-    prompt: "Why is 'we want to use Kubernetes because it's the modern way' a poor reason to adopt it?"
-    answer: |
-      Because adoption isn't free — the cluster itself becomes work. Kubernetes pays back
-      in proportion to operational scale (many services, many teams). For workloads that
-      don't have that scale, the operational cost of the platform exceeds the value it
-      delivers. Adopt because the workload shape demands it, not because the technology
-      is in vogue.
-
-  # Subtopic 4 — GitOps and operating model
-  - id: 7
-    subtopic: gitops-platform-eng-sre
-    pause_animation_in_mode: "drift-correction"
-    prompt: |
-      A developer SSHes into a production node and changes a ConfigMap by hand because
-      their service is broken at 11pm. The cluster is GitOps-managed by Argo CD.
-      Within a few minutes, the change disappears. Why?
-    answer: |
-      Argo CD continuously reconciles the live cluster state to the Git source of truth.
-      The hand-edited ConfigMap is drift; Argo CD detects it and reverts the resource
-      to whatever Git says. The right path is to commit the change to Git (and let Argo
-      CD apply it), or to mark the resource as ignored by Argo CD if it's intentionally
-      externally managed.
-
-  - id: 8
-    subtopic: gitops-platform-eng-sre
-    pause_animation_in_mode: null
-    prompt: "What's the practical reason that 'you build it, you run it' makes services more reliable over time?"
-    answer: |
-      Incentive alignment. The team that wrote the code feels the on-call pages. They
-      cannot externalize the cost of bugs onto a separate ops team. Over weeks, they
-      invest in better tests, better observability, better deploy patterns — because
-      they will be paged otherwise. Reliability emerges from incentive, not from process.
-
-  # Subtopic 5 — History, CNCF, releases, KEPs
-  - id: 9
-    subtopic: history-cncf-releases-keps
-    pause_animation_in_mode: null
-    prompt: "Why is 'we use a feature only after it goes GA' usually the right operational rule?"
-    answer: |
-      Because GA carries the strongest compatibility guarantee Kubernetes offers —
-      backward-compatible behavior, multi-release deprecation if it's ever removed, on by
-      default. Beta APIs can still change shape; alpha can vanish. Operating production
-      on GA features means upgrades won't surprise you; operating on beta or alpha means
-      you accept upgrade-time refactoring as a routine cost.
-
-  - id: 10
-    subtopic: history-cncf-releases-keps
-    pause_animation_in_mode: null
-    prompt: "A vendor's distribution says it's 'Kubernetes-compatible' but not 'Certified Kubernetes.' What does this difference signal?"
-    answer: |
-      Certified Kubernetes is a CNCF program with a specific test suite (run via hydrophone,
-      historically sonobuoy) that the distribution has passed. "Kubernetes-compatible" is
-      not a defined term — it might mean the distribution implements most of the Kubernetes
-      API but has skipped or modified parts of it. The practical risk is portability: your
-      manifests may work, or they may hit an unimplemented API and break in a way that
-      wouldn't happen on a certified cluster. Prefer Certified Kubernetes when portability
-      matters.
+      Because every other Kubernetes thing — pods, deployments, services,
+      jobs, autoscalers, even custom operators you might write — is just
+      another tiny thermostat watching a different number. Once you can
+      see that pattern, the rest of Kubernetes is variations on the same idea.
