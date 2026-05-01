@@ -1,0 +1,64 @@
+# Quiz — Lesson 05: vSphere — where it fits, how you access it, what it touches
+
+questions:
+  - id: q1
+    prompt: >
+      Pause the animation in 'memory' mode. The diagram shows three VMs configured
+      with 8 GB each, but the host has only 16 GB of physical RAM. All three VMs
+      report "running" status. Predict: how is this possible?
+    pause_at_mode: memory
+    answer: >
+      Through memory overcommit. vSphere lets you allocate more RAM to VMs in total
+      than the host physically has, because in practice most VMs don't use all of
+      their configured memory at the same time. Three techniques make this safe:
+      transparent page sharing (deduplicate identical memory pages across VMs),
+      ballooning (pressure idle guest OSes to release memory), and compression
+      (compress pages before swapping). The host runs all three VMs by giving each
+      one only what it actively needs at any moment.
+    reasoning: >
+      Memory overcommit is one of the central efficiency wins of virtualization.
+      Without it, you'd need to buy 24 GB of host RAM for three 8 GB VMs even
+      though they collectively use only 12 GB on average. With it, 16 GB suffices
+      most of the time, and the host can reach further into its tools (ballooning,
+      then swap) only when actual demand spikes.
+
+  - id: q2
+    prompt: >
+      Pause the animation in 'cpu' mode. Two VMs are scheduled on the same host;
+      one is doing heavy compute, the other is idle. The host has 16 cores and
+      hyperthreading on (32 threads). Predict: does vSphere give the busy VM all
+      32 threads?
+    pause_at_mode: cpu
+    answer: >
+      No. vSphere schedules each VM on a fixed number of vCPUs configured for that
+      VM (e.g., 4 vCPUs). The busy VM uses the threads assigned to its vCPUs; the
+      idle VM's vCPUs sit unused but are reserved. vSphere also tries to keep each
+      VM's vCPUs and memory on the same NUMA node so memory access stays fast.
+      Hyperthreading is exposed as additional logical cores, but most VMs don't
+      benefit linearly from hyperthreaded cores — the hypervisor schedules them
+      conservatively.
+    reasoning: >
+      Per-VM vCPU configuration is a hard contract: you said "this VM gets 4
+      vCPUs," and that's what it gets. Even if 28 other threads sit idle, the VM
+      doesn't grow into them. Right-sizing matters: a VM with too many vCPUs
+      wastes capacity; one with too few becomes a bottleneck. vSphere's CPU ready
+      time metric is what tells you whether sizing is off.
+
+  - id: q3
+    prompt: >
+      Pause the animation. vCenter has just crashed and is rebooting. An admin
+      needs to verify that one critical ESXi host is healthy. Which UI should
+      they reach for?
+    pause_at_mode: cpu
+    answer: >
+      The VMware Host Client. It's a per-host web UI served by ESXi itself, so it
+      keeps working even when vCenter is down. The admin connects directly to the
+      ESXi host's IP in a browser and can see VMs, networks, and storage on that
+      host. The DCUI is also available (and useful for restarting management
+      agents) but the Host Client gives a richer view through the browser.
+    reasoning: >
+      This is exactly why VMware ships two web UIs: the vSphere Client is for
+      fleet management through vCenter, and the Host Client is for individual
+      hosts when vCenter isn't reachable. They complement each other. In normal
+      operation you live in vSphere Client; in incidents, the Host Client is the
+      friend you remember you have.

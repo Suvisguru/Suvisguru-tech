@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Lesson 11 — Configuring vSphere Storage
+  Static diagram: 6-station storage journey.
+  Layout math (verified):
+    ViewBox 1100x720
+    6 cards 160w with 20px gap → 6*160 + 5*20 + 2*20 = 1100
+    Card x: 20, 200, 380, 560, 740, 920
+    Card y=230, h=340
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" role="img" aria-labelledby="title desc">
+  <title id="title">vSphere storage journey: overview, VMFS, NFS, vSAN, vVols, SPBM and provisioning</title>
+  <desc id="desc">Six numbered stations show how storage is consumed in vSphere — from datastore primitives to per-VM policies.</desc>
+  <defs>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.08"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/></marker>
+  </defs>
+
+  <rect width="1100" height="720" fill="#FAFBFC"/>
+
+  <text x="550" y="40" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" fill="#1F2937">vSphere storage journey</text>
+  <text x="550" y="62" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#5A6B81">Where do VMs live? · four datastore types · policy-driven placement</text>
+
+  <!-- Top illustration: VM, datastore, options -->
+  <g transform="translate(420,80)">
+    <rect width="260" height="120" rx="10" fill="#3F4A5E" stroke="#1F2937" stroke-width="1.5"/>
+    <text x="130" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">VM stored on a datastore</text>
+    <rect x="20" y="34" width="100" height="60" rx="4" fill="#5DCAA5" opacity="0.6"/>
+    <text x="70" y="56" text-anchor="middle" font-size="11" fill="#1F2937">vm-app1</text>
+    <text x="70" y="70" text-anchor="middle" font-size="9" fill="#1F2937">.vmx · .vmdk</text>
+    <text x="170" y="50" text-anchor="middle" font-size="11" fill="#FFFFFF">→</text>
+    <rect x="190" y="34" width="60" height="60" rx="4" fill="#F2C94C" opacity="0.7"/>
+    <text x="220" y="56" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">datastore</text>
+    <text x="130" y="115" text-anchor="middle" font-size="10" font-style="italic" fill="#FFFFFF" opacity="0.85">backing: VMFS · NFS · vSAN · vVols</text>
+  </g>
+
+  <g transform="translate(100,140)">
+    <text x="0" y="0" text-anchor="middle" font-size="11" font-weight="600" fill="#5A6B81">begin here</text>
+    <path d="M0,8 L0,82" stroke="#5A6B81" stroke-width="1.5" stroke-dasharray="3,3" fill="none" marker-end="url(#arrow)"/>
+  </g>
+
+  <line x1="100" y1="400" x2="1000" y2="400" stroke="#D5DCE6" stroke-width="2" stroke-dasharray="2,4"/>
+
+  <!-- Station 1 — Overview -->
+  <g>
+    <rect x="20" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="20" y="562" width="160" height="8" fill="#3F4A5E"/>
+    <circle cx="100" cy="260" r="22" fill="#3F4A5E"/>
+    <text x="100" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">1</text>
+    <text x="100" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">Overview</text>
+    <text x="100" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">datastores</text>
+    <g transform="translate(20,355)">
+      <text x="80" y="14" text-anchor="middle" font-size="10" fill="#1F2937">VMFS · NFS</text>
+      <text x="80" y="32" text-anchor="middle" font-size="10" fill="#1F2937">vSAN · vVols</text>
+      <text x="80" y="50" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">block / file / HCI / VM-aware</text>
+    </g>
+    <text x="100" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">unit of storage consumption</text>
+  </g>
+
+  <line x1="180" y1="400" x2="200" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 2 — VMFS -->
+  <g>
+    <rect x="200" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="200" y="562" width="160" height="8" fill="#5E4A8E"/>
+    <circle cx="280" cy="260" r="22" fill="#5E4A8E"/>
+    <text x="280" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">2</text>
+    <text x="280" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">VMFS</text>
+    <text x="280" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">block · FC · iSCSI</text>
+    <g transform="translate(220,350)">
+      <rect x="0" y="0" width="50" height="20" rx="3" fill="#5A6B81"/><text x="25" y="14" text-anchor="middle" font-size="9" fill="#FFFFFF">host-1</text>
+      <rect x="60" y="0" width="50" height="20" rx="3" fill="#5A6B81"/><text x="85" y="14" text-anchor="middle" font-size="9" fill="#FFFFFF">host-2</text>
+      <line x1="25" y1="20" x2="55" y2="40" stroke="#5E4A8E" stroke-width="1.4"/>
+      <line x1="85" y1="20" x2="60" y2="40" stroke="#5E4A8E" stroke-width="1.4"/>
+      <rect x="20" y="40" width="80" height="22" rx="3" fill="#5E4A8E"/><text x="60" y="55" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">VMFS LUN</text>
+    </g>
+    <text x="280" y="455" text-anchor="middle" font-size="11" fill="#1F2937">clustered FS</text>
+    <text x="280" y="470" text-anchor="middle" font-size="11" fill="#1F2937">on shared block</text>
+    <text x="280" y="495" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">multipathing required</text>
+    <text x="280" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">VMFS-6 latest</text>
+  </g>
+
+  <line x1="360" y1="400" x2="380" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 3 — NFS -->
+  <g>
+    <rect x="380" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="380" y="562" width="160" height="8" fill="#2E7A8C"/>
+    <circle cx="460" cy="260" r="22" fill="#2E7A8C"/>
+    <text x="460" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">3</text>
+    <text x="460" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">NFS</text>
+    <text x="460" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">file · over IP</text>
+    <g transform="translate(400,350)">
+      <rect x="0" y="0" width="50" height="20" rx="3" fill="#5A6B81"/><text x="25" y="14" text-anchor="middle" font-size="9" fill="#FFFFFF">host-1</text>
+      <rect x="60" y="0" width="50" height="20" rx="3" fill="#5A6B81"/><text x="85" y="14" text-anchor="middle" font-size="9" fill="#FFFFFF">host-2</text>
+      <line x1="25" y1="20" x2="55" y2="40" stroke="#2E7A8C" stroke-width="1.4"/>
+      <line x1="85" y1="20" x2="60" y2="40" stroke="#2E7A8C" stroke-width="1.4"/>
+      <rect x="20" y="40" width="80" height="22" rx="3" fill="#2E7A8C"/><text x="60" y="55" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">NAS share</text>
+    </g>
+    <text x="460" y="455" text-anchor="middle" font-size="11" fill="#1F2937">NAS owns the FS</text>
+    <text x="460" y="470" text-anchor="middle" font-size="11" fill="#1F2937">vSphere just mounts</text>
+    <text x="460" y="495" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">NFS 4.1 recommended</text>
+    <text x="460" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">simple to provision + grow</text>
+  </g>
+
+  <line x1="540" y1="400" x2="560" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 4 — vSAN -->
+  <g>
+    <rect x="560" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="560" y="562" width="160" height="8" fill="#1F8A60"/>
+    <circle cx="640" cy="260" r="22" fill="#1F8A60"/>
+    <text x="640" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">4</text>
+    <text x="640" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">vSAN</text>
+    <text x="640" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">HCI · local disks</text>
+    <g transform="translate(580,350)">
+      <rect x="0" y="0" width="40" height="40" rx="3" fill="#5A6B81"/><text x="20" y="20" text-anchor="middle" font-size="9" fill="#FFFFFF">host-1</text><text x="20" y="34" text-anchor="middle" font-size="8" fill="#FFFFFF">disks</text>
+      <rect x="50" y="0" width="40" height="40" rx="3" fill="#5A6B81"/><text x="70" y="20" text-anchor="middle" font-size="9" fill="#FFFFFF">host-2</text><text x="70" y="34" text-anchor="middle" font-size="8" fill="#FFFFFF">disks</text>
+      <rect x="100" y="0" width="40" height="40" rx="3" fill="#5A6B81"/><text x="120" y="20" text-anchor="middle" font-size="9" fill="#FFFFFF">host-3</text><text x="120" y="34" text-anchor="middle" font-size="8" fill="#FFFFFF">disks</text>
+      <rect x="0" y="48" width="140" height="22" rx="3" fill="#1F8A60"/><text x="70" y="63" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">vsanDatastore</text>
+    </g>
+    <text x="640" y="455" text-anchor="middle" font-size="11" fill="#1F2937">no external array</text>
+    <text x="640" y="470" text-anchor="middle" font-size="11" fill="#1F2937">scale by adding hosts</text>
+    <text x="640" y="495" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">OSA · ESA</text>
+    <text x="640" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">per-VM policy native</text>
+  </g>
+
+  <line x1="720" y1="400" x2="740" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 5 — vVols -->
+  <g>
+    <rect x="740" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="740" y="562" width="160" height="8" fill="#B85829"/>
+    <circle cx="820" cy="260" r="22" fill="#B85829"/>
+    <text x="820" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">5</text>
+    <text x="820" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">vVols</text>
+    <text x="820" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">VM-centric arrays</text>
+    <g transform="translate(760,350)">
+      <rect x="0" y="0" width="140" height="22" rx="3" fill="#B85829"/><text x="70" y="15" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">smart array</text>
+      <rect x="0" y="28" width="44" height="14" rx="2" fill="#5DCAA5" opacity="0.7"/><text x="22" y="38" text-anchor="middle" font-size="8" fill="#1F2937">vm-A.vmdk</text>
+      <rect x="48" y="28" width="44" height="14" rx="2" fill="#5DCAA5" opacity="0.7"/><text x="70" y="38" text-anchor="middle" font-size="8" fill="#1F2937">vm-A.swap</text>
+      <rect x="96" y="28" width="44" height="14" rx="2" fill="#5DCAA5" opacity="0.7"/><text x="118" y="38" text-anchor="middle" font-size="8" fill="#1F2937">vm-B.vmdk</text>
+    </g>
+    <text x="820" y="455" text-anchor="middle" font-size="11" fill="#1F2937">array tracks per-VM</text>
+    <text x="820" y="470" text-anchor="middle" font-size="11" fill="#1F2937">array-native snapshots</text>
+    <text x="820" y="495" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">VASA provider required</text>
+    <text x="820" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">natural pair with SPBM</text>
+  </g>
+
+  <line x1="900" y1="400" x2="920" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 6 — SPBM + provisioning -->
+  <g>
+    <rect x="920" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="920" y="562" width="160" height="8" fill="#8E2A2A"/>
+    <circle cx="1000" cy="260" r="22" fill="#8E2A2A"/>
+    <text x="1000" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">6</text>
+    <text x="1000" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">SPBM + provisioning</text>
+    <text x="1000" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">policy · thin/thick</text>
+    <g transform="translate(940,350)">
+      <rect x="0" y="0" width="120" height="20" rx="3" fill="#F2C94C" opacity="0.7"/><text x="60" y="14" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">Gold (FTT=1)</text>
+      <rect x="0" y="24" width="120" height="20" rx="3" fill="#F2C94C" opacity="0.4"/><text x="60" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">Silver</text>
+      <rect x="0" y="48" width="120" height="20" rx="3" fill="#F2C94C" opacity="0.25"/><text x="60" y="62" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">Bronze</text>
+    </g>
+    <text x="1000" y="455" text-anchor="middle" font-size="11" fill="#1F2937">policy on each VM</text>
+    <text x="1000" y="470" text-anchor="middle" font-size="11" fill="#1F2937">thin default · thick FT</text>
+    <text x="1000" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">monitor over-provisioning</text>
+  </g>
+
+  <!-- Footer -->
+  <g>
+    <rect x="20" y="600" width="1060" height="100" rx="10" fill="#F3F5F9" stroke="#E5E9F0"/>
+    <text x="40" y="625" font-size="12" font-weight="700" fill="#1F2937">How to read this lesson</text>
+    <text x="40" y="648" font-size="11" fill="#1F2937">Each numbered station is a <tspan font-weight="700">separate subtopic</tspan> with its own concept, before/after, analogy, quick check, ELI5/ELI10, real-world, flashcards, quiz.</text>
+    <text x="40" y="668" font-size="11" fill="#1F2937">End state: a storage layer ready for VM workloads (lesson 12).</text>
+  </g>
+</svg>

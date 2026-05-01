@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Primitive: vm-tile
+  Domain: vmware
+  Status: revised in lesson 01 production for typography (text sizes bumped to meet 11px floor).
+
+  Description: A virtual machine rendered as a small labelled card. Used to
+  represent VMs running on a host. Sized to allow 2 rows of 4 tiles to sit
+  atop a 480-wide rack-server-rear chassis.
+
+  Default viewBox: 120 x 64.
+
+  Slot anchors:
+    name_text:   (8,  13)  left-aligned VM name in header bar
+    os_pill:     (8,  24)  position of OS pill (32 x 16)
+    role_text:   (46, 36)  app or role label
+    status_dot:  (110, 9)  small status indicator
+    activity:    (8,  48)  activity bar track (80 x 4)
+
+  States:
+    idle    Status dot at #5DCAA5 opacity 0.4, r 2.5
+    active  Status dot opacity 1.0, r 3.2 (override on .vm-status)
+    failed  Status dot fill #E24B4A, opacity 1.0
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 64" width="120" height="64">
+
+  <symbol id="vm-tile" overflow="visible">
+    <rect x="0" y="0" width="120" height="64" rx="6" ry="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+    <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#5F5E5A"/>
+    <text x="9" y="13" font-family="sans-serif" font-size="11" font-weight="500" fill="#FFFFFF">vm-name</text>
+    <rect x="8" y="24" width="34" height="16" rx="3" fill="#A8A8AC"/>
+    <text x="25" y="35" font-family="sans-serif" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+    <text x="48" y="35" font-family="sans-serif" font-size="11" fill="#3A3A3A">workload</text>
+    <rect x="8" y="48" width="80" height="4" rx="1" fill="#E0E0DE"/>
+    <rect x="8" y="48" width="34" height="4" rx="1" fill="#5A6B81"/>
+    <circle cx="110" cy="9" r="2.5" fill="#5DCAA5" opacity="0.4" class="vm-status"/>
+  </symbol>
+
+  <use href="#vm-tile"/>
+</svg>

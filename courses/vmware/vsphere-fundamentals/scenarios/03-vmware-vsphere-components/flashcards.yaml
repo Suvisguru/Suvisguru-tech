@@ -1,0 +1,68 @@
+# Flashcards — Lesson 03: VMware, vSphere, and the components
+# 10 cards.
+
+cards:
+  - front: "What is VMware, and what is vSphere?"
+    back: >
+      VMware is the software company, founded in 1998, that made x86 server virtualization
+      mainstream. vSphere is VMware's flagship product — a complete server virtualization
+      platform built from five components: ESXi, vCenter Server, virtual machines,
+      datastores, and virtual networks.
+
+  - front: "What is ESXi?"
+    back: >
+      ESXi is the hypervisor — the software that runs directly on a physical server and
+      creates virtual machines. In the apartment-building analogy, ESXi is the
+      superintendent. Every host in a vSphere environment runs ESXi.
+
+  - front: "What is vCenter Server, and why does it exist?"
+    back: >
+      vCenter Server is the management plane that oversees many ESXi hosts at once. It
+      provisions VMs, moves them between hosts, monitors health, and rolls out patches.
+      It exists because managing each host individually is impossible at any meaningful
+      scale.
+
+  - front: "In the analogy, what is vCenter Server?"
+    back: >
+      The property management company that oversees many buildings. The supers (ESXi
+      hypervisors) still run their individual buildings, but vCenter is the single brain
+      that keeps inventory, coordinates moves between buildings, and schedules
+      maintenance across the whole portfolio.
+
+  - front: "What is a datastore?"
+    back: >
+      A datastore is the storage abstraction where a VM's disks live. Underneath, a
+      datastore can be a physical disk, a SAN volume, an NFS share, or a vSAN cluster.
+      To the VM, it just looks like storage.
+
+  - front: "What is a virtual switch (vSwitch)?"
+    back: >
+      A vSwitch lives inside an ESXi host and connects virtual machines to each other
+      and to the physical network. Port groups carve the vSwitch into logical zones.
+      It's the network analogue of a regular Ethernet switch, but in software.
+
+  - front: "What's the relationship between ESXi and vCenter?"
+    back: >
+      ESXi runs on every host and is what creates and runs the VMs locally. vCenter
+      sits above the hosts and manages them as a fleet. Hosts can run without vCenter,
+      but most lifecycle, mobility, and high-availability features depend on vCenter
+      being there.
+
+  - front: "If vCenter Server goes down, do the VMs stop running?"
+    back: >
+      No. ESXi keeps running every VM on its host independently. What you lose is
+      central management — provisioning, moving VMs, fleet-wide policies, monitoring
+      from one pane of glass. The workloads keep going.
+
+  - front: "What are the five core components of vSphere?"
+    back: >
+      ESXi (the hypervisor), vCenter Server (the management plane), virtual machines
+      (the workloads), datastores (storage), and virtual networks (vSwitches and port
+      groups). These five together are vSphere.
+
+  - front: "Why is the storage abstraction (datastore) useful?"
+    back: >
+      Because VMs don't have to know what kind of physical storage is underneath.
+      Whether it's local disk, a SAN, or a software-defined cluster, the VM sees a
+      datastore and writes its files there. Storage technology can change without the
+      VM caring.

@@ -1,0 +1,150 @@
+# Intake brief — Lesson 11, vSphere Fundamentals
+# Topic: Configuring vSphere Storage
+# Format: PER-SUBTOPIC structure.
+
+lesson:
+  title: "Configuring vSphere Storage"
+  slug: "11-configuring-vsphere-storage"
+  domain: "vmware"
+  course_slug: "vsphere-fundamentals"
+  position: 11
+  granularity: "sub-topic"
+  brief_drafted_on: "2026-05-01"
+  pedagogical_format: "per-subtopic"
+
+learner_profile:
+  prerequisites:
+    - "Lessons 01-10. Comfortable with hosts, vCenter, virtual networking."
+  assumed_zero_knowledge_of:
+    - "Datastore concept (the unit of storage that vSphere consumes)."
+    - "VMFS, NFS, vSAN, vVols differences and trade-offs."
+    - "Storage adapters, multipathing, and HBA basics."
+    - "Thin vs thick provisioning."
+    - "Storage Policy-Based Management (SPBM)."
+
+learning_outcomes_overall:
+  - "Learner can describe what a datastore is and the four types vSphere supports."
+  - "Learner can configure a VMFS datastore on FC/iSCSI block storage with multipathing."
+  - "Learner can mount an NFS datastore and explain when NFS is preferable to block."
+  - "Learner can describe what vSAN is conceptually and what makes it a hyperconverged technology."
+  - "Learner can describe what vVols solves over VMFS and how a VASA provider fits in."
+  - "Learner can apply a storage policy to a VM and explain thin vs thick provisioning."
+
+subtopics:
+  - id: 1
+    slug: "storage-overview"
+    title: "Storage overview: datastores and the four types"
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "A datastore is the building's storage room. Different rooms (VMFS, NFS, vSAN, vVols) hold things differently — some have shelves, some have lockers, some have a smart system that knows what's in each box." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 2
+    slug: "vmfs-block-storage"
+    title: "VMFS datastores on block storage (FC, iSCSI)"
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy: { direction: "VMFS on a block LUN is like a shared warehouse floor with one big concrete slab — multiple hosts walk in and store crates there together. Multipathing is having multiple loading docks so you don't depend on one." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 3
+    slug: "nfs-storage"
+    title: "NFS datastores (file storage over IP)"
+    pedagogical_block:
+      concept: { target_words: 200 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "NFS is renting storage space on a shared file room down the hall — no concrete slab, just a door and a key, and the file room handles its own filing system." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 4
+    slug: "vsan"
+    title: "vSAN: hyperconverged storage from host disks"
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy: { direction: "vSAN is the building making its own storage room out of every closet in every apartment, then sharing that combined space among everyone. No external warehouse needed." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 220 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 5
+    slug: "vvols"
+    title: "vVols: VM-centric storage on smart arrays"
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "vVols turn the warehouse into a smart locker system. Each VM gets its own labelled locker, the warehouse itself tracks contents and policies, and the building manager just asks 'put this VM in a fast locker' — the warehouse picks the locker." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 6
+    slug: "spbm-and-provisioning"
+    title: "Storage Policy-Based Management + thin/thick provisioning"
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy: { direction: "SPBM is the building's storage policy: 'gold tier = mirrored + fast', 'silver tier = single copy, slow'. You stamp a tier on each VM and the system honors it. Thin/thick provisioning is whether you reserve all the floor space up front or grow into it." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 220 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+shared_artifacts:
+  static_diagram: { purpose: "6-station storage journey.", file: "diagram.svg" }
+  animated_illustration:
+    purpose: "6-mode animation."
+    mode_toggles: ["overview", "vmfs", "nfs", "vsan", "vvols", "spbm"]
+    file: "animation.html"
+  flashcards: { file: "flashcards.yaml", structure: "Grouped by subtopic. ~18 cards." }
+  quiz: { file: "quiz.yaml", structure: "Grouped by subtopic. 12 questions." }
+  recap_card: { placement: "End of preview page.", content: "Cross-subtopic synthesis + bridge to lesson 12 (deploying VMs)." }
+
+interactive_preview_page:
+  file: "/preview-lesson-11.html"
+  hero_widget: "Interactive 6-station storage journey."
+  toc_at_top: "Sticky sub-nav listing all 6 subtopics."
+  subtopic_section_header: "Subtopic N of 6: <title>"
+  hover_to_define_terms:
+    - "datastore"
+    - "VMFS"
+    - "LUN"
+    - "HBA"
+    - "multipathing"
+    - "NFS"
+    - "vSAN"
+    - "vVols"
+    - "VASA"
+    - "SPBM"
+    - "thin provisioning"
+
+estimated_scope:
+  subtopics: 6
+  total_flashcards: 18
+  total_quiz_questions: 12
+  total_quick_checks: 6

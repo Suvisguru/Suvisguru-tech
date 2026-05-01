@@ -1,0 +1,63 @@
+# Flashcards — Lesson 05: vSphere — where it fits, how you access it, what it touches
+
+cards:
+  - front: "Where does vSphere fit in the SDDC?"
+    back: >
+      vSphere is the compute layer of the SDDC. The other layers are storage (vSAN),
+      network (NSX), and management (vCenter, vRealize). All four together, on
+      commodity hardware, make an SDDC. Public clouds run vSphere too — VMware Cloud
+      on AWS, Azure VMware Solution, Google Cloud VMware Engine.
+  - front: "Name the four primary user interfaces for vSphere."
+    back: >
+      vSphere Client (web UI served by vCenter, day-to-day management), VMware Host
+      Client (per-host web UI served by ESXi, for when vCenter is unavailable), DCUI
+      (yellow console on the physical host, F2 to log in), and CLI / API (PowerCLI,
+      esxcli, REST API — for automation).
+  - front: "When would you use the VMware Host Client instead of the vSphere Client?"
+    back: >
+      When vCenter is unavailable (still booting after a power event, undergoing
+      maintenance, or has crashed), or when you need to manage a single ESXi host
+      directly without going through vCenter. The Host Client talks straight to ESXi.
+  - front: "What is the DCUI, and when would you use it?"
+    back: >
+      The Direct Console User Interface — the keyboard-and-monitor console on the
+      physical ESXi host. Yellow background, F2 to log in. Used for initial network
+      configuration when a host first comes up, and for emergency recovery (e.g.,
+      restart management agents, reset the network configuration).
+  - front: "Name the five hardware resources vSphere manages."
+    back: >
+      CPU, memory, network, storage, and GPU. vSphere coordinates all five through
+      one operational layer. New VMs get CPU and memory scheduled, networks
+      attached, storage allocated, and (optionally) GPU access — all from one place.
+  - front: "What does NUMA have to do with vSphere CPU scheduling?"
+    back: >
+      NUMA (Non-Uniform Memory Access) means a CPU socket can access its own local
+      memory faster than memory attached to another socket. vSphere is NUMA-aware:
+      it tries to keep a VM's CPU and memory on the same NUMA node, so memory
+      access stays fast.
+  - front: "Name three vSphere memory techniques that let you safely overcommit RAM."
+    back: >
+      Transparent page sharing (TPS — VMs sharing identical memory pages),
+      ballooning (a VM tools driver pressures the guest OS to release memory it's
+      not using), and compression (pages get compressed before swapping to disk).
+      Together they let many VMs run safely with less host RAM than the sum of
+      their configured RAM.
+  - front: "What's the difference between DirectPath I/O and vGPU?"
+    back: >
+      DirectPath I/O passes a whole physical GPU directly to one VM — the VM gets
+      exclusive use of that GPU, but no sharing. vGPU (NVIDIA's term, AMD has
+      similar) slices a physical GPU into multiple virtual GPUs that many VMs
+      share. vGPU is what you use for VDI; DirectPath I/O is for a workload that
+      needs the whole card to itself.
+  - front: "What is PowerCLI, and what would you use it for?"
+    back: >
+      PowerCLI is a PowerShell module from VMware. You use it to script vSphere —
+      provision VMs, run reports, automate snapshots, integrate with CI/CD pipelines.
+      It talks to vCenter through the vSphere API. Used at scale (hundreds or
+      thousands of VMs) where a GUI would be impractical.
+  - front: "How does a VM 'see' its disk if it's actually stored on a SAN?"
+    back: >
+      Through abstraction. vSphere mounts the SAN as a datastore. Each VM has a
+      .vmdk file inside that datastore that vSphere presents to the VM as a disk.
+      The VM's operating system thinks it has a regular SCSI disk; underneath,
+      vSphere is reading and writing the .vmdk on the SAN.

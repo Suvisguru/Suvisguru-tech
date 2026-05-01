@@ -1,0 +1,239 @@
+# Intake brief — Lesson 08, vSphere Fundamentals
+# Topic: Installing and Configuring ESXi
+# Format: PER-SUBTOPIC structure (each subtopic gets its own concept, before/after,
+# analogy, quick check, ELI5/ELI10, real-world, flashcards, quiz block).
+
+lesson:
+  title: "Installing and Configuring ESXi"
+  slug: "08-installing-and-configuring-esxi"
+  domain: "vmware"
+  course_slug: "vsphere-fundamentals"
+  position: 8
+  granularity: "sub-topic"   # multi-subtopic lesson
+  brief_drafted_on: "2026-05-01"
+  pedagogical_format: "per-subtopic"   # see memory: feedback_per_subtopic_structure
+
+learner_profile:
+  prerequisites:
+    - "Lessons 01-07. Comfortable with the apartment-building analogy, the SDDC pattern, and the four primary vSphere UIs (vSphere Client, Host Client, DCUI, CLI/API)."
+  assumed_zero_knowledge_of:
+    - "How to obtain and burn an ESXi installer."
+    - "How a server's BIOS/UEFI / iLO / iDRAC remote console works."
+    - "Linux/Unix-style account and service management."
+    - "What lockdown mode does at a host level."
+
+learning_outcomes_overall:
+  - "Learner can install ESXi on a physical or nested host using an ISO and answer the installer's prompts confidently."
+  - "Learner can apply account-and-access best practices on an ESXi host (root usage, named accounts, AD integration concept, lockdown mode)."
+  - "Learner can perform initial host configuration via DCUI and Host Client and explain when to reach for each."
+  - "Learner can list, start/stop, and set the startup policy of common ESXi services (SSH, NTP, syslog)."
+  - "Learner can configure NTP, DNS, and routing on an ESXi host and explain why each is critical for the rest of vSphere to work."
+  - "Learner can enable lockdown mode (Normal vs Strict) and reason about exception users."
+
+# ----------------------------------------------------------------------
+# Subtopics. Each subtopic is treated as a mini-lesson and gets the
+# full pedagogical block per the per-subtopic memory rule.
+# ----------------------------------------------------------------------
+
+subtopics:
+
+  - id: 1
+    slug: "install-esxi"
+    title: "Installing the ESXi host"
+    moments_of_confusion_resolved:
+      - "What 'installing ESXi' actually means: putting a hypervisor on bare-metal, not on top of an OS."
+      - "Where ESXi installs to (USB stick, SD card, M.2, SAN boot LUN) and why people choose each."
+      - "What HCL means and why running on unsupported hardware bites you later."
+      - "The four install methods at a glance: interactive ISO, scripted (kickstart), Auto Deploy (PXE), vendor OEM image."
+      - "What the installer asks you (target disk, root password, management network) and what each choice locks in."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "Installing ESXi is like fitting a building's central management system before the first tenants move in — you choose where the brain sits, the master key (root password), and which front door it answers (management NIC)." }
+      quick_check: { type: "multiple_choice", options: 4, learning_objective: "Distinguish bare-metal install vs guest-OS install." }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1, lens: "What you see in iLO/iDRAC when you boot the installer." }
+      flashcards: { count: 4 }
+      quiz: { count: 2 }
+
+  - id: 2
+    slug: "esxi-account-best-practices"
+    title: "ESXi user account best practices"
+    moments_of_confusion_resolved:
+      - "Why root should be 'glass-break' — not your day-to-day account."
+      - "What named local accounts buy you (audit trail, role separation)."
+      - "When AD integration on the host itself makes sense vs delegating to vCenter SSO."
+      - "What the predefined roles (No Access, Read-Only, Administrator) actually let a user do."
+    pedagogical_block:
+      concept: { target_words: 200 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "Account best practice on ESXi is like a building's keycard policy — the master skeleton key (root) lives in a safe; everyone else gets a personal badge with only the doors they need." }
+      quick_check: { type: "multiple_choice", options: 4, learning_objective: "Pick the right account type for a sysadmin's daily work." }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1, lens: "An incident review where the audit log only shows 'root' — no idea who actually did the action." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 3
+    slug: "configure-via-dcui-and-host-client"
+    title: "Configuring host settings via DCUI and Host Client"
+    moments_of_confusion_resolved:
+      - "What the yellow DCUI screen is and what F2 unlocks."
+      - "What the Host Client is, where you reach it (https://host-ip), and how it differs from vSphere Client."
+      - "When to use DCUI (bootstrapping, recovery, console-only) vs Host Client (rich admin via browser)."
+      - "Restarting management agents from DCUI when the host stops responding to vCenter."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "DCUI is the building's basement control panel — small screen, only the levers that matter in an emergency. Host Client is the building manager's office tablet — full controls but only when the elevator (network) is up." }
+      quick_check: { type: "multiple_choice", options: 4, learning_objective: "Choose DCUI vs Host Client given a scenario." }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1, lens: "vCenter is unreachable; admin walks through DCUI to verify the management network." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 4
+    slug: "manage-host-services"
+    title: "Managing host services"
+    moments_of_confusion_resolved:
+      - "Which services exist on a stock ESXi host (SSH, ESXi Shell, NTP, syslog, SNMP, CIM, x.org)."
+      - "Why SSH and ESXi Shell are off by default and when to enable them."
+      - "What 'startup policy' means: Start with host / Stop with host / Manual."
+      - "How to leave the system in a known-good state after a troubleshooting session."
+    pedagogical_block:
+      concept: { target_words: 200 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "Host services are the building's utilities (water, gas, fire alarm panel). Some run always; some are only switched on when a maintenance crew is on-site." }
+      quick_check: { type: "multiple_choice", options: 4, learning_objective: "Pick the right startup policy for SSH on a production host." }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1, lens: "On-call engineer enables SSH for a 30-minute investigation, then forgets — 6 months later it appears in the audit report." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 5
+    slug: "configure-ntp-dns-routing"
+    title: "Configuring NTP, DNS, and routing"
+    moments_of_confusion_resolved:
+      - "Why NTP on every host is non-negotiable (cert validation, logs, vMotion, AD)."
+      - "Why DNS (forward + reverse) breaks vCenter join, certificates, and AD if it's wrong."
+      - "What a vmkernel default gateway is and why a host has one per traffic type if you use multiple networks."
+      - "Why these three are usually configured before you ever join the host to vCenter."
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy: { direction: "NTP is the building's master clock; DNS is the building directory; routing is the elevator map. If any one of them is wrong, residents can't find each other or agree on what time it is." }
+      quick_check: { type: "multiple_choice", options: 4, learning_objective: "Spot the symptom that points to a broken NTP/DNS." }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1, lens: "vCenter join fails with a cryptic cert error — root cause is 4 minutes of clock drift." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 6
+    slug: "configure-lockdown-mode"
+    title: "Configuring ESXi for lockdown mode"
+    moments_of_confusion_resolved:
+      - "What lockdown mode actually blocks (direct host access, including DCUI in Strict)."
+      - "The three modes: Disabled, Normal, Strict — and the practical difference."
+      - "What 'exception users' are and when you'd add one."
+      - "Why lockdown mode is a *security posture* choice, not just a switch."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "Lockdown mode is locking the building's side and basement doors so the only way in is the front lobby (vCenter). Strict mode also locks the basement key cabinet (DCUI). Exception users are a short list of trades who keep their own key." }
+      quick_check: { type: "multiple_choice", options: 4, learning_objective: "Choose Normal vs Strict for a given compliance scenario." }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1, lens: "Compliance audit requires that no admin connect directly to a host — Strict mode is enabled and an exception user is added for the backup service account." }
+      flashcards: { count: 4 }
+      quiz: { count: 2 }
+
+# ----------------------------------------------------------------------
+# Shared lesson-level artifacts (one per lesson, NOT per subtopic).
+# ----------------------------------------------------------------------
+
+shared_artifacts:
+  static_diagram:
+    purpose: >
+      One ESXi host shown in a 6-station 'configuration journey' layout:
+      install → accounts → DCUI/Host Client → services → NTP/DNS/routing → lockdown.
+      Each station is numbered and labelled so the diagram doubles as a
+      visual TOC for the lesson.
+    file: "diagram.svg"
+
+  animated_illustration:
+    purpose: >
+      Walk-through animation that visits each of the 6 subtopics in sequence,
+      with mode toggles to jump to any single subtopic. Same Pause/Play +
+      Speed parity as lessons 1-5.
+    mode_toggles: ["install", "accounts", "ui-config", "services", "ntp-dns-routing", "lockdown"]
+    file: "animation.html"
+
+  flashcards:
+    file: "flashcards.yaml"
+    structure: "Grouped by subtopic with section markers. Total ~20 cards (sum of per-subtopic counts above)."
+
+  quiz:
+    file: "quiz.yaml"
+    structure: "Grouped by subtopic. Total 12 questions (2 per subtopic). Mix of pause-the-animation and standalone."
+
+  recap_card:
+    placement: "End of preview page."
+    content: "Cross-subtopic synthesis (one host, six dimensions of config) + bridge to lesson 09 (Deploying and Configuring vCenter)."
+
+interactive_preview_page:
+  file: "/preview-lesson-08.html"
+  hero_widget: >
+    Interactive 'ESXi host configuration journey'. Six numbered stations along
+    the top (install → accounts → UI → services → NTP/DNS/routing → lockdown).
+    Click a station to jump to that subtopic; visual progress bar shows where
+    the learner is.
+  toc_at_top: >
+    Sticky sub-nav that lists all 6 subtopics ('Subtopic 1 of 6: Install', etc.)
+    so learners always know where they are. Highlights the active subtopic on
+    scroll.
+  subtopic_section_header: >
+    Each subtopic block opens with a clearly labelled header
+    'Subtopic N of 6: <title>' followed by the full pedagogical pattern in
+    order: concept → before/after → analogy → quick check → ELI5 → ELI10 →
+    real-world → flashcards (subset) → quiz (subset).
+  hover_to_define_terms:
+    - "ESXi"
+    - "bare-metal hypervisor"
+    - "HCL"
+    - "kickstart"
+    - "Auto Deploy"
+    - "DCUI"
+    - "Host Client"
+    - "vmkernel"
+    - "NTP"
+    - "lockdown mode"
+    - "exception user"
+
+# ----------------------------------------------------------------------
+# Estimated production scope (so the founder can size the request).
+# ----------------------------------------------------------------------
+
+estimated_scope:
+  subtopics: 6
+  total_flashcards: 20
+  total_quiz_questions: 12
+  total_quick_checks: 6
+  preview_page_sections:
+    - "Hero (1)"
+    - "Per-subtopic blocks (6 × 9 inner blocks each)"
+    - "Recap (1)"
+  approx_preview_page_lines: 2400-3000
+  produced_files:
+    - "brief.yaml (this file)"
+    - "lesson.md (sectioned by subtopic)"
+    - "flashcards.yaml (grouped by subtopic)"
+    - "quiz.yaml (grouped by subtopic)"
+    - "diagram.svg"
+    - "animation.html"
+    - "NOTES.md"
+    - "/preview-lesson-08.html"

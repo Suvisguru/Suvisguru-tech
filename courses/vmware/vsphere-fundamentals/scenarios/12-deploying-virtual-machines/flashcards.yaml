@@ -1,0 +1,238 @@
+# Flashcards — Lesson 12: Deploying Virtual Machines
+
+cards:
+  # Subtopic 1 — VM overview
+  - id: s1c1
+    subtopic: vm-overview
+    front: "Name the major virtual hardware that makes up a VM."
+    back: >
+      vCPU (virtual CPUs), vRAM (virtual memory), vDisk / vmdk (virtual
+      disks on datastore), vNIC (virtual network interface attached to
+      a port group), vSCSI / vNVMe controllers, CD/DVD drive, BIOS or
+      EFI firmware, optionally vTPM. Plus the virtual hardware version
+      (e.g., vmx-20).
+
+  - id: s1c2
+    subtopic: vm-overview
+    front: "What is the virtual hardware version and why does it matter?"
+    back: >
+      A version number (vmx-19, vmx-20, etc.) defining what virtual
+      devices and features are available to the VM. Newer versions
+      unlock newer features but require newer ESXi to run. Set at VM
+      creation; can be upgraded later but not downgraded easily.
+
+  - id: s1c3
+    subtopic: vm-overview
+    front: "VM has 4 vCPU configured. Host has 16 cores. Will the VM use all 16?"
+    back: >
+      No. The guest OS sees 4 CPUs and uses up to 4. The hypervisor
+      schedules those 4 vCPUs onto 4 of the host's physical cores at
+      a time. Even if the other 12 cores are idle, the VM doesn't get
+      them — vCPU count is a hard contract. To use more cores, the VM
+      has to be reconfigured.
+
+  # Subtopic 2 — Create new VM
+  - id: s2c1
+    subtopic: create-new-vm
+    front: "What virtual NIC type and SCSI controller do you pick by default for a new production VM?"
+    back: >
+      VMXNET3 NIC and VMware Paravirtual SCSI controller. Both are
+      paravirtualized — the guest OS uses VMware-specific drivers
+      (shipped with VMware Tools) for much better performance than
+      emulated alternatives like E1000 NIC and LSI Logic SAS.
+
+  - id: s2c2
+    subtopic: create-new-vm
+    front: "After the create-VM wizard finishes, what state is the VM in?"
+    back: >
+      Powered off, no OS installed. To install the OS: mount the
+      install ISO on the CD/DVD drive, power on, walk through the OS
+      installer in the VM console. After OS install, install VMware
+      Tools and configure the OS.
+
+  - id: s2c3
+    subtopic: create-new-vm
+    front: "Why is over-provisioning vCPUs a bad idea?"
+    back: >
+      Extra vCPUs add scheduling overhead. The hypervisor has to schedule
+      all of a VM's vCPUs together (gang scheduling); more vCPUs means
+      more competition for physical cores and higher CPU ready time.
+      Right-size: give a VM the vCPUs it actually uses, plus modest
+      headroom.
+
+  # Subtopic 3 — Templates and clones
+  - id: s3c1
+    subtopic: templates-and-clones
+    front: "What is a template in vSphere and how is it different from a regular VM?"
+    back: >
+      A frozen VM you've decided is your gold standard. You can't power
+      it on (intentional — prevents drift). You clone from it to create
+      new VMs. Built once carefully (OS, patches, agents); stamped out
+      whenever needed.
+
+  - id: s3c2
+    subtopic: templates-and-clones
+    front: "Full clone vs linked clone?"
+    back: >
+      Full clone — independent copy with its own files; doesn't depend
+      on the source. Slower to create, more space, used for production
+      VMs. Linked clone — shares the source's base files, only stores
+      its own changes. Fast, small. Used for VDI or short-lived
+      test/dev VMs.
+
+  - id: s3c3
+    subtopic: templates-and-clones
+    front: "What's a guest OS customization spec, and why do you need one?"
+    back: >
+      A recipe applied during clone that gives the new VM a unique
+      hostname, MAC, SID (Windows), IP. Without it, every clone is an
+      exact bit-copy of the template — same identity. AD chaos. With
+      it, each clone is uniquely identified at first boot.
+
+  # Subtopic 4 — Content libraries
+  - id: s4c1
+    subtopic: content-libraries
+    front: "What is a content library and what kinds are there?"
+    back: >
+      A vCenter-managed repository of templates, ISOs, OVF appliances.
+      Two kinds: local (lives on this vCenter; you upload directly) and
+      subscribed (pulls from another library by URL; syncs on demand or
+      on schedule). Used to share blueprints across vCenters.
+
+  - id: s4c2
+    subtopic: content-libraries
+    front: "Pattern for sharing one gold template across 5 vCenters?"
+    back: >
+      Publish the template to a published content library on a central
+      vCenter. Each of the other 4 vCenters has a subscribed library
+      pointing at it. Sync settings determine on-demand vs scheduled
+      pull. Templates published centrally appear at every site.
+
+  - id: s4c3
+    subtopic: content-libraries
+    front: "Besides templates, what else can a content library hold?"
+    back: >
+      ISOs (mountable directly from the library to a VM's CD/DVD), OVF
+      appliances (vendor packages), scripts. Anything you want
+      versioned and shared across vCenters.
+
+  # Subtopic 5 — OVF/OVA
+  - id: s5c1
+    subtopic: ovf-ova
+    front: "OVF vs OVA?"
+    back: >
+      OVF (Open Virtualization Format) is the industry-standard
+      packaging format: a folder with an .ovf descriptor, .vmdk
+      disks, an .mf manifest. OVA is the same content packaged as a
+      single .ova tar archive. OVF = files; OVA = single file.
+
+  - id: s5c2
+    subtopic: ovf-ova
+    front: "Why do vendors ship turnkey appliances as OVA?"
+    back: >
+      Because customers can drop the .ova into any vSphere environment
+      and have a working appliance in minutes — no OS install, no
+      software install. Vendor controls the configuration. Customer
+      runs a 5-minute import wizard.
+
+  - id: s5c3
+    subtopic: ovf-ova
+    front: "How would you ship a VM you built to another team's vSphere?"
+    back: >
+      Export it to OVF/OVA: vSphere Client → VM → Right-click → Export
+      OVF Template. The other team imports the .ova into their
+      vSphere. Carries virtual hardware version, guest OS hint,
+      recommended sizing, and any deployment-time prompts you defined.
+
+  # Subtopic 6 — Snapshots
+  - id: s6c1
+    subtopic: snapshots
+    front: "How does a VM snapshot work mechanically?"
+    back: >
+      Taking a snapshot freezes the base disk and starts writing all
+      changes to a delta file (-000001.vmdk). Reads check delta first,
+      fall back to base. Each new snapshot adds another delta to the
+      chain. Reverting goes back to the snapshot point. Deleting
+      commits the delta into the base (consolidate).
+
+  - id: s6c2
+    subtopic: snapshots
+    front: "Why are snapshots NOT backups?"
+    back: >
+      They depend on the VM's base disks. If the datastore the VM
+      lives on fails (lost LUN, vSAN cluster loss, NFS export gone),
+      both the base and the snapshots are lost together. A real backup
+      goes to a separate, independent storage system. Plus snapshots
+      cause performance and capacity problems if kept long-term.
+
+  - id: s6c3
+    subtopic: snapshots
+    front: "Best practice for snapshot lifetime?"
+    back: >
+      Delete snapshots within 24-72 hours. Use them as a short-term
+      safety net before risky changes (take, do, validate, delete).
+      Long-lived snapshots accumulate huge deltas; deleting them later
+      causes long stuns and possibly hours of I/O. vCenter alerts on
+      old snapshots; respect them.
+
+  # Subtopic 7 — VMware Tools
+  - id: s7c1
+    subtopic: vmware-tools
+    front: "What is VMware Tools and what does it provide?"
+    back: >
+      A suite of drivers and an in-guest daemon. Provides:
+      paravirtualized device drivers (VMXNET3, Paravirtual SCSI, video),
+      graceful shutdown / reboot signals, time sync, heartbeat,
+      filesystem quiesce for snapshots, mouse/screen integration.
+      Every production VM should have it.
+
+  - id: s7c2
+    subtopic: vmware-tools
+    front: "What's open-vm-tools and why use it?"
+    back: >
+      The open-source implementation of VMware Tools, distributed via
+      Linux distros' package managers (apt, dnf). Same supported
+      codebase as VMware's, just packaged the distro-friendly way.
+      Modern preference for Linux guests: install from the distro,
+      forget about it.
+
+  - id: s7c3
+    subtopic: vmware-tools
+    front: "What's the difference in snapshot quality with vs without VMware Tools?"
+    back: >
+      With Tools, snapshots can be quiesced — Tools tells the guest to
+      flush filesystem (and VSS-aware app) buffers before the snapshot
+      is taken, producing an application-consistent point-in-time.
+      Without Tools, you get a crash-consistent snapshot — like a
+      power-loss recovery at restore time.
+
+  # Subtopic 8 — Day-2 ops
+  - id: s8c1
+    subtopic: lifecycle-operations
+    front: "Difference between 'Power Off' and 'Shut Down Guest OS'?"
+    back: >
+      Power Off — hard pull the plug; guest OS doesn't get a chance to
+      shut down gracefully. Shut Down Guest OS — VMware Tools signals
+      the guest to do an orderly shutdown (close apps, flush
+      filesystem, stop services). Always prefer the latter when Tools
+      is installed and the VM is responsive.
+
+  - id: s8c2
+    subtopic: lifecycle-operations
+    front: "What's hot-add and what does it require?"
+    back: >
+      Adding a CPU, memory, disk, or NIC to a running VM without
+      shutting it down. Requires the VM's hot-add capability to be
+      enabled (a checkbox in Edit Settings) AND the guest OS to support
+      hot-plug for that resource type. Modern Linux and Windows
+      Server support most hot-add cases.
+
+  - id: s8c3
+    subtopic: lifecycle-operations
+    front: "vMotion vs Storage vMotion?"
+    back: >
+      vMotion — move a running VM's compute (where it executes) to a
+      different host. Files stay on the same datastore. Storage
+      vMotion — move the VM's files (its disks) to a different
+      datastore while running. Compute stays on the same host. You can
+      do both at once for full relocation across cluster/datacenter.

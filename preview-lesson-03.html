@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<!--
+  Lesson 03 — VMware, vSphere, and the components
+  Interactive preview. Follows STYLE.md "Lesson preview page" conventions.
+  Reference implementation: preview-lesson-02.html.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VMware, vSphere, and the components — Lesson 3 — vSphere Fundamentals</title>
+<style>
+  :root {
+    --bg: #FAFAF6; --bg-elevated: #FFFFFF; --bg-soft: #F4F1E8; --bg-deep: #1F2433;
+    --text: #1A1A1A; --text-muted: #5F5E5A; --text-subtle: #9D9C95;
+    --accent: #3F4A5E; --accent-soft: #E8EAEF; --accent-light: #536179;
+    --success: #1F8A60; --success-soft: #E0F2EA; --warn: #B85829; --warn-soft: #FCEBE0;
+    --slate-fill: #5A6B81; --border: #E8E5DD; --border-soft: #F0EDE4;
+    --shadow-sm: 0 1px 2px rgba(20,20,18,0.04), 0 2px 4px rgba(20,20,18,0.04);
+    --shadow-md: 0 4px 12px rgba(20,20,18,0.06), 0 2px 4px rgba(20,20,18,0.04);
+    --shadow-lg: 0 12px 32px rgba(20,20,18,0.08), 0 4px 8px rgba(20,20,18,0.04);
+    --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-pill: 999px;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1); --ease-out: cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+  [data-theme="dark"] {
+    --bg: #16181D; --bg-elevated: #1F2229; --bg-soft: #25282F; --bg-deep: #0E1015;
+    --text: #ECECE8; --text-muted: #B5B5AC; --text-subtle: #75756E;
+    --accent: #8DA3C7; --accent-soft: #2A3140; --accent-light: #ABB7CC;
+    --success: #5DCAA5; --success-soft: #1F3329; --warn: #E8946A; --warn-soft: #3A2820;
+    --slate-fill: #7A8AA1; --border: #2C3038; --border-soft: #22262D;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 18px; line-height: 1.7; -webkit-font-smoothing: antialiased; transition: background 0.3s var(--ease), color 0.3s var(--ease); }
+  ::selection { background: var(--accent-soft); }
+  .container { max-width: 680px; margin: 0 auto; padding: 0 24px; }
+  .container-wide { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  .topbar { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border-soft); backdrop-filter: saturate(180%) blur(8px); }
+  .topbar-inner { display: flex; align-items: center; max-width: 1100px; margin: 0 auto; padding: 12px 24px; }
+  .brand { font-size: 13px; font-weight: 600; letter-spacing: 0.4px; color: var(--text-muted); }
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .icon-btn { width: 36px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.15s var(--ease); }
+  .icon-btn:hover { background: var(--bg-elevated); border-color: var(--border); color: var(--text); }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .progress-bar { position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: transparent; pointer-events: none; }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.06s linear; }
+  /* Course navigation across lessons */
+  .course-nav { background: var(--bg-elevated); border-bottom: 1px solid var(--border-soft); position: sticky; top: 49px; z-index: 95; }
+  .course-nav-inner { display: flex; gap: 6px; max-width: 1100px; margin: 0 auto; padding: 8px 24px; overflow-x: auto; scrollbar-width: thin; }
+  .course-nav-inner::-webkit-scrollbar { height: 6px; }
+  .course-nav-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .lesson-link { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; border-radius: var(--r-pill); border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); text-decoration: none; font-size: 12px; flex-shrink: 0; transition: all 0.15s var(--ease); white-space: nowrap; }
+  .lesson-link:hover:not(.active) { background: var(--accent-soft); color: var(--text); border-color: var(--accent-light); }
+  .lesson-link.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  [data-theme="dark"] .lesson-link.active { color: var(--bg); }
+  .lesson-link .num { font-weight: 700; opacity: 0.8; }
+  .lesson-link .name { font-weight: 500; }
+  @media (max-width: 600px) { .lesson-link .name { display: none; } .lesson-link { padding: 6px 10px; min-width: 32px; justify-content: center; } }
+
+  .hero { padding: 72px 0 32px 0; text-align: center; }
+  .hero-eyebrow { color: var(--accent); font-size: 12px; letter-spacing: 1.8px; text-transform: uppercase; font-weight: 600; margin: 0 0 16px 0; }
+  .hero h1 { font-size: 56px; font-weight: 500; line-height: 1.05; letter-spacing: -1.2px; margin: 0 0 24px 0; }
+  .hero-subtitle { color: var(--text-muted); font-size: 21px; line-height: 1.5; max-width: 600px; margin: 0 auto 32px auto; }
+  .hero-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 56px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-pill); font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  .pill svg { width: 14px; height: 14px; flex: 0 0 14px; opacity: 0.7; }
+  .hero-widget { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-md); padding: 28px 24px 24px 24px; margin: 0 auto 64px auto; max-width: 900px; text-align: left; }
+  .hero-widget-eyebrow { color: var(--accent); font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; font-weight: 600; margin: 0 0 6px 0; }
+  .hero-widget-title { font-size: 18px; font-weight: 500; margin: 0 0 4px 0; }
+  .hero-widget-tip { color: var(--text-muted); font-size: 14px; margin: 0 0 20px 0; line-height: 1.5; }
+  .component-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 18px; }
+  .component-tab { padding: 10px 12px; background: var(--bg-soft); border: 1px solid transparent; border-radius: var(--r-md); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-muted); text-align: left; transition: all 0.15s var(--ease); }
+  .component-tab:hover:not(.active) { background: var(--accent-soft); color: var(--text); }
+  .component-tab.active { background: var(--accent); color: #FFFFFF; border-color: var(--accent); }
+  [data-theme="dark"] .component-tab.active { color: var(--bg); }
+  .component-tab .num { display: block; font-size: 10px; opacity: 0.65; letter-spacing: 1.4px; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .component-tab .name { font-size: 13px; font-weight: 600; }
+  .component-stage { background: var(--bg-soft); border-radius: var(--r-md); padding: 24px; min-height: 280px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .component-stage svg { width: 100%; max-width: 640px; height: auto; }
+  .component-stage-readout { color: var(--text-muted); font-size: 14px; text-align: center; line-height: 1.5; max-width: 540px; }
+  .component-stage-readout strong { color: var(--text); font-weight: 600; }
+  .stage-controls { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 18px; }
+  @keyframes btn-pop { 0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(63, 74, 94, 0.18), 0 0 0 0 rgba(63, 74, 94, 0.18); } 50% { transform: scale(1.035); box-shadow: 0 8px 22px rgba(63, 74, 94, 0.28), 0 0 0 6px rgba(63, 74, 94, 0.06); } }
+  @keyframes btn-pop-dark { 0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(141, 163, 199, 0.16), 0 0 0 0 rgba(141, 163, 199, 0.16); } 50% { transform: scale(1.035); box-shadow: 0 8px 22px rgba(141, 163, 199, 0.28), 0 0 0 6px rgba(141, 163, 199, 0.06); } }
+  .btn { background: var(--accent); color: #fff; border: 1px solid var(--accent); padding: 11px 22px; font-size: 14px; font-weight: 500; border-radius: var(--r-sm); cursor: pointer; font-family: inherit; transition: background 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.15s var(--ease), box-shadow 0.15s var(--ease); box-shadow: 0 4px 14px rgba(63, 74, 94, 0.18); animation: btn-pop 2.4s ease-in-out infinite; }
+  .btn:hover { background: #2C3849; border-color: #2C3849; animation: none; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); animation: none; }
+  .btn:disabled { background: var(--border); color: var(--text-subtle); border-color: var(--border); cursor: not-allowed; animation: none; box-shadow: none; transform: none; }
+  .btn.btn-secondary { background: transparent; color: var(--accent); border-color: var(--accent); box-shadow: none; animation: none; }
+  .btn.btn-secondary:hover { background: var(--accent); color: #fff; }
+  [data-theme="dark"] .btn { color: var(--bg); }
+  [data-theme="dark"] .btn:not(:hover):not(:disabled):not(.btn-secondary) { animation: btn-pop-dark 2.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .btn, .quiz-card .reveal-btn { animation: none !important; transform: none !important; } }
+  section.lesson-section { margin: 88px 0; scroll-margin-top: 80px; }
+  .section-eyebrow { color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 1.8px; text-transform: uppercase; margin: 0 0 12px 0; }
+  h2.section-heading { font-size: 38px; font-weight: 500; line-height: 1.15; letter-spacing: -0.6px; margin: 0 0 32px 0; }
+  h3.subsection-heading { font-size: 22px; font-weight: 500; line-height: 1.3; margin: 36px 0 12px 0; }
+  .lesson-section p { margin: 0 0 22px 0; }
+  .lesson-section p:last-child { margin-bottom: 0; }
+  .lesson-section strong { font-weight: 600; }
+  .pullquote { font-size: 24px; line-height: 1.4; border-left: 3px solid var(--accent); padding: 8px 0 8px 24px; margin: 36px 0; font-style: italic; }
+  .callout { background: var(--bg-soft); border-radius: var(--r-md); padding: 18px 24px; margin: 24px 0; border-left: 3px solid var(--accent-light); }
+  .callout .label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+  .callout p { margin: 4px 0 0 0; color: var(--text-muted); font-size: 15px; }
+  .component-list { list-style: none; padding: 0; margin: 32px 0; display: flex; flex-direction: column; gap: 16px; }
+  .component-row { display: grid; grid-template-columns: 64px 1fr; gap: 18px; align-items: start; padding: 16px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-md); box-shadow: var(--shadow-sm); }
+  .component-row .icon-cell { width: 64px; height: 64px; background: var(--accent-soft); border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; }
+  .component-row .icon-cell svg { width: 36px; height: 36px; color: var(--accent); }
+  .component-row .label-cell { min-width: 0; }
+  .component-row .label-cell .num { font-size: 11px; letter-spacing: 1.5px; color: var(--accent); font-weight: 600; text-transform: uppercase; }
+  .component-row .label-cell .name { font-size: 18px; font-weight: 500; margin: 2px 0 4px 0; }
+  .component-row .label-cell p { margin: 0; color: var(--text-muted); font-size: 15px; line-height: 1.5; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 32px 0; }
+  .compare-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-md); padding: 28px; box-shadow: var(--shadow-sm); }
+  .compare-card .label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; margin: 0 0 6px 0; }
+  .compare-card.before .label { color: var(--warn); }
+  .compare-card.after .label { color: var(--success); }
+  .compare-card h3 { font-size: 18px; font-weight: 500; margin: 0 0 14px 0; line-height: 1.3; }
+  .compare-card .pain-list { margin: 0; padding: 0; list-style: none; }
+  .compare-card .pain-list li { padding: 8px 0 8px 24px; position: relative; color: var(--text-muted); font-size: 14px; line-height: 1.5; }
+  .compare-card .pain-list li::before { content: ""; position: absolute; left: 0; top: 18px; width: 12px; height: 2px; background: var(--text-subtle); }
+  .compare-card.after .pain-list li::before { background: var(--success); }
+  .analogy-map { background: var(--bg-soft); border-radius: var(--r-lg); padding: 8px 28px; margin: 32px 0; }
+  .analogy-row { display: grid; grid-template-columns: 1fr 56px 1fr; gap: 16px; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  [data-theme="dark"] .analogy-row { border-bottom-color: rgba(255,255,255,0.06); }
+  .analogy-row:last-child { border-bottom: none; }
+  .analogy-row .left { text-align: right; font-size: 16px; }
+  .analogy-row .right { font-size: 16px; color: var(--text-muted); }
+  .analogy-row .arrow { color: var(--accent); text-align: center; }
+  .analogy-row.head .left, .analogy-row.head .right { font-size: 11px; text-transform: uppercase; letter-spacing: 1.6px; color: var(--accent); font-weight: 600; }
+  .check-card { background: var(--bg-elevated); border: 1px solid var(--border); border-left: 4px solid var(--success); border-radius: var(--r-md); padding: 24px 28px; margin: 28px 0; box-shadow: var(--shadow-sm); }
+  .check-eyebrow { color: var(--success); font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin: 0 0 8px 0; }
+  .check-question { font-size: 17px; font-weight: 500; margin: 0 0 16px 0; line-height: 1.4; }
+  .check-options { display: flex; flex-direction: column; gap: 8px; }
+  .check-option { text-align: left; padding: 12px 16px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--r-sm); cursor: pointer; font-family: inherit; font-size: 15px; color: var(--text); transition: all 0.15s var(--ease); }
+  .check-option:hover:not(.locked) { background: var(--accent-soft); border-color: var(--accent); }
+  .check-option.correct { background: var(--success-soft); border-color: var(--success); }
+  .check-option.wrong { background: var(--warn-soft); border-color: var(--warn); }
+  .check-option.locked { cursor: default; }
+  .check-feedback { margin-top: 14px; padding: 14px 16px; background: var(--bg-soft); border-radius: var(--r-sm); font-size: 14px; line-height: 1.6; color: var(--text-muted); display: none; }
+  .check-feedback.shown { display: block; }
+  .check-feedback strong { color: var(--text); }
+  .eli-tabs { display: flex; gap: 0; background: var(--bg-soft); padding: 4px; border-radius: var(--r-pill); margin: 28px 0 20px 0; }
+  .eli-tab { flex: 1; padding: 12px 16px; background: transparent; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--text-muted); border-radius: var(--r-pill); transition: all 0.2s var(--ease); }
+  .eli-tab:hover:not(.active) { color: var(--text); }
+  .eli-tab.active { background: var(--bg-elevated); color: var(--text); box-shadow: var(--shadow-sm); }
+  .eli-tab .tab-eyebrow { display: block; font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; opacity: 0.6; margin-bottom: 1px; font-weight: 600; }
+  .eli-content { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-md); padding: 28px; box-shadow: var(--shadow-sm); }
+  .eli-panel { display: none; }
+  .eli-panel.active { display: block; animation: fadeIn 0.3s var(--ease); }
+  .eli-panel p { margin: 0 0 16px 0; }
+  .eli-panel p:last-child { margin-bottom: 0; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .scenarios-list { display: flex; flex-direction: column; gap: 12px; margin: 28px 0; }
+  .scenario-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-md); padding: 0; box-shadow: var(--shadow-sm); overflow: hidden; transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease); }
+  .scenario-card.expanded { border-color: var(--accent-light); }
+  .scenario-card-header { display: grid; grid-template-columns: 44px 1fr auto 22px; gap: 16px; align-items: center; padding: 20px 24px; cursor: pointer; user-select: none; }
+  .scenario-icon-circle { width: 44px; height: 44px; border-radius: 50%; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; color: var(--accent); }
+  .scenario-icon-circle svg { width: 22px; height: 22px; }
+  .scenario-headline { min-width: 0; }
+  .scenario-industry { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-subtle); font-weight: 600; }
+  .scenario-title { font-size: 17px; font-weight: 500; margin: 2px 0 0 0; line-height: 1.3; }
+  .scenario-benefits { display: flex; gap: 4px; flex-wrap: wrap; font-size: 11px; font-weight: 600; letter-spacing: 0.8px; }
+  .scenario-benefits span { background: var(--accent-soft); color: var(--accent); padding: 3px 8px; border-radius: var(--r-pill); text-transform: uppercase; }
+  .scenario-chevron { width: 22px; height: 22px; color: var(--text-subtle); transition: transform 0.3s var(--ease); }
+  .scenario-card.expanded .scenario-chevron { transform: rotate(180deg); }
+  .scenario-card-body { max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease); }
+  .scenario-card.expanded .scenario-card-body { max-height: 600px; }
+  .scenario-card-body-inner { padding: 0 24px 24px 24px; padding-left: 84px; color: var(--text-muted); font-size: 15px; line-height: 1.65; }
+  .scenario-tradeoff { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border); font-style: italic; color: var(--text-subtle); }
+  @media (max-width: 600px) { .scenario-card-header { grid-template-columns: 40px 1fr 22px; } .scenario-benefits { display: none; } .scenario-card-body-inner { padding-left: 24px; } }
+  .visual-wrap { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 0; box-shadow: var(--shadow-md); margin: 28px 0; overflow: hidden; }
+  .animation-frame { width: 100%; height: 700px; border: none; display: block; background: var(--bg-elevated); }
+  @media (max-width: 720px) { .animation-frame { height: 540px; } }
+  .flashcards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin: 28px 0; }
+  .flashcard { perspective: 1200px; cursor: pointer; height: 220px; }
+  .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s var(--ease-out); transform-style: preserve-3d; }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .flashcard-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: var(--r-md); padding: 22px; display: flex; flex-direction: column; border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .flashcard-front { background: var(--bg-elevated); }
+  .flashcard-back { background: var(--accent); color: #fff; transform: rotateY(180deg); border-color: var(--accent); }
+  [data-theme="dark"] .flashcard-back { color: var(--bg); }
+  .flashcard .number { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-subtle); margin-bottom: 14px; font-weight: 600; }
+  .flashcard-back .number { color: rgba(255,255,255,0.6); }
+  [data-theme="dark"] .flashcard-back .number { color: rgba(0,0,0,0.5); }
+  .flashcard .question { font-size: 17px; font-weight: 500; line-height: 1.4; flex-grow: 1; }
+  .flashcard .answer { font-size: 14px; line-height: 1.5; flex-grow: 1; overflow-y: auto; }
+  .flashcard .hint { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-subtle); margin-top: 12px; text-align: right; font-weight: 500; }
+  .flashcard-back .hint { color: rgba(255,255,255,0.65); }
+  [data-theme="dark"] .flashcard-back .hint { color: rgba(0,0,0,0.5); }
+  .flashcard:hover .flashcard-front { box-shadow: var(--shadow-md); }
+  .quiz-card { background: var(--bg-elevated); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: var(--r-md); padding: 26px; margin: 18px 0; box-shadow: var(--shadow-sm); }
+  .quiz-card .pause-cue { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #fff; background: var(--accent); padding: 5px 12px; border-radius: var(--r-pill); margin-bottom: 14px; font-weight: 600; }
+  [data-theme="dark"] .quiz-card .pause-cue { color: var(--bg); }
+  .quiz-card .pause-cue svg { width: 12px; height: 12px; }
+  .quiz-card .q-num { color: var(--text-subtle); font-size: 12px; letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+  .quiz-card .prompt { font-size: 17px; line-height: 1.55; margin: 0 0 18px 0; }
+  .quiz-card .reveal-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: var(--r-sm); cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; transition: all 0.15s var(--ease); box-shadow: 0 4px 14px rgba(63, 74, 94, 0.14); animation: btn-pop 2.4s ease-in-out infinite; }
+  .quiz-card .reveal-btn:hover { background: var(--accent); color: #fff; animation: none; }
+  [data-theme="dark"] .quiz-card .reveal-btn:hover { color: var(--bg); }
+  [data-theme="dark"] .quiz-card .reveal-btn:not(:hover) { animation: btn-pop-dark 2.4s ease-in-out infinite; }
+  .quiz-card .reveal-btn.shown { display: none; }
+  .quiz-card .reveal-content { max-height: 0; overflow: hidden; transition: max-height 0.5s var(--ease); }
+  .quiz-card .reveal-content.shown { max-height: 800px; margin-top: 16px; }
+  .quiz-card .answer-block, .quiz-card .reasoning-block { border-radius: var(--r-sm); padding: 16px 20px; margin-bottom: 12px; }
+  .quiz-card .answer-block { background: var(--success-soft); }
+  .quiz-card .reasoning-block { background: var(--bg-soft); margin-bottom: 0; }
+  .quiz-card .answer-block .label, .quiz-card .reasoning-block .label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+  .quiz-card .answer-block .label { color: var(--success); }
+  .quiz-card .reasoning-block .label { color: var(--text-muted); }
+  .quiz-card .answer-block .text { font-size: 15px; line-height: 1.6; }
+  .quiz-card .reasoning-block .text { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+  .recap-card { background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-soft) 100%); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 40px 36px; margin: 96px 0 80px 0; box-shadow: var(--shadow-sm); }
+  .recap-card .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--success); background: var(--success-soft); padding: 6px 14px; border-radius: var(--r-pill); margin-bottom: 20px; font-weight: 600; }
+  .recap-card h3 { font-size: 28px; font-weight: 500; margin: 0 0 24px 0; line-height: 1.2; letter-spacing: -0.4px; }
+  .recap-list { list-style: none; padding: 0; margin: 0 0 16px 0; display: flex; flex-direction: column; gap: 14px; }
+  .recap-list li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; align-items: start; font-size: 16px; color: var(--text); }
+  .recap-list li svg { width: 22px; height: 22px; color: var(--success); margin-top: 2px; }
+  .recap-card p { color: var(--text-muted); margin: 0; padding-top: 24px; border-top: 1px solid var(--border); font-size: 15px; line-height: 1.6; }
+  .term { border-bottom: 1px dashed var(--accent); cursor: help; position: relative; color: inherit; }
+  .term:hover { color: var(--accent); }
+  .term .tooltip { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%) translateY(4px); background: var(--bg-deep); color: #fff; padding: 12px 16px; border-radius: var(--r-sm); font-size: 14px; line-height: 1.5; font-weight: 400; width: 280px; max-width: calc(100vw - 48px); text-align: left; box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none; transition: opacity 0.15s, transform 0.15s; z-index: 50; }
+  .term .tooltip::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: var(--bg-deep) transparent transparent transparent; }
+  .term:hover .tooltip, .term:focus .tooltip, .term:focus-within .tooltip, .term.active .tooltip { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .back-to-top { position: fixed; bottom: 24px; right: 24px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: #fff; border: none; cursor: pointer; box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity 0.25s, transform 0.25s, background 0.15s; z-index: 150; }
+  .back-to-top.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .back-to-top:hover { background: #2C3849; }
+  .back-to-top svg { width: 18px; height: 18px; }
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+  @media (max-width: 720px) {
+    .hero { padding: 44px 0 16px 0; } .hero h1 { font-size: 38px; letter-spacing: -0.5px; } .hero-subtitle { font-size: 18px; }
+    h2.section-heading { font-size: 28px; } h3.subsection-heading { font-size: 20px; } body { font-size: 17px; }
+    .pullquote { font-size: 20px; padding-left: 20px; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .analogy-row { grid-template-columns: 1fr; gap: 4px; text-align: center; } .analogy-row .left { text-align: center; } .analogy-row .arrow { display: none; } .analogy-row.head { display: none; }
+    .eli-tabs { flex-direction: column; gap: 0; padding: 4px; border-radius: var(--r-md); } .eli-tab { border-radius: var(--r-sm); }
+    .recap-card { padding: 28px 24px; }
+    .component-tabs { grid-template-columns: repeat(5, 1fr); gap: 4px; } .component-tab { padding: 8px 6px; } .component-tab .name { font-size: 11px; }
+  }
+  /* ==== Uniform glossary / callouts ==== */
+  .glossary-block{background:linear-gradient(135deg,#FBF4D6 0%,#FFFFFF 100%);border:2px solid #F2C94C;border-radius:12px;padding:24px 26px;margin:24px auto;box-shadow:0 1px 3px rgba(0,0,0,0.04);max-width:1100px}
+  .glossary-block .gloss-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .glossary-block .gloss-icon{width:36px;height:36px;border-radius:50%;background:#F2C94C;display:flex;align-items:center;justify-content:center;color:#1F2937;font-weight:700;font-size:18px;flex-shrink:0}
+  .glossary-block h3{margin:0;font-size:16px;font-weight:700;color:#1F2937;text-transform:none;letter-spacing:0}
+  .glossary-block .gloss-intro{margin:4px 0 16px;font-size:14px;color:#5A6B81}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .gloss-card{background:#FFFFFF;border:1.5px solid #D5DCE6;border-radius:8px;padding:14px 16px;border-left-width:5px}
+  .gloss-card.tag-tool{border-left-color:#1F8A60}
+  .gloss-card.tag-driver{border-left-color:#5E4A8E}
+  .gloss-card.tag-protocol{border-left-color:#2E7A8C}
+  .gloss-card.tag-hardware{border-left-color:#3F4A5E}
+  .gloss-card.tag-security{border-left-color:#8E2A2A}
+  .gloss-card.tag-config{border-left-color:#B85829}
+  .gloss-card.tag-concept{border-left-color:#1A6FA8}
+  .gloss-name{font-weight:700;font-size:14px;color:#1F2937;display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .gloss-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:1px;color:#FFFFFF}
+  .gloss-card.tag-tool .gloss-tag{background:#1F8A60}
+  .gloss-card.tag-driver .gloss-tag{background:#5E4A8E}
+  .gloss-card.tag-protocol .gloss-tag{background:#2E7A8C}
+  .gloss-card.tag-hardware .gloss-tag{background:#3F4A5E}
+  .gloss-card.tag-security .gloss-tag{background:#8E2A2A}
+  .gloss-card.tag-config .gloss-tag{background:#B85829}
+  .gloss-card.tag-concept .gloss-tag{background:#1A6FA8}
+  .gloss-what{font-size:13px;color:#1F2937;margin:6px 0 4px;line-height:1.45}
+  .gloss-what strong{color:#3F4A5E}
+  .gloss-why{font-size:12.5px;color:#5A6B81;font-style:italic;line-height:1.45;border-top:1px dashed #E5E9F0;padding-top:6px;margin-top:6px}
+  .gloss-why::before{content:"⚡ why it matters: ";font-style:normal;font-weight:700;color:#3F4A5E;font-size:11px}
+  .callout{display:flex;gap:14px;padding:14px 18px;border-radius:8px;margin:14px auto;border-left:5px solid;max-width:1100px}
+  .callout-icon{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-weight:700;font-size:14px}
+  .callout-body{flex:1;font-size:13.5px;line-height:1.55;color:#1F2937}
+  .callout-body strong{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+  .callout.tip{background:rgba(31,138,96,0.08);border-left-color:#1F8A60}
+  .callout.tip .callout-icon{background:#1F8A60}.callout.tip strong{color:#1F8A60}
+  .callout.warn{background:rgba(184,88,41,0.08);border-left-color:#B85829}
+  .callout.warn .callout-icon{background:#B85829}.callout.warn strong{color:#B85829}
+  .callout.danger{background:rgba(142,42,42,0.08);border-left-color:#8E2A2A}
+  .callout.danger .callout-icon{background:#8E2A2A}.callout.danger strong{color:#8E2A2A}
+  .callout.note{background:rgba(26,111,168,0.08);border-left-color:#1A6FA8}
+  .callout.note .callout-icon{background:#1A6FA8}.callout.note strong{color:#1A6FA8}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">vSphere Fundamentals</span>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme" type="button">
+        <svg id="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg id="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<nav class="course-nav" aria-label="Course lessons">
+  <div class="course-nav-inner">
+    <a href="preview-lesson-01.html" class="lesson-link"><span class="num">01</span><span class="name">Intro</span></a>
+    <a href="preview-lesson-02.html" class="lesson-link"><span class="num">02</span><span class="name">Benefits</span></a>
+    <a href="preview-lesson-03.html" class="lesson-link active"><span class="num">03</span><span class="name">Components</span></a>
+    <a href="preview-lesson-04.html" class="lesson-link"><span class="num">04</span><span class="name">History</span></a>
+    <a href="preview-lesson-05.html" class="lesson-link"><span class="num">05</span><span class="name">Context &amp; resources</span></a>
+    <a href="preview-lesson-06.html" class="lesson-link"><span class="num">06</span><span class="name">Types</span></a>
+    <a href="preview-lesson-07.html" class="lesson-link"><span class="num">07</span><span class="name">SDDC</span></a>
+    <a href="preview-lesson-08.html" class="lesson-link"><span class="num">08</span><span class="name">Installing &amp; configuring ESXi</span></a>
+    <a href="preview-lesson-09.html" class="lesson-link"><span class="num">09</span><span class="name">Deploying &amp; configuring vCenter</span></a>
+    <a href="preview-lesson-10.html" class="lesson-link"><span class="num">10</span><span class="name">Configuring vSphere networking</span></a>
+    <a href="preview-lesson-11.html" class="lesson-link"><span class="num">11</span><span class="name">Configuring vSphere storage</span></a>
+    <a href="preview-lesson-12.html" class="lesson-link"><span class="num">12</span><span class="name">Deploying virtual machines</span></a>
+  </div>
+</nav>
+
+<button class="back-to-top" id="back-to-top" type="button" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<header class="hero">
+  <div class="container">
+    <p class="hero-eyebrow">vSphere Fundamentals · Lesson 3</p>
+    <h1>VMware, vSphere, and the components</h1>
+    <p class="hero-subtitle">
+      VMware is the company. vSphere is the platform. Five named components do the work
+      under the hood.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        13 minute read
+      </span>
+      <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 11 13 2 4 11 13 20 22 11"/></svg>Beginner</span>
+      <span class="pill">VMware</span>
+    </div>
+  </div>
+
+  <div class="container-wide">
+    <div class="hero-widget">
+      <p class="hero-widget-eyebrow">Tour the five components</p>
+      <p class="hero-widget-title">Click each component to see what it is and where it sits.</p>
+      <p class="hero-widget-tip">
+        Each tab shows one component in context. Step through all five — every later section
+        of this lesson refers back to these.
+      </p>
+      <div class="component-tabs" role="tablist">
+        <button class="component-tab active" data-component="0" role="tab" type="button"><span class="num">1 of 5</span><span class="name">ESXi</span></button>
+        <button class="component-tab" data-component="1" role="tab" type="button"><span class="num">2 of 5</span><span class="name">vCenter</span></button>
+        <button class="component-tab" data-component="2" role="tab" type="button"><span class="num">3 of 5</span><span class="name">VMs</span></button>
+        <button class="component-tab" data-component="3" role="tab" type="button"><span class="num">4 of 5</span><span class="name">Datastores</span></button>
+        <button class="component-tab" data-component="4" role="tab" type="button"><span class="num">5 of 5</span><span class="name">Networks</span></button>
+      </div>
+      <div class="component-stage">
+        <svg id="component-svg" viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="component-stage-readout" id="component-readout"></div>
+      </div>
+      <div class="stage-controls">
+        <button class="btn btn-secondary" id="component-prev" type="button">← Previous</button>
+        <button class="btn" id="component-next" type="button">Next →</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <article class="glossary-block">
+    <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this lesson</h3></div>
+    <p class="gloss-intro">vSphere brings real product names to the concepts from lesson 1-2. Here's each one in plain language.</p>
+    <div class="glossary-grid">
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">VMware <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The company. Founded in 1998. Made x86 server virtualization mainstream and remains the dominant commercial platform.</div>
+        <div class="gloss-why">When you hear "VMware shop," people mean an organisation running VMware's products. Different from other vendors (Microsoft, Red Hat, Citrix).</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">vSphere <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> VMware's flagship server-virtualization platform. The whole stack: ESXi + vCenter + the surrounding features (vMotion, HA, DRS, etc.).</div>
+        <div class="gloss-why">"We run on VMware" almost always means "we run vSphere." This entire course is about understanding vSphere.</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">ESXi <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The hypervisor itself. Bare-metal software installed on each physical server. Detailed in lesson 8.</div>
+        <div class="gloss-why">Every host in a vSphere environment runs ESXi. It's the slicing layer that creates and runs VMs.</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">vCenter <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The central management plane. Manages many ESXi hosts as one fleet. Detailed in lesson 9.</div>
+        <div class="gloss-why">Without vCenter, each host is an island managed via the Host Client. With vCenter, hosts become one cluster — and you unlock vMotion, HA, DRS.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">VM <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Virtual Machine. A software container that looks to its OS like a real computer. The unit of compute work in vSphere.</div>
+        <div class="gloss-why">VMs are what you actually run apps on. ESXi creates them; vCenter manages them; you deploy them.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Datastore <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The logical storage container vSphere uses. Holds VM files (.vmdk, .vmx, snapshots, ISOs). Detailed in lesson 11.</div>
+        <div class="gloss-why">Where VMs live. Every VM is stored on a datastore — VMFS, NFS, vSAN, or vVols flavoured.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Virtual network <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Networking inside ESXi — vSwitches, port groups, vmkernel adapters. The plumbing that VMs and ESXi services use to talk. Detailed in lesson 10.</div>
+        <div class="gloss-why">VM networking is fully virtualized. Hosts and VMs all plug into virtual switches that connect via physical NICs to the real world.</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">vSphere Client <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The web UI vCenter serves at <code>https://&lt;vc-fqdn&gt;/ui/</code>. Where you live day-to-day.</div>
+        <div class="gloss-why">When people say "log in to vSphere," they mean this. One tab, the whole environment.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Cluster <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> A group of ESXi hosts vCenter manages as a single resource pool. The unit DRS, HA, and shared storage are scoped to.</div>
+        <div class="gloss-why">"Cluster" is where the fleet behavior lives. You don't think much about individual hosts — you think about cluster total capacity.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">vMotion <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Live migration of a running VM between hosts with zero downtime. The signature vSphere feature.</div>
+        <div class="gloss-why">Lets hardware maintenance happen without scheduling app downtime. Touched here; covered fully in lessons 9 and 12.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">HA · High Availability <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Auto-restart of VMs on other hosts when their host dies. Different from vCenter HA (which protects vCenter itself).</div>
+        <div class="gloss-why">Hardware failure becomes a 2-3 minute blip instead of manual rescue.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">DRS · Distributed Resource Scheduler <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Auto-load-balancing of VMs across hosts in a cluster. vCenter watches load and vMotions VMs around to even things out.</div>
+        <div class="gloss-why">Set-and-forget capacity management. Detailed in lesson 9 for vCenter context.</div>
+      </div>
+
+    </div>
+  </article>
+
+  <section class="lesson-section reveal" id="concept">
+    <p class="section-eyebrow">Section 1 · Concept</p>
+    <h2 class="section-heading">Five named components</h2>
+
+    <p>Lesson 1 introduced the hypervisor and the VM as concepts. Lesson 2 named five benefits. This lesson puts <em>real product names</em> on the things the previous lessons talked about — and adds the management plane that ties them together.</p>
+
+    <p><strong>VMware</strong> is the company. Founded in 1998. Made x86 server virtualization mainstream and remains the dominant commercial virtualization platform.</p>
+
+    <p><strong>vSphere</strong> is VMware's flagship product — a complete server virtualization platform. When practitioners say "we run on VMware," they almost always mean vSphere.</p>
+
+    <p>vSphere is built from five components:</p>
+
+    <ul class="component-list">
+      <li class="component-row">
+        <div class="icon-cell"><svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="28" height="20" rx="2"/><line x1="4" y1="14" x2="32" y2="14"/><circle cx="9" cy="10" r="1.5" fill="currentColor"/><circle cx="14" cy="10" r="1.5" fill="currentColor"/></svg></div>
+        <div class="label-cell"><div class="num">Component 1</div><div class="name"><span class="term" tabindex="0">ESXi<span class="tooltip">ESXi is VMware's bare-metal hypervisor — the software that runs directly on a physical server and creates the VMs. Every host in a vSphere environment runs ESXi.</span></span></div><p>The hypervisor that runs directly on each physical server. From Lesson 1: ESXi is the apartment-building superintendent.</p></div>
+      </li>
+      <li class="component-row">
+        <div class="icon-cell"><svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="12"/><circle cx="18" cy="18" r="5" fill="currentColor"/><circle cx="18" cy="18" r="2" fill="white"/></svg></div>
+        <div class="label-cell"><div class="num">Component 2</div><div class="name"><span class="term" tabindex="0">vCenter Server<span class="tooltip">vCenter Server is the management plane that oversees many ESXi hosts at once. It provisions VMs, moves them between hosts, monitors health, and rolls out patches. One vCenter typically manages dozens to hundreds of hosts.</span></span></div><p>The management plane. One vCenter inventories every host, every VM, every datastore — and lets the team operate them as one fleet.</p></div>
+      </li>
+      <li class="component-row">
+        <div class="icon-cell"><svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="24" height="20" rx="2"/><line x1="6" y1="14" x2="30" y2="14"/><circle cx="10" cy="11" r="1" fill="currentColor"/><line x1="10" y1="20" x2="26" y2="20"/><line x1="10" y1="24" x2="22" y2="24"/></svg></div>
+        <div class="label-cell"><div class="num">Component 3</div><div class="name">Virtual machines</div><p>The workloads. Same VMs as Lessons 1 and 2 — operating systems and applications running inside hypervisor-provided slices.</p></div>
+      </li>
+      <li class="component-row">
+        <div class="icon-cell"><svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="18" cy="9" rx="12" ry="3"/><path d="M6 9v18c0 1.66 5.37 3 12 3s12-1.34 12-3V9"/><path d="M6 17c0 1.66 5.37 3 12 3s12-1.34 12-3"/></svg></div>
+        <div class="label-cell"><div class="num">Component 4</div><div class="name"><span class="term" tabindex="0">Datastores<span class="tooltip">A datastore is the storage abstraction where a VM's disks live. Underneath, a datastore can be a physical disk, a SAN volume, an NFS share, or a vSAN cluster — but to the VM, it just looks like storage.</span></span></div><p>The storage abstraction. Where VM disks live. Underneath could be SAN, NFS, vSAN; the VM doesn't have to know.</p></div>
+      </li>
+      <li class="component-row">
+        <div class="icon-cell"><svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="24" height="8" rx="1.5"/><circle cx="11" cy="18" r="1" fill="currentColor"/><circle cx="16" cy="18" r="1" fill="currentColor"/><circle cx="21" cy="18" r="1" fill="currentColor"/><circle cx="26" cy="18" r="1" fill="currentColor"/><line x1="11" y1="14" x2="11" y2="6"/><line x1="21" y1="14" x2="21" y2="6"/></svg></div>
+        <div class="label-cell"><div class="num">Component 5</div><div class="name">Virtual networks</div><p>The network abstraction — virtual switches and port groups inside each host. They connect VMs to each other and out to the physical network.</p></div>
+      </li>
+    </ul>
+
+    <p class="pullquote">Every later VMware feature builds on these five components. Snapshots, vMotion, HA, DRS — all of them touch vCenter, ESXi, VMs, datastores, and networks in some combination.</p>
+
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>The mental map for the rest of the course</strong>Lesson 8 deep-dives ESXi. Lesson 9 covers vCenter. Lesson 10 covers virtual networks. Lesson 11 covers datastores. Lesson 12 covers VMs. Five lessons, one per component. This lesson is your "you-are-here" map.</div>
+    </div>
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>vSphere = ESXi + vCenter (mostly)</strong>If you remember nothing else: vSphere is the platform; ESXi is the per-host hypervisor; vCenter is the central manager. Everything else hangs off these two pieces.</div>
+    </div>
+  </section>
+
+  <section class="lesson-section reveal" id="before-after">
+    <p class="section-eyebrow">Section 2 · Before and after</p>
+    <h2 class="section-heading">Fifty hosts, with and without vCenter</h2>
+
+    <p>The same team running 50 ESXi hosts. The only difference is whether vCenter is in the picture.</p>
+
+    <div class="compare-grid">
+      <div class="compare-card before">
+        <p class="label">Without vCenter</p>
+        <h3>Fifty hosts, fifty silos</h3>
+        <ul class="pain-list">
+          <li>Each host configured by hand.</li>
+          <li>Moving a VM between hosts: power off, export, import, power on. Downtime each move.</li>
+          <li>Patching: SSH into each host one at a time.</li>
+          <li>Inventory is whatever's in a spreadsheet.</li>
+          <li>No single view of the environment.</li>
+        </ul>
+      </div>
+      <div class="compare-card after">
+        <p class="label">With vCenter</p>
+        <h3>One brain, fifty hands</h3>
+        <ul class="pain-list">
+          <li>vCenter inventories all 50 hosts.</li>
+          <li>Move a VM: click "migrate," pick destination — live, no downtime.</li>
+          <li>Patch a cluster: vCenter rolls through hosts in sequence.</li>
+          <li>Single inventory, single dashboard, single source of truth.</li>
+          <li>Every later feature (HA, DRS, vMotion) plugs in here.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="label">Honest caveat</div>
+      <p>vCenter is now critical infrastructure. If it goes down, you can still <em>run</em> — every ESXi host keeps its VMs alive — but you can't <em>manage</em> until it comes back.</p>
+    </div>
+  </section>
+
+  <section class="lesson-section reveal" id="analogy">
+    <p class="section-eyebrow">Section 3 · The analogy, extended</p>
+    <h2 class="section-heading">The property management company</h2>
+
+    <p>The apartment building from Lessons 1 and 2 has a superintendent — that's the hypervisor (ESXi). One building, one super.</p>
+
+    <p>Now imagine a city with hundreds of buildings, each with its own super. Without coordination, every building is on its own.</p>
+
+    <p class="pullquote">Then a property management company takes over.</p>
+
+    <p>The company doesn't replace the supers — each super still runs their own building. But the company keeps a single inventory of every building, every apartment, every tenant. The company is the one place every building reports to.</p>
+
+    <div class="analogy-map">
+      <div class="analogy-row head"><div class="left">In the apartment building</div><div class="arrow">↔</div><div class="right">In vSphere</div></div>
+      <div class="analogy-row"><div class="left">The building</div><div class="arrow">↔</div><div class="right">A physical host</div></div>
+      <div class="analogy-row"><div class="left">The superintendent</div><div class="arrow">↔</div><div class="right">ESXi (hypervisor)</div></div>
+      <div class="analogy-row"><div class="left">The property management company</div><div class="arrow">↔</div><div class="right">vCenter Server</div></div>
+      <div class="analogy-row"><div class="left">An apartment</div><div class="arrow">↔</div><div class="right">A virtual machine</div></div>
+      <div class="analogy-row"><div class="left">The shared storage rooms</div><div class="arrow">↔</div><div class="right">A datastore</div></div>
+      <div class="analogy-row"><div class="left">The plumbing and wiring</div><div class="arrow">↔</div><div class="right">Virtual networks (vSwitches)</div></div>
+    </div>
+
+    <div class="check-card">
+      <p class="check-eyebrow">Quick check</p>
+      <p class="check-question">vCenter Server crashes at 3 AM. What happens to the VMs running on the 50 ESXi hosts it was managing?</p>
+      <div class="check-options" id="check-options">
+        <button class="check-option" data-correct="false" type="button">Every VM stops; ESXi can't run without vCenter telling it to.</button>
+        <button class="check-option" data-correct="true" type="button">Nothing immediate. Every ESXi host keeps running its VMs locally. Central management is gone until vCenter is restored.</button>
+        <button class="check-option" data-correct="false" type="button">vCenter automatically fails over to a backup; nobody notices.</button>
+      </div>
+      <div class="check-feedback" id="check-feedback"></div>
+    </div>
+  </section>
+
+  <section class="lesson-section reveal" id="eli">
+    <p class="section-eyebrow">Section 4 · At your level</p>
+    <h2 class="section-heading">The same idea, two depths</h2>
+    <div class="eli-tabs" role="tablist">
+      <button class="eli-tab active" data-level="eli5" role="tab" type="button"><span class="tab-eyebrow">Like I'm 5</span>Simplest version</button>
+      <button class="eli-tab" data-level="eli10" role="tab" type="button"><span class="tab-eyebrow">Like I'm 10</span>With the vocabulary</button>
+    </div>
+    <div class="eli-content">
+      <div class="eli-panel active" data-level="eli5">
+        <p>VMware is a company. They make a thing called vSphere that lets one big computer act like lots of small ones. vSphere has five parts: the part that lives on each computer (ESXi), the part that watches over all the computers from one place (vCenter), the pretend computers themselves (VMs), the place where all the pretend computers keep their files (datastores), and the wires that connect everything together (virtual networks).</p>
+      </div>
+      <div class="eli-panel" data-level="eli10">
+        <p>VMware is the software company; vSphere is its platform for server virtualization. vSphere is built from five components.</p>
+        <p><strong>ESXi</strong> is the hypervisor — Lesson 1's superintendent — installed on every physical host. It creates and runs the VMs locally. <strong>vCenter Server</strong> is the management plane that talks to every ESXi host in your environment; one vCenter typically manages tens to hundreds of hosts. <strong>Virtual machines</strong> are the workloads. <strong>Datastores</strong> are storage abstractions — the place VM disks live, regardless of the underlying physical storage. <strong>Virtual networks</strong> — primarily vSwitches and port groups — are the network abstraction.</p>
+        <p>Why this structure? Because at scale, managing each host individually is impossible. vCenter is the single brain that turns a fleet of hypervisors into one operational system. The next set of lessons (high availability, vMotion, DRS) all depend on vCenter being there.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="lesson-section reveal" id="scenarios">
+    <p class="section-eyebrow">Section 5 · In the real world</p>
+    <h2 class="section-heading">Where the components combine</h2>
+    <p style="color: var(--text-muted);">Real teams rarely use just one component. Each story below shows how several work together.</p>
+    <div class="scenarios-list" id="scenarios-list"></div>
+  </section>
+</main>
+
+<div class="container-wide">
+  <section class="lesson-section reveal" id="animation">
+    <p class="section-eyebrow">Section 6 · See each component in motion</p>
+    <h2 class="section-heading">Tour the five components</h2>
+    <p style="color: var(--text-muted); max-width: 680px;">Five mode buttons. Each shows what one component does, in motion.</p>
+    <div class="visual-wrap">
+      <iframe class="animation-frame" src="courses/vmware/vsphere-fundamentals/scenarios/03-vmware-vsphere-components/animation.html" title="Lesson 3 animation"></iframe>
+    </div>
+  </section>
+</div>
+
+<div class="container">
+  <section class="lesson-section reveal" id="flashcards">
+    <p class="section-eyebrow">Section 7 · Lock it in</p>
+    <h2 class="section-heading">Flashcards</h2>
+    <p style="color: var(--text-muted);">Click any card to flip it.</p>
+    <div class="flashcards-grid" id="flashcards-container"></div>
+  </section>
+  <section class="lesson-section reveal" id="quiz">
+    <p class="section-eyebrow">Quiz</p>
+    <h2 class="section-heading">Predict what happens next</h2>
+    <p style="color: var(--text-muted);">Each question pauses the animation at a specific component-mode moment.</p>
+    <div id="quiz-container"></div>
+  </section>
+  <div class="recap-card reveal">
+    <span class="badge"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="5 12 10 17 19 8"/></svg>Lesson 3 complete</span>
+    <h3>Five components, one platform.</h3>
+    <ul class="recap-list">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>VMware</strong> is the company. <strong>vSphere</strong> is its flagship platform.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>ESXi</strong> is the hypervisor — one per physical host.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>vCenter Server</strong> is the brain that manages many hosts.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>Virtual machines</strong> run on the hosts; <strong>datastores</strong> hold their disks; <strong>virtual networks</strong> connect them.</span></li>
+    </ul>
+    <p>The next lesson goes back in time: a short history of virtualization. How we got here from 1960s mainframes to today's vSphere — and what changed at each step.</p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+<script>
+const LESSON_PATH = 'courses/vmware/vsphere-fundamentals/scenarios/03-vmware-vsphere-components';
+
+(function () {
+  const toggle = document.getElementById('theme-toggle');
+  const sun = document.getElementById('theme-sun');
+  const moon = document.getElementById('theme-moon');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) document.documentElement.setAttribute('data-theme', stored);
+  function syncIcons() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    sun.style.display = isDark ? 'none' : 'block';
+    moon.style.display = isDark ? 'block' : 'none';
+  }
+  syncIcons();
+  toggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('lesson-theme', 'light'); }
+    else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('lesson-theme', 'dark'); }
+    syncIcons();
+  });
+})();
+
+(function () {
+  const terms = document.querySelectorAll('.term');
+  terms.forEach(el => {
+    el.addEventListener('click', e => { e.stopPropagation(); terms.forEach(o => { if (o !== el) o.classList.remove('active'); }); el.classList.toggle('active'); });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); terms.forEach(o => { if (o !== el) o.classList.remove('active'); }); el.classList.toggle('active'); } });
+  });
+  document.addEventListener('click', () => { terms.forEach(el => el.classList.remove('active')); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') terms.forEach(el => el.classList.remove('active')); });
+})();
+
+/* ============================================================
+   HERO COMPONENT TOUR
+   ============================================================ */
+(function () {
+  const svg = document.getElementById('component-svg');
+  const readout = document.getElementById('component-readout');
+  const tabs = document.querySelectorAll('.component-tab');
+  const prevBtn = document.getElementById('component-prev');
+  const nextBtn = document.getElementById('component-next');
+  let active = 0;
+
+  // Each component tab's SVG. ViewBox 640 × 280. Alignment math verified for each.
+  const components = [
+    {
+      name: 'ESXi',
+      readout: '<strong>ESXi</strong> is the hypervisor that runs directly on a physical host. It creates VMs and divides the host\'s CPU, RAM, and network among them.',
+      svg: `
+        <text x="320" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">ONE PHYSICAL HOST WITH ESXI</text>
+        <!-- Layout: VMs y=50-110 (60h), Hyper y=110-138 (28h, abuts), Chassis y=138-228 (90h, abuts) -->
+        <g transform="translate(120, 50)">
+          <!-- 4 VMs at y=0-60 -->
+          <g transform="translate(0, 0)"><rect width="92" height="60" rx="5" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/><rect width="92" height="14" rx="5" fill="#5F5E5A"/><text x="6" y="10" font-size="9" fill="#FFFFFF">vm-01</text><circle cx="84" cy="7" r="2" fill="#5DCAA5"/></g>
+          <g transform="translate(102, 0)"><rect width="92" height="60" rx="5" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/><rect width="92" height="14" rx="5" fill="#5F5E5A"/><text x="6" y="10" font-size="9" fill="#FFFFFF">vm-02</text><circle cx="84" cy="7" r="2" fill="#5DCAA5"/></g>
+          <g transform="translate(204, 0)"><rect width="92" height="60" rx="5" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/><rect width="92" height="14" rx="5" fill="#5F5E5A"/><text x="6" y="10" font-size="9" fill="#FFFFFF">vm-03</text><circle cx="84" cy="7" r="2" fill="#5DCAA5"/></g>
+          <g transform="translate(306, 0)"><rect width="92" height="60" rx="5" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/><rect width="92" height="14" rx="5" fill="#5F5E5A"/><text x="6" y="10" font-size="9" fill="#FFFFFF">vm-04</text><circle cx="84" cy="7" r="2" fill="#5DCAA5"/></g>
+          <!-- Hypervisor: y=60-88 (abuts) -->
+          <rect x="0" y="60" width="398" height="28" fill="#3F4A5E"><animate attributeName="fill" values="#3F4A5E;#536179;#3F4A5E" dur="3s" repeatCount="indefinite"/></rect>
+          <text x="199" y="78" text-anchor="middle" font-size="13" font-weight="500" fill="#E8E8E0" letter-spacing="2">ESXi (hypervisor)</text>
+          <!-- Chassis: y=88-178 (abuts) -->
+          <rect x="0" y="88" width="398" height="90" rx="3" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect x="0" y="88" width="14" height="90" fill="#909093"/>
+          <rect x="384" y="88" width="14" height="90" fill="#909093"/>
+          <text x="199" y="135" text-anchor="middle" font-size="11" fill="#3A3A3A">Physical host</text>
+        </g>`
+    },
+    {
+      name: 'vCenter Server',
+      readout: '<strong>vCenter Server</strong> sits above all your ESXi hosts and lets you manage them as a fleet — one inventory, one dashboard, one set of policies.',
+      svg: `
+        <!-- vCenter at top (y=30-90), trunk down (y=90-130), 5 hosts in a row (y=130-220) -->
+        <g transform="translate(200, 30)">
+          <rect width="240" height="60" rx="10" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.5"/>
+          <g transform="translate(20, 16)"><circle cx="14" cy="14" r="13" fill="none" stroke="#FFFFFF" stroke-width="1.5"/><circle cx="14" cy="14" r="5" fill="#FFFFFF"/><circle cx="14" cy="14" r="2" fill="#3F4A5E"/></g>
+          <text x="60" y="28" font-size="14" font-weight="600" fill="#FFFFFF">vCenter Server</text>
+          <text x="60" y="46" font-size="11" fill="#B5C0D0">manages all hosts</text>
+        </g>
+        <line x1="320" y1="90" x2="320" y2="115" stroke="#3F4A5E" stroke-width="2"/>
+        <line x1="80" y1="115" x2="560" y2="115" stroke="#3F4A5E" stroke-width="2"/>
+        <line x1="80" y1="115" x2="80" y2="130" stroke="#3F4A5E" stroke-width="2"/>
+        <line x1="200" y1="115" x2="200" y2="130" stroke="#3F4A5E" stroke-width="2"/>
+        <line x1="320" y1="115" x2="320" y2="130" stroke="#3F4A5E" stroke-width="2"/>
+        <line x1="440" y1="115" x2="440" y2="130" stroke="#3F4A5E" stroke-width="2"/>
+        <line x1="560" y1="115" x2="560" y2="130" stroke="#3F4A5E" stroke-width="2"/>
+        <!-- 5 hosts -->
+        ${[0,1,2,3,4].map(i => {
+          const x = 50 + i * 120;
+          return `<g transform="translate(${x}, 130)">
+            <rect width="60" height="80" rx="4" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+            <rect width="60" height="14" rx="4" fill="#3F4A5E"/>
+            <text x="30" y="11" text-anchor="middle" font-size="9" fill="#E8E8E0" font-weight="500">ESXi</text>
+            <text x="30" y="50" text-anchor="middle" font-size="10" fill="#3A3A3A">host-0${i+1}</text>
+            <circle cx="30" cy="65" r="3" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.3;1" dur="${2 + i * 0.2}s" repeatCount="indefinite"/></circle>
+          </g>`;
+        }).join('')}
+        <text x="320" y="260" text-anchor="middle" font-size="11" font-style="italic" fill="#9D9C95">Heartbeat between vCenter and every host</text>`
+    },
+    {
+      name: 'Virtual Machines',
+      readout: '<strong>Virtual machines</strong> are the workloads — operating systems and applications running inside hypervisor-provided slices of the host.',
+      svg: `
+        <!-- One large VM showing internals -->
+        <g transform="translate(80, 30)">
+          <rect width="480" height="220" rx="10" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.5"/>
+          <path d="M 0 36 L 0 10 Q 0 0 10 0 L 470 0 Q 480 0 480 10 L 480 36 Z" fill="#5F5E5A"/>
+          <text x="20" y="22" font-size="14" font-weight="500" fill="#FFFFFF">vm-payroll-01</text>
+          <circle cx="460" cy="18" r="5" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/></circle>
+          <!-- OS layer y=50-86 -->
+          <g transform="translate(30, 50)">
+            <rect width="420" height="36" rx="5" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+            <text x="16" y="22" font-size="12" font-weight="500" fill="#FFFFFF">Operating system</text>
+            <text x="404" y="22" text-anchor="end" font-size="12" fill="#FFFFFF">Linux</text>
+          </g>
+          <!-- App layer y=96-132 -->
+          <g transform="translate(30, 96)">
+            <rect width="420" height="36" rx="5" fill="#5DCAA5" opacity="0.2" stroke="#1F8A60" stroke-width="1.5"/>
+            <text x="16" y="22" font-size="12" font-weight="500" fill="#1F8A60">Application</text>
+            <text x="404" y="22" text-anchor="end" font-size="12" fill="#1F8A60">payroll-app</text>
+          </g>
+          <!-- Resources -->
+          <g transform="translate(30, 148)">
+            <text x="0" y="0" font-size="10" font-weight="600" fill="#5F5E5A" letter-spacing="1">RESOURCES</text>
+            <text x="0" y="20" font-size="11" fill="#3A3A3A">CPU</text>
+            <rect x="40" y="13" width="160" height="8" rx="2" fill="#E0E0DE"/>
+            <rect x="40" y="13" width="100" height="8" rx="2" fill="#5A6B81"><animate attributeName="width" values="100;120;90;115" dur="5s" repeatCount="indefinite"/></rect>
+            <text x="0" y="42" font-size="11" fill="#3A3A3A">RAM</text>
+            <rect x="40" y="35" width="160" height="8" rx="2" fill="#E0E0DE"/>
+            <rect x="40" y="35" width="125" height="8" rx="2" fill="#5A6B81"/>
+            <text x="0" y="64" font-size="11" fill="#3A3A3A">Disk</text>
+            <rect x="40" y="57" width="160" height="8" rx="2" fill="#E0E0DE"/>
+            <rect x="40" y="57" width="72" height="8" rx="2" fill="#5A6B81"/>
+            <!-- Network -->
+            <text x="240" y="0" font-size="10" font-weight="600" fill="#5F5E5A" letter-spacing="1">NETWORK</text>
+            <circle cx="252" cy="32" r="14" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+            <text x="280" y="36" font-size="11" font-weight="500" fill="#3A3A3A">→ vSwitch</text>
+          </g>
+        </g>`
+    },
+    {
+      name: 'Datastores',
+      readout: '<strong>Datastores</strong> are shared storage that every host can see. Move a VM between hosts — the disk stays in one place; both hosts already had access.',
+      svg: `
+        <!-- Two hosts at top -->
+        <g transform="translate(60, 30)">
+          <rect width="180" height="90" rx="6" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect width="180" height="18" rx="6" fill="#3F4A5E"/>
+          <text x="90" y="13" text-anchor="middle" font-size="10" font-weight="500" fill="#E8E8E0" letter-spacing="1.4">ESXi · host-01</text>
+          <g transform="translate(20, 30)"><rect width="64" height="50" rx="4" fill="#FFFFFF" stroke="#5F5E5A"/><rect width="64" height="14" fill="#5F5E5A"/><text x="6" y="11" font-size="9" fill="#FFFFFF">vm-01</text></g>
+          <g transform="translate(96, 30)"><rect width="64" height="50" rx="4" fill="#FFFFFF" stroke="#5F5E5A"/><rect width="64" height="14" fill="#5F5E5A"/><text x="6" y="11" font-size="9" fill="#FFFFFF">vm-02</text></g>
+        </g>
+        <g transform="translate(400, 30)">
+          <rect width="180" height="90" rx="6" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect width="180" height="18" rx="6" fill="#3F4A5E"/>
+          <text x="90" y="13" text-anchor="middle" font-size="10" font-weight="500" fill="#E8E8E0" letter-spacing="1.4">ESXi · host-02</text>
+          <g transform="translate(20, 30)"><rect width="64" height="50" rx="4" fill="#FFFFFF" stroke="#5F5E5A"/><rect width="64" height="14" fill="#5F5E5A"/><text x="6" y="11" font-size="9" fill="#FFFFFF">vm-03</text></g>
+          <g transform="translate(96, 30)"><rect width="64" height="50" rx="4" fill="#FFFFFF" stroke="#5F5E5A"/><rect width="64" height="14" fill="#5F5E5A"/><text x="6" y="11" font-size="9" fill="#FFFFFF">vm-04</text></g>
+        </g>
+        <!-- Datastore in middle -->
+        <g transform="translate(220, 170)">
+          <rect width="200" height="80" rx="10" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.5"/>
+          <g transform="translate(16, 16)">
+            <ellipse cx="14" cy="6" rx="14" ry="6" fill="#A8A8AC" stroke="#5F5E5A"/>
+            <rect x="0" y="6" width="28" height="40" fill="#A8A8AC" stroke="#5F5E5A"/>
+            <ellipse cx="14" cy="46" rx="14" ry="6" fill="#A8A8AC" stroke="#5F5E5A"/>
+          </g>
+          <text x="120" y="30" text-anchor="middle" font-size="12" font-weight="600" fill="#1A1A1A">Shared Datastore</text>
+          <text x="120" y="48" text-anchor="middle" font-size="10" fill="#5F5E5A">VM disks live here</text>
+        </g>
+        <line x1="150" y1="120" x2="270" y2="170" stroke="#5DCAA5" stroke-width="2" stroke-dasharray="4 3"><animate attributeName="stroke-dashoffset" values="0;-14" dur="1.5s" repeatCount="indefinite"/></line>
+        <line x1="490" y1="120" x2="370" y2="170" stroke="#5DCAA5" stroke-width="2" stroke-dasharray="4 3"><animate attributeName="stroke-dashoffset" values="0;-14" dur="1.5s" repeatCount="indefinite"/></line>`
+    },
+    {
+      name: 'Virtual Networks',
+      readout: '<strong>Virtual networks</strong> live inside each ESXi host. A vSwitch connects VMs to each other and to the physical network.',
+      svg: `
+        <text x="320" y="30" text-anchor="middle" font-size="11" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">INSIDE ONE ESXI HOST</text>
+        <g transform="translate(40, 50)">
+          <rect width="560" height="200" rx="8" fill="#FFFFFF" stroke="#E8E5DD" stroke-width="1"/>
+          <!-- 4 VMs at y=14-66 -->
+          <g transform="translate(20, 14)"><rect width="120" height="52" rx="5" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/><rect width="120" height="14" rx="5" fill="#5F5E5A"/><text x="8" y="10" font-size="9" fill="#FFFFFF">vm-app</text></g>
+          <g transform="translate(160, 14)"><rect width="120" height="52" rx="5" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/><rect width="120" height="14" rx="5" fill="#5F5E5A"/><text x="8" y="10" font-size="9" fill="#FFFFFF">vm-db</text></g>
+          <g transform="translate(300, 14)"><rect width="120" height="52" rx="5" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/><rect width="120" height="14" rx="5" fill="#5F5E5A"/><text x="8" y="10" font-size="9" fill="#FFFFFF">vm-web</text></g>
+          <g transform="translate(440, 14)"><rect width="120" height="52" rx="5" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/><rect width="120" height="14" rx="5" fill="#5F5E5A"/><text x="8" y="10" font-size="9" fill="#FFFFFF">vm-cache</text></g>
+          <!-- VM-to-vSwitch connectors y=66-90 -->
+          <line x1="80" y1="66" x2="80" y2="90" stroke="#5F5E5A" stroke-width="1.5"/>
+          <line x1="220" y1="66" x2="220" y2="90" stroke="#5F5E5A" stroke-width="1.5"/>
+          <line x1="360" y1="66" x2="360" y2="90" stroke="#5F5E5A" stroke-width="1.5"/>
+          <line x1="500" y1="66" x2="500" y2="90" stroke="#5F5E5A" stroke-width="1.5"/>
+          <!-- vSwitch y=90-130 -->
+          <g transform="translate(20, 90)">
+            <rect width="540" height="40" rx="5" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+            <text x="270" y="18" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" letter-spacing="1.5">VIRTUAL SWITCH (vSwitch)</text>
+            <line x1="20" y1="28" x2="520" y2="28" stroke="#3F4A5E" stroke-width="1"/>
+            <circle cx="60" cy="34" r="2" fill="#5DCAA5"/><circle cx="120" cy="34" r="2" fill="#5DCAA5"/><circle cx="180" cy="34" r="2" fill="#5DCAA5"/><circle cx="240" cy="34" r="2" fill="#5DCAA5"/><circle cx="300" cy="34" r="2" fill="#5DCAA5"/><circle cx="360" cy="34" r="2" fill="#5DCAA5"/><circle cx="420" cy="34" r="2" fill="#5DCAA5"/><circle cx="480" cy="34" r="2" fill="#5DCAA5"/>
+          </g>
+          <!-- Animated packet between VMs through the vSwitch -->
+          <circle r="3" fill="#5DCAA5"><animateMotion dur="4s" repeatCount="indefinite"><mpath href="#packet-path-3"/></animateMotion></circle>
+          <path id="packet-path-3" d="M 80 66 L 80 110 L 220 110 L 220 66 L 220 110 L 360 110" fill="none" opacity="0"/>
+          <!-- Physical NIC at y=150 -->
+          <g transform="translate(220, 150)">
+            <rect width="120" height="32" rx="3" fill="#3a3a3a"/>
+            <text x="60" y="13" text-anchor="middle" font-size="10" font-weight="500" fill="#cfcfcf">PHYSICAL NIC</text>
+            <rect x="20" y="18" width="20" height="10" rx="1" fill="#1a1a1a"/>
+            <rect x="60" y="18" width="20" height="10" rx="1" fill="#1a1a1a"/>
+          </g>
+          <line x1="280" y1="130" x2="280" y2="150" stroke="#3F4A5E" stroke-width="2"/>
+        </g>`
+    }
+  ];
+
+  function render() {
+    svg.innerHTML = components[active].svg;
+    readout.innerHTML = components[active].readout;
+    tabs.forEach((t, i) => t.classList.toggle('active', i === active));
+    prevBtn.disabled = active === 0;
+    nextBtn.disabled = active === components.length - 1;
+    nextBtn.textContent = active === components.length - 1 ? 'Tour complete ✓' : 'Next →';
+  }
+  tabs.forEach(t => t.addEventListener('click', () => { active = parseInt(t.dataset.component, 10); render(); }));
+  prevBtn.addEventListener('click', () => { if (active > 0) { active--; render(); } });
+  nextBtn.addEventListener('click', () => { if (active < components.length - 1) { active++; render(); } });
+  render();
+})();
+
+(function () {
+  const options = document.querySelectorAll('#check-options .check-option');
+  const feedback = document.getElementById('check-feedback');
+  let answered = false;
+  const correctMsg = '<strong>Right.</strong> ESXi runs every VM locally and keeps doing so even when vCenter is down. What you lose is central management — provisioning, fleet-wide policies, the single dashboard. The workloads are fine.';
+  const wrongMsg = {
+    "Every VM stops; ESXi can't run without vCenter telling it to.": "<strong>Not quite.</strong> ESXi is the runtime, vCenter is the management plane. They are deliberately separated so production workloads do not depend on the management tool being healthy.",
+    "vCenter automatically fails over to a backup; nobody notices.": "<strong>Not by default.</strong> A standby vCenter exists in some configurations, but vSphere out of the box runs one vCenter at a time. Even without failover, your workloads keep running on ESXi."
+  };
+  options.forEach(opt => opt.addEventListener('click', () => {
+    if (answered) return;
+    answered = true;
+    options.forEach(o => o.classList.add('locked'));
+    if (opt.dataset.correct === 'true') { opt.classList.add('correct'); feedback.innerHTML = correctMsg; }
+    else { opt.classList.add('wrong'); options.forEach(o => { if (o.dataset.correct === 'true') o.classList.add('correct'); }); feedback.innerHTML = wrongMsg[opt.textContent.trim()] || '<strong>Not quite.</strong>'; }
+    feedback.classList.add('shown');
+  }));
+})();
+
+document.querySelectorAll('.eli-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const level = tab.dataset.level;
+    document.querySelectorAll('.eli-tab').forEach(t => t.classList.toggle('active', t === tab));
+    document.querySelectorAll('.eli-panel').forEach(p => p.classList.toggle('active', p.dataset.level === level));
+  });
+});
+
+const SCENARIOS = [
+  { industry: 'National retailer', title: 'Black Friday capacity, on demand', benefits: ['vCenter', 'VMs'], icon: '<rect x="3" y="6" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/>', body: '800 stores, 24 ESXi hosts in two datacenters, all under one vCenter Server. Two weeks before Black Friday the team uses vCenter to spin up 40 additional VMs across the cluster, configured for peak load. After the season vCenter rolls them back.', tradeoff: 'vCenter capacity planning itself — the team had to upsize the vCenter VM to handle the inventory bump.' },
+  { industry: 'Hospital network', title: 'Monthly patching with no downtime', benefits: ['ESXi', 'vCenter', 'VMs'], icon: '<path d="M12 2v4"/><path d="M19 10h-4l-1 4-2-8-1 4H7"/><circle cx="12" cy="14" r="9"/>', body: '60 ESXi hosts across two campuses. Once a month the IT team patches every host. Through vCenter, they put one host into maintenance mode, vCenter automatically moves all VMs to other hosts, the patch runs, the host comes back, and vCenter moves VMs back. No service interruption.', tradeoff: 'Without vCenter coordinating across hosts, this would mean scheduled downtime for every patched host.' },
+  { industry: 'SaaS startup', title: 'Migrating across datacenters, live', benefits: ['ESXi', 'vCenter', 'Datastores', 'Networks'], icon: '<rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="18" x2="12" y2="20"/><polyline points="8 12 11 15 16 9"/>', body: '50-person SaaS company moving from a colo to a cloud-adjacent datacenter. 18 ESXi hosts under one vCenter. The team stood up new hosts in the new datacenter, registered them with vCenter, then used vMotion to move VMs across — a few at a time, on a schedule, with no service interruption.', tradeoff: 'Stretching the virtual network across two physical sites required new switching gear.' },
+  { industry: 'Regional bank', title: 'Standardizing 400 branches', benefits: ['ESXi', 'vCenter', 'VMs'], icon: '<path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M9 21v-7h6v7"/>', body: '400 branch offices, each running a small ESXi cluster (2-3 hosts) for local point-of-sale and back-office systems. All 400 branch clusters report to a central vCenter Server. When a new VM template is published, vCenter can roll it out to every branch overnight.', tradeoff: 'WAN bandwidth between branches and the central vCenter constrains how aggressively the team can update; some changes have to be staged.' }
+];
+
+(function () {
+  const list = document.getElementById('scenarios-list');
+  SCENARIOS.forEach((s) => {
+    const card = document.createElement('div');
+    card.className = 'scenario-card';
+    const benefitChips = s.benefits.map(b => `<span>${b}</span>`).join('');
+    card.innerHTML = `<div class="scenario-card-header" role="button" tabindex="0"><div class="scenario-icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${s.icon}</svg></div><div class="scenario-headline"><div class="scenario-industry">${s.industry}</div><h3 class="scenario-title">${s.title}</h3></div><div class="scenario-benefits">${benefitChips}</div><svg class="scenario-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="scenario-card-body"><div class="scenario-card-body-inner"><p>${s.body}</p><p class="scenario-tradeoff">Trade-off: ${s.tradeoff}</p></div></div>`;
+    const header = card.querySelector('.scenario-card-header');
+    const toggle = () => card.classList.toggle('expanded');
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    list.appendChild(card);
+  });
+})();
+
+fetch(LESSON_PATH + '/flashcards.yaml').then(r => r.text()).then(text => {
+  const data = jsyaml.load(text);
+  const container = document.getElementById('flashcards-container');
+  data.cards.forEach((card, i) => {
+    const el = document.createElement('div');
+    el.className = 'flashcard';
+    const num = String(i + 1).padStart(2, '0') + ' / ' + String(data.cards.length).padStart(2, '0');
+    el.innerHTML = `<div class="flashcard-inner"><div class="flashcard-face flashcard-front"><div class="number">Card ${num}</div><div class="question">${escapeHtml(card.front)}</div><div class="hint">Click to flip →</div></div><div class="flashcard-face flashcard-back"><div class="number">Card ${num}</div><div class="answer">${escapeHtml(card.back)}</div><div class="hint">← Flip back</div></div></div>`;
+    el.addEventListener('click', () => el.classList.toggle('flipped'));
+    container.appendChild(el);
+  });
+});
+
+fetch(LESSON_PATH + '/quiz.yaml').then(r => r.text()).then(text => {
+  const data = jsyaml.load(text);
+  const container = document.getElementById('quiz-container');
+  data.questions.forEach((q, i) => {
+    const el = document.createElement('div');
+    el.className = 'quiz-card';
+    const pauseIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+    el.innerHTML = `<span class="pause-cue">${pauseIcon} Pause · ${escapeHtml(q.pause_at_mode)} mode</span><div class="q-num">Question ${i + 1} of ${data.questions.length}</div><div class="prompt">${escapeHtml(q.prompt)}</div><button class="reveal-btn" type="button">Show answer</button><div class="reveal-content"><div class="answer-block"><div class="label">Answer</div><div class="text">${escapeHtml(q.answer)}</div></div><div class="reasoning-block"><div class="label">Why</div><div class="text">${escapeHtml(q.reasoning)}</div></div></div>`;
+    const btn = el.querySelector('.reveal-btn');
+    const content = el.querySelector('.reveal-content');
+    btn.addEventListener('click', () => { btn.classList.add('shown'); content.classList.add('shown'); });
+    container.appendChild(el);
+  });
+});
+
+const progressFill = document.getElementById('progress-fill');
+const backToTop = document.getElementById('back-to-top');
+function onScroll() {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  progressFill.style.width = pct + '%';
+  backToTop.classList.toggle('visible', scrollTop > 600);
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+onScroll();
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
+}, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+function escapeHtml(s) { return String(s).trim().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+</script>
+</body>
+</html>

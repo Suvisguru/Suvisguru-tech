@@ -1,0 +1,264 @@
+# Intake brief — Lesson 09, vSphere Fundamentals
+# Topic: Deploying and Configuring vCenter Server
+# Format: PER-SUBTOPIC structure (each subtopic gets its own concept,
+# before/after, analogy, quick check, ELI5/ELI10, real-world, flashcards, quiz).
+
+lesson:
+  title: "Deploying and Configuring vCenter Server"
+  slug: "09-deploying-and-configuring-vcenter"
+  domain: "vmware"
+  course_slug: "vsphere-fundamentals"
+  position: 9
+  granularity: "sub-topic"
+  brief_drafted_on: "2026-05-01"
+  pedagogical_format: "per-subtopic"
+
+learner_profile:
+  prerequisites:
+    - "Lessons 01-08. Comfortable with the apartment-building analogy, the SDDC pattern, the four primary vSphere UIs, and a freshly installed/configured ESXi host."
+  assumed_zero_knowledge_of:
+    - "What VCSA (vCenter Server Appliance) is and how it differs from older Windows-based vCenter."
+    - "Stage-1 vs Stage-2 deployment of the appliance."
+    - "vCenter Single Sign-On, identity sources, and where vCenter sits in the auth chain."
+    - "RBAC mechanics in vCenter (roles, privileges, permissions, inheritance, propagation)."
+    - "Inventory hierarchy (datacenters, folders, clusters)."
+    - "Backup and restore of the appliance, and vCenter HA."
+
+learning_outcomes_overall:
+  - "Learner can describe what vCenter Server (VCSA) is and what it provides over standalone hosts."
+  - "Learner can list the prerequisites required before installing vCenter (DNS, NTP, network, sizing)."
+  - "Learner can walk through Stage 1 (deploy OVA) and Stage 2 (setup) of vCenter installation."
+  - "Learner can configure vCenter SSO and add an Active Directory identity source."
+  - "Learner can assign roles, privileges, and permissions in vCenter using the RBAC model."
+  - "Learner can build a basic inventory hierarchy (datacenter → folder → cluster → host → VM)."
+  - "Learner can configure file-based backup and restore for the vCenter Server Appliance."
+  - "Learner can describe vCenter HA at a conceptual level (active/passive/witness)."
+
+# ----------------------------------------------------------------------
+# Subtopics. 8 mini-lessons.
+# ----------------------------------------------------------------------
+
+subtopics:
+
+  - id: 1
+    slug: "vcenter-overview"
+    title: "What vCenter Server is and why you need it"
+    moments_of_confusion_resolved:
+      - "What vCenter does that you can't do from a standalone ESXi host."
+      - "What VCSA (vCenter Server Appliance) is — a Photon-Linux VM, not a service you install on Windows."
+      - "Why VMware retired Windows-based vCenter and consolidated on the appliance."
+      - "Where vCenter sits in the architecture (it manages many ESXi hosts; without it, Host Client/DCUI per host is what you have)."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "If a host is one apartment building, vCenter is the city's central operations office that watches every building, and lets one team move tenants between buildings without touching each lobby." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1, lens: "Day in the life: same admin, with vs without vCenter." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 2
+    slug: "prerequisites"
+    title: "vCenter prerequisites: DNS, NTP, network, sizing"
+    moments_of_confusion_resolved:
+      - "Why DNS forward + reverse for the vCenter FQDN must exist BEFORE deployment."
+      - "Why NTP on the target host (and the appliance) must be synced."
+      - "What deployment sizes mean (Tiny / Small / Medium / Large / X-Large) and how they map to host count and VM count."
+      - "Network port groups and management network requirements."
+      - "Disk size choices (Default / Large / X-Large storage profiles)."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "vCenter prereqs are like the building permit checklist — you can pour concrete without the permits, but the city won't let you turn on power, and you'll be tearing things up to fix it later." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1, lens: "The single most common failed deployment: forgetting the PTR record." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 3
+    slug: "stage-1-deploy"
+    title: "Stage 1: Deploy the appliance OVA"
+    moments_of_confusion_resolved:
+      - "What Stage 1 actually does — deploys the VCSA OVA to a target ESXi host."
+      - "Where the installer runs (your laptop, NOT on the host) and how it talks to the host."
+      - "What the OVA brings (Photon OS, Postgres, all vCenter services packaged)."
+      - "What you choose during Stage 1 (target host, name, root password, deployment size, datastore, network)."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "Stage 1 is moving the pre-fab office trailer onto the building site — it's already wired and plumbed; you just choose where it sits and which utilities to plug into." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1, lens: "What the GUI installer looks like and what each screen asks." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 4
+    slug: "stage-2-setup"
+    title: "Stage 2: First-time setup"
+    moments_of_confusion_resolved:
+      - "Why deployment is split into two stages and what Stage 2 covers (NTP, SSO domain, services start)."
+      - "What the SSO domain is (default vsphere.local) and why you usually keep it."
+      - "What 'starting services' looks like (a long progress bar; expected behaviour)."
+      - "How to recover if Stage 2 hangs (re-run the installer; OVA stays)."
+    pedagogical_block:
+      concept: { target_words: 200 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "Stage 2 is the city inspector turning on the breakers, plugging in the phone, and stamping the certificate of occupancy. The trailer was on-site after Stage 1; Stage 2 is when it becomes a working office." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1, lens: "First successful login to vSphere Client at https://vc-01.lab.local." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 5
+    slug: "sso-and-identity-sources"
+    title: "vCenter SSO and identity sources"
+    moments_of_confusion_resolved:
+      - "What vCenter SSO actually is (a token-issuing service; the identity layer of vCenter)."
+      - "What an 'identity source' is and why you add Active Directory."
+      - "The difference between local SSO users (administrator@vsphere.local) and federated users from AD."
+      - "Why you don't make administrator@vsphere.local a daily driver."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "SSO is the building's badge-reader system. Identity sources are the HR systems it pulls from — corporate AD, contractor LDAP, etc. Without it, every door has its own keypad and its own list of people." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1, lens: "Adding the corporate AD as an identity source so admins log in with their AD credentials." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 6
+    slug: "roles-and-permissions"
+    title: "Roles, privileges, and permissions (RBAC)"
+    moments_of_confusion_resolved:
+      - "Three pieces of vCenter RBAC: privileges (atomic actions), roles (sets of privileges), permissions (role + user/group + object)."
+      - "How permissions inherit down the inventory hierarchy and the difference between propagating and non-propagating permissions."
+      - "Predefined roles (Read-Only, Administrator, Virtual Machine User, etc.) and when to make custom roles."
+      - "Global permissions vs object permissions."
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy: { direction: "Roles are job titles ('night shift janitor'). Privileges are the individual things they can do ('open janitor closet', 'mop floor'). Permissions assign a job title to a person at a specific place ('Alice is night shift janitor, on Floor 3 only'). Inheritance is whether the assignment also covers Floor 4 above it." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1, lens: "Setting up read-only access for a junior engineer to a single resource pool." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 7
+    slug: "inventory-hierarchy-and-backup"
+    title: "Inventory hierarchy and vCenter backup"
+    moments_of_confusion_resolved:
+      - "The five inventory object types: datacenter, folder, cluster, host, VM (and where networks/datastores fit)."
+      - "Why folders matter for permissions and tags."
+      - "What 'file-based backup' for vCenter is and where it lands (FTPS/SFTP/HTTPS/NFS/SMB target)."
+      - "How often to back up vCenter and why a fresh backup is a precondition for a major operation."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "Inventory is the building directory: every floor (datacenter), wing (folder), conference room (cluster), desk (host), and chair (VM) is named and addressable. Backup is the photocopy of the directory you keep off-site, so a fire doesn't take the directory with it." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1, lens: "Configuring nightly file-based backup to an SFTP target." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 8
+    slug: "vcenter-ha"
+    title: "vCenter High Availability (intro)"
+    moments_of_confusion_resolved:
+      - "What vCenter HA actually is (active / passive / witness — three nodes)."
+      - "Why this is different from vSphere HA (which protects VMs, not vCenter itself)."
+      - "When vCenter HA matters (large environments where vCenter outage = ops blindness)."
+      - "When you skip it (small environments where backup + quick redeploy is enough)."
+    pedagogical_block:
+      concept: { target_words: 200 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "vCenter HA is the building having a second control room with a hot spare manager and a tie-breaker witness in a different building. If the main control room goes down, the spare takes over within minutes; the witness ensures both don't accidentally claim to be primary." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1, lens: "vCenter HA failover during a planned host maintenance." }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+# ----------------------------------------------------------------------
+# Shared lesson-level artifacts.
+# ----------------------------------------------------------------------
+
+shared_artifacts:
+  static_diagram:
+    purpose: >
+      Single shared diagram: 8-station vCenter deployment journey
+      (overview → prereqs → stage-1 → stage-2 → SSO → RBAC → inventory/backup
+      → HA). Same visual pattern as lesson 8.
+    file: "diagram.svg"
+
+  animated_illustration:
+    purpose: >
+      Single shared animation with 8 mode toggles, one per subtopic. Pause/Play
+      + Speed slider parity to lessons 1-8.
+    mode_toggles: ["overview", "prereqs", "stage1", "stage2", "sso", "rbac", "inventory", "ha"]
+    file: "animation.html"
+
+  flashcards:
+    file: "flashcards.yaml"
+    structure: "Grouped by subtopic with section markers. Total ~24 cards (3 per subtopic)."
+
+  quiz:
+    file: "quiz.yaml"
+    structure: "Grouped by subtopic. Total 16 questions (2 per subtopic). Mix of pause-the-animation and standalone."
+
+  recap_card:
+    placement: "End of preview page."
+    content: "Cross-subtopic synthesis (one vCenter, eight phases of stand-up) + bridge to lesson 10 (vSphere Networking)."
+
+interactive_preview_page:
+  file: "/preview-lesson-09.html"
+  hero_widget: >
+    Interactive 'vCenter deployment journey'. Eight numbered stations along the
+    top (overview → prereqs → stage-1 → stage-2 → SSO → RBAC → inventory/backup
+    → HA). Click any station to jump to that subtopic.
+  toc_at_top: >
+    Sticky sub-nav listing all 8 subtopics; highlights the active one on scroll.
+  subtopic_section_header: "Subtopic N of 8: <title>"
+  hover_to_define_terms:
+    - "vCenter Server"
+    - "VCSA"
+    - "Photon OS"
+    - "OVA"
+    - "SSO"
+    - "identity source"
+    - "RBAC"
+    - "permission"
+    - "role"
+    - "propagating"
+    - "vCenter HA"
+    - "PSC"
+
+estimated_scope:
+  subtopics: 8
+  total_flashcards: 24
+  total_quiz_questions: 16
+  total_quick_checks: 8
+  approx_preview_page_lines: 2400-3000
+  produced_files:
+    - "brief.yaml (this file)"
+    - "lesson.md"
+    - "flashcards.yaml"
+    - "quiz.yaml"
+    - "diagram.svg"
+    - "animation.html"
+    - "NOTES.md"
+    - "/preview-lesson-09.html"

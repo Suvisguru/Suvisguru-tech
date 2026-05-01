@@ -1,0 +1,238 @@
+# Quiz — Lesson 08: Installing and Configuring ESXi
+# Per-subtopic format. 12 questions, 2 per subtopic.
+
+questions:
+
+  # =====================================================
+  # Subtopic 1 — Installing the ESXi host
+  # =====================================================
+
+  - id: s1q1
+    subtopic: install-esxi
+    pause_at_mode: install
+    prompt: >
+      Pause the animation in 'install' mode. The diagram shows the ESXi
+      installer running against a server with a 256 GB SSD and a 64 GB USB
+      stick plugged in. Predict: which device should you choose as the
+      install target, and why does this even come up?
+    answer: >
+      Choose the USB stick (or a small dedicated boot device like an SD
+      card or M.2 SSD). ESXi only needs a small device for itself; you
+      keep the 256 GB SSD free for use as a local datastore that holds
+      VMs and their disks. This separation means a boot-device failure
+      doesn't lose VM data, and a SSD failure doesn't lose the
+      hypervisor. On larger production hosts you'd skip the local SSD
+      entirely and put VMs on shared storage (vSAN, FC, iSCSI, NFS).
+    reasoning: >
+      The install target is one of the four important inputs the installer
+      asks about, and "the biggest disk" is the wrong default. ESXi's
+      design assumes a small dedicated boot device and separate (often
+      shared) storage for VMs.
+
+  - id: s1q2
+    subtopic: install-esxi
+    prompt: >
+      A teammate claims they 'installed ESXi on top of Windows.' What's
+      wrong with that claim?
+    answer: >
+      ESXi is a bare-metal (Type 1) hypervisor — it doesn't install on top
+      of an OS, it *is* the OS. What that teammate probably did is run
+      ESXi nested inside VMware Workstation on Windows (a Type 2 setup).
+      That's a valid lab pattern but not how production ESXi runs.
+    reasoning: >
+      Distinguishing bare-metal from hosted hypervisors is foundational.
+      It's also a common point of confusion for first-time learners
+      coming from desktop virtualization (VirtualBox, Workstation, Fusion).
+
+  # =====================================================
+  # Subtopic 2 — ESXi user account best practices
+  # =====================================================
+
+  - id: s2q1
+    subtopic: esxi-account-best-practices
+    pause_at_mode: accounts
+    prompt: >
+      Pause the animation in 'accounts' mode. The diagram shows six
+      admins all logged in as root. The audit log is being highlighted.
+      Predict: what does the audit log show after each admin completes
+      an action, and what's the operational consequence?
+    answer: >
+      The audit log shows 'root' as the actor for every action — there's
+      no way to tell who actually did what. The operational consequence
+      bites during incident review: when something goes wrong, no one
+      can prove they didn't do it, and no one can prove who did. Fix:
+      named accounts (or, better, vCenter SSO with corporate identity)
+      so the log shows the actual person behind each action.
+    reasoning: >
+      This is the single most common motivation for moving away from
+      shared root: not theoretical security, but the practical inability
+      to do post-mortems on a system where every action is attributed
+      to the same superuser.
+
+  - id: s2q2
+    subtopic: esxi-account-best-practices
+    prompt: >
+      A new sysadmin will do day-to-day VM work via vSphere Client. Which
+      account approach is best?
+    answer: >
+      Give them a named identity in your IdP (AD/LDAP/SAML), let vCenter
+      SSO authenticate them, and assign the appropriate vCenter role.
+      They almost never log in to a host directly, and they definitely
+      should not use root.
+    reasoning: >
+      The "vCenter SSO with role assignment" pattern is what production
+      vSphere is designed around. Direct host login is the exception,
+      not the rule.
+
+  # =====================================================
+  # Subtopic 3 — Configuring host settings via DCUI and Host Client
+  # =====================================================
+
+  - id: s3q1
+    subtopic: configure-via-dcui-and-host-client
+    pause_at_mode: ui-config
+    prompt: >
+      Pause the animation in 'ui-config' mode. vCenter has just crashed.
+      A host has stopped showing up in vSphere Client because vCenter is
+      down. The host's network is fine. Predict: what's your first move?
+    answer: >
+      Browse to the host's Host Client at https://<host-ip>. The Host
+      Client is served by the host itself and works even when vCenter is
+      down. If the Host Client doesn't load, fall back to the DCUI
+      through the iLO/iDRAC and use it to verify the management network
+      and (if needed) restart management agents.
+    reasoning: >
+      DCUI and Host Client exist precisely for this scenario. Knowing
+      to reach for them — and which to use first — is the operational
+      reflex this lesson trains.
+
+  - id: s3q2
+    subtopic: configure-via-dcui-and-host-client
+    prompt: >
+      A host is up but no longer responds to vCenter. Network looks fine.
+      What single DCUI action fixes this most often?
+    answer: >
+      Restart Management Agents (Troubleshooting Options → Restart
+      Management Agents). This restarts hostd and vpxa — the two
+      processes that handle host-side management — without rebooting the
+      host. Takes about 30 seconds. Fixes the "host not responding"
+      symptom more often than anything else.
+    reasoning: >
+      It's the single most useful trick on the DCUI menu. Worth knowing
+      cold; it gets you out of trouble without disrupting running VMs.
+
+  # =====================================================
+  # Subtopic 4 — Managing host services
+  # =====================================================
+
+  - id: s4q1
+    subtopic: manage-host-services
+    pause_at_mode: services
+    prompt: >
+      Pause the animation in 'services' mode. The diagram shows SSH on
+      with policy 'Start and stop with host.' Predict: what happens after
+      the next reboot, and why is this a security finding?
+    answer: >
+      SSH stays on after reboot, because the policy says so. It's a
+      security finding because SSH is an attack surface that doesn't
+      need to be on for normal operations. The fix is two-step: change
+      the policy to 'Start and stop manually' (so a reboot returns the
+      host to a safe state), then disable SSH.
+    reasoning: >
+      The startup policy is what controls whether a service survives a
+      reboot. Get the policy right and the running state can drift safely
+      because the boot state is correct.
+
+  - id: s4q2
+    subtopic: manage-host-services
+    prompt: >
+      You enable SSH for a 30-minute investigation. What policy choice
+      saves you from leaving SSH on indefinitely?
+    answer: >
+      Set the SSH startup policy to 'Start and stop manually.' The
+      service stays running until you stop it or the host reboots; on
+      the next reboot, SSH is off automatically. You don't have to
+      remember.
+    reasoning: >
+      Reinforces the core habit: configure the boot state defensively so
+      humans forgetting things doesn't accumulate into security debt.
+
+  # =====================================================
+  # Subtopic 5 — Configuring NTP, DNS, and routing
+  # =====================================================
+
+  - id: s5q1
+    subtopic: configure-ntp-dns-routing
+    pause_at_mode: ntp-dns-routing
+    prompt: >
+      Pause the animation in 'ntp-dns-routing' mode. A new ESXi host
+      won't join vCenter. The error mentions certificate validation.
+      You've checked the certificate twice and it's valid. Predict:
+      what's the most likely root cause?
+    answer: >
+      Clock drift. NTP is misconfigured (or the time source is wrong),
+      so the host's clock is too far off the rest of your environment.
+      TLS rejects the certificate because the host thinks 'now' is
+      outside the cert's validity window — even though the cert itself
+      is fine. Fix: configure NTP, force a sync, retry the join.
+    reasoning: >
+      Time is the most common 'invisible' breakage in vSphere. Most
+      cryptic certificate errors at join time turn out to be time, not
+      certificates.
+
+  - id: s5q2
+    subtopic: configure-ntp-dns-routing
+    prompt: >
+      A vCenter join fails. Cert is valid, time is correct, network is
+      reachable. What's the next most-likely culprit?
+    answer: >
+      DNS — specifically a missing or wrong PTR (reverse DNS) record for
+      the host. vCenter's join process uses the host's hostname (which
+      ends up in certificates) and expects forward and reverse DNS to
+      agree. Add the PTR record on your DNS server, then retry the join.
+    reasoning: >
+      Once time is ruled out, DNS — especially reverse DNS — is the next
+      most common gotcha at join time. Naming this explicitly trains the
+      "what to check next" reflex.
+
+  # =====================================================
+  # Subtopic 6 — Configuring ESXi for lockdown mode
+  # =====================================================
+
+  - id: s6q1
+    subtopic: configure-lockdown-mode
+    pause_at_mode: lockdown
+    prompt: >
+      Pause the animation in 'lockdown' mode. A regulated workload requires
+      that no admin connects directly to a host. Predict: which lockdown
+      mode and what supporting setup do you choose?
+    answer: >
+      Strict mode, with one or two carefully documented exception users
+      for service accounts that genuinely need direct host access (e.g.,
+      a backup agent). All human admin goes through vCenter. Test
+      recovery in a lab first — Strict disables the DCUI, so if vCenter
+      goes down and you have no exception user, recovery is hard.
+    reasoning: >
+      Strict mode is right for regulated environments, but only with
+      tested recovery and documented exceptions. The mode choice is
+      one decision; the exception-user list and the recovery test are
+      the choices that make Strict survivable.
+
+  - id: s6q2
+    subtopic: configure-lockdown-mode
+    prompt: >
+      Your team is enabling Normal lockdown across production. A backup
+      service account currently logs in to each host directly to take
+      VM-level backups. What do you do?
+    answer: >
+      Add the backup service account to the exception users list on
+      each host (or via host profile applied to the cluster). Document
+      why it's an exception, ideally in a runbook entry the audit team
+      can find. The backup keeps working because the service account
+      bypasses lockdown; the rest of the world still has to go through
+      vCenter.
+    reasoning: >
+      Real-world lockdown rollouts always have legitimate service
+      accounts that need exceptions. The discipline is identifying
+      them, adding them, and documenting them — not pretending no
+      exceptions exist.

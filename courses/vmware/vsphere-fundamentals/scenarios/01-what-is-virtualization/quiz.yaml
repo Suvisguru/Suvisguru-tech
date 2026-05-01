@@ -1,0 +1,56 @@
+# Quiz — Lesson 01: What is virtualization?
+# 3 pause-the-animation questions. Each tests mental model, not memorization.
+# Each has a single clearly correct answer with reasoning.
+
+questions:
+  - id: q1
+    prompt: >
+      Pause the animation in After mode. The host's utilization meter reads about 72%. Eight VMs
+      sit on top of the hypervisor band, each with its own activity bar bouncing somewhere
+      between 30% and 80% of its bar. What does that 72% number on the host actually mean,
+      and why is it higher than any single VM's activity bar?
+    pause_at_mode: after
+    answer: >
+      72% is the host's *total* utilization across all 8 VMs added together (plus a small
+      hypervisor overhead). No single VM is running at 72%; each VM contributes part of the
+      total, and together they add up to a usefully-busy host.
+    reasoning: >
+      This is exactly the consolidation the lesson is teaching: many partial workloads add up to
+      a single host that is actually being used. In the analogy: any one tenant's water usage is
+      modest, but the building's water meter on the street is high because all the tenants
+      together draw from the same pipe.
+
+  - id: q2
+    prompt: >
+      Pause the animation in Before mode. All four servers' utilization meters are bouncing in
+      single-digit ranges (around 4 to 11 percent). If virtualization didn't exist and the
+      company needed to run a fifth application, what would they have to do — and what would
+      happen to the new server's utilization?
+    pause_at_mode: before
+    answer: >
+      They would have to buy and rack a fifth physical server, run a single OS on it, and
+      install the new application. Based on the pattern of the other four, the fifth server's
+      utilization meter would also bounce in single digits — the company has paid for another
+      mostly-idle box.
+    reasoning: >
+      The Before world's defining problem is that one application gets one whole server, and
+      one application rarely needs a whole server. Each new app means another mostly-empty box.
+      Multiplied across hundreds of apps, this is the waste virtualization solves.
+
+  - id: q3
+    prompt: >
+      Switch to After mode. Look at the slate hypervisor band sitting between the 8 VMs and the
+      physical host. If the hypervisor disappeared, what would happen to the 8 VMs? Answer in
+      terms of the apartment-building analogy.
+    pause_at_mode: after
+    answer: >
+      All 8 VMs — every apartment — would simultaneously try to control the same CPU, memory,
+      and disk directly. In the analogy, every tenant would be turning the same valves and
+      flipping the same switches at once, with no superintendent coordinating. The system
+      would corrupt itself within seconds.
+    reasoning: >
+      The hypervisor *is* the superintendent. Multi-VM hosting can't exist without it because
+      operating systems are written assuming they own the hardware. Two operating systems
+      assuming ownership of the same hardware fight each other to a crash. The hypervisor's
+      whole job is to give each OS the illusion of ownership while the real ownership stays
+      with the hypervisor itself.

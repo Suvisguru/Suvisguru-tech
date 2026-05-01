@@ -1,0 +1,185 @@
+# Flashcards — Lesson 11: Configuring vSphere Storage
+
+cards:
+
+  # Subtopic 1 — Overview
+  - id: s1c1
+    subtopic: storage-overview
+    front: "What is a datastore in vSphere and what does it hold?"
+    back: >
+      A datastore is the logical container vSphere uses for storage. It
+      holds VM files: .vmdk (virtual disks), .vmx (config), snapshots,
+      ISOs, anything VM-related. Hosts mount datastores; VMs are stored
+      on them.
+
+  - id: s1c2
+    subtopic: storage-overview
+    front: "Name the four datastore types vSphere supports."
+    back: >
+      VMFS (VMware's clustered file system on block storage — FC, iSCSI),
+      NFS (network file system mounted from a NAS over IP), vSAN
+      (software-defined storage pooled from local host disks), vVols
+      (VM-centric storage on a vVol-capable array).
+
+  - id: s1c3
+    subtopic: storage-overview
+    front: "A team has servers with local disks, no external array, but wants shared storage all hosts can use. Best fit?"
+    back: >
+      vSAN. It pools the local disks across cluster hosts into one
+      software-defined datastore that all hosts can use. No external
+      array required. Workarounds (VMFS over iSCSI to a local LUN, NFS
+      from a separate VM-as-NAS) exist but aren't the intended design.
+
+  # Subtopic 2 — VMFS
+  - id: s2c1
+    subtopic: vmfs-block-storage
+    front: "What is VMFS and how do multiple hosts share it safely?"
+    back: >
+      VMware's clustered file system designed for shared block storage.
+      Multiple hosts can mount the same VMFS volume on the same LUN at
+      the same time. VMFS handles distributed locking so concurrent
+      access doesn't corrupt files. Latest version: VMFS-6.
+
+  - id: s2c2
+    subtopic: vmfs-block-storage
+    front: "What is multipathing in vSphere and what are the common path policies?"
+    back: >
+      Multiple physical paths between host and storage array (multiple
+      HBAs, multiple fabric switches, multiple controllers). vSphere
+      uses the Pluggable Storage Architecture. Path policies: Most
+      Recently Used (MRU; for active/passive arrays), Fixed (preferred
+      path with failback), Round Robin (distributes I/O across paths;
+      default for many active/active arrays), vendor-specific modules.
+
+  - id: s2c3
+    subtopic: vmfs-block-storage
+    front: "New VMFS datastore mounted on host-1 only. host-2 doesn't see it. Likely cause?"
+    back: >
+      The LUN isn't presented to host-2 at the array level. Storage
+      team needs to add host-2's WWN (FC) or IQN (iSCSI) to the LUN's
+      access list (zoning, masking). Once host-2 can see the LUN, you
+      can mount the VMFS datastore on it from vSphere Client and both
+      hosts will share it.
+
+  # Subtopic 3 — NFS
+  - id: s3c1
+    subtopic: nfs-storage
+    front: "Two NFS versions vSphere supports — and which is recommended for new deployments?"
+    back: >
+      NFS v3 (older, less efficient parallel I/O, limited security) and
+      NFS v4.1 (newer, supports Kerberos, multipath, better locking).
+      NFS 4.1 is recommended for new deployments where the array
+      supports it. Many shops still run NFS v3 on legacy NAS.
+
+  - id: s3c2
+    subtopic: nfs-storage
+    front: "Why pick NFS over VMFS?"
+    back: >
+      Simpler to provision (NAS team owns the file system; you just
+      mount), file-level visibility on the array side, often easier to
+      grow (NAS volumes flexible vs LUN sizing), uses existing IP
+      network. Trade-off: VMFS supports a few features NFS doesn't (RDM,
+      MSCS shared disks) and FC-style ultra-low latency.
+
+  - id: s3c3
+    subtopic: nfs-storage
+    front: "What do you actually configure on the host to mount an NFS datastore?"
+    back: >
+      Server address (NAS IP/hostname), share path (e.g.,
+      /vol/vsphere-prod), datastore name (vSphere's local label), NFS
+      version (3 or 4.1), Kerberos credentials if using NFS 4.1 with
+      Kerberos. Mount on all relevant hosts in one operation from
+      vSphere Client.
+
+  # Subtopic 4 — vSAN
+  - id: s4c1
+    subtopic: vsan
+    front: "What is vSAN and what makes it 'hyperconverged'?"
+    back: >
+      VMware's software-defined storage. Pools the local disks (SSDs,
+      NVMe, HDDs) on each cluster host into one distributed datastore
+      visible to all hosts. Hyperconverged because compute and storage
+      live in the same boxes — no external array, no separate storage
+      hardware tier.
+
+  - id: s4c2
+    subtopic: vsan
+    front: "Distinguish OSA from ESA in vSAN."
+    back: >
+      OSA (Original Storage Architecture) — disk groups with one cache
+      disk + one or more capacity disks; classic vSAN. ESA (Express
+      Storage Architecture) — newer, all-NVMe, single-tier (no cache);
+      higher performance, simpler hardware story; the future direction.
+
+  - id: s4c3
+    subtopic: vsan
+    front: "4-host vSAN cluster, VM with FTT=1 mirroring policy. One host dies. What happens?"
+    back: >
+      Nothing visible to the VM. FTT=1 mirroring means every piece of
+      the VM's data has two copies on different hosts. Other copy is
+      still available. vSAN may rebuild the missing copy on a third
+      host in the background. VM keeps running. (A second simultaneous
+      host failure that took out the second copy would be a problem.)
+
+  # Subtopic 5 — vVols
+  - id: s5c1
+    subtopic: vvols
+    front: "What does vVols change about how the array sees VMs?"
+    back: >
+      Instead of seeing one big VMFS volume holding many VMs as opaque
+      files, the array tracks each VM's storage as individual objects
+      (config, each disk, swap, snapshots). The array can apply per-VM
+      policies (replication, snapshots, encryption, tiering) natively
+      because it knows what's a VM.
+
+  - id: s5c2
+    subtopic: vvols
+    front: "Name the four pieces of a vVols setup."
+    back: >
+      Storage Container — array-side replacement for a LUN; pool of
+      capacity for vVols. VASA Provider — array's API endpoint that
+      vCenter talks to (vSphere APIs for Storage Awareness). Protocol
+      Endpoint — data-path link host ↔ array (FC / iSCSI / NFS, vendor
+      choice). vVol — single storage object representing one piece of
+      one VM.
+
+  - id: s5c3
+    subtopic: vvols
+    front: "Trade-off of vVols vs classic VMFS?"
+    back: >
+      Win: per-VM array-native operations (snapshots, replication,
+      encryption, tiering at VM granularity), real VM names visible
+      to storage admins. Cost: requires a vVol-capable array with a
+      working VASA provider; setup more involved than VMFS or NFS.
+
+  # Subtopic 6 — SPBM + provisioning
+  - id: s6c1
+    subtopic: spbm-and-provisioning
+    front: "What is SPBM in vSphere?"
+    back: >
+      Storage Policy-Based Management. Define storage capabilities
+      (mirrored, fast, encrypted, IOPS limits, etc.) as named policies
+      and assign to VMs. vSphere finds a datastore that can honor the
+      policy and places the VM there. Separates "what storage qualities
+      does this VM need" from "which specific datastore."
+
+  - id: s6c2
+    subtopic: spbm-and-provisioning
+    front: "Three vmdk provisioning modes and when to pick each?"
+    back: >
+      Thin provisioned — disk only consumes physical space as guest
+      writes; default for most workloads. Thick lazy-zeroed — full size
+      reserved on creation, blocks zeroed on first write. Thick
+      eager-zeroed — full size reserved AND zeroed on creation; required
+      for some features (Fault Tolerance, certain clusters). Most
+      workloads: thin + monitoring.
+
+  - id: s6c3
+    subtopic: spbm-and-provisioning
+    front: "Risks of thin provisioning, and how to mitigate?"
+    back: >
+      Total *configured* size of all VMs may exceed datastore capacity
+      (over-commit). If actual usage grows toward the limit, VMs pause
+      or fail. Mitigation: monitor datastore *used* space (alerts at
+      75/85/95%), have a runbook to add capacity or migrate VMs off,
+      avoid heavy over-commit on critical workloads.

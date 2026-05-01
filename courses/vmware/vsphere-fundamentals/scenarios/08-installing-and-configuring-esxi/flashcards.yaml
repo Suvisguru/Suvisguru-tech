@@ -1,0 +1,232 @@
+# Flashcards — Lesson 08: Installing and Configuring ESXi
+# Per-subtopic format. Cards are grouped by subtopic with section markers.
+
+cards:
+
+  # =====================================================
+  # Subtopic 1 — Installing the ESXi host
+  # =====================================================
+
+  - id: s1c1
+    subtopic: install-esxi
+    front: "What does 'bare-metal' mean for a hypervisor like ESXi?"
+    back: >
+      Bare-metal means the hypervisor installs directly on server hardware
+      with no host operating system underneath it. The hypervisor is the OS
+      for that box. Type 1 hypervisors (ESXi, Hyper-V, KVM) are bare-metal;
+      Type 2 hypervisors (Workstation, Fusion) sit on top of an existing OS.
+
+  - id: s1c2
+    subtopic: install-esxi
+    front: "Name the four ways to install ESXi."
+    back: >
+      (1) Interactive ISO — boot the installer manually, answer prompts.
+      (2) Scripted (kickstart) — same installer, with a ks.cfg file
+      answering everything automatically.
+      (3) Auto Deploy — host PXE-boots and pulls its image from vCenter Auto
+      Deploy. Stateless or stateful.
+      (4) Vendor OEM image — Dell/HPE/Cisco custom ISOs that bundle the
+      right drivers and firmware tools.
+
+  - id: s1c3
+    subtopic: install-esxi
+    front: "What is the HCL and why does it matter at install time?"
+    back: >
+      The Hardware Compatibility List is VMware's catalog of supported
+      server, NIC, storage, and GPU hardware. An unsupported component may
+      install fine and then misbehave under load — driver crashes, dropped
+      packets, storage timeouts. Always check the HCL before buying or
+      reusing hardware for an ESXi host.
+
+  - id: s1c4
+    subtopic: install-esxi
+    front: "Where does ESXi typically install to on the server?"
+    back: >
+      A small dedicated boot device: USB stick, SD card, M.2 SSD, or a SAN
+      boot LUN. ESXi itself is small. The install device only holds the
+      hypervisor; VMs and their disks live on shared storage (datastores)
+      configured later.
+
+  # =====================================================
+  # Subtopic 2 — ESXi user account best practices
+  # =====================================================
+
+  - id: s2c1
+    subtopic: esxi-account-best-practices
+    front: "Why should the ESXi root account be treated as 'glass-break'?"
+    back: >
+      Because root has total power and the audit log only records 'root' as
+      the actor — there's no way to know which person took which action if
+      the password is shared. Treating root as glass-break means: long
+      random password, stored in a vault, used only when nothing else
+      works. Daily admin happens through named accounts via vCenter SSO.
+
+  - id: s2c2
+    subtopic: esxi-account-best-practices
+    front: "What are the three predefined roles on ESXi at host level?"
+    back: >
+      No Access (cannot log in or see anything), Read-Only (can browse but
+      not change), and Administrator (full host control). Custom roles are
+      possible but most environments rely on these three plus
+      vCenter-delegated roles for finer control.
+
+  - id: s2c3
+    subtopic: esxi-account-best-practices
+    front: "Why do most environments delegate auth to vCenter SSO instead of joining hosts to AD directly?"
+    back: >
+      It centralizes identity (one place to add/remove users), keeps each
+      host simpler (no AD agent to maintain on every host), and gives a
+      single audit trail through vCenter. Direct host AD integration is
+      possible but adds operational overhead per host with little benefit.
+
+  # =====================================================
+  # Subtopic 3 — Configuring host settings via DCUI and Host Client
+  # =====================================================
+
+  - id: s3c1
+    subtopic: configure-via-dcui-and-host-client
+    front: "What is the DCUI and what does F2 do?"
+    back: >
+      DCUI is the Direct Console User Interface — the yellow-and-black
+      text screen on a monitor plugged into the server (or via iLO/iDRAC
+      remote console). F2 logs you in and unlocks options to change the
+      management IP, hostname, DNS, restart management agents, view logs,
+      reset to defaults, or shut down. Works locally; doesn't need the
+      network or vCenter.
+
+  - id: s3c2
+    subtopic: configure-via-dcui-and-host-client
+    front: "Where do you reach the Host Client and how is it different from vSphere Client?"
+    back: >
+      Browse to https://<host-ip> and log in with a local host account.
+      The Host Client is served by the host itself and shows that one
+      host's VMs, networks, datastores, services, and hardware. The
+      vSphere Client is the central UI through vCenter that manages many
+      hosts together. Host Client = one host, no vCenter; vSphere Client
+      = many hosts via vCenter.
+
+  - id: s3c3
+    subtopic: configure-via-dcui-and-host-client
+    front: "What's the most useful single DCUI action to remember during incidents?"
+    back: >
+      Restart Management Agents (Troubleshooting Options → Restart
+      Management Agents). When a host stops responding to vCenter but is
+      otherwise healthy, restarting the agents fixes it more often than
+      anything else. Takes about 30 seconds.
+
+  # =====================================================
+  # Subtopic 4 — Managing host services
+  # =====================================================
+
+  - id: s4c1
+    subtopic: manage-host-services
+    front: "Name the six common ESXi services you'll touch as an admin."
+    back: >
+      SSH (remote shell, off by default), ESXi Shell (local shell on DCUI,
+      off by default), NTP daemon (time sync, should be on), syslog
+      daemon (log shipping), SNMP (monitoring agent), and CIM (hardware
+      monitoring used by vendor health plugins).
+
+  - id: s4c2
+    subtopic: manage-host-services
+    front: "What are the three startup policies for an ESXi service and when do you use each?"
+    back: >
+      'Start and stop with host' — service runs whenever the host is up;
+      use for things you always want (NTP, syslog).
+      'Start and stop manually' — service never starts on boot; admin
+      starts on demand; use for SSH and ESXi Shell on hardened hosts.
+      'Start and stop with port usage' — service runs while a related
+      port is open; rarely changed.
+
+  - id: s4c3
+    subtopic: manage-host-services
+    front: "Why is 'Start and stop manually' a safer policy for SSH than just toggling SSH off?"
+    back: >
+      Because if you enable SSH for an investigation and forget to disable
+      it, the next reboot still puts the host back to a clean state (SSH
+      off). 'Manual' means the service does not auto-start on boot — even
+      if you leave it running, a reboot resets it. Defense in depth
+      against forgetfulness.
+
+  # =====================================================
+  # Subtopic 5 — Configuring NTP, DNS, and routing
+  # =====================================================
+
+  - id: s5c1
+    subtopic: configure-ntp-dns-routing
+    front: "Why is NTP non-negotiable on every ESXi host?"
+    back: >
+      Because clock drift breaks things that *look* unrelated to time:
+      certificate validation (TLS fails), Active Directory authentication
+      (Kerberos rejects tickets when drift > ~5 minutes), log correlation
+      across hosts during incidents, and vMotion (assumes coherent clocks
+      between source and destination). Most "certificate" errors at
+      vCenter join are really clock drift in disguise.
+
+  - id: s5c2
+    subtopic: configure-ntp-dns-routing
+    front: "Why does ESXi need both forward AND reverse DNS for the host?"
+    back: >
+      Forward DNS so the host can resolve names of other servers (vCenter,
+      AD, NTP, syslog targets, update servers). Reverse DNS (PTR records)
+      so other systems can resolve the host's IP back to its hostname,
+      which is what certificates and AD integration check. A missing PTR
+      record produces a confusing cert error at vCenter join time.
+
+  - id: s5c3
+    subtopic: configure-ntp-dns-routing
+    front: "What is a vmkernel default gateway and why might a host need more than one route?"
+    back: >
+      The default gateway on the management vmkernel interface is the
+      router the host sends traffic to when the destination is off-subnet.
+      If the host also has separate vmkernel interfaces for vMotion,
+      iSCSI, vSAN, NFS, etc. on different subnets, those interfaces may
+      need their own static routes to reach their respective destinations.
+      Without those routes, you get long mystery timeouts.
+
+  # =====================================================
+  # Subtopic 6 — Configuring ESXi for lockdown mode
+  # =====================================================
+
+  - id: s6c1
+    subtopic: configure-lockdown-mode
+    front: "Name the three lockdown modes and what each one restricts."
+    back: >
+      Disabled (default) — anyone with valid host credentials can log in
+      directly via Host Client, DCUI, SSH, or API.
+      Normal — direct host access restricted to DCUI and exception users;
+      day-to-day admin must go through vCenter.
+      Strict — direct host access disabled even at the DCUI; the only
+      paths in are vCenter or configured exception users.
+
+  - id: s6c2
+    subtopic: configure-lockdown-mode
+    front: "What are 'exception users' in lockdown mode and when do you add them?"
+    back: >
+      Exception users are local accounts that bypass lockdown — they can
+      still reach the host directly even when lockdown is on. Add them
+      for service accounts that legitimately need direct host access
+      (e.g., a backup agent), or for break-glass accounts that compliance
+      requires. Document why each exception exists; they're the next
+      audit finding if no one knows.
+
+  - id: s6c3
+    subtopic: configure-lockdown-mode
+    front: "What's the practical difference between Normal and Strict lockdown?"
+    back: >
+      Normal still leaves the DCUI usable, so an admin physically at the
+      console (or via iLO/iDRAC) can recover the host even if vCenter is
+      down. Strict disables the DCUI as well; recovery without vCenter
+      requires an exception user. Strict is more locked down but leaves
+      less safety net — only choose it when compliance demands it and you
+      have a tested recovery path.
+
+  - id: s6c4
+    subtopic: configure-lockdown-mode
+    front: "Why test recovery before flipping Strict on a remote host?"
+    back: >
+      Because Strict mode disables the DCUI as a recovery path, and if
+      vCenter dies *and* you have no exception user, you may end up
+      reinstalling the host. Test by enabling Strict on a lab host first,
+      simulating vCenter loss, and confirming you can still recover via
+      your exception user before doing the same in production.

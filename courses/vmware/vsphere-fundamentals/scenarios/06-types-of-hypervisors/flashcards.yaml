@@ -1,0 +1,53 @@
+# Flashcards — Lesson 06: Types of hypervisors
+
+cards:
+  - front: "What's the technical difference between Type 1 and Type 2 hypervisors?"
+    back: >
+      Type 1 (bare-metal) runs directly on the physical hardware with no host operating
+      system underneath. Type 2 (hosted) runs as an application on top of a regular OS
+      (Windows, macOS, Linux), with the host OS managing the hardware.
+  - front: "Name three Type 1 hypervisors."
+    back: >
+      ESXi (VMware), KVM (Linux kernel), Microsoft Hyper-V, Xen. Any three of these.
+      They all run directly on hardware with no host OS underneath.
+  - front: "Name three Type 2 hypervisors."
+    back: >
+      VMware Workstation (Windows/Linux), VMware Fusion (macOS), Oracle VirtualBox,
+      Parallels Desktop (macOS). All run as applications on top of a host OS.
+  - front: "Which type is faster, and why?"
+    back: >
+      Type 1 is faster. With no general-purpose OS underneath, the hypervisor talks
+      directly to the hardware. Type 2 routes every hardware request through the host
+      OS, which adds overhead — typically 15-30% of performance.
+  - front: "Which type is more convenient for a developer working on their laptop?"
+    back: >
+      Type 2. You install it like any other application — no need to dedicate the whole
+      machine to it, no need to reboot into a different OS. Five minutes from download
+      to running VM.
+  - front: "When would you use Type 2 even though it's slower?"
+    back: >
+      Desktop development, learning, testing, presentations, classroom demos. Anywhere
+      convenience and ease of setup outweigh raw performance. Type 2 is also the only
+      practical choice when you can't dedicate a whole machine to virtualization.
+  - front: "In the apartment analogy, what's a Type 2 hypervisor?"
+    back: >
+      A single-family house where the owner has converted the basement into rental
+      units. The renters share the building's main entrance, plumbing, and electrical
+      with the owner upstairs. The setup works but isn't what the building was designed
+      for.
+  - front: "Can you run a Type 1 hypervisor inside a Type 2 hypervisor?"
+    back: >
+      Yes — it's slow but functional. VMware instructors often run ESXi (Type 1) inside
+      VMware Workstation (Type 2) for classroom demos. The performance is poor but the
+      pedagogical value is high.
+  - front: "Why does production use Type 1 almost exclusively?"
+    back: >
+      Two reasons: (1) the 15-30% performance overhead of Type 2 multiplies across
+      hundreds of servers and quickly becomes hardware you have to buy. (2) Type 2
+      depends on the host OS, which means more attack surface and more software to
+      patch and maintain.
+  - front: "Did Type 2 come before Type 1 on x86?"
+    back: >
+      Yes. VMware Workstation (1999, Type 2) came before ESX Server (2001, Type 1).
+      The first x86 virtualization was hosted; bare-metal was the harder problem and
+      shipped two years later.

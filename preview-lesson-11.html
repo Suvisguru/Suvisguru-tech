@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 11 — Configuring vSphere Storage · vSphere Fundamentals</title>
+<style>
+  :root { --bg:#FAFBFC;--bg-elevated:#FFFFFF;--bg-soft:#F3F5F9;--text:#1F2937;--text-muted:#5A6B81;--text-soft:#7B8A9E;--border:#D5DCE6;--border-soft:#E5E9F0;--accent:#3F4A5E;--accent-light:#5E6E89;--accent-soft:#ECEFF5;--success:#1F8A60;--success-soft:#E5F3EC;--warn:#B85829;--warn-soft:#FBEDE3;--danger:#8E2A2A;--danger-soft:#F5E6E6;--gold:#F2C94C;--gold-soft:#FBF4D6;--r-pill:999px;--r-card:12px;--r-soft:8px;--shadow-sm:0 1px 3px rgba(0,0,0,0.04);--shadow-md:0 4px 16px rgba(31,41,55,0.06);--ease:cubic-bezier(0.4,0,0.2,1); }
+  [data-theme="dark"] { --bg:#0F1419;--bg-elevated:#1A2028;--bg-soft:#1F2630;--text:#E5E9F0;--text-muted:#A0A8B8;--text-soft:#7B8A9E;--border:#2A3340;--border-soft:#232B36;--accent:#7C8FAE;--accent-light:#9CADC9;--accent-soft:#232B36;--success:#5DCAA5;--success-soft:#1F3A2E;--warn:#E6804E;--warn-soft:#3A2418;--danger:#E07474;--danger-soft:#3A2020;--gold:#F2C94C;--gold-soft:#3A2F18;--shadow-sm:0 1px 3px rgba(0,0,0,0.3);--shadow-md:0 4px 16px rgba(0,0,0,0.4); }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:130px}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;transition:background .2s var(--ease),color .2s var(--ease)}
+  .topbar{background:var(--bg-elevated);border-bottom:1px solid var(--border-soft);position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)}
+  .topbar-inner{max-width:1100px;margin:0 auto;display:flex;gap:16px;align-items:center;padding:10px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;color:var(--text);text-decoration:none}
+  .brand-mark{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--accent-light));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px}
+  .brand .course{color:var(--text-muted);font-weight:500;font-size:13px}
+  .progress{flex:1;max-width:360px;height:6px;background:var(--border-soft);border-radius:var(--r-pill);overflow:hidden;margin:0 16px}
+  .progress-fill{width:92%;height:100%;background:linear-gradient(90deg,var(--accent),var(--success))}
+  .progress-label{font-size:12px;color:var(--text-muted);margin-right:12px}
+  .theme-toggle{background:transparent;border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;display:inline-flex;gap:6px;align-items:center;transition:all .15s var(--ease)}
+  .theme-toggle:hover{background:var(--accent-soft);border-color:var(--accent-light)}
+  .course-nav{background:var(--bg-elevated);border-bottom:1px solid var(--border-soft);position:sticky;top:49px;z-index:95}
+  .course-nav-inner{display:flex;gap:6px;max-width:1100px;margin:0 auto;padding:8px 24px;overflow-x:auto;scrollbar-width:thin}
+  .course-nav-inner::-webkit-scrollbar{height:6px}
+  .course-nav-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  .lesson-link{display:inline-flex;gap:6px;align-items:center;padding:6px 12px;border-radius:var(--r-pill);border:1px solid var(--border);background:var(--bg);color:var(--text-muted);text-decoration:none;font-size:12px;flex-shrink:0;transition:all .15s var(--ease);white-space:nowrap}
+  .lesson-link:hover:not(.active){background:var(--accent-soft);color:var(--text);border-color:var(--accent-light)}
+  .lesson-link.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .lesson-link.active{color:var(--bg)}
+  .lesson-link .num{font-weight:700;opacity:.8}
+  .lesson-link .name{font-weight:500}
+  @media (max-width:600px){.lesson-link .name{display:none}.lesson-link{padding:6px 10px;min-width:32px;justify-content:center}}
+  .sub-nav{background:var(--bg);border-bottom:1px solid var(--border-soft);position:sticky;top:98px;z-index:90}
+  .sub-nav-inner{display:flex;gap:6px;max-width:1100px;margin:0 auto;padding:8px 24px;overflow-x:auto;align-items:center;scrollbar-width:thin}
+  .sub-nav-inner::-webkit-scrollbar{height:6px}
+  .sub-nav-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  .sub-nav-label{font-size:11px;color:var(--text-soft);text-transform:uppercase;letter-spacing:1px;flex-shrink:0;margin-right:8px}
+  .sub-link{display:inline-flex;gap:6px;align-items:center;padding:5px 11px;border-radius:var(--r-pill);border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-muted);text-decoration:none;font-size:11.5px;flex-shrink:0;transition:all .15s var(--ease);white-space:nowrap}
+  .sub-link:hover{background:var(--accent-soft);color:var(--text);border-color:var(--accent-light)}
+  .sub-link.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .sub-link.active{color:var(--bg)}
+  .sub-link .num{font-weight:700;opacity:.85}
+  main{max-width:1100px;margin:0 auto;padding:32px 24px 96px}
+  .lesson-meta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--text-muted)}
+  .badge{display:inline-flex;gap:4px;align-items:center;background:var(--accent-soft);color:var(--accent);padding:4px 10px;border-radius:var(--r-pill);font-weight:600;font-size:11px}
+  h1{font-size:36px;margin:0 0 14px;line-height:1.2;letter-spacing:-0.5px}
+  .lesson-tagline{font-size:17px;color:var(--text-muted);margin:0 0 32px;max-width:760px}
+  .hero{background:var(--bg-elevated);border:1px solid var(--border-soft);border-radius:var(--r-card);padding:28px;margin-bottom:40px;box-shadow:var(--shadow-md)}
+  .hero-title{font-size:18px;font-weight:700;margin:0 0 6px;color:var(--text)}
+  .hero-subtitle{color:var(--text-muted);font-size:14px;margin:0 0 22px}
+  .journey{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px}
+  @media (max-width:900px){.journey{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:540px){.journey{grid-template-columns:repeat(2,1fr)}}
+  .station{background:var(--bg);border:1px solid var(--border-soft);border-radius:var(--r-card);padding:14px;cursor:pointer;transition:all .15s var(--ease);display:flex;flex-direction:column;gap:6px;text-decoration:none;color:inherit;position:relative;animation:btn-pop 2.4s ease-in-out infinite}
+  @keyframes btn-pop{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:scale(1.015);box-shadow:0 0 0 4px rgba(63,74,94,0.05)}}
+  .station:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:var(--accent-light);animation:none}
+  .station-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;font-weight:700;font-size:13px;color:#fff}
+  .station-num.s1{background:#3F4A5E}.station-num.s2{background:#5E4A8E}.station-num.s3{background:#2E7A8C}.station-num.s4{background:#1F8A60}.station-num.s5{background:#B85829}.station-num.s6{background:#8E2A2A}
+  .station-title{font-weight:700;font-size:13.5px;color:var(--text);margin-top:4px}
+  .station-desc{font-size:11.5px;color:var(--text-muted)}
+  .hero-summary{background:var(--bg-soft);border-left:3px solid var(--accent);padding:14px 18px;border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;color:var(--text)}
+  .subtopic{margin-bottom:56px;padding-top:8px}
+  .subtopic-header{margin-bottom:22px;padding:18px 22px;background:var(--bg-elevated);border-left:4px solid var(--accent);border-radius:var(--r-soft);box-shadow:var(--shadow-sm)}
+  .subtopic-header.s1{border-left-color:#3F4A5E}.subtopic-header.s2{border-left-color:#5E4A8E}.subtopic-header.s3{border-left-color:#2E7A8C}.subtopic-header.s4{border-left-color:#1F8A60}.subtopic-header.s5{border-left-color:#B85829}.subtopic-header.s6{border-left-color:#8E2A2A}
+  .subtopic-meta{display:inline-block;font-size:11px;color:var(--text-soft);text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
+  .subtopic-header h2{margin:4px 0 4px;font-size:24px;line-height:1.25;color:var(--text)}
+  .subtopic-tagline{margin:0;font-size:14px;color:var(--text-muted)}
+  .block{background:var(--bg-elevated);border:1px solid var(--border-soft);border-radius:var(--r-card);padding:22px 26px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+  .block h3{margin:0 0 12px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);display:inline-flex;gap:8px;align-items:center}
+  .block p{margin:0 0 10px;font-size:15px}
+  .block p:last-child{margin-bottom:0}
+  .block ul,.block ol{margin:8px 0 0;padding-left:22px}
+  .block li{margin-bottom:6px;font-size:15px}
+  .before-after{display:grid;grid-template-columns:1fr 24px 1fr;gap:14px;align-items:center}
+  @media (max-width:720px){.before-after{grid-template-columns:1fr}.ba-arrow{transform:rotate(90deg);justify-self:center}}
+  .ba-card{padding:16px;border-radius:var(--r-soft);border:1px solid var(--border-soft)}
+  .ba-card.before{background:var(--warn-soft);border-color:var(--warn)}
+  .ba-card.after{background:var(--success-soft);border-color:var(--success)}
+  .ba-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+  .ba-card.before .ba-label{color:var(--warn)}
+  .ba-card.after .ba-label{color:var(--success)}
+  .ba-card p{font-size:14px}
+  .ba-arrow{font-size:22px;color:var(--accent);text-align:center}
+  .analogy{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-elevated) 100%);border-color:var(--gold)}
+  .analogy .ico-flag{display:inline-block;padding:2px 8px;background:var(--gold);color:#1F2937;font-weight:700;font-size:11px;border-radius:var(--r-pill);margin-right:8px}
+  .quick-check{background:var(--accent-soft);border-color:var(--accent-light)}
+  .qc-question{font-weight:600;margin-bottom:14px;font-size:15px}
+  .qc-options{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+  .qc-option{background:var(--bg-elevated);border:1.5px solid var(--border);border-radius:var(--r-soft);padding:12px 14px;cursor:pointer;text-align:left;font-size:14px;color:var(--text);transition:all .15s var(--ease);font-family:inherit;animation:btn-pop 2.4s ease-in-out infinite}
+  .qc-option:hover{background:var(--accent-soft);border-color:var(--accent-light);animation:none}
+  .qc-option.correct{background:var(--success-soft);border-color:var(--success);color:var(--success);font-weight:600;animation:none}
+  .qc-option.wrong{background:var(--danger-soft);border-color:var(--danger);color:var(--danger);animation:none}
+  .qc-option.disabled{cursor:default;opacity:.6;animation:none}
+  .qc-feedback{padding:12px 14px;border-radius:var(--r-soft);background:var(--bg);border:1px solid var(--border-soft);font-size:14px;display:none}
+  .qc-feedback.show{display:block}
+  .qc-feedback.right{background:var(--success-soft);border-color:var(--success);color:var(--success)}
+  .qc-feedback.wrong-fb{background:var(--danger-soft);border-color:var(--danger);color:var(--danger)}
+  .eli-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:720px){.eli-pair{grid-template-columns:1fr}}
+  .eli-card{background:var(--bg-soft);border:1px solid var(--border-soft);border-radius:var(--r-soft);padding:18px}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:var(--r-pill);margin-bottom:8px}
+  .eli-tag.five{background:#FFE4B5;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli-card p{font-size:14px;margin:0}
+  .real-world{background:var(--bg-soft);border-left:4px solid var(--accent)}
+  .real-world::before{content:'👁️ ' attr(data-eyebrow);display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin-bottom:8px}
+  .term{color:var(--accent);border-bottom:1px dashed var(--accent-light);cursor:help;position:relative;font-weight:500}
+  .term:hover,.term.pinned{background:var(--accent-soft);border-radius:3px;padding:0 3px;margin:0 -3px}
+  .term .tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 14px;border-radius:var(--r-soft);font-size:12px;line-height:1.5;font-weight:400;white-space:normal;width:280px;opacity:0;pointer-events:none;transition:opacity .15s var(--ease);z-index:50;box-shadow:var(--shadow-md)}
+  .term:hover .tooltip,.term.pinned .tooltip{opacity:1;pointer-events:auto}
+  .term .tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--text)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;line-height:1.5}
+  .flashcard-front{background:var(--bg-elevated);border:1.5px solid var(--accent-light);color:var(--text);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);font-weight:400;padding:16px;overflow-y:auto;font-size:12px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--text)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--text-soft);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--border-soft);border-radius:var(--r-soft);padding:16px 18px}
+  .quiz-prompt{font-weight:600;margin-bottom:10px;font-size:14px}
+  .quiz-pause-tag{display:inline-block;font-size:10px;padding:3px 8px;background:var(--gold);color:#1F2937;border-radius:var(--r-pill);margin-bottom:8px;font-weight:700}
+  .quiz-reveal-btn{background:var(--accent);color:#fff;border:0;padding:8px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s var(--ease);animation:btn-pop 2.4s ease-in-out infinite;font-family:inherit}
+  [data-theme="dark"] .quiz-reveal-btn{color:var(--bg)}
+  .quiz-reveal-btn:hover{background:var(--accent-light);animation:none}
+  .quiz-answer{margin-top:12px;padding:12px 14px;background:var(--bg-elevated);border-radius:var(--r-soft);border:1px solid var(--success);font-size:13.5px;display:none}
+  .quiz-answer.show{display:block}
+  .quiz-answer-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--success);margin-bottom:6px}
+  .quiz-reasoning{margin-top:8px;font-size:12.5px;color:var(--text-muted);font-style:italic}
+  .animation-section{margin:56px 0;padding:28px;background:var(--bg-elevated);border:1px solid var(--border-soft);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .animation-frame{width:100%;min-height:720px;border:0;background:var(--bg);border-radius:var(--r-soft)}
+  .recap{background:linear-gradient(135deg,var(--accent) 0%,var(--accent-light) 100%);color:#fff;border-radius:var(--r-card);padding:32px;margin-top:56px}
+  [data-theme="dark"] .recap{background:linear-gradient(135deg,var(--accent-soft) 0%,var(--bg-elevated) 100%);color:var(--text);border:1px solid var(--border-soft)}
+  .recap h2{margin:0 0 14px;font-size:24px}
+  .recap-points{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
+  .recap-point{background:rgba(255,255,255,.13);padding:14px;border-radius:var(--r-soft);font-size:13px}
+  [data-theme="dark"] .recap-point{background:var(--bg);border:1px solid var(--border-soft)}
+  .recap-next{margin-top:22px;padding:14px 18px;background:rgba(255,255,255,.12);border-radius:var(--r-soft);font-size:14px}
+  [data-theme="dark"] .recap-next{background:var(--bg);border:1px solid var(--border-soft)}
+  footer{text-align:center;padding:32px 24px;color:var(--text-soft);font-size:12px;border-top:1px solid var(--border-soft)}
+  .mini-vis{background:var(--bg-soft);border-radius:var(--r-soft);padding:14px;margin:14px 0;font-size:13px}
+  .mini-vis-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-soft);margin-bottom:8px}
+  .types-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:8px}
+  @media (max-width:720px){.types-grid{grid-template-columns:1fr}}
+  .type-card{background:var(--bg-elevated);border:1.5px solid var(--border-soft);border-radius:var(--r-soft);padding:14px}
+  .type-card.t1{border-color:#5E4A8E;background:rgba(94,74,142,.06)}
+  .type-card.t2{border-color:#2E7A8C;background:rgba(46,122,140,.06)}
+  .type-card.t3{border-color:#1F8A60;background:rgba(31,138,96,.06)}
+  .type-card.t4{border-color:#B85829;background:rgba(184,88,41,.06)}
+  .type-card h4{margin:0 0 4px;font-size:14px}
+  .type-card.t1 h4{color:#5E4A8E}.type-card.t2 h4{color:#2E7A8C}.type-card.t3 h4{color:#1F8A60}.type-card.t4 h4{color:#B85829}
+  .type-card p{margin:0;font-size:12px;color:var(--text-muted)}
+  .table{width:100%;border-collapse:collapse;font-size:13px}
+  .table th,.table td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--border-soft)}
+  .table th{background:var(--bg);color:var(--text-muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+  .illustration-block{background:var(--bg-elevated);border:1px solid var(--border-soft);border-radius:var(--r-card);padding:18px 22px;margin-bottom:16px;box-shadow:var(--shadow-sm)}
+  .illustration-block h3{margin:0 0 12px;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted)}
+  .illustration{width:100%;max-width:1080px;margin:0 auto;display:block;background:var(--bg-soft);border-radius:var(--r-soft);padding:12px}
+  .illustration svg{width:100%;height:auto;display:block}
+  .illustration-caption{text-align:center;font-size:13px;color:var(--text-muted);margin-top:10px;font-style:italic}
+  .glossary-block{background:linear-gradient(135deg,#FBF4D6 0%,#FFFFFF 100%);border:2px solid var(--gold);border-radius:var(--r-card);padding:24px 26px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+  [data-theme="dark"] .glossary-block{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-elevated) 100%)}
+  .glossary-block .gloss-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .glossary-block .gloss-icon{width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;color:#1F2937;font-weight:700;font-size:18px;flex-shrink:0}
+  .glossary-block h3{margin:0;font-size:16px;font-weight:700;color:var(--text);text-transform:none;letter-spacing:0}
+  .glossary-block .gloss-intro{margin:4px 0 16px;font-size:14px;color:var(--text-muted)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .gloss-card{background:var(--bg-elevated);border:1.5px solid var(--border);border-radius:var(--r-soft);padding:14px 16px;position:relative;border-left-width:5px}
+  .gloss-card.tag-tool{border-left-color:#1F8A60}
+  .gloss-card.tag-driver{border-left-color:#5E4A8E}
+  .gloss-card.tag-protocol{border-left-color:#2E7A8C}
+  .gloss-card.tag-hardware{border-left-color:#3F4A5E}
+  .gloss-card.tag-security{border-left-color:#8E2A2A}
+  .gloss-card.tag-config{border-left-color:#B85829}
+  .gloss-card.tag-concept{border-left-color:#1A6FA8}
+  .gloss-name{font-weight:700;font-size:14px;color:var(--text);display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .gloss-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:var(--r-pill);text-transform:uppercase;letter-spacing:1px;color:#FFFFFF}
+  .gloss-card.tag-tool .gloss-tag{background:#1F8A60}
+  .gloss-card.tag-driver .gloss-tag{background:#5E4A8E}
+  .gloss-card.tag-protocol .gloss-tag{background:#2E7A8C}
+  .gloss-card.tag-hardware .gloss-tag{background:#3F4A5E}
+  .gloss-card.tag-security .gloss-tag{background:#8E2A2A}
+  .gloss-card.tag-config .gloss-tag{background:#B85829}
+  .gloss-card.tag-concept .gloss-tag{background:#1A6FA8}
+  .gloss-what{font-size:13px;color:var(--text);margin:6px 0 4px;line-height:1.45}
+  .gloss-what strong{color:var(--accent)}
+  .gloss-why{font-size:12.5px;color:var(--text-muted);font-style:italic;line-height:1.45;border-top:1px dashed var(--border-soft);padding-top:6px;margin-top:6px}
+  .gloss-why::before{content:"⚡ why it matters: ";font-style:normal;font-weight:700;color:var(--accent);font-size:11px}
+  .term-pill{display:inline-block;padding:1px 8px;border-radius:var(--r-pill);font-weight:600;font-size:0.92em;border:1.5px solid;line-height:1.4}
+  .term-pill.tag-tool{color:#1F8A60;border-color:#1F8A60;background:rgba(31,138,96,0.08)}
+  .term-pill.tag-driver{color:#5E4A8E;border-color:#5E4A8E;background:rgba(94,74,142,0.08)}
+  .term-pill.tag-protocol{color:#2E7A8C;border-color:#2E7A8C;background:rgba(46,122,140,0.08)}
+  .term-pill.tag-hardware{color:#3F4A5E;border-color:#3F4A5E;background:rgba(63,74,94,0.08)}
+  .term-pill.tag-security{color:#8E2A2A;border-color:#8E2A2A;background:rgba(142,42,42,0.08)}
+  .term-pill.tag-config{color:#B85829;border-color:#B85829;background:rgba(184,88,41,0.08)}
+  .term-pill.tag-concept{color:#1A6FA8;border-color:#1A6FA8;background:rgba(26,111,168,0.08)}
+  [data-theme="dark"] .term-pill{background:transparent}
+  .callout{display:flex;gap:14px;padding:14px 18px;border-radius:var(--r-soft);margin:14px 0;border-left:5px solid}
+  .callout-icon{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-weight:700;font-size:14px}
+  .callout-body{flex:1;font-size:13.5px;line-height:1.55}
+  .callout-body strong{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+  .callout.tip{background:rgba(31,138,96,0.08);border-left-color:#1F8A60}
+  .callout.tip .callout-icon{background:#1F8A60}.callout.tip strong{color:#1F8A60}
+  .callout.warn{background:rgba(184,88,41,0.08);border-left-color:#B85829}
+  .callout.warn .callout-icon{background:#B85829}.callout.warn strong{color:#B85829}
+  .callout.danger{background:rgba(142,42,42,0.08);border-left-color:#8E2A2A}
+  .callout.danger .callout-icon{background:#8E2A2A}.callout.danger strong{color:#8E2A2A}
+  .callout.note{background:rgba(26,111,168,0.08);border-left-color:#1A6FA8}
+  .callout.note .callout-icon{background:#1A6FA8}.callout.note strong{color:#1A6FA8}
+</style>
+</head>
+<body data-theme="light">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · vSphere Fundamentals</span></a>
+    <span class="progress-label">Lesson 11 of 12</span>
+    <div class="progress" aria-label="Course progress"><div class="progress-fill"></div></div>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 <span id="theme-label">Dark</span></button>
+  </div>
+</header>
+
+<nav class="course-nav" aria-label="Course lessons">
+  <div class="course-nav-inner">
+    <a href="preview-lesson-01.html" class="lesson-link"><span class="num">01</span><span class="name">Intro</span></a>
+    <a href="preview-lesson-02.html" class="lesson-link"><span class="num">02</span><span class="name">Benefits</span></a>
+    <a href="preview-lesson-03.html" class="lesson-link"><span class="num">03</span><span class="name">Components</span></a>
+    <a href="preview-lesson-04.html" class="lesson-link"><span class="num">04</span><span class="name">History</span></a>
+    <a href="preview-lesson-05.html" class="lesson-link"><span class="num">05</span><span class="name">Context &amp; resources</span></a>
+    <a href="preview-lesson-06.html" class="lesson-link"><span class="num">06</span><span class="name">Types</span></a>
+    <a href="preview-lesson-07.html" class="lesson-link"><span class="num">07</span><span class="name">SDDC</span></a>
+    <a href="preview-lesson-08.html" class="lesson-link"><span class="num">08</span><span class="name">Installing &amp; configuring ESXi</span></a>
+    <a href="preview-lesson-09.html" class="lesson-link"><span class="num">09</span><span class="name">Deploying &amp; configuring vCenter</span></a>
+    <a href="preview-lesson-10.html" class="lesson-link"><span class="num">10</span><span class="name">Configuring vSphere networking</span></a>
+    <a href="preview-lesson-11.html" class="lesson-link active"><span class="num">11</span><span class="name">Configuring vSphere storage</span></a>
+    <a href="preview-lesson-12.html" class="lesson-link"><span class="num">12</span><span class="name">Deploying virtual machines</span></a>
+  </div>
+</nav>
+
+<nav class="sub-nav" aria-label="Subtopics in this lesson">
+  <div class="sub-nav-inner">
+    <span class="sub-nav-label">In this lesson</span>
+    <a href="#sub-1" class="sub-link"><span class="num">1</span> Overview</a>
+    <a href="#sub-2" class="sub-link"><span class="num">2</span> VMFS</a>
+    <a href="#sub-3" class="sub-link"><span class="num">3</span> NFS</a>
+    <a href="#sub-4" class="sub-link"><span class="num">4</span> vSAN</a>
+    <a href="#sub-5" class="sub-link"><span class="num">5</span> vVols</a>
+    <a href="#sub-6" class="sub-link"><span class="num">6</span> SPBM</a>
+  </div>
+</nav>
+
+<main>
+
+  <div class="lesson-meta">
+    <span class="badge">Sub-topic lesson</span>
+    <span>~30 min · 6 subtopics · 18 flashcards · 12 quiz questions</span>
+  </div>
+
+  <h1>Configuring vSphere Storage</h1>
+  <p class="lesson-tagline">
+    Hosts and a vCenter without storage hold no VMs. vSphere consumes storage as <strong>datastores</strong> — logical containers that the hypervisor mounts. Six moves to understand the four datastore types and the policies that govern them.
+  </p>
+
+  <section class="hero">
+    <h2 class="hero-title">The vSphere storage journey</h2>
+    <p class="hero-subtitle">Click any station below to jump to that subtopic.</p>
+    <div class="journey">
+      <a href="#sub-1" class="station"><span class="station-num s1">1</span><span class="station-title">Overview</span><span class="station-desc">Datastore + four types.</span></a>
+      <a href="#sub-2" class="station"><span class="station-num s2">2</span><span class="station-title">VMFS</span><span class="station-desc">Block over FC / iSCSI. Multipathing.</span></a>
+      <a href="#sub-3" class="station"><span class="station-num s3">3</span><span class="station-title">NFS</span><span class="station-desc">File over IP. NAS owns the FS.</span></a>
+      <a href="#sub-4" class="station"><span class="station-num s4">4</span><span class="station-title">vSAN</span><span class="station-desc">HCI · pool local disks.</span></a>
+      <a href="#sub-5" class="station"><span class="station-num s5">5</span><span class="station-title">vVols</span><span class="station-desc">VM-centric on smart array.</span></a>
+      <a href="#sub-6" class="station"><span class="station-num s6">6</span><span class="station-title">SPBM</span><span class="station-desc">Policy-driven · thin/thick.</span></a>
+    </div>
+    <div class="hero-summary">
+      End state: a storage layer that's performant, resilient, and policy-driven — ready for VM workloads (lesson 12).
+    </div>
+  </section>
+
+  <!-- ============================ SUBTOPIC 1 ============================ -->
+  <section class="subtopic" id="sub-1">
+    <header class="subtopic-header s1">
+      <span class="subtopic-meta">Subtopic 1 of 6</span>
+      <h2>Storage overview — datastores and the four types</h2>
+      <p class="subtopic-tagline">The unit of storage vSphere consumes, and the four backings.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">Storage in vSphere comes in four flavours each with their own acronyms. Here's each one in plain language.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Datastore <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The logical container vSphere uses for storage. Hosts mount datastores; VMs are stored on them as files (.vmdk, .vmx, snapshots, ISOs).</div>
+          <div class="gloss-why">"Where do VMs live?" → on a datastore. Every operation that creates a VM asks which datastore.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Block storage <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Storage that exposes a raw chunk of bytes (a "block device") that the host puts a file system on top of. Like a USB drive your OS formats.</div>
+          <div class="gloss-why">VMFS sits on top of block storage. The host owns the filesystem, the array owns the bytes.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">File storage <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Storage that exposes a network filesystem (NFS, SMB) — the array owns the filesystem; the host just mounts it.</div>
+          <div class="gloss-why">NFS is file storage. Simpler to provision than block; no LUN dance, no multipathing.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">VMFS · Virtual Machine File System <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> VMware's clustered file system that lives on top of a block LUN. Multiple ESXi hosts can mount the same VMFS volume simultaneously and share VMs.</div>
+          <div class="gloss-why">VMFS is the magic that lets a SAN LUN be shared across many hosts safely. Without VMFS, only one host could write to the LUN at a time.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">NFS · Network File System <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A Unix-world file-sharing protocol. The NAS exports a directory tree; clients mount it as if it were local.</div>
+          <div class="gloss-why">In vSphere, NFS is one of the four datastore types. Simpler to provision than VMFS.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vSAN <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> VMware's software-defined storage. Pools the local disks (SSDs, NVMe) on every host in a cluster into one shared datastore. No external array.</div>
+          <div class="gloss-why">"Hyperconverged" pattern — compute and storage in the same boxes. One vendor relationship instead of two.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vVols · Virtual Volumes <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A storage model where the array tracks each VM's storage as separate objects (config, disk, swap, snapshot). Requires a vVol-capable array.</div>
+          <div class="gloss-why">Per-VM array-native operations: snapshots, replication, encryption all per-VM, not per-LUN. The most modern option.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">SAN · Storage Area Network <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A dedicated network for block storage traffic between servers and arrays. Usually Fibre Channel, sometimes iSCSI over Ethernet.</div>
+          <div class="gloss-why">SAN is the wire/fabric; LUN is the chunk of storage; VMFS is the filesystem. All three together = the classic block-storage pattern.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">NAS · Network-Attached Storage <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A storage appliance you talk to over IP using a file protocol (NFS, SMB). The opposite of SAN — file vs block.</div>
+          <div class="gloss-why">NAS is what you mount NFS datastores from. Easier to provision, fewer moving parts than SAN.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">HCI · Hyperconverged Infrastructure <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> An architecture pattern where compute, storage, and (sometimes) networking live in the same boxes — pooled and managed as one. vSAN is the storage half of HCI.</div>
+          <div class="gloss-why">Avoids the separate-storage-array purchase and skill set. One vendor, one operating model.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">VM files (.vmdk, .vmx) <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The files that make up a VM. <code>.vmx</code> = config; <code>-flat.vmdk</code> = disk data; <code>.nvram</code> = firmware state; plus log files.</div>
+          <div class="gloss-why">A VM is a folder of files on a datastore. Knowing the file types makes the rest of vSphere less mysterious.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Datastore choice <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The decision: VMFS, NFS, vSAN, or vVols. Driven by what storage you already have and what features you need.</div>
+          <div class="gloss-why">No "right" answer — depends on existing infrastructure. New environments lean toward vSAN; existing FC shops lean toward VMFS.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A VM consumes a datastore. Four backing types: VMFS (block), NFS (file), vSAN (HCI from local disks), vVols (per-VM objects on smart array).">
+          <!-- VM at top -->
+          <g transform="translate(380,16)">
+            <rect width="160" height="50" rx="8" fill="#5DCAA5" opacity="0.6" stroke="#1F8A60"/>
+            <text x="80" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1F2937">VM</text>
+            <text x="80" y="40" text-anchor="middle" font-size="10" fill="#1F2937">.vmx + .vmdk</text>
+          </g>
+          <line x1="460" y1="66" x2="460" y2="86" stroke="#3F4A5E" stroke-width="2" marker-end="url(#a11ov)"/>
+          <text x="460" y="106" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">stored on a datastore (4 types)</text>
+
+          <!-- 4 datastore type cards -->
+          <g transform="translate(20,130)">
+            <rect width="210" height="180" rx="10" fill="#FFFFFF" stroke="#5E4A8E" stroke-width="2"/>
+            <text x="105" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="14" font-weight="700" fill="#5E4A8E">VMFS</text>
+            <text x="105" y="44" text-anchor="middle" font-size="10" fill="#1F2937">VMware clustered FS</text>
+            <text x="105" y="60" text-anchor="middle" font-size="10" fill="#1F2937">on shared block (FC/iSCSI)</text>
+            <!-- icon: warehouse with shared LUN -->
+            <g transform="translate(35,76)">
+              <rect width="140" height="50" rx="3" fill="#5E4A8E" opacity="0.15" stroke="#5E4A8E"/>
+              <rect x="10" y="10" width="120" height="14" rx="2" fill="#5E4A8E" opacity="0.85"/>
+              <text x="70" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">shared LUN</text>
+              <text x="70" y="40" text-anchor="middle" font-size="9" fill="#1F2937">multiple hosts mount</text>
+            </g>
+            <text x="105" y="148" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">"shared warehouse floor"</text>
+          </g>
+
+          <g transform="translate(250,130)">
+            <rect width="210" height="180" rx="10" fill="#FFFFFF" stroke="#2E7A8C" stroke-width="2"/>
+            <text x="105" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="14" font-weight="700" fill="#2E7A8C">NFS</text>
+            <text x="105" y="44" text-anchor="middle" font-size="10" fill="#1F2937">file system over IP</text>
+            <text x="105" y="60" text-anchor="middle" font-size="10" fill="#1F2937">NAS owns the FS</text>
+            <!-- icon: NAS with mount line -->
+            <g transform="translate(35,76)">
+              <rect width="50" height="50" rx="3" fill="#3F4A5E"/>
+              <text x="25" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">host</text>
+              <line x1="50" y1="25" x2="90" y2="25" stroke="#2E7A8C" stroke-width="2" stroke-dasharray="3,3"/>
+              <rect x="90" y="0" width="50" height="50" rx="3" fill="#2E7A8C"/>
+              <text x="115" y="22" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">NAS</text>
+              <text x="115" y="36" text-anchor="middle" font-size="8" fill="#FFFFFF">/vol/vsphere</text>
+            </g>
+            <text x="105" y="148" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">"file room down the hall"</text>
+          </g>
+
+          <g transform="translate(480,130)">
+            <rect width="210" height="180" rx="10" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2"/>
+            <text x="105" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="14" font-weight="700" fill="#1F8A60">vSAN</text>
+            <text x="105" y="44" text-anchor="middle" font-size="10" fill="#1F2937">HCI · local disks pooled</text>
+            <text x="105" y="60" text-anchor="middle" font-size="10" fill="#1F2937">no external array</text>
+            <!-- icon: 3 hosts contributing to one pool -->
+            <g transform="translate(20,76)">
+              <rect width="40" height="22" rx="2" fill="#5A6B81"/><text x="20" y="15" text-anchor="middle" font-size="8" fill="#FFFFFF">host-1</text>
+              <rect x="65" width="40" height="22" rx="2" fill="#5A6B81"/><text x="85" y="15" text-anchor="middle" font-size="8" fill="#FFFFFF">host-2</text>
+              <rect x="130" width="40" height="22" rx="2" fill="#5A6B81"/><text x="150" y="15" text-anchor="middle" font-size="8" fill="#FFFFFF">host-3</text>
+              <line x1="20" y1="22" x2="85" y2="36" stroke="#1F8A60" stroke-width="1.2"/>
+              <line x1="85" y1="22" x2="85" y2="36" stroke="#1F8A60" stroke-width="1.2"/>
+              <line x1="150" y1="22" x2="85" y2="36" stroke="#1F8A60" stroke-width="1.2"/>
+              <rect x="35" y="36" width="100" height="22" rx="3" fill="#1F8A60"/>
+              <text x="85" y="51" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">vsanDatastore</text>
+            </g>
+            <text x="105" y="148" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">"every closet shared"</text>
+          </g>
+
+          <g transform="translate(710,130)">
+            <rect width="190" height="180" rx="10" fill="#FFFFFF" stroke="#B85829" stroke-width="2"/>
+            <text x="95" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="14" font-weight="700" fill="#B85829">vVols</text>
+            <text x="95" y="44" text-anchor="middle" font-size="10" fill="#1F2937">VM-centric on smart array</text>
+            <text x="95" y="60" text-anchor="middle" font-size="10" fill="#1F2937">array tracks per-VM</text>
+            <g transform="translate(20,76)">
+              <rect width="150" height="22" rx="3" fill="#B85829"/>
+              <text x="75" y="15" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">smart array</text>
+              <rect y="26" width="48" height="14" rx="2" fill="#5DCAA5" opacity="0.7"/>
+              <text x="24" y="36" text-anchor="middle" font-size="7" fill="#1F2937">vmA-disk</text>
+              <rect x="50" y="26" width="48" height="14" rx="2" fill="#5DCAA5" opacity="0.7"/>
+              <text x="74" y="36" text-anchor="middle" font-size="7" fill="#1F2937">vmA-swap</text>
+              <rect x="100" y="26" width="48" height="14" rx="2" fill="#F2C94C" opacity="0.7"/>
+              <text x="124" y="36" text-anchor="middle" font-size="7" fill="#1F2937">vmB-disk</text>
+            </g>
+            <text x="95" y="148" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">"smart locker system"</text>
+          </g>
+
+          <defs><marker id="a11ov" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/></marker></defs>
+        </svg>
+        <div class="illustration-caption">A VM is stored on a datastore. Four ways the datastore can be backed: VMFS (shared block), NFS (file from a NAS), vSAN (cluster-pooled local disks), vVols (per-VM objects on a smart array).</div>
+      </div>
+    </article>
+
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>Pick by what you already have</strong>Already have an FC SAN? VMFS. Have a NAS? NFS. Greenfield with capable servers? vSAN. Have a vVol-capable array? vVols. There's no single right answer — the decision is driven by existing infrastructure and team skills.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>You can mix datastore types</strong>One vCenter can have VMFS datastores, NFS datastores, vSAN, and vVols all at once. VMs are placed per-datastore. Real environments often mix types based on the workload's needs.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p>A <span class="term">datastore<span class="tooltip">Logical container vSphere uses for storage. Holds .vmx, .vmdk, snapshots, ISOs. Hosts mount datastores; VMs are stored as files on them. Underlying mechanics differ by type (VMFS / NFS / vSAN / vVols).</span></span> is the unit of storage vSphere consumes. It's a logical container that hosts mount and use to store VM files (<code>.vmdk</code>, <code>.vmx</code>, snapshots, ISOs). Every VM lives on one or more datastores.</p>
+      <div class="mini-vis">
+        <div class="mini-vis-title">Four datastore types in vSphere</div>
+        <div class="types-grid">
+          <div class="type-card t1"><h4>VMFS</h4><p>VMware clustered FS on block storage (FC, iSCSI). Hosts share one LUN safely.</p></div>
+          <div class="type-card t2"><h4>NFS</h4><p>Network file system mounted from a NAS over IP. NAS owns the file system.</p></div>
+          <div class="type-card t3"><h4>vSAN</h4><p>Pools local disks across cluster hosts into one HCI datastore. No external array.</p></div>
+          <div class="type-card t4"><h4>vVols</h4><p>Smart-array datastore where each VM's storage is a separate object the array tracks.</p></div>
+        </div>
+      </div>
+      <p>Choice depends on what storage you already have. vSphere abstracts the differences — VM management feels the same on all four.</p>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>"VMFS," "NFS," "vSAN" all sound like the same thing — "where VMs live." Can't tell why someone would pick one over the other.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>You can place each on the spectrum: block-vs-file, external-vs-local, FS-on-host vs FS-on-array, VM-aware vs not.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>A datastore is the building's storage room. Different rooms hold things differently — VMFS is a shared warehouse floor, NFS is a leased file room down the hall, vSAN is the building making its own storage room out of every closet, vVols is a smart locker system that knows what's in each locker.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">A team wants to run VMs but has no external storage array — just servers with local disks. They want shared storage all hosts can use. Natural choice?</div>
+      <div class="qc-options" data-qc="qc1" data-correct="b">
+        <button class="qc-option" data-opt="a">VMFS over FC.</button>
+        <button class="qc-option" data-opt="b">vSAN. Pools local disks across hosts into one software-defined datastore visible to all hosts; no external array required.</button>
+        <button class="qc-option" data-opt="c">NFS from a third-party NAS appliance they don't own.</button>
+        <button class="qc-option" data-opt="d">There's no way to do shared storage without an external array.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc1"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>The big computer needs a place to keep all its little computers' files. That place is called a datastore. There are different kinds — some shared boxes from a warehouse, some file rooms next door, some made by sharing each computer's own drives.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>A datastore is a logical place where vSphere stores VM files. Four kinds: VMFS (host puts a VMware FS on top of a SAN LUN), NFS (host mounts a network file system from a NAS), vSAN (cluster pools its local disks), vVols (smart array exposes per-VM storage objects). Right choice depends on existing storage. vSphere abstracts the differences so creating, moving, snapshotting feels the same whatever's underneath.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → Datastores. Listing: <code>ds-vmfs-01</code> (VMFS over iSCSI), <code>ds-nfs-share</code> (NFS from a NetApp filer), <code>ds-vsan-cluster1</code> (vSAN). Right-click → New Datastore. Wizard asks Type: VMFS / NFS / vVol. Pick VMFS, point to the LUN the storage team presented, format with VMFS-6, name it. Five minutes later mountable on every host in the cluster.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · overview (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a datastore in vSphere?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A logical container vSphere uses for storage. Holds .vmdk (virtual disks), .vmx (config), snapshots, ISOs. Hosts mount datastores; VMs are stored on them.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Four datastore types vSphere supports?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">VMFS (VMware clustered FS on block — FC/iSCSI), NFS (network FS from NAS over IP), vSAN (software-defined pooled from local disks), vVols (VM-centric on a vVol-capable array).</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Local disks, no external array, want shared storage. Best fit?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">vSAN. Pools local disks across cluster hosts into one software-defined datastore visible to all hosts. No external array. Workarounds (VMFS over iSCSI to local LUNs, NFS from VM-as-NAS) exist but aren't the intended design.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · overview (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'overview' mode</span>
+          <div class="quiz-prompt">The diagram shows four datastore icons labeled VMFS, NFS, vSAN, vVols. Which one is the natural choice when a team has servers with local disks but no external array, and wants shared storage all hosts can use?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>vSAN. Pools the local disks across cluster hosts into one software-defined datastore visible to all hosts. No external array. Other options exist but are workarounds, not the intended design.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">Name three kinds of files that live on a datastore.</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>.vmdk (virtual disk), .vmx (VM configuration), snapshots (-delta files), ISOs, log files. Anything VM-related lives on a datastore.</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================ SUBTOPIC 2 ============================ -->
+  <section class="subtopic" id="sub-2">
+    <header class="subtopic-header s2">
+      <span class="subtopic-meta">Subtopic 2 of 6</span>
+      <h2>VMFS datastores on block storage</h2>
+      <p class="subtopic-tagline">VMware's clustered file system on shared block storage.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">Block-storage vocabulary. Mostly hardware-and-protocol terms.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-hardware">
+          <div class="gloss-name">LUN · Logical Unit Number <span class="gloss-tag">hardware</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A chunk of block storage from an array, presented to one or more hosts as a "disk." Each LUN has a unique identifier.</div>
+          <div class="gloss-why">When the storage team "carves a 2 TB LUN," they're creating a chunk for the host to put VMFS on. The unit of block-storage allocation.</div>
+        </div>
+
+        <div class="gloss-card tag-hardware">
+          <div class="gloss-name">HBA · Host Bus Adapter <span class="gloss-tag">hardware</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A specialized card on the host (Qlogic, Emulex) that talks to a storage fabric. FC HBAs talk Fibre Channel; iSCSI initiators talk iSCSI over Ethernet (can be hardware or software).</div>
+          <div class="gloss-why">The bridge between the host's PCIe bus and the storage network. ESXi names them <code>vmhba0</code>, <code>vmhba1</code>, etc.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">FC · Fibre Channel <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A purpose-built fabric for storage traffic. Very low latency, high cost. Used in big enterprise SAN environments.</div>
+          <div class="gloss-why">FC was the dominant SAN protocol for decades. Newer environments often use iSCSI or NVMe over Fabrics instead.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">iSCSI <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Block storage over TCP/IP. Cheaper than FC because it rides Ethernet. Common in mid-market and labs.</div>
+          <div class="gloss-why">"SCSI commands wrapped in TCP/IP packets." Same VMFS on top — the fabric is just IP networking.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">VMFS-6 · VMFS-5 <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Two versions of VMFS. VMFS-6 is the latest (since vSphere 6.5); VMFS-5 was the prior major version. Each has different on-disk layouts and features.</div>
+          <div class="gloss-why">New datastores should always be VMFS-6. Older VMFS-5 datastores can be upgraded but not in-place — you'd Storage vMotion off, recreate, Storage vMotion back.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Distributed locking <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A coordination mechanism that ensures only one host writes to a given block at a time, even when many hosts share the same VMFS volume.</div>
+          <div class="gloss-why">VMFS's killer feature. It's what makes shared LUNs safe — without it, two hosts writing the same block would corrupt the data.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Multipathing <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Configuring multiple physical paths from host to storage array — through different HBAs, different fabric switches, different array controllers.</div>
+          <div class="gloss-why">A single cable / HBA / switch / controller failure shouldn't lose the storage. Multipathing distributes I/O across paths and fails over automatically.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">PSA · Pluggable Storage Architecture <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> ESXi's framework for handling multipathing. Vendors plug their own multipathing modules into PSA.</div>
+          <div class="gloss-why">Lets array vendors ship optimised drivers (Dell PowerPath, EMC, NetApp). Most environments stick with VMware's built-in modules.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">MRU · Most Recently Used (path policy) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A multipathing policy: keep using whichever path was last working. Default for active/passive arrays.</div>
+          <div class="gloss-why">For arrays where only one controller serves a LUN at a time, MRU avoids "bouncing" the LUN between controllers.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Round Robin (path policy) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A multipathing policy: distribute I/O across all available paths in turn.</div>
+          <div class="gloss-why">Best for active/active arrays (most modern arrays). Maximises aggregate bandwidth and reduces single-path bottlenecks.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">WWN · World Wide Name <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A 16-character hex identifier baked into FC HBAs (like a MAC address but for FC). Each port has its own WWN.</div>
+          <div class="gloss-why">When you're "presenting a LUN to a host," the storage team adds the host's WWN to the LUN's access list. Wrong WWN = host can't see LUN.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">IQN · iSCSI Qualified Name <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> An iSCSI identifier — the iSCSI equivalent of a WWN. Looks like <code>iqn.1998-01.com.vmware:esx-01-12345</code>.</div>
+          <div class="gloss-why">Same role as WWN: storage uses IQNs to control which hosts can access which LUNs.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One LUN reachable through multiple paths from two HBAs to a storage array. Round Robin distributes I/O. One path fails, the other carries everything.">
+          <text x="460" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#5E4A8E">VMFS on a shared LUN · multipathing for resilience</text>
+
+          <!-- Host -->
+          <g transform="translate(40,80)">
+            <rect width="200" height="120" rx="8" fill="#3F4A5E"/>
+            <text x="100" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">ESXi host</text>
+            <rect x="20" y="44" width="70" height="24" rx="3" fill="#5A6B81"/>
+            <text x="55" y="60" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#FFFFFF">vmhba0</text>
+            <rect x="110" y="44" width="70" height="24" rx="3" fill="#5A6B81"/>
+            <text x="145" y="60" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#FFFFFF">vmhba1</text>
+            <text x="100" y="92" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">two HBAs · two fabrics</text>
+          </g>
+
+          <!-- Path A (failed) -->
+          <g>
+            <line x1="240" y1="116" x2="660" y2="116" stroke="#B85829" stroke-width="2.5"/>
+            <text x="450" y="108" text-anchor="middle" font-size="11" font-weight="700" fill="#B85829">path A (failed)</text>
+            <line x1="430" y1="100" x2="470" y2="132" stroke="#B85829" stroke-width="3"/>
+            <line x1="470" y1="100" x2="430" y2="132" stroke="#B85829" stroke-width="3"/>
+          </g>
+          <!-- Path B (active) -->
+          <g>
+            <line x1="240" y1="156" x2="660" y2="156" stroke="#1F8A60" stroke-width="2.5"/>
+            <text x="450" y="174" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60">path B · carries all I/O now</text>
+            <!-- packets flowing -->
+            <circle cx="280" cy="156" r="5" fill="#F2C94C"/>
+            <circle cx="380" cy="156" r="5" fill="#F2C94C"/>
+            <circle cx="480" cy="156" r="5" fill="#F2C94C"/>
+            <circle cx="580" cy="156" r="5" fill="#F2C94C"/>
+          </g>
+
+          <!-- Storage array -->
+          <g transform="translate(660,80)">
+            <rect width="220" height="120" rx="8" fill="#5E4A8E"/>
+            <text x="110" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Storage array</text>
+            <rect x="20" y="44" width="180" height="40" rx="4" fill="#5DCAA5" opacity="0.5"/>
+            <text x="110" y="60" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" fill="#1F2937">LUN_42 · 2 TB</text>
+            <text x="110" y="76" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#1F2937">VMFS-6</text>
+            <text x="110" y="100" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">two controllers</text>
+          </g>
+
+          <text x="460" y="240" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60">Round Robin policy distributes I/O · failover in milliseconds</text>
+          <text x="460" y="260" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">VMFS handles distributed locking so multiple hosts can share the same LUN</text>
+        </svg>
+        <div class="illustration-caption">VMFS on a shared LUN. Multipathing means a cable, switch, or controller can fail without taking the storage down.</div>
+      </div>
+    </article>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body"><strong>Coordinate WWN/IQN with the storage team</strong>For a host to see a LUN, the storage team must add the host's WWN (FC) or IQN (iSCSI) to the LUN's access list. New host not seeing a LUN? Almost always missing from the access list. The fix is on the array side, not the host side.</div>
+    </div>
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>Round Robin for modern arrays</strong>Most modern arrays (Pure, NetApp, PowerStore, VMAX/PowerMax in ALUA-active mode) are active/active and want Round Robin path policy for max throughput. Older active/passive arrays want MRU. When in doubt, ask the array vendor.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>Always VMFS-6 for new datastores</strong>Don't create new VMFS-5 volumes — that version is in maintenance mode. VMFS-6 has better performance, automatic space reclamation, and modern features. Upgrading a VMFS-5 → 6 is a Storage vMotion exercise, not in-place.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p><span class="term">VMFS<span class="tooltip">Virtual Machine File System — VMware's clustered file system designed for shared block storage. Multiple ESXi hosts can mount the same VMFS volume on the same LUN simultaneously. Latest version: VMFS-6.</span></span> is VMware's clustered file system designed for shared block storage. The flow: storage array exposes a <span class="term">LUN<span class="tooltip">Logical Unit Number — a chunk of block storage with a unique identifier, presented by an array to one or more hosts.</span></span>; host sees it through one or more <span class="term">HBAs<span class="tooltip">Host Bus Adapter — the card / driver inside the host that talks to the storage fabric. Examples: FC HBA (Qlogic, Emulex), FCoE CNA, iSCSI initiator (software vmhba like vmhba32, or hardware iSCSI HBA).</span></span> (FC HBA, iSCSI initiator); host formats the LUN with VMFS; multiple hosts can mount the same VMFS volume simultaneously and share VMs across it. VMFS handles distributed locking that makes that safe.</p>
+      <p><span class="term">Multipathing<span class="tooltip">Configuring multiple physical paths from host to storage array (multiple HBAs, fabric switches, controllers) so a cable/switch/controller failure doesn't lose the LUN. vSphere uses Pluggable Storage Architecture with selectable path policies.</span></span> matters: each LUN should be reachable through multiple paths. vSphere's PSA path policies:</p>
+      <ul>
+        <li><strong>Most Recently Used (MRU)</strong> — uses the most recently working path; default for active/passive arrays.</li>
+        <li><strong>Fixed</strong> — sticks with a preferred path; falls back to alternates if it fails. Active/active.</li>
+        <li><strong>Round Robin</strong> — distributes I/O across all paths. Default for many modern arrays.</li>
+        <li><strong>Vendor-specific (NMP, MEM)</strong> — array vendors ship their own modules.</li>
+      </ul>
+      <p>Block storage choices: <strong>Fibre Channel</strong> (purpose-built fabric, low latency, high cost), <strong>iSCSI</strong> (block over TCP/IP, cheaper), <strong>FCoE</strong> (declining).</p>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>Storage team hands you a 2 TB LUN ID and says "have at it." You're not sure where to start in vSphere.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>LUN visible to all cluster hosts via FC/iSCSI is added to a vSphere datastore wizard, formatted as VMFS-6, named, and mounted. Multipathing set to Round Robin.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>VMFS on a block LUN is like a shared warehouse floor with one big concrete slab — multiple hosts walk in and store crates there together. Multipathing is having multiple loading docks so you don't depend on one. VMFS is the floor markings that keep everyone from running into each other.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">A new VMFS datastore is mounted on host-1 only. host-2 doesn't see it even though both hosts are connected to the same SAN. Most likely cause?</div>
+      <div class="qc-options" data-qc="qc2" data-correct="c">
+        <button class="qc-option" data-opt="a">vSphere doesn't support sharing VMFS datastores between hosts.</button>
+        <button class="qc-option" data-opt="b">host-2 needs to be added to vCenter first.</button>
+        <button class="qc-option" data-opt="c">The LUN isn't presented to host-2 at the array level (zoning / LUN masking). Storage team needs to add host-2's WWN (FC) or IQN (iSCSI) to the LUN's access list. Once visible, mount from vSphere Client.</button>
+        <button class="qc-option" data-opt="d">VMFS only works with one host at a time.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc2"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>The big computer can use storage from far away over special cables. The storage looks like one big disk, and a special way of organizing it called VMFS lets many computers use it at the same time without fighting.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>VMFS is a special file system that lets multiple ESXi hosts share the same chunk of block storage (a LUN) without corrupting it. The hosts talk to the storage over Fibre Channel or iSCSI, format the LUN with VMFS, and then anyone can read and write VM files on it. Multipathing gives each LUN multiple physical paths from host to array, so a cable or controller failure doesn't take the storage down.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → host → Configure → Storage Adapters. <code>vmhba0</code>, <code>vmhba1</code> (FC), <code>vmhba32</code> (iSCSI software). Each shows discovered devices. Right-click device → Configure Multipathing → Round Robin. Datastores → New Datastore → VMFS → choose device → name <code>ds-vmfs-prod</code> → format → mount. New datastore appears on every host that can see the LUN.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · VMFS (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is VMFS and how do hosts share it?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">VMware's clustered file system designed for shared block storage. Multiple hosts can mount the same VMFS volume on the same LUN simultaneously. VMFS handles distributed locking. Latest: VMFS-6.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Common path policies?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">MRU (most recently used; for active/passive arrays), Fixed (preferred path with failback), Round Robin (distributes I/O across paths; default for many modern arrays), vendor-specific modules (NMP, MEM).</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">VMFS mounted on host-1 only. host-2 doesn't see it. Cause?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">LUN not presented to host-2 at array level. Storage team must add host-2's WWN (FC) or IQN (iSCSI) to the LUN's access list. Once visible, mount from vSphere Client and both hosts share it.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · VMFS (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'vmfs' mode</span>
+          <div class="quiz-prompt">A new VMFS datastore is mounted on host-1 only. host-2 doesn't see it though both connect to the same SAN. Most likely cause and fix?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>The LUN isn't presented to host-2 at the array level (zoning or LUN masking). Storage team adds host-2's WWN/IQN to the LUN's access list. Once host-2 can see the LUN, mount the VMFS datastore on it from vSphere Client.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">Why might an admin set multipathing to Round Robin instead of the default? When wouldn't they?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Round Robin distributes I/O across all paths for better throughput on active/active arrays (most modern arrays). Don't use it on active/passive arrays — those want MRU. Some vendors ship their own multipathing module; follow vendor guidance over generic Round Robin.</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================ SUBTOPIC 3 ============================ -->
+  <section class="subtopic" id="sub-3">
+    <header class="subtopic-header s3">
+      <span class="subtopic-meta">Subtopic 3 of 6</span>
+      <h2>NFS datastores</h2>
+      <p class="subtopic-tagline">File storage over IP. Simpler to provision than block.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">NFS terms, plus a few that distinguish it from VMFS.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">NFS · Network File System <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A Unix-world protocol where a server (NAS) exports a directory tree, and clients mount it over IP as if it were local.</div>
+          <div class="gloss-why">In vSphere, NFS is one of the four datastore types. Storage admin owns the filesystem; vSphere just stores files in it.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">NFSv3 · NFSv4.1 <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Two NFS protocol versions. v3 is older (no Kerberos, single-path). v4.1 is modern (Kerberos auth, multipath, better locking).</div>
+          <div class="gloss-why">New deployments should use NFSv4.1 if the NAS supports it. Many existing environments still run v3.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">NAS appliance <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A purpose-built file server (NetApp, Synology, Pure, Dell EMC Unity) that exports NFS and/or SMB shares.</div>
+          <div class="gloss-why">The NAS owns the storage and the filesystem. vSphere just mounts what the NAS exports.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Export · share <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A directory the NAS makes available to clients over NFS. Has an access list (which IPs can mount it) and read/write permissions.</div>
+          <div class="gloss-why">"Mount the export" is what the host does. Each NFS datastore in vSphere = one export from the NAS.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Mount point <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The local name a host uses for an NFS export. In vSphere this is the "datastore name" you pick.</div>
+          <div class="gloss-why">When you see a path like <code>/vmfs/volumes/ds-nfs-prod</code> on the host, the part after <code>volumes/</code> is the mount point.</div>
+        </div>
+
+        <div class="gloss-card tag-security">
+          <div class="gloss-name">Kerberos (NFS auth) <span class="gloss-tag">security</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Authentication via tickets, used by NFSv4.1 to verify the host is allowed to mount an export. Eliminates "trust the IP."</div>
+          <div class="gloss-why">More secure than IP-based access lists. Required in some compliance environments. NFSv3 doesn't support it.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Service account (NFS) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> An account on the NAS / AD used by ESXi to authenticate when NFSv4.1 with Kerberos is enabled.</div>
+          <div class="gloss-why">Each host needs the credentials. Not human-driven — set once during datastore mount.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Read-only export <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> An NFS export that hosts can read but not write. Used for ISO repositories, template stores.</div>
+          <div class="gloss-why">Don't try to host VMs on a read-only export — they need to write. Read-only is for reference data.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">File-level visibility <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The ability for storage admins to see individual VM files (.vmdk, .vmx) on the array. NFS gives this; VMFS doesn't (VMFS volumes are opaque to the array).</div>
+          <div class="gloss-why">Useful for storage-side ops: backups, replication, analytics. The array can act on files, not just blocks.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Single-path vs multipath (NFS) <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> NFSv3 supports only single-path; NFSv4.1 introduces multipath (called nconnect / pNFS depending on flavour).</div>
+          <div class="gloss-why">A reason to prefer NFSv4.1 — better resilience and aggregate bandwidth.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">RDM · Raw Device Mapping <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A vSphere feature that lets a VM see a SAN LUN directly (bypassing VMFS). NFS doesn't support RDM.</div>
+          <div class="gloss-why">Used for shared-disk clusters (Microsoft Cluster Service, certain Oracle setups). One reason a shop might still pick VMFS over NFS.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Provisioning speed <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> How long it takes to make a new datastore available. NFS = 5 minutes (NAS team carves an export, vSphere mounts). VMFS = longer (LUN, zoning, multipathing, format).</div>
+          <div class="gloss-why">If "speed of getting new storage" is a pain point, NFS often wins.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ESXi host mounts an NFS share from a NAS over an IP network. NAS owns the file system; vSphere just stores VM files there.">
+          <text x="460" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#2E7A8C">NFS = mount a NAS share over IP · NAS owns the file system</text>
+
+          <!-- Host on left -->
+          <g transform="translate(40,80)">
+            <rect width="240" height="140" rx="8" fill="#3F4A5E"/>
+            <text x="120" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">ESXi host</text>
+            <text x="120" y="44" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#FFFFFF" opacity="0.85">vmkernel: 10.50.50.41</text>
+            <rect x="20" y="60" width="200" height="32" rx="4" fill="#2E7A8C"/>
+            <text x="120" y="80" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" fill="#FFFFFF">mount: ds-nfs-prod</text>
+            <text x="120" y="116" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">just stores VM files</text>
+          </g>
+
+          <!-- IP network -->
+          <g>
+            <line x1="280" y1="150" x2="660" y2="150" stroke="#2E7A8C" stroke-width="2.5" stroke-dasharray="6,4"/>
+            <text x="470" y="142" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#2E7A8C">NFS 4.1 over 10 GbE</text>
+            <text x="470" y="170" text-anchor="middle" font-size="10" fill="#5A6B81">IP storage network · same vmkernel as other services</text>
+          </g>
+
+          <!-- NAS on right -->
+          <g transform="translate(660,80)">
+            <rect width="240" height="140" rx="8" fill="#2E7A8C"/>
+            <text x="120" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">NAS appliance</text>
+            <text x="120" y="44" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#FFFFFF" opacity="0.85">nas-01.lab.local</text>
+            <rect x="20" y="60" width="200" height="22" rx="3" fill="#5DCAA5" opacity="0.7"/>
+            <text x="120" y="76" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#1F2937">/vol/vsphere-prod (export)</text>
+            <rect x="20" y="86" width="200" height="22" rx="3" fill="#5DCAA5" opacity="0.5"/>
+            <text x="120" y="102" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#1F2937">/vol/vsphere-iso (export)</text>
+            <text x="120" y="128" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">NAS owns the file system</text>
+          </g>
+
+          <text x="460" y="252" text-anchor="middle" font-size="11" font-weight="700" fill="#5A6B81">simpler than VMFS · no FC hardware · NAS team handles the FS</text>
+        </svg>
+        <div class="illustration-caption">Host mounts a share from a NAS appliance over IP. The NAS owns the file system; vSphere stores VM files in it.</div>
+      </div>
+    </article>
+
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>NFS is the operationally simpler choice</strong>If your storage team can carve NFS exports faster than they can carve LUNs (often the case), and you don't need RDM, NFS is usually the easier provisioning path. Less to coordinate, no LUN dance, no multipathing config, easier to grow.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>Prefer NFSv4.1 for new deployments</strong>If your NAS supports it. NFSv4.1 brings Kerberos auth, multipathing, and better locking. NFSv3 is fine for legacy setups but should not be the default choice for new datastores.</div>
+    </div>
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body"><strong>Things NFS doesn't do</strong>RDM (raw device mapping for shared-disk clusters like MSCS). Some specific high-IOPS storage arrays only certify with FC/iSCSI. If a workload needs these, you're on VMFS — full stop.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p><span class="term">NFS<span class="tooltip">Network File System — file-storage protocol where a host mounts a remote file system from a NAS appliance over IP. The NAS owns the file system; vSphere just stores files there.</span></span> is the file-storage option. Instead of the host getting a raw block LUN and putting a file system on it, the host mounts a file system that the NAS appliance owns. vSphere's job is much smaller: just talk NFS, store files.</p>
+      <p>NFS in vSphere supports two versions: <strong>NFS v3</strong> (older, no Kerberos) and <strong>NFS v4.1</strong> (newer; Kerberos, multipath, better locking; recommended for new deployments).</p>
+      <div class="mini-vis">
+        <div class="mini-vis-title">What you configure on the host</div>
+        <ul style="margin: 0;">
+          <li>Server address (NAS IP/hostname)</li>
+          <li>Share path (e.g., <code>/vol/vsphere-prod</code>)</li>
+          <li>Datastore name (vSphere's local label)</li>
+          <li>Read-only? (rare for VM datastores; useful for ISO repos)</li>
+          <li>NFS version</li>
+          <li>Kerberos credentials if NFS 4.1 with Kerberos</li>
+        </ul>
+      </div>
+      <p><strong>Why pick NFS over VMFS</strong>: simpler to provision (NAS owns the FS), file-level visibility on the array, often easier to grow, uses existing IP network. <strong>Why pick VMFS over NFS</strong>: FC-style latency, RDM/MSCS support, existing FC investment.</p>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>Need new storage. Block process: ticket to storage team, wait two days, get a LUN, configure multipathing, format VMFS. Slow.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>NAS team carves a new NFS share in five minutes. Add it to vSphere as a datastore. Done.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>NFS is renting storage space in a shared file room down the hall — no concrete slab, just a door and a key, and the file room handles its own filing system. You drop your boxes in; the file room owns where they sit.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">Choosing between NFS and VMFS for a moderate-traffic web app. 10 GbE network, NAS supports NFS 4.1. Which is fine, and what tilts the decision?</div>
+      <div class="qc-options" data-qc="qc3" data-correct="b">
+        <button class="qc-option" data-opt="a">VMFS only — NFS isn't suitable for VMs.</button>
+        <button class="qc-option" data-opt="b">Either is fine. Tilt: operational simplicity (faster provisioning, file-level visibility, easier to grow) → NFS. FC-style latency or existing block storage investment → VMFS.</button>
+        <button class="qc-option" data-opt="c">NFS only — VMFS is deprecated.</button>
+        <button class="qc-option" data-opt="d">Neither — only vSAN works for web apps.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc3"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>NFS is like keeping your stuff in a shared room down the hall instead of in a big warehouse. Easier to get to, but someone else owns the room.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>NFS is a way for the host to use storage owned by a NAS appliance somewhere on the network. The host mounts the NFS share as a datastore and stores VM files in it. The NAS handles the file system; vSphere doesn't have to. Often easier to provision and grow than VMFS, doesn't need FC hardware, gives storage admins file-level visibility into VM files. NFS 4.1 is the modern choice.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → Datastores → New Datastore → NFS → NFS 4.1. Server: <code>nas-01.lab.local</code>. Folder: <code>/vol/vsphere-prod</code>. Datastore name: <code>ds-nfs-prod</code>. Mount on hosts: select all in the cluster. Save. Datastore appears on every host simultaneously.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · NFS (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Two NFS versions vSphere supports — which is recommended?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">NFS v3 (older, less efficient, limited security) and NFS v4.1 (Kerberos, multipath, better locking). NFS 4.1 recommended for new deployments. Many shops still run NFS v3 on legacy NAS.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why pick NFS over VMFS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Simpler to provision, file-level visibility on the array, often easier to grow, uses existing IP network. Trade-off: VMFS supports a few features NFS doesn't (RDM, MSCS) and FC-style ultra-low latency.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Four things to configure for an NFS datastore?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Server address (NAS IP/hostname), share path (e.g., /vol/vsphere-prod), datastore name (vSphere local label), NFS version (3 or 4.1), Kerberos credentials if using NFS 4.1+Kerberos.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · NFS (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'nfs' mode</span>
+          <div class="quiz-prompt">Choosing between NFS and VMFS for a moderate-traffic web app. 10 GbE network, NAS supports NFS 4.1. Which is fine, what tilts the decision?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Either is fine. Tilt: operational simplicity (faster provisioning, file-level visibility, easier to grow) → NFS. FC-style latency or existing block storage investment → VMFS. Neither is wrong; they optimize for different things.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">What four things do you actually configure on the host to mount an NFS datastore?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Server address (NAS IP/hostname), share path (e.g., /vol/vsphere-prod), datastore name (vSphere's local label), NFS version (3 or 4.1) plus Kerberos credentials if using NFS 4.1+Kerberos. Mount on all relevant hosts in one operation.</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================ SUBTOPIC 4 ============================ -->
+  <section class="subtopic" id="sub-4">
+    <header class="subtopic-header s4">
+      <span class="subtopic-meta">Subtopic 4 of 6</span>
+      <h2>vSAN — hyperconverged storage from local disks</h2>
+      <p class="subtopic-tagline">Compute and storage in the same boxes.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">vSAN has its own dialect — disk groups, FTT, OSA/ESA. Read these once and the rest clicks.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vSAN <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> VMware's software-defined storage. Pools the local disks (SSDs, NVMe) on every host in a cluster into one shared datastore.</div>
+          <div class="gloss-why">Eliminates the separate storage array. Compute and storage scale together by adding hosts.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">HCI · Hyperconverged Infrastructure <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A pattern: combine compute, storage, and (sometimes) networking in the same boxes, managed as one. vSAN is VMware's HCI storage layer.</div>
+          <div class="gloss-why">One vendor relationship instead of two (server + array). Easier procurement, simpler operating model.</div>
+        </div>
+
+        <div class="gloss-card tag-hardware">
+          <div class="gloss-name">Disk group <span class="gloss-tag">hardware</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A vSAN OSA concept. One cache disk (fast SSD/NVMe) plus 1-7 capacity disks (cheaper SSD). Each host has 1-5 disk groups.</div>
+          <div class="gloss-why">Cache absorbs writes; capacity stores data. The two-tier design is what makes OSA fast.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">OSA · Original Storage Architecture <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The classic vSAN architecture (since vSAN 6.0). Two tiers: cache + capacity disk groups.</div>
+          <div class="gloss-why">Most existing vSAN clusters run OSA. Mature, well-understood.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">ESA · Express Storage Architecture <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The newer vSAN architecture (vSAN 8). Single-tier — all-NVMe, no separate cache disk.</div>
+          <div class="gloss-why">Higher performance, simpler hardware story. The future direction. New deployments on NVMe-ready hardware should pick ESA.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">FTT · Failures To Tolerate <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A storage-policy setting that says how many simultaneous failures vSAN should survive without losing data. FTT=1 = data has 2 copies; FTT=2 = 3 copies.</div>
+          <div class="gloss-why">FTT is THE knob you turn for resilience. FTT=1 is the default and good enough for most workloads.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Mirroring (RAID-1) <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A resilience method where vSAN keeps full copies of data on different hosts. FTT=1 mirroring = 2 full copies.</div>
+          <div class="gloss-why">Simple to reason about, fast to read (any copy can serve I/O). Costs 2× storage for FTT=1.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Erasure coding (RAID-5/6) <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A resilience method where vSAN stores data + parity blocks across hosts. RAID-5 (FTT=1, 4+1) costs 1.33×; RAID-6 (FTT=2, 4+2) costs 1.5×.</div>
+          <div class="gloss-why">More space-efficient than mirroring, but slower and uses more CPU. Use for less-performance-sensitive workloads where cost matters.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">vSAN object <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The unit vSAN distributes — a VM's disk, swap, snapshot, etc. each is an object. Objects are split into components and spread across hosts.</div>
+          <div class="gloss-why">Per-VM granularity. vSAN protects objects independently — different VMs can have different policies.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Storage policy (vSAN) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A named profile of vSAN settings (FTT, mirroring vs erasure coding, IOPS limits, encryption) that you apply to a VM. Each VM can have a different policy.</div>
+          <div class="gloss-why">"This database VM gets Gold (FTT=1 mirroring + encrypted); this test VM gets Bronze (FTT=0)." vSAN places data accordingly.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vSAN ReadyNode <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A pre-validated server config from a hardware vendor (Dell, HPE, Lenovo) certified by VMware to run vSAN.</div>
+          <div class="gloss-why">Removes the "is this disk on the HCL?" anxiety. Buy a ReadyNode and you know vSAN will run on it.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">vsanDatastore <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The single datastore vSAN creates from the cluster's pooled disks. Visible to every host in the cluster.</div>
+          <div class="gloss-why">All vSAN VMs land here. Capacity = sum of capacity disks across all hosts (minus FTT overhead).</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four hosts each contributing disks to a pooled vSAN datastore. FTT=1 mirroring keeps a VM running when one host dies; the missing copy rebuilds in the background.">
+          <text x="460" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1F8A60">vSAN: 4 hosts pool local disks · per-VM policies · no external array</text>
+
+          <!-- 4 hosts -->
+          <g transform="translate(20,50)">
+            <rect width="200" height="100" rx="8" fill="#3F4A5E"/>
+            <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">host-1</text>
+            <rect x="10" y="32" width="44" height="20" rx="2" fill="#F2C94C" opacity="0.7"/><text x="32" y="46" text-anchor="middle" font-size="9" fill="#1F2937">cache</text>
+            <rect x="58" y="32" width="44" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/><text x="80" y="46" text-anchor="middle" font-size="9" fill="#1F2937">cap</text>
+            <rect x="106" y="32" width="44" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/><text x="128" y="46" text-anchor="middle" font-size="9" fill="#1F2937">cap</text>
+            <rect x="154" y="32" width="36" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/><text x="172" y="46" text-anchor="middle" font-size="9" fill="#1F2937">cap</text>
+            <text x="100" y="80" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">disk group: 1 cache + 3 capacity</text>
+          </g>
+          <g transform="translate(240,50)">
+            <rect width="200" height="100" rx="8" fill="#3F4A5E"/>
+            <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">host-2</text>
+            <rect x="10" y="32" width="44" height="20" rx="2" fill="#F2C94C" opacity="0.7"/>
+            <rect x="58" y="32" width="44" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+            <rect x="106" y="32" width="44" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+            <rect x="154" y="32" width="36" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+            <text x="100" y="80" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">disk group</text>
+          </g>
+          <g transform="translate(460,50)">
+            <rect width="200" height="100" rx="8" fill="#3F4A5E" stroke="#B85829" stroke-width="2"/>
+            <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#B85829">host-3 ✗ failed</text>
+            <line x1="20" y1="40" x2="180" y2="80" stroke="#B85829" stroke-width="2" opacity="0.4"/>
+            <line x1="180" y1="40" x2="20" y2="80" stroke="#B85829" stroke-width="2" opacity="0.4"/>
+            <text x="100" y="80" text-anchor="middle" font-size="9" fill="#FBEDE3">disks unavailable</text>
+          </g>
+          <g transform="translate(680,50)">
+            <rect width="200" height="100" rx="8" fill="#3F4A5E"/>
+            <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">host-4</text>
+            <rect x="10" y="32" width="44" height="20" rx="2" fill="#F2C94C" opacity="0.7"/>
+            <rect x="58" y="32" width="44" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+            <rect x="106" y="32" width="44" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+            <rect x="154" y="32" width="36" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+            <text x="100" y="80" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">disk group</text>
+          </g>
+
+          <!-- pool lines -->
+          <g stroke="#1F8A60" stroke-width="1.4" stroke-dasharray="3,3" fill="none">
+            <line x1="120" y1="150" x2="460" y2="190"/>
+            <line x1="340" y1="150" x2="460" y2="190"/>
+            <line x1="780" y1="150" x2="460" y2="190"/>
+          </g>
+
+          <!-- vsanDatastore -->
+          <g transform="translate(240,190)">
+            <rect width="440" height="60" rx="10" fill="#1F8A60"/>
+            <text x="220" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">vsanDatastore</text>
+            <text x="220" y="46" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.9">visible to all hosts · sum of capacity disks</text>
+          </g>
+
+          <!-- VM with mirrored copies -->
+          <g transform="translate(20,260)">
+            <rect width="880" height="50" rx="8" fill="#FBF4D6" stroke="#F2C94C"/>
+            <text x="20" y="22" font-size="11" font-weight="700" fill="#1F2937">VM with FTT=1 mirroring policy</text>
+            <text x="20" y="38" font-size="10" fill="#1F2937">data has 2 copies on different hosts → host-3 dies → other copy still serves I/O → vSAN rebuilds missing copy in background → VM keeps running ✓</text>
+          </g>
+        </svg>
+        <div class="illustration-caption">Each host contributes a disk group. The pool becomes one vsanDatastore. VM data has multiple copies (FTT=1 mirroring), so one host dying doesn't stop the VM.</div>
+      </div>
+    </article>
+
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>Use vSAN ReadyNodes</strong>vSAN is picky about hardware (controllers, drives, firmware). ReadyNodes are pre-validated configurations from Dell / HPE / Lenovo / Cisco that VMware blesses for vSAN. Don't try to build your own from arbitrary parts unless you really know what you're doing.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>FTT=1 is the right default</strong>FTT=1 mirroring (2 copies on different hosts) is the default and good enough for ~95% of workloads. Use FTT=2 only when you really need to survive two simultaneous host failures. Use erasure coding when storage cost matters more than peak performance.</div>
+    </div>
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body"><strong>vSAN needs its own VLAN</strong>Don't share the vSAN network with management or VM traffic. vSAN is high-bandwidth and latency-sensitive — saturation breaks performance for the whole cluster. Dedicated VLAN, dedicated NIC pair, ideally 25 GbE+.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p><span class="term">vSAN<span class="tooltip">VMware's software-defined storage. Pools the local disks (SSDs, NVMe, HDDs) on each cluster host into one distributed datastore visible to all hosts. The foundation of VMware's hyperconverged infrastructure (HCI) story.</span></span> takes the local disks (SSDs, NVMe, HDDs) on each host in a cluster and pools them into a single, distributed datastore that all hosts in the cluster see. This is HCI in vSphere terms: compute and storage in the same boxes.</p>
+      <p>How it works at a high level:</p>
+      <ul>
+        <li>Each host contributes one or more <strong>disk groups</strong> (cache + capacity disks).</li>
+        <li>vSAN distributes each VM's data across the cluster as objects, with copies (mirroring) or parity (erasure coding) for resilience.</li>
+        <li>A storage policy on each VM decides protection level, performance tier, etc.</li>
+        <li>All hosts see one logical datastore: <code>vsanDatastore</code>.</li>
+      </ul>
+      <p>Headline benefits: no external array; scale by adding hosts; per-VM policies; tight vSphere integration (built into ESXi).</p>
+      <p>Versions: <strong>OSA</strong> (Original Storage Architecture; cache + capacity disk groups, classic) and <strong>ESA</strong> (Express Storage Architecture; all-NVMe, single tier, future direction).</p>
+      <p>Requires its own VLAN (vmkernel adapter with vSAN service enabled on each host) and benefits from 25/100 GbE networking.</p>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>Buying a vSphere environment = two vendor selections: servers AND a SAN/NAS. Two procurements, two skill sets, two integration projects.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>Buy vSAN ReadyNodes. Power on, install ESXi, deploy vCenter, enable vSAN. The cluster is its own storage. One vendor, one skill set, one project.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>vSAN is the building making its own storage room out of every closet in every apartment, then sharing that combined space among everyone. No external warehouse needed. The building manager sets policies — "every important file has two copies in different apartments" — and the system honors it.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">A 4-host vSAN cluster. A VM has policy "FTT=1 mirroring." One host dies. What happens to the VM's data?</div>
+      <div class="qc-options" data-qc="qc4" data-correct="b">
+        <button class="qc-option" data-opt="a">All the VM's data is lost.</button>
+        <button class="qc-option" data-opt="b">Nothing visible to the VM. Every piece of data has two copies on different hosts. Other copy is still available; vSAN may rebuild the missing copy on a third host in the background.</button>
+        <button class="qc-option" data-opt="c">The VM is force-shutdown until the host comes back.</button>
+        <button class="qc-option" data-opt="d">vSAN cluster goes offline until you restore from backup.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc4"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>Instead of having a separate storage building, every apartment shares its own storage closet with the whole building. Together they make one big storage area that everyone can use.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>vSAN takes the local disks on every ESXi host in a cluster and pools them into one big shared datastore. No external SAN/NAS needed. Each host contributes a disk group (cache + capacity). Each VM's data is spread across the cluster as objects, with copies or parity for resilience. A storage policy decides how many copies, what performance tier, etc. vSAN is the foundation of VMware's HCI strategy: compute and storage in the same boxes, scaling together.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → Cluster → Configure → vSAN → Services → Configure. Wizard: enable vSAN, choose deployment type (single site / stretched / two-node), select disks per host (cache + capacity, or ESA all-NVMe). Configure vSAN VLAN on vmkernel adapters. Apply. Cluster shows new <code>vsanDatastore</code> visible on all hosts. Each VM deployed to it gets a storage policy that decides protection and performance.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · vSAN (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is vSAN and what makes it 'hyperconverged'?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">VMware's software-defined storage. Pools local disks on each cluster host into one distributed datastore visible to all hosts. Hyperconverged because compute and storage live in the same boxes — no external array.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">vSAN OSA vs ESA?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">OSA (Original Storage Architecture) — disk groups with one cache disk + capacity disks; classic vSAN. ESA (Express Storage Architecture) — newer, all-NVMe, single-tier (no cache); higher performance, simpler hardware story; the future direction.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">4-host vSAN, FTT=1 mirroring. One host dies. What happens?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Nothing visible to the VM. FTT=1 mirroring = every piece has two copies on different hosts. Other copy still available. vSAN may rebuild the missing copy on a third host in the background. VM keeps running. (Second simultaneous failure on the second copy = problem.)</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · vSAN (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'vsan' mode</span>
+          <div class="quiz-prompt">4-host vSAN cluster. VM with "FTT=1 mirroring" storage policy. One host dies. What happens to the VM's data?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Nothing visible to the VM. FTT=1 mirroring means every piece of the VM's data has two copies on two different hosts. When one host dies, the other copy is still available. vSAN may rebuild the missing copy on a third host in the background. The VM keeps running. A second simultaneous host failure that took out the second copy would be a problem.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">Distinguish vSAN OSA from vSAN ESA.</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>OSA — disk groups with one cache + capacity disks; classic. ESA — all-NVMe, single-tier (no cache); higher performance; the future direction. New deployments on vSAN-ready hardware increasingly pick ESA.</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================ SUBTOPIC 5 ============================ -->
+  <section class="subtopic" id="sub-5">
+    <header class="subtopic-header s5">
+      <span class="subtopic-meta">Subtopic 5 of 6</span>
+      <h2>vVols — VM-centric storage on smart arrays</h2>
+      <p class="subtopic-tagline">Each VM is a storage object the array tracks individually.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">vVols introduces a few storage terms you won't see anywhere else.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vVols · Virtual Volumes <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A storage model where each VM's storage is a separate object the array tracks individually — not just a file inside an opaque LUN.</div>
+          <div class="gloss-why">Per-VM array-native operations: snapshots, replication, encryption all per-VM. The array can apply storage policies natively because it knows what's a VM.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">VASA · vSphere APIs for Storage Awareness <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The protocol vCenter uses to talk to a storage array's management interface. The array publishes capabilities ("I can do FTT=1, encryption, IOPS limits"); vCenter consumes them.</div>
+          <div class="gloss-why">VASA is what makes per-VM array operations possible. Without VASA, vCenter has no way to ask the array for VM-level features.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">VASA Provider <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The actual implementation of VASA on the array side. A small service the array vendor runs that vCenter connects to.</div>
+          <div class="gloss-why">Setting up vVols requires registering a VASA Provider in vCenter. Vendor-specific URL and credentials.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Storage Container <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A vVol-side concept replacing the LUN. A pool of capacity on the array that's exposed for vVols use.</div>
+          <div class="gloss-why">When you create a vVol datastore, vSphere maps to a Storage Container. One container can hold many VMs' vVols.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Protocol Endpoint (PE) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The data-path connection between host and array for vVols. A small "access proxy" on the array.</div>
+          <div class="gloss-why">Looks like a tiny LUN to the host. Different from a regular LUN — it's how the host gets to the actual vVol objects, not where the data lives.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">vVol object types <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Five types of vVol per VM: <em>Config</em> (the .vmx-equivalent), <em>Data</em> (each disk), <em>Swap</em>, <em>Memory</em> (suspend state), <em>Other</em> (snapshots, deltas).</div>
+          <div class="gloss-why">Each type can have its own array-side characteristics. Snapshot vVols, for example, can have different replication settings.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Array-native snapshot <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A snapshot taken at the array level (using array's own technology) instead of by the hypervisor. Much faster than VMFS-era snapshots.</div>
+          <div class="gloss-why">A vVol snapshot is a small array-side metadata operation. Way faster than VMFS snapshot. Fewer performance penalties.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Per-VM replication <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Replication policy applied at the VM granularity, by the array. Different VMs in the same datastore can have different replication targets and RPO.</div>
+          <div class="gloss-why">VMFS replicates LUNs (granular = "all VMs in this LUN"). vVols replicate per-VM (granular = "this one VM goes to DR site").</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">vVol protocol options <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The data path can be FC, iSCSI, or NFS — vendor's choice. Same vVol concept; different transport.</div>
+          <div class="gloss-why">Use whatever fabric the array supports. The vVol semantics are the same regardless.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vVol-capable array <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A storage array whose vendor implements VASA / vVols. Pure Storage, NetApp, Dell EMC PowerStore, Hitachi VSP, IBM, and others.</div>
+          <div class="gloss-why">Not every array supports vVols. Check before designing around it.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">SPBM integration <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> vVols are the cleanest pairing with vSphere's Storage Policy-Based Management. Policies declared in vCenter are honored by the array natively.</div>
+          <div class="gloss-why">Without vVols, SPBM has limited effect on traditional SAN datastores. With vVols, declarative policy actually works.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Per-VM visibility <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Storage admins can see real VM names and per-disk usage on the array — instead of opaque VMFS files.</div>
+          <div class="gloss-why">Operationally cleaner. "Which VM is consuming 800 GB?" becomes a question the array can answer directly.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="vCenter talks to a VASA Provider on the smart array. The array tracks each VM as separate storage objects (config, disk, swap, snapshot) and applies per-VM policies natively.">
+          <text x="460" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#B85829">vVols: array sees individual VMs · per-VM array-native operations</text>
+
+          <!-- vCenter -->
+          <g transform="translate(40,80)">
+            <rect width="180" height="100" rx="8" fill="#1F8A60"/>
+            <text x="90" y="28" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">vCenter</text>
+            <text x="90" y="48" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">SPBM policies</text>
+            <rect x="14" y="58" width="152" height="22" rx="3" fill="#5DCAA5" opacity="0.6"/>
+            <text x="90" y="74" text-anchor="middle" font-size="10" fill="#1F2937">"Gold tier"</text>
+          </g>
+
+          <!-- VASA -->
+          <line x1="220" y1="130" x2="320" y2="130" stroke="#3F4A5E" stroke-width="2" marker-end="url(#a11vv)"/>
+          <text x="270" y="120" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B81">VASA API</text>
+
+          <g transform="translate(320,80)">
+            <rect width="180" height="100" rx="8" fill="#5E4A8E"/>
+            <text x="90" y="28" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">VASA Provider</text>
+            <text x="90" y="48" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">array's API endpoint</text>
+            <text x="90" y="68" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">talks vSphere ⇄ array</text>
+            <text x="90" y="86" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">publishes capabilities</text>
+          </g>
+
+          <!-- Protocol endpoint -->
+          <line x1="500" y1="130" x2="600" y2="130" stroke="#3F4A5E" stroke-width="2" marker-end="url(#a11vv)"/>
+          <text x="550" y="120" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B81">Protocol EP</text>
+
+          <!-- Smart array with per-VM vVol objects -->
+          <g transform="translate(600,40)">
+            <rect width="300" height="240" rx="8" fill="#B85829"/>
+            <text x="150" y="28" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Smart array · storage container</text>
+            <line x1="14" y1="40" x2="286" y2="40" stroke="#FFFFFF" opacity="0.3"/>
+
+            <!-- per-VM vVols -->
+            <g transform="translate(20,52)" font-family="ui-monospace,Menlo,monospace">
+              <rect width="260" height="22" rx="3" fill="#5DCAA5" opacity="0.7"/>
+              <text x="130" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-A · config-vVol</text>
+              <g transform="translate(0,28)"><rect width="260" height="22" rx="3" fill="#5DCAA5" opacity="0.6"/><text x="130" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-A · data-vVol (disk1)</text></g>
+              <g transform="translate(0,56)"><rect width="260" height="22" rx="3" fill="#5DCAA5" opacity="0.5"/><text x="130" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-A · swap-vVol</text></g>
+              <g transform="translate(0,84)"><rect width="260" height="22" rx="3" fill="#F2C94C" opacity="0.7"/><text x="130" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-A · snapshot-vVol</text></g>
+              <g transform="translate(0,112)"><rect width="260" height="22" rx="3" fill="#5DCAA5" opacity="0.7"/><text x="130" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-B · config-vVol</text></g>
+              <g transform="translate(0,140)"><rect width="260" height="22" rx="3" fill="#5DCAA5" opacity="0.6"/><text x="130" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-B · data-vVol</text></g>
+            </g>
+          </g>
+
+          <text x="270" y="240" text-anchor="middle" font-size="11" font-weight="700" fill="#5A6B81">array applies per-VM:</text>
+          <text x="270" y="260" text-anchor="middle" font-size="10" fill="#1F2937">snapshots · replication · encryption · tiering</text>
+          <text x="270" y="278" text-anchor="middle" font-size="10" fill="#1F2937">at VM granularity, natively</text>
+
+          <defs><marker id="a11vv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/></marker></defs>
+        </svg>
+        <div class="illustration-caption">Instead of one big VMFS volume hiding many VMs, the array tracks each VM's storage as separate objects (config, disk, swap, snapshot) and applies per-VM policies natively.</div>
+      </div>
+    </article>
+
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>vVols pairs naturally with SPBM</strong>If you've invested in storage policies (next subtopic) and you have a vVol-capable array, vVols is the cleanest way to actually have those policies honored by the storage layer. No translation losses.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>Setup is more involved than VMFS / NFS</strong>vVols requires a working VASA Provider, Protocol Endpoints, and array-side capability profiles. More moving parts than just mounting a LUN. Worth it for the operational gains, but plan the deployment carefully.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p><span class="term">vVols<span class="tooltip">Virtual Volumes — vSphere storage model where each VM's storage is a separate object the array tracks individually. Requires a vVol-capable array and a working VASA provider integration with vCenter.</span></span> (Virtual Volumes) pushes VM-awareness <em>into the array</em>. Instead of one VMFS datastore holding many VMs as opaque files, each VM's storage is a separate object the array tracks individually.</p>
+      <p>The pieces:</p>
+      <ul>
+        <li><strong>Storage Container</strong> — array-side replacement for a LUN; pool of capacity for vVols.</li>
+        <li><strong><span class="term">VASA<span class="tooltip">vSphere APIs for Storage Awareness — protocol the array uses to integrate with vCenter for vVols and SPBM. The array publishes its capabilities; vCenter uses them.</span></span> Provider</strong> — array's API endpoint that vCenter talks to.</li>
+        <li><strong>Protocol Endpoint</strong> — data-path connection host ↔ array (FC, iSCSI, NFS).</li>
+        <li><strong>vVol</strong> — single storage object representing one piece of one VM (config, disk, swap, snapshot).</li>
+      </ul>
+      <p>What this changes: per-VM array-native operations (snapshots, replication, encryption, tiering); storage admins see real VM names; array-native snapshots are much faster than VMFS-era ones. Trade-off: requires a vVol-capable array with a working VASA provider; setup more involved than VMFS or NFS. vVols is the natural pair with SPBM (next subtopic).</p>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>VMFS over a LUN. Array sees one giant file. Per-VM policies (replication, snapshots) coarse: applied at LUN level for every VM in it.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>vVols. Each VM is a set of storage objects on the array. Per-VM array-native snapshots, replication, encryption — at VM granularity.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>vVols turn the warehouse into a smart locker system. Each VM gets its own labelled locker, the warehouse itself tracks contents and policies, and the building manager just asks "put this VM in a fast locker" — the warehouse picks the locker.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">Your array is vVol-capable but the team is using classic VMFS. Why might switching to vVols be worth the trouble?</div>
+      <div class="qc-options" data-qc="qc5" data-correct="c">
+        <button class="qc-option" data-opt="a">vVols are faster than VMFS for all workloads.</button>
+        <button class="qc-option" data-opt="b">vVols don't require any setup; you just enable them.</button>
+        <button class="qc-option" data-opt="c">Per-VM array-native operations: snapshots, clones, replication, encryption become VM-granular instead of LUN-granular. SPBM honored natively. Storage admins see real VM names.</button>
+        <button class="qc-option" data-opt="d">vVols make VMFS obsolete in all cases.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc5"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>Instead of one big shared storage room with everyone's stuff mixed together, each VM gets its own labelled box that the storage system knows about by name.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>vVols is a way of doing storage where the array tracks each VM's storage individually, instead of seeing one big VMFS volume. Each VM becomes a set of storage objects (config, disks, swap, snapshots) the array manages directly. This unlocks per-VM features at the array level: snapshots, replication, encryption all become VM-granular. Requires the array to support vVols and a working VASA provider integration, but it's the cleanest pairing with storage policies.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → Storage → Storage Providers → Add. Configure VASA provider URL, credentials. Then Datastores → New Datastore → vVol. Pick the storage container the array exposes. Mount on cluster hosts. The new vVol datastore behaves like any datastore in vSphere; under the covers, every VM you create on it becomes individual vVol objects on the array.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · vVols (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does vVols change about how the array sees VMs?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Instead of seeing one big VMFS volume holding many VMs as opaque files, the array tracks each VM's storage as individual objects. The array can apply per-VM policies (replication, snapshots, encryption, tiering) natively because it knows what's a VM.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Four pieces of a vVols setup?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Storage Container (array-side replacement for a LUN), VASA Provider (array's API endpoint vCenter talks to), Protocol Endpoint (data-path link host ↔ array), vVol (single storage object representing one piece of one VM).</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">vVols vs classic VMFS — trade-off?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Win: per-VM array-native operations (snapshots, replication, encryption, tiering at VM granularity), real VM names visible to storage admins. Cost: requires vVol-capable array with working VASA provider; setup more involved than VMFS or NFS.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · vVols (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'vvols' mode</span>
+          <div class="quiz-prompt">Your array is vVol-capable but the team is using classic VMFS. What would switching to vVols buy you, and what's the cost?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Win: per-VM array-native operations. Snapshots, clones, replication, encryption become VM-granular. SPBM honored natively. Storage admins see real VM names. Cost: requires a working VASA provider setup integrated with vCenter; operational complexity higher than VMFS or NFS.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">Name the four pieces of a vVols setup.</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Storage Container, VASA Provider, Protocol Endpoint, vVol (single storage object representing one piece of one VM).</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================ SUBTOPIC 6 ============================ -->
+  <section class="subtopic" id="sub-6">
+    <header class="subtopic-header s6">
+      <span class="subtopic-meta">Subtopic 6 of 6</span>
+      <h2>SPBM and thin/thick provisioning</h2>
+      <p class="subtopic-tagline">Declare what; vSphere finds where.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">Two related but separate decisions: storage policy (declarative) and provisioning mode (per-disk).</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">SPBM · Storage Policy-Based Management <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A vSphere framework where you declare what storage qualities a VM needs (mirrored, fast, encrypted) and vSphere finds a datastore that can honor it.</div>
+          <div class="gloss-why">Separates "what does this VM need" from "which specific datastore." VMs follow capabilities, not specific physical resources.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Storage policy <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A named set of storage capabilities — "Gold = FTT=1 mirroring + encrypted + IOPS=0" or similar. Created in vCenter, applied to VMs.</div>
+          <div class="gloss-why">Declarative. You don't pick datastores; you pick the policy and let vSphere place the VM on something compliant.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Capability <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> One specific storage trait — FTT level, IOPS limit, encryption on/off, latency tier. The atomic units that policies are built from.</div>
+          <div class="gloss-why">Storage arrays publish capabilities to vCenter via VASA. Policies are combinations of capabilities.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Compliance status <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A continuous check that says whether each VM's actual storage matches its declared policy. "Compliant" = match. "Non-compliant" = drift.</div>
+          <div class="gloss-why">Catch drift quickly. A VM whose storage no longer meets its policy gets flagged in vCenter.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Thin provisioning <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A virtual disk only consumes physical storage as the guest writes data. A 100 GB thin disk holding 20 GB of data uses 20 GB on the datastore.</div>
+          <div class="gloss-why">Lets you over-provision — total declared size > datastore capacity, fine as long as actual used stays below. The default and right for most workloads.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Thick provisioning · lazy-zeroed <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Full disk size reserved up front, but blocks zeroed lazily on first write. Faster create than eager-zeroed; very slight perf hit on first writes.</div>
+          <div class="gloss-why">Used when you want guaranteed space but don't need eager zero. Mid-tier provisioning.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Thick provisioning · eager-zeroed <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Full size reserved AND every block zeroed at creation time. Slowest to create. Required for some features (Fault Tolerance, certain MSCS clusters).</div>
+          <div class="gloss-why">Best subsequent write performance. Use only when needed — costs storage and time up front.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Over-commit <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> When the sum of all declared VM disk sizes exceeds the datastore's actual capacity. Possible only with thin provisioning.</div>
+          <div class="gloss-why">Saves storage when VMs don't fill their disks. Risky if not monitored — actual usage growing toward capacity = VMs paused.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Datastore alarm <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A vCenter alert that fires when a datastore reaches a usage threshold (75%, 85%, 95%). Critical for thin-provisioned environments.</div>
+          <div class="gloss-why">Without alarms, an over-committed datastore can fill up silently and pause every VM on it. Always have alarms in place.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">FT · Fault Tolerance <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A vSphere feature that runs a primary VM and a "shadow" secondary VM in lockstep — instant failover if the primary host dies. Covered briefly in lesson 10 (FT logging).</div>
+          <div class="gloss-why">FT requires eager-zeroed disks. The reason eager-zeroed exists in your toolkit even though thin is the default.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Tag-based placement <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> An SPBM feature where vCenter tags datastores (e.g., "tier-1," "PCI") and policies require certain tags. Different from capability-based placement.</div>
+          <div class="gloss-why">Useful when array doesn't expose enough capabilities via VASA. You manually tag datastores by their actual properties.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Reserved IOPS <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A storage-policy capability that guarantees a minimum number of IOPS to a VM (or sets a maximum, for noisy-neighbour control).</div>
+          <div class="gloss-why">Critical workloads get guaranteed performance; misbehaving workloads get capped. Available on vSAN and vVol-capable arrays.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three storage policies (Gold, Silver, Bronze). Three VMs each tagged with a policy. SPBM matches each VM to an eligible datastore.">
+          <text x="460" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#8E2A2A">SPBM: declare WHAT the VM needs · vSphere finds WHERE</text>
+
+          <!-- Policies -->
+          <g transform="translate(20,50)">
+            <text x="0" y="0" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">Storage Policies</text>
+            <g transform="translate(0,16)">
+              <rect width="240" height="40" rx="6" fill="#F2C94C"/>
+              <text x="14" y="18" font-size="13" font-weight="700" fill="#1F2937">Gold</text>
+              <text x="14" y="32" font-size="9" fill="#1F2937">FTT=1 mirroring · &lt;5ms · encrypted</text>
+            </g>
+            <g transform="translate(0,64)">
+              <rect width="240" height="40" rx="6" fill="#F2C94C" opacity="0.6"/>
+              <text x="14" y="18" font-size="13" font-weight="700" fill="#1F2937">Silver</text>
+              <text x="14" y="32" font-size="9" fill="#1F2937">FTT=1 erasure · &lt;15ms</text>
+            </g>
+            <g transform="translate(0,112)">
+              <rect width="240" height="40" rx="6" fill="#F2C94C" opacity="0.35"/>
+              <text x="14" y="18" font-size="13" font-weight="700" fill="#1F2937">Bronze</text>
+              <text x="14" y="32" font-size="9" fill="#1F2937">FTT=0 · best-effort</text>
+            </g>
+          </g>
+
+          <!-- VMs (middle) -->
+          <g transform="translate(290,50)">
+            <text x="0" y="0" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">VMs (each tagged with a policy)</text>
+            <g transform="translate(0,16)">
+              <rect width="220" height="40" rx="6" fill="#5DCAA5" opacity="0.6"/>
+              <text x="14" y="18" font-size="12" font-weight="700" fill="#1F2937">vm-payments</text>
+              <text x="14" y="32" font-size="10" fill="#1F2937">→ Gold</text>
+            </g>
+            <g transform="translate(0,64)">
+              <rect width="220" height="40" rx="6" fill="#5DCAA5" opacity="0.6"/>
+              <text x="14" y="18" font-size="12" font-weight="700" fill="#1F2937">vm-web1</text>
+              <text x="14" y="32" font-size="10" fill="#1F2937">→ Silver</text>
+            </g>
+            <g transform="translate(0,112)">
+              <rect width="220" height="40" rx="6" fill="#5DCAA5" opacity="0.6"/>
+              <text x="14" y="18" font-size="12" font-weight="700" fill="#1F2937">vm-test-7</text>
+              <text x="14" y="32" font-size="10" fill="#1F2937">→ Bronze</text>
+            </g>
+          </g>
+
+          <!-- Datastores (right) -->
+          <g transform="translate(560,50)">
+            <text x="0" y="0" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">Eligible datastores (SPBM picks)</text>
+            <g transform="translate(0,16)">
+              <rect width="340" height="40" rx="6" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2"/>
+              <text x="14" y="18" font-size="12" font-weight="700" fill="#1F8A60">vsan-fast (Gold-capable)</text>
+              <text x="14" y="32" font-size="10" fill="#1F2937">vSAN · all-NVMe · encrypted</text>
+            </g>
+            <g transform="translate(0,64)">
+              <rect width="340" height="40" rx="6" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2"/>
+              <text x="14" y="18" font-size="12" font-weight="700" fill="#1F8A60">vmfs-medium (Silver)</text>
+              <text x="14" y="32" font-size="10" fill="#1F2937">VMFS on SSD</text>
+            </g>
+            <g transform="translate(0,112)">
+              <rect width="340" height="40" rx="6" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2"/>
+              <text x="14" y="18" font-size="12" font-weight="700" fill="#1F8A60">nfs-archive (Bronze)</text>
+              <text x="14" y="32" font-size="10" fill="#1F2937">NFS on spinning disk</text>
+            </g>
+          </g>
+
+          <!-- Match arrows -->
+          <g stroke="#1F8A60" stroke-width="1.6" fill="none">
+            <line x1="260" y1="86" x2="290" y2="86" marker-end="url(#a11sp)"/>
+            <line x1="510" y1="86" x2="560" y2="86" marker-end="url(#a11sp)"/>
+            <line x1="260" y1="134" x2="290" y2="134" marker-end="url(#a11sp)"/>
+            <line x1="510" y1="134" x2="560" y2="134" marker-end="url(#a11sp)"/>
+            <line x1="260" y1="182" x2="290" y2="182" marker-end="url(#a11sp)"/>
+            <line x1="510" y1="182" x2="560" y2="182" marker-end="url(#a11sp)"/>
+          </g>
+
+          <!-- Bottom: thin/thick callout -->
+          <g transform="translate(20,260)">
+            <rect width="880" height="50" rx="8" fill="#FBF4D6" stroke="#F2C94C"/>
+            <text x="14" y="22" font-size="11" font-weight="700" fill="#1F2937">Provisioning mode (separate decision):</text>
+            <text x="14" y="38" font-size="10" fill="#1F2937"><tspan font-weight="700">Thin</tspan> = consume space as guest writes (default · over-commit possible · monitor used%) ·  <tspan font-weight="700">Thick eager-zeroed</tspan> = full size + pre-zero (required for FT)</text>
+          </g>
+
+          <defs><marker id="a11sp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#1F8A60"/></marker></defs>
+        </svg>
+        <div class="illustration-caption">Define policies (Gold/Silver/Bronze). Tag each VM. SPBM finds an eligible datastore and places the VM there. Thin or thick is a separate per-disk decision.</div>
+      </div>
+    </article>
+
+    <div class="callout danger">
+      <div class="callout-icon">!</div>
+      <div class="callout-body"><strong>Always have datastore alarms with thin provisioning</strong>Thin provisioning is great, but over-committed datastores can fill up silently. Configure alarms at 75% / 85% / 95% used. At 95% you should have a runbook ready to add capacity or migrate VMs off — past that, VMs pause.</div>
+    </div>
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>Default to thin · upgrade to thick only when needed</strong>Most workloads are happy with thin provisioning + monitoring. Eager-zeroed thick is for the few cases that need it (Fault Tolerance, specific clusters). Don't default to thick — you'll waste storage.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>Tag VMs at creation</strong>Apply the storage policy when you create the VM, not after. Retroactively assigning policies works but means a Storage vMotion if the current placement doesn't comply. Up-front placement is simpler and faster.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p><span class="term">SPBM<span class="tooltip">Storage Policy-Based Management — vSphere mechanism for defining storage capabilities (mirroring, IOPS, encryption, etc.) as named policies and assigning them to VMs. The hypervisor finds a datastore that can honor the policy and places the VM there.</span></span> is vSphere's framework for assigning storage policies to VMs. Instead of "put VM-X on datastore-Y," you say "VM-X needs gold tier" and SPBM places it on a datastore that can honor gold tier.</p>
+      <p>A storage policy is a list of capabilities the storage must provide:</p>
+      <ul>
+        <li>Number of failures to tolerate (FTT)</li>
+        <li>Replication / mirroring vs erasure coding</li>
+        <li>IOPS limit (or reservation)</li>
+        <li>Encryption</li>
+        <li>Tiering / pinning to specific media</li>
+        <li>Vendor-specific features the array exposes</li>
+      </ul>
+
+      <p><strong>Thin vs thick provisioning</strong> is a related but separate decision: how disk space is allocated when you create a virtual disk.</p>
+      <div class="mini-vis">
+        <table class="table">
+          <thead><tr><th>Mode</th><th>Behavior</th><th>When to use</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Thin (default)</strong></td><td>.vmdk only consumes physical space as guest writes data.</td><td>Most workloads. Over-commit + monitoring.</td></tr>
+            <tr><td>Thick lazy-zeroed</td><td>Full size reserved on creation; blocks zeroed lazily on first write.</td><td>Faster to create; slight perf hit on first writes.</td></tr>
+            <tr><td>Thick eager-zeroed</td><td>Full size reserved AND zeroed on creation.</td><td>Required for Fault Tolerance, certain clusters.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>For most workloads, <strong>thin + datastore monitoring</strong> is the right default. Eager-zeroed thick is for the few VMs that need it.</p>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>VM placement is "where is there room?" — manual. Some VMs end up on slow datastores, some on fast, no consistent policy. Some disks thick-provisioned for no reason, eating capacity.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>Three storage policies (Gold, Silver, Bronze). Every VM tagged at provisioning. Thin is default; eager-zeroed thick reserved for FT-protected VMs. Compliance reports flag drift.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>SPBM is the building's storage policy: "gold tier = mirrored + fast," "silver tier = single copy, slow." Stamp a tier on each VM; the system honors it. Thin/thick is whether you reserve all the floor space up front or grow into it.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">You provision a 500 GB VMDK as thin. The VM uses 80 GB. The datastore is 1 TB and has 20 other VMs. Total *configured* size sums to 1.4 TB — over the datastore. What's wrong, what's right, what should you watch?</div>
+      <div class="qc-options" data-qc="qc6" data-correct="c">
+        <button class="qc-option" data-opt="a">It's broken — VMs will crash immediately.</button>
+        <button class="qc-option" data-opt="b">Nothing to watch; thin disks never run out.</button>
+        <button class="qc-option" data-opt="c">Nothing broken yet — normal over-provisioning. What's right: storage isn't wasted on unwritten data. What to watch: total *used* space. If VMs grow toward 1 TB, VMs pause/fail. Configure datastore alerts at 75/85/95%.</button>
+        <button class="qc-option" data-opt="d">You should switch all disks to thick immediately.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc6"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>You can give each room a label like "fancy room" or "basic room," and the building puts your stuff in a matching room automatically. Some rooms have all the floor space booked up front, some only get used as you put boxes in.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>Storage Policy-Based Management lets you define storage capabilities (mirrored, fast, encrypted) and assign them as policies to VMs. The hypervisor finds a datastore that can honor the policy and places the VM there. This separates "what storage qualities does this VM need" from "which datastore." Thin provisioning lets a virtual disk consume only the space it actually uses; thick reserves the full size up front (and optionally pre-zeroes for performance). Most workloads: thin + monitoring.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → Policies and Profiles → VM Storage Policies → Create. Name: <code>Gold</code>. Rules: vSAN > FTT=1 mirroring + IOPS limit 0. Save. Repeat for Silver, Bronze. Provision a VM → Storage section → Storage Policy: Gold. vSphere lists eligible datastores. Pick. Choose thin or thick on the disk page (thin default fine). Create. VM is placed and tagged with the policy; compliance is monitored continuously.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · SPBM (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is SPBM in vSphere?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Storage Policy-Based Management. Define storage capabilities as named policies and assign to VMs. vSphere finds a datastore that can honor the policy and places the VM there. Separates "what storage qualities does this VM need" from "which specific datastore."</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three vmdk provisioning modes?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Thin (only consumes physical space as guest writes; default). Thick lazy-zeroed (full size reserved on creation, zeroed on first write). Thick eager-zeroed (reserved AND zeroed on creation; required for FT). Most workloads: thin + monitoring.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Risks of thin provisioning, and how to mitigate?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Total *configured* size of all VMs may exceed datastore capacity (over-commit). If actual usage grows toward the limit, VMs pause/fail. Mitigation: monitor used space (alerts at 75/85/95%), runbook to add capacity or migrate VMs off, avoid heavy over-commit on critical workloads.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · SPBM (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'spbm' mode</span>
+          <div class="quiz-prompt">You provision a 500 GB VMDK as thin. The VM uses 80 GB. The datastore is 1 TB and has 20 other VMs. Total *configured* size sums to 1.4 TB. What's wrong, what's right, what should you watch?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Nothing is broken yet; this is normal over-provisioning with thin. What's right: storage isn't wasted on unwritten data. What to watch: total *used* space. If VMs grow toward 1 TB, you'll run out and VMs will pause/fail. Configure alerts at 75/85/95% and have a plan to add capacity or move VMs off.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">You're enabling Fault Tolerance on a critical VM. What provisioning mode does its disk need to be?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Thick provisioned, eager-zeroed. FT requires the disk to be fully reserved and pre-zeroed at creation so the secondary VM can keep deterministic state with the primary. Thin or thick-lazy-zeroed disks aren't compatible with FT.</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="animation-section">
+    <h2 style="margin: 0 0 6px;">Walk through the whole journey</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin: 0 0 18px;">Six modes, one per subtopic.</p>
+    <iframe class="animation-frame" src="courses/vmware/vsphere-fundamentals/scenarios/11-configuring-vsphere-storage/animation.html" title="Lesson 11 animation"></iframe>
+  </section>
+
+  <section class="recap">
+    <h2>The whole lesson in one breath</h2>
+    <p>Six moves from "where do VMs live?" to a storage layer that's performant, resilient, and policy-driven.</p>
+    <div class="recap-points">
+      <div class="recap-point"><strong>1 · Overview</strong><br>Datastore is the unit; four types: VMFS, NFS, vSAN, vVols.</div>
+      <div class="recap-point"><strong>2 · VMFS</strong><br>VMware's clustered FS on shared block (FC, iSCSI). Multipathing matters.</div>
+      <div class="recap-point"><strong>3 · NFS</strong><br>File storage over IP; simpler to provision; NAS owns the FS.</div>
+      <div class="recap-point"><strong>4 · vSAN</strong><br>Pool local disks across cluster; HCI; no external array.</div>
+      <div class="recap-point"><strong>5 · vVols</strong><br>VM-centric storage on smart arrays; per-VM array-native operations.</div>
+      <div class="recap-point"><strong>6 · SPBM + provisioning</strong><br>Policy-driven placement; thin by default, thick eager-zeroed for FT.</div>
+    </div>
+    <div class="recap-next">
+      <strong>Next up · Lesson 12 — Deploying Virtual Machines.</strong> Storage is wired up; now deploy VMs onto it.
+    </div>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · vSphere Fundamentals · Lesson 11 of 12 · per-subtopic format</footer>
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeLabel = document.getElementById('theme-label');
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.firstChild.textContent = next === 'light' ? '🌙 ' : '☀️ ';
+    themeLabel.textContent = next === 'light' ? 'Dark' : 'Light';
+  });
+  document.querySelectorAll('.term').forEach(t => {
+    t.addEventListener('click', e => {
+      e.stopPropagation();
+      document.querySelectorAll('.term.pinned').forEach(p => { if (p !== t) p.classList.remove('pinned'); });
+      t.classList.toggle('pinned');
+    });
+  });
+  document.addEventListener('click', () => { document.querySelectorAll('.term.pinned').forEach(p => p.classList.remove('pinned')); });
+  document.querySelectorAll('.qc-options').forEach(group => {
+    const correct = group.getAttribute('data-correct');
+    const fbId = group.getAttribute('data-qc');
+    const fb = document.querySelector('[data-qc-fb="' + fbId + '"]');
+    group.querySelectorAll('.qc-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (group.classList.contains('answered')) return;
+        group.classList.add('answered');
+        const chosen = opt.getAttribute('data-opt');
+        group.querySelectorAll('.qc-option').forEach(o => {
+          o.classList.add('disabled');
+          const k = o.getAttribute('data-opt');
+          if (k === correct) o.classList.add('correct');
+          else if (k === chosen) o.classList.add('wrong');
+        });
+        if (chosen === correct) { fb.textContent = '✓ Correct.'; fb.classList.add('show', 'right'); }
+        else { fb.textContent = '✗ Not quite — the highlighted green option is the strongest answer.'; fb.classList.add('show', 'wrong-fb'); }
+      });
+    });
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      ans.classList.toggle('show');
+      btn.textContent = ans.classList.contains('show') ? 'Hide answer' : 'Show answer';
+    });
+  });
+  const subLinks = document.querySelectorAll('.sub-link');
+  const subSections = Array.from(document.querySelectorAll('.subtopic'));
+  function updateActiveSub() {
+    const fromTop = window.scrollY + 160;
+    let active = subSections[0];
+    for (const sec of subSections) { if (sec.offsetTop <= fromTop) active = sec; }
+    subLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+  }
+  window.addEventListener('scroll', updateActiveSub, { passive: true });
+  updateActiveSub();
+</script>
+
+</body>
+</html>

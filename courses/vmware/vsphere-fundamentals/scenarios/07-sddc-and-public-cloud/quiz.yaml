@@ -1,0 +1,51 @@
+# Quiz — Lesson 07: SDDC and public cloud
+
+questions:
+  - id: q1
+    prompt: >
+      Pause the animation in 'cloud' mode. The screen shows the four SDDC layers
+      with arrows pointing from each to its AWS equivalent. Predict: when a
+      developer creates an EC2 instance, which SDDC layer is being used?
+    pause_at_mode: cloud
+    answer: >
+      Compute virtualization. EC2 (Elastic Compute Cloud) is AWS's compute layer —
+      it runs VMs on AWS's hypervisors on AWS's hardware. The same architectural
+      role as vSphere in a private SDDC.
+    reasoning: >
+      EC2 is the AWS analogue of vSphere. EBS is the analogue of vSAN. VPC is the
+      analogue of NSX. The console + IAM is the analogue of vCenter + vRealize. The
+      pattern is identical; only the scale and ownership change.
+
+  - id: q2
+    prompt: >
+      Pause the animation in 'network' mode. NSX has carved a logical network
+      across two physical hosts. Two VMs on different hosts are on the same NSX
+      logical segment. Predict: how does traffic between them flow?
+    pause_at_mode: network
+    answer: >
+      Through software. NSX encapsulates the traffic, sends it across the physical
+      network as a regular IP packet, and decapsulates it on the destination host.
+      The two VMs see each other on the same logical segment; the physical network
+      sees only encrypted, encapsulated packets between hosts.
+    reasoning: >
+      Network virtualization decouples the logical network the VMs see from the
+      physical network underneath. The same physical network can host many separate
+      logical networks for many tenants, with no physical reconfiguration.
+
+  - id: q3
+    prompt: >
+      Pause the animation. A bank wants to move a workload from their on-prem SDDC
+      to AWS for cost reasons. The workload is sensitive customer data. Predict:
+      what's the technical possibility, and what's the practical constraint?
+    pause_at_mode: cloud
+    answer: >
+      Technically, the workload can move easily — both environments are SDDCs
+      built on the same architectural pattern, so the VM image, storage, and
+      network policy can transfer with minor adjustments. Practically, regulatory
+      and contractual constraints around customer data sovereignty often require
+      the workload to stay on-prem regardless of cost.
+    reasoning: >
+      SDDC architectural similarity makes mobility technically viable. The
+      blockers are usually compliance, data residency, or contracts — not technology.
+      This is why hybrid cloud exists: split workloads between on-prem and public
+      based on what each is allowed to host.

@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Lesson 09 — Deploying and Configuring vCenter Server
+  Static diagram: 8-station vCenter deployment journey.
+
+  Layout math (verified):
+    ViewBox: 1100 x 720
+    Header:           y 20..60
+    Central appliance icon: y 78..148  (160w, x=470..630, centered on x=550)
+    Row 1 cards (1-4): y 170..390   (card 220w x 220h)
+    Row 2 cards (5-8): y 410..630   (card 220w x 220h)
+
+    4 cards per row, 220w each, gap 60 → 4*220 + 3*60 = 1060
+    Margin (1100-1060)/2 = 20 each side
+    Card x positions: 20, 300, 580, 860
+    Card right edges:  240, 520, 800, 1080
+    Inter-card arrows: from 240→300, 520→580, 800→860, on midline y=280 (row 1) / y=520 (row 2)
+    Row-to-row arrow: from row1's right edge midpoint (1080, 280) curving to row2 col-1 entrance (20, 520)
+                      simplified as a U-turn: down from card 4 then left to card 5
+
+    Footer note: y 650..710
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" role="img" aria-labelledby="title desc">
+  <title id="title">vCenter deployment journey: overview, prerequisites, Stage 1, Stage 2, SSO, RBAC, inventory and backup, vCenter HA</title>
+  <desc id="desc">Eight numbered stations show the order of stand-up steps for vCenter Server. A central vCenter appliance icon sits at the top; the eight stations form the journey to bring it up healthy.</desc>
+
+  <defs>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect width="1100" height="720" fill="#FAFBFC"/>
+
+  <!-- Header -->
+  <text x="550" y="40" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" fill="#1F2937">vCenter deployment journey</text>
+  <text x="550" y="62" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#5A6B81">One appliance · eight phases of stand-up · in this order</text>
+
+  <!-- ======================================== -->
+  <!-- Central appliance icon (top center)
+       160w x 70h, centered on x=550, y=80..150
+       ======================================== -->
+  <g>
+    <!-- VM/server box -->
+    <rect x="470" y="80" width="160" height="70" rx="6" fill="#3F4A5E" stroke="#1F2937" stroke-width="1.5"/>
+    <!-- internal services strip -->
+    <rect x="478" y="92" width="144" height="14" rx="2" fill="#5DCAA5" opacity="0.4"/>
+    <text x="550" y="103" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#FFFFFF">vCenter Services</text>
+    <rect x="478" y="112" width="144" height="14" rx="2" fill="#3F4A5E" stroke="#5A6B81"/>
+    <text x="550" y="123" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#FFFFFF">Postgres · SSO · Photon</text>
+    <text x="550" y="143" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#FFFFFF">VCSA appliance</text>
+  </g>
+  <text x="550" y="166" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#5A6B81">vc-01.lab.local</text>
+
+  <!-- "begin here" cue, pointing down to station 1 -->
+  <g transform="translate(130,128)">
+    <text x="0" y="0" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#5A6B81">begin here</text>
+    <path d="M0,8 L0,42" stroke="#5A6B81" stroke-width="1.5" stroke-dasharray="3,3" fill="none" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- ROW 1: stations 1, 2, 3, 4
+       y 170, w 220, h 220, gap 60
+       x positions: 20, 300, 580, 860
+       ======================================== -->
+
+  <!-- background trail -->
+  <line x1="130" y1="280" x2="970" y2="280" stroke="#D5DCE6" stroke-width="2" stroke-dasharray="2,4"/>
+
+  <!-- ============================================
+       Station 1 — Overview (x=20, y=170)
+       ============================================ -->
+  <g>
+    <rect x="20" y="170" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="20" y="382" width="220" height="8" fill="#3F4A5E"/>
+    <circle cx="60" cy="200" r="22" fill="#3F4A5E"/>
+    <text x="60" y="206" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">1</text>
+    <text x="100" y="200" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">Overview</text>
+    <text x="100" y="217" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">why vCenter</text>
+    <!-- mini icon: many hosts → vCenter -->
+    <g transform="translate(35,250)">
+      <rect x="0" y="0" width="22" height="14" rx="2" fill="#5A6B81"/>
+      <rect x="0" y="20" width="22" height="14" rx="2" fill="#5A6B81"/>
+      <rect x="0" y="40" width="22" height="14" rx="2" fill="#5A6B81"/>
+      <line x1="22" y1="7" x2="60" y2="20" stroke="#3F4A5E" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <line x1="22" y1="27" x2="60" y2="20" stroke="#3F4A5E" stroke-width="1.4"/>
+      <line x1="22" y1="47" x2="60" y2="20" stroke="#3F4A5E" stroke-width="1.4"/>
+      <rect x="60" y="10" width="40" height="22" rx="2" fill="#3F4A5E"/>
+      <text x="80" y="25" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#FFFFFF">vC</text>
+    </g>
+    <text x="130" y="345" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#1F2937">vMotion · DRS · HA</text>
+    <text x="130" y="360" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">fleet-wide management</text>
+  </g>
+
+  <line x1="240" y1="280" x2="300" y2="280" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 2 — Prerequisites (x=300, y=170)
+       ============================================ -->
+  <g>
+    <rect x="300" y="170" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="300" y="382" width="220" height="8" fill="#5E4A8E"/>
+    <circle cx="340" cy="200" r="22" fill="#5E4A8E"/>
+    <text x="340" y="206" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">2</text>
+    <text x="380" y="200" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">Prerequisites</text>
+    <text x="380" y="217" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">DNS · NTP · net · size</text>
+    <!-- mini icon: 4-item checklist -->
+    <g transform="translate(330,250)">
+      <text x="0" y="14" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#1F8A60">✓ DNS A + PTR</text>
+      <text x="0" y="34" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#1F8A60">✓ NTP synced</text>
+      <text x="0" y="54" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#1F8A60">✓ IP + port group</text>
+      <text x="0" y="74" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#1F8A60">✓ size: Tiny/Small/...</text>
+    </g>
+    <text x="410" y="360" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">missing PTR = silent pain</text>
+  </g>
+
+  <line x1="520" y1="280" x2="580" y2="280" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 3 — Stage 1 (x=580, y=170)
+       ============================================ -->
+  <g>
+    <rect x="580" y="170" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="580" y="382" width="220" height="8" fill="#2E7A8C"/>
+    <circle cx="620" cy="200" r="22" fill="#2E7A8C"/>
+    <text x="620" y="206" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">3</text>
+    <text x="660" y="200" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">Stage 1</text>
+    <text x="660" y="217" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">deploy the OVA</text>
+    <!-- mini icon: laptop pushing OVA to host -->
+    <g transform="translate(605,245)">
+      <rect x="0" y="0" width="40" height="28" rx="3" fill="#1F2937"/>
+      <rect x="3" y="3" width="34" height="22" rx="1" fill="#5DCAA5" opacity="0.2"/>
+      <text x="20" y="17" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="8" fill="#5DCAA5">installer</text>
+      <line x1="40" y1="14" x2="100" y2="14" stroke="#2E7A8C" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="70" y="6" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="8" fill="#5A6B81">OVA</text>
+      <rect x="100" y="0" width="40" height="28" rx="3" fill="#3F4A5E"/>
+      <rect x="105" y="5" width="30" height="6" rx="1" fill="#5A6B81"/>
+      <text x="120" y="22" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="8" fill="#FFFFFF">esx-01</text>
+    </g>
+    <text x="690" y="345" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#1F2937">~7 min · OVA lands</text>
+    <text x="690" y="360" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">services NOT started yet</text>
+  </g>
+
+  <line x1="800" y1="280" x2="860" y2="280" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 4 — Stage 2 (x=860, y=170)
+       ============================================ -->
+  <g>
+    <rect x="860" y="170" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="860" y="382" width="220" height="8" fill="#1F8A60"/>
+    <circle cx="900" cy="200" r="22" fill="#1F8A60"/>
+    <text x="900" y="206" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">4</text>
+    <text x="940" y="200" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">Stage 2</text>
+    <text x="940" y="217" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">first-time setup</text>
+    <!-- mini icon: progress bar then login screen -->
+    <g transform="translate(880,245)">
+      <text x="0" y="10" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">Starting services...</text>
+      <rect x="0" y="16" width="180" height="10" rx="2" fill="#F3F5F9" stroke="#D5DCE6"/>
+      <rect x="0" y="16" width="135" height="10" rx="2" fill="#1F8A60"/>
+      <rect x="0" y="40" width="180" height="50" rx="3" fill="#1F2937"/>
+      <text x="90" y="60" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#FFFFFF">vSphere Client</text>
+      <text x="90" y="75" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="8" fill="#5DCAA5">login: admin@vsphere.local</text>
+    </g>
+    <text x="970" y="365" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">vCenter is alive</text>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- Row-to-row connector: down from card 4 right side, U-turn back to card 5 left side -->
+  <!-- ======================================== -->
+  <path d="M970,390 Q970,400 970,410 L970,400 L1080,400 L1080,410 L1080,410" fill="none" stroke="none"/>
+  <!-- simpler: arrow down from row1 col-4 mid-bottom, then a bend, then arrow into row2 col-1 -->
+  <path d="M970,395 Q970,420 1000,420 L1080,420 Q1090,420 1090,430 L1090,510 Q1090,520 1080,520 L20,520 Q10,520 10,510 L10,440 Q10,420 30,420 L60,420" fill="none" stroke="none"/>
+  <!-- visible curved connector -->
+  <path d="M1080,335 Q1095,335 1095,360 L1095,500 Q1095,520 1075,520 L130,520" fill="none" stroke="#5A6B81" stroke-width="1.5" stroke-dasharray="4,4"/>
+  <text x="600" y="510" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#5A6B81">→ continue with vCenter alive ↓</text>
+
+  <!-- ======================================== -->
+  <!-- ROW 2: stations 5, 6, 7, 8
+       y 410, w 220, h 220, gap 60
+       x positions: 20, 300, 580, 860
+       ======================================== -->
+
+  <line x1="130" y1="520" x2="970" y2="520" stroke="#D5DCE6" stroke-width="2" stroke-dasharray="2,4"/>
+
+  <!-- ============================================
+       Station 5 — SSO (x=20, y=410)
+       ============================================ -->
+  <g>
+    <rect x="20" y="410" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="20" y="622" width="220" height="8" fill="#B85829"/>
+    <circle cx="60" cy="440" r="22" fill="#B85829"/>
+    <text x="60" y="446" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">5</text>
+    <text x="100" y="440" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">SSO + identity</text>
+    <text x="100" y="457" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">add AD as a source</text>
+    <!-- mini icon: AD → SSO → vCenter -->
+    <g transform="translate(35,490)">
+      <rect x="0" y="10" width="40" height="24" rx="3" fill="#5E4A8E"/>
+      <text x="20" y="25" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#FFFFFF">AD</text>
+      <line x1="40" y1="22" x2="70" y2="22" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+      <rect x="70" y="10" width="40" height="24" rx="3" fill="#3F4A5E"/>
+      <text x="90" y="25" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#FFFFFF">SSO</text>
+      <line x1="110" y1="22" x2="140" y2="22" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+      <rect x="140" y="10" width="40" height="24" rx="3" fill="#1F8A60"/>
+      <text x="160" y="25" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#FFFFFF">vC</text>
+    </g>
+    <text x="130" y="595" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">login as alice@corp.local</text>
+  </g>
+
+  <line x1="240" y1="520" x2="300" y2="520" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 6 — RBAC (x=300, y=410)
+       ============================================ -->
+  <g>
+    <rect x="300" y="410" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="300" y="622" width="220" height="8" fill="#8E2A2A"/>
+    <circle cx="340" cy="440" r="22" fill="#8E2A2A"/>
+    <text x="340" y="446" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">6</text>
+    <text x="380" y="440" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">Roles · Permissions</text>
+    <text x="380" y="457" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">RBAC model</text>
+    <!-- mini icon: triple of (user, role, object) -->
+    <g transform="translate(330,490)">
+      <text x="0" y="10" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#1F2937">user/group</text>
+      <text x="0" y="30" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#1F2937">  + role</text>
+      <text x="0" y="50" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#1F2937">  + object</text>
+      <text x="0" y="70" font-family="ui-monospace, Menlo, monospace" font-size="10" font-weight="700" fill="#8E2A2A">  = permission</text>
+    </g>
+    <text x="410" y="595" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">propagating ↓ inheritance</text>
+  </g>
+
+  <line x1="520" y1="520" x2="580" y2="520" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 7 — Inventory + backup (x=580, y=410)
+       ============================================ -->
+  <g>
+    <rect x="580" y="410" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="580" y="622" width="220" height="8" fill="#2E7A8C"/>
+    <circle cx="620" cy="440" r="22" fill="#2E7A8C"/>
+    <text x="620" y="446" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">7</text>
+    <text x="660" y="440" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">Inventory + Backup</text>
+    <text x="660" y="457" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">organize · protect</text>
+    <!-- mini icon: tree -->
+    <g transform="translate(610,485)">
+      <text x="0" y="14" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#1F2937">DC-east</text>
+      <text x="14" y="32" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#1F2937">└ Prod folder</text>
+      <text x="28" y="50" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#1F2937">└ cluster-A</text>
+      <text x="42" y="68" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#5A6B81">└ host · VM</text>
+    </g>
+    <!-- backup icon -->
+    <g transform="translate(740,500)">
+      <rect x="0" y="0" width="36" height="20" rx="3" fill="#5DCAA5" opacity="0.4"/>
+      <text x="18" y="14" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="8" fill="#1F2937">backup</text>
+    </g>
+    <text x="690" y="600" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">SFTP · nightly · keep 30</text>
+  </g>
+
+  <line x1="800" y1="520" x2="860" y2="520" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 8 — vCenter HA (x=860, y=410)
+       ============================================ -->
+  <g>
+    <rect x="860" y="410" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="860" y="622" width="220" height="8" fill="#1F8A60"/>
+    <circle cx="900" cy="440" r="22" fill="#1F8A60"/>
+    <text x="900" y="446" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">8</text>
+    <text x="940" y="440" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">vCenter HA</text>
+    <text x="940" y="457" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">A · P · W</text>
+    <!-- mini icon: 3 nodes -->
+    <g transform="translate(875,485)">
+      <rect x="0" y="0" width="50" height="32" rx="3" fill="#1F8A60"/>
+      <text x="25" y="20" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#FFFFFF">Active</text>
+      <rect x="60" y="0" width="50" height="32" rx="3" fill="#5A6B81"/>
+      <text x="85" y="20" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#FFFFFF">Passive</text>
+      <rect x="120" y="0" width="50" height="32" rx="3" fill="#9D9C95"/>
+      <text x="145" y="20" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#FFFFFF">Witness</text>
+      <line x1="50" y1="16" x2="60" y2="16" stroke="#3F4A5E" stroke-width="1.4"/>
+      <line x1="110" y1="16" x2="120" y2="16" stroke="#3F4A5E" stroke-width="1.4" stroke-dasharray="2,2"/>
+    </g>
+    <text x="970" y="595" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">failover in minutes</text>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- Footer note -->
+  <!-- ======================================== -->
+  <g>
+    <rect x="20" y="650" width="1060" height="56" rx="10" fill="#F3F5F9" stroke="#E5E9F0"/>
+    <text x="40" y="673" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1F2937">How to read this lesson</text>
+    <text x="40" y="693" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#1F2937">Each numbered station is a <tspan font-weight="700">separate subtopic</tspan> with its own concept, before/after, analogy, quick check, ELI5/ELI10, real-world, flashcards, quiz. End state: a healthy management plane ready for lesson 10 (networking).</text>
+  </g>
+</svg>

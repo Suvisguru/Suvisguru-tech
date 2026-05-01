@@ -57,6 +57,7 @@ For each lesson, the factory walks these stages in order. Skipping any stage pro
 7. **Animated SVG illustration.** Section 6, building on the static diagram.
 8. **Flashcards and quiz drafting.** Section 7.
 9. **Assembly and self-review.** The factory checks the lesson against STYLE.md and the definition of done (below).
+10. **Interactive preview rendering.** The factory builds `preview-lesson-{nn}.html` at the repo root, following the conventions in STYLE.md "Lesson preview page" section. Reference implementation: `preview-lesson-01.html`. Hand-authored for now; templatized once patterns are stable.
 
 ## Definition of done for a lesson
 
@@ -72,6 +73,7 @@ A lesson ships when:
 - New visual conventions, if any, have been added to STYLE.md.
 - New meaningful decisions, if any, have been logged in DECISIONS.md.
 - A learner unfamiliar with the topic could complete the lesson and answer the quiz correctly on first try in user testing.
+- The interactive preview page (`preview-lesson-{nn}.html`) renders correctly and meets all conventions in STYLE.md "Lesson preview page" section: hero contains an interactive widget, every concept has an inline visualization, technical terms are tagged on first appearance, an inline knowledge check sits at the right moment, action buttons pulse, dark mode and scroll progress work, and the page is responsive below 720px width.
 
 ## Component library — the moat
 

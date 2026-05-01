@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<!--
+  Lesson 04 — A short history of virtualization
+  Era-based animation. Six era buttons walking through the timeline.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>History of virtualization — animation</title>
+<style>
+  body { background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 24px; color: #1a1a1a; margin: 0; }
+  .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .mode-btn { border: 1px solid #d8d6cf; background: #ffffff; color: #3a3a3a; padding: 9px 14px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px; font-family: inherit; transition: all 0.15s; }
+  .mode-btn:hover:not(.active) { background: #f4f1e8; border-color: #5F5E5A; }
+  .mode-btn.active { background: #3F4A5E; color: #FFFFFF; border-color: #3F4A5E; }
+  .stage-label { font-size: 15px; color: #3a3a3a; margin: 12px 0 18px 0; min-height: 22px; font-weight: 500; }
+  .speed-control { margin-left: auto; font-size: 13px; color: #5F5E5A; display: flex; gap: 8px; align-items: center; }
+  .speed-control input[type=range] { accent-color: #3F4A5E; }
+  #canvas { width: 100%; max-width: 1040px; height: auto; display: block; }
+  #canvas .mode-group { display: none; }
+  #canvas[data-mode="1960s"] .mode-1960s,
+  #canvas[data-mode="1998-2001"] .mode-1998,
+  #canvas[data-mode="2003"] .mode-2003,
+  #canvas[data-mode="2006"] .mode-2006,
+  #canvas[data-mode="2013"] .mode-2013,
+  #canvas[data-mode="2024"] .mode-2024 { display: block; }
+  @media (max-width: 700px) { body { padding: 16px; } .mode-btn { padding: 7px 11px; font-size: 12px; } }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button class="mode-btn active" data-mode="1960s" type="button">1960s</button>
+  <button class="mode-btn" data-mode="1998-2001" type="button">1998–2001</button>
+  <button class="mode-btn" data-mode="2003" type="button">2003</button>
+  <button class="mode-btn" data-mode="2006" type="button">2006</button>
+  <button class="mode-btn" data-mode="2013" type="button">2013</button>
+  <button class="mode-btn" data-mode="2024" type="button">2024</button>
+  <button class="mode-btn" id="play-btn" type="button">Pause</button>
+  <span class="speed-control"><span>Speed</span><input type="range" min="0.3" max="2" step="0.1" value="1" id="speed-slider"><span id="speed-display">1.0&times;</span></span>
+</div>
+
+<div class="stage-label" id="stage-label">1960s: virtualization is born — on mainframes only.</div>
+
+<svg id="canvas" data-mode="1960s" viewBox="0 0 1040 500" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- 1960s: One mainframe with many user sessions -->
+  <g class="mode-group mode-1960s">
+    <text x="520" y="60" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">ONE IBM MAINFRAME, MANY USERS</text>
+    <!-- Mainframe (large box) -->
+    <g transform="translate(340, 110)">
+      <rect width="360" height="280" rx="6" fill="#3F4A5E" stroke="#1F2433" stroke-width="2"/>
+      <rect x="20" y="20" width="320" height="40" fill="#1F2433"/>
+      <text x="180" y="46" text-anchor="middle" font-size="13" font-weight="600" fill="#E8EAEF" letter-spacing="2">IBM SYSTEM/360 + CP/CMS</text>
+      <!-- Tape reels (decorative) -->
+      <circle cx="80" cy="120" r="40" fill="#1F2433" stroke="#536179" stroke-width="2"/>
+      <circle cx="80" cy="120" r="14" fill="#536179"/>
+      <circle cx="80" cy="120" r="6" fill="#1F2433"/>
+      <circle cx="280" cy="120" r="40" fill="#1F2433" stroke="#536179" stroke-width="2"/>
+      <circle cx="280" cy="120" r="14" fill="#536179"/>
+      <circle cx="280" cy="120" r="6" fill="#1F2433"/>
+      <!-- Many "user sessions" inside (small green dots) -->
+      <text x="180" y="200" text-anchor="middle" font-size="11" fill="#B5C0D0" letter-spacing="1">VIRTUAL SESSIONS</text>
+      <g transform="translate(60, 220)">
+        ${''}
+      </g>
+      <g transform="translate(60, 215)">
+        <circle cx="0" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="2.1s" repeatCount="indefinite"/></circle>
+        <circle cx="20" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="1.7s" repeatCount="indefinite"/></circle>
+        <circle cx="40" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="2.3s" repeatCount="indefinite"/></circle>
+        <circle cx="60" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="1.9s" repeatCount="indefinite"/></circle>
+        <circle cx="80" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="2.5s" repeatCount="indefinite"/></circle>
+        <circle cx="100" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="2s" repeatCount="indefinite"/></circle>
+        <circle cx="120" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="1.8s" repeatCount="indefinite"/></circle>
+        <circle cx="140" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="2.2s" repeatCount="indefinite"/></circle>
+        <circle cx="160" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="1.6s" repeatCount="indefinite"/></circle>
+        <circle cx="180" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="2.4s" repeatCount="indefinite"/></circle>
+        <circle cx="200" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="1.9s" repeatCount="indefinite"/></circle>
+        <circle cx="220" cy="0" r="4" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="2.1s" repeatCount="indefinite"/></circle>
+      </g>
+      <text x="180" y="260" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">Each green dot is a virtual machine.</text>
+    </g>
+    <text x="520" y="430" text-anchor="middle" font-size="14" fill="#3A3A3A">CP/CMS lets one mainframe support many users, each with their own virtual computer.</text>
+    <text x="520" y="456" text-anchor="middle" font-size="13" fill="#9D9C95" font-style="italic">Cost: $20M+. Available only to governments, banks, big universities.</text>
+  </g>
+
+  <!-- 1998-2001: VMware founded, ESX -->
+  <g class="mode-group mode-1998">
+    <text x="520" y="60" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">VMWARE BRINGS VIRTUALIZATION TO COMMODITY x86</text>
+    <!-- Two boxes: physical x86 server → x86 server with hypervisor -->
+    <g transform="translate(140, 130)">
+      <rect width="280" height="180" rx="8" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="140" y="-10" text-anchor="middle" font-size="11" font-weight="600" fill="#9D9C95" letter-spacing="1.2">BEFORE 1998</text>
+      <text x="140" y="40" text-anchor="middle" font-size="13" font-weight="500" fill="#1A1A1A">x86 server</text>
+      <rect x="20" y="60" width="240" height="40" fill="#FFFFFF" stroke="#5F5E5A"/>
+      <text x="140" y="84" text-anchor="middle" font-size="13" fill="#1A1A1A">Operating system</text>
+      <rect x="20" y="110" width="240" height="40" fill="#5DCAA5" opacity="0.2" stroke="#1F8A60"/>
+      <text x="140" y="134" text-anchor="middle" font-size="13" fill="#1F8A60">ONE Application</text>
+    </g>
+    <!-- Arrow -->
+    <g transform="translate(450, 220)">
+      <line x1="0" y1="0" x2="80" y2="0" stroke="#3F4A5E" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 80 0 L 66 -10 L 66 10 Z" fill="#3F4A5E"/>
+      <text x="40" y="-15" text-anchor="middle" font-size="11" font-weight="600" fill="#3F4A5E" letter-spacing="1.5">VMware (1998)</text>
+    </g>
+    <!-- After: same hardware, hypervisor + many VMs -->
+    <g transform="translate(580, 130)">
+      <rect width="280" height="180" rx="8" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="140" y="-10" text-anchor="middle" font-size="11" font-weight="600" fill="#1F8A60" letter-spacing="1.2">AFTER 2001 (ESX SERVER)</text>
+      <text x="140" y="20" text-anchor="middle" font-size="11" font-weight="500" fill="#1A1A1A">Same x86 server</text>
+      <!-- Hypervisor band -->
+      <rect x="20" y="40" width="240" height="20" fill="#3F4A5E"/>
+      <text x="140" y="54" text-anchor="middle" font-size="10" font-weight="500" fill="#E8E8E0" letter-spacing="1.5">ESX (hypervisor)</text>
+      <!-- Multiple VMs -->
+      <g transform="translate(28, 70)">
+        <rect width="50" height="36" rx="3" fill="#FFFFFF" stroke="#5F5E5A"/>
+        <rect width="50" height="9" fill="#5F5E5A"/>
+        <text x="25" y="7" text-anchor="middle" font-size="7" fill="#FFFFFF">VM 1</text>
+      </g>
+      <g transform="translate(88, 70)">
+        <rect width="50" height="36" rx="3" fill="#FFFFFF" stroke="#5F5E5A"/>
+        <rect width="50" height="9" fill="#5F5E5A"/>
+        <text x="25" y="7" text-anchor="middle" font-size="7" fill="#FFFFFF">VM 2</text>
+      </g>
+      <g transform="translate(148, 70)">
+        <rect width="50" height="36" rx="3" fill="#FFFFFF" stroke="#5F5E5A"/>
+        <rect width="50" height="9" fill="#5F5E5A"/>
+        <text x="25" y="7" text-anchor="middle" font-size="7" fill="#FFFFFF">VM 3</text>
+      </g>
+      <g transform="translate(208, 70)">
+        <rect width="50" height="36" rx="3" fill="#FFFFFF" stroke="#5F5E5A"/>
+        <rect width="50" height="9" fill="#5F5E5A"/>
+        <text x="25" y="7" text-anchor="middle" font-size="7" fill="#FFFFFF">VM 4</text>
+      </g>
+      <text x="140" y="135" text-anchor="middle" font-size="12" fill="#1F8A60" font-weight="600">Many OSes, one box</text>
+    </g>
+    <text x="520" y="380" text-anchor="middle" font-size="14" fill="#3A3A3A">VMware Workstation (1999) and ESX Server (2001) bring mainframe-class virtualization to commodity hardware.</text>
+    <text x="520" y="406" text-anchor="middle" font-size="13" fill="#9D9C95" font-style="italic">Now any company can have what only mainframe shops had.</text>
+  </g>
+
+  <!-- 2003: vMotion -->
+  <g class="mode-group mode-2003">
+    <text x="520" y="60" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">VMOTION: A VM MOVES BETWEEN HOSTS WHILE RUNNING</text>
+    <g transform="translate(140, 220)">
+      <rect width="220" height="120" rx="6" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.2"/>
+      <rect width="220" height="20" fill="#3F4A5E"/>
+      <text x="110" y="14" text-anchor="middle" font-size="10" font-weight="500" fill="#E8E8E0" letter-spacing="1.4">ESX · host-A</text>
+      <text x="110" y="100" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">source</text>
+    </g>
+    <g transform="translate(680, 220)">
+      <rect width="220" height="120" rx="6" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.2"/>
+      <rect width="220" height="20" fill="#3F4A5E"/>
+      <text x="110" y="14" text-anchor="middle" font-size="10" font-weight="500" fill="#E8E8E0" letter-spacing="1.4">ESX · host-B</text>
+      <text x="110" y="100" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">destination</text>
+    </g>
+    <path d="M 360 280 Q 520 180 680 280" stroke="#3F4A5E" stroke-width="2" stroke-dasharray="4 3" fill="none"/>
+    <g>
+      <g>
+        <rect x="-50" y="-22" width="100" height="44" rx="5" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+        <rect x="-50" y="-22" width="100" height="11" rx="5" fill="#3F4A5E"/>
+        <text x="-44" y="-13" font-size="10" font-weight="500" fill="#FFFFFF">vm-running</text>
+        <text x="0" y="6" text-anchor="middle" font-size="10" fill="#1F8A60" font-weight="600">serving traffic</text>
+        <circle cx="42" cy="-16" r="3" fill="#5DCAA5"><animate attributeName="opacity" values="1;0.4;1" dur="1.2s" repeatCount="indefinite"/></circle>
+      </g>
+      <animateMotion dur="6s" repeatCount="indefinite"><mpath href="#vmotion-path"/></animateMotion>
+    </g>
+    <path id="vmotion-path" d="M 360 280 Q 520 180 680 280 Q 520 180 360 280" fill="none" opacity="0"/>
+    <text x="520" y="430" text-anchor="middle" font-size="14" fill="#3A3A3A">The first time it shipped (2003), this looked like magic.</text>
+    <text x="520" y="456" text-anchor="middle" font-size="13" fill="#9D9C95" font-style="italic">It's now ordinary in every cloud.</text>
+  </g>
+
+  <!-- 2006: AWS EC2 -->
+  <g class="mode-group mode-2006">
+    <text x="520" y="60" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">AWS EC2 LAUNCHES — VIRTUALIZATION AT HYPERSCALE</text>
+    <g transform="translate(280, 130)">
+      <rect width="480" height="240" rx="12" fill="#3F4A5E" stroke="#1F2433" stroke-width="2"/>
+      <text x="240" y="40" text-anchor="middle" font-size="16" font-weight="600" fill="#FFFFFF" letter-spacing="1.5">AWS DATACENTER (2006)</text>
+      <text x="240" y="58" text-anchor="middle" font-size="11" fill="#B5C0D0">virtualization, sold by the hour</text>
+      <!-- Many small VMs in a grid -->
+      <g transform="translate(40, 80)">
+        ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(i => `
+          <rect x="${(i % 8) * 50}" y="${Math.floor(i / 8) * 36}" width="44" height="30" rx="3" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="0.5"/>
+          <rect x="${(i % 8) * 50}" y="${Math.floor(i / 8) * 36}" width="44" height="8" rx="3" fill="#5F5E5A"/>
+          <circle cx="${(i % 8) * 50 + 38}" cy="${Math.floor(i / 8) * 36 + 4}" r="1.5" fill="#5DCAA5"/>
+        `).join('')}
+      </g>
+      <text x="240" y="200" text-anchor="middle" font-size="14" font-weight="500" fill="#FFFFFF">Many customers · Many VMs · One platform</text>
+      <text x="240" y="220" text-anchor="middle" font-size="11" fill="#B5C0D0">$0.10/hour</text>
+    </g>
+    <text x="520" y="420" text-anchor="middle" font-size="14" fill="#3A3A3A">Public cloud is virtualization rented by the hour, on someone else's hardware.</text>
+  </g>
+
+  <!-- 2013: Docker -->
+  <g class="mode-group mode-2013">
+    <text x="520" y="60" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">CONTAINERS: A LIGHTER ABSTRACTION (BUT VMs ARE STILL UNDERNEATH)</text>
+    <g transform="translate(220, 110)">
+      <rect width="600" height="280" rx="10" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="300" y="24" text-anchor="middle" font-size="11" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">PHYSICAL HOST</text>
+      <!-- Hypervisor band -->
+      <rect x="20" y="40" width="560" height="22" fill="#3F4A5E"/>
+      <text x="300" y="55" text-anchor="middle" font-size="11" font-weight="500" fill="#E8E8E0" letter-spacing="1.5">Hypervisor</text>
+      <!-- Two VMs -->
+      <g transform="translate(40, 80)">
+        <rect width="260" height="180" rx="6" fill="#F4F4F0" stroke="#5F5E5A"/>
+        <rect width="260" height="20" rx="6" fill="#5F5E5A"/>
+        <text x="130" y="14" text-anchor="middle" font-size="11" fill="#FFFFFF" font-weight="500">VM (Linux)</text>
+        <!-- Containers inside VM -->
+        <g transform="translate(20, 36)">
+          <rect width="100" height="60" rx="4" fill="#5DCAA5" opacity="0.2" stroke="#1F8A60" stroke-width="1.5"/>
+          <text x="50" y="34" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">Container A</text>
+        </g>
+        <g transform="translate(140, 36)">
+          <rect width="100" height="60" rx="4" fill="#5DCAA5" opacity="0.2" stroke="#1F8A60" stroke-width="1.5"/>
+          <text x="50" y="34" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">Container B</text>
+        </g>
+        <g transform="translate(20, 106)">
+          <rect width="100" height="60" rx="4" fill="#5DCAA5" opacity="0.2" stroke="#1F8A60" stroke-width="1.5"/>
+          <text x="50" y="34" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">Container C</text>
+        </g>
+        <g transform="translate(140, 106)">
+          <rect width="100" height="60" rx="4" fill="#5DCAA5" opacity="0.2" stroke="#1F8A60" stroke-width="1.5"/>
+          <text x="50" y="34" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">Container D</text>
+        </g>
+      </g>
+      <g transform="translate(320, 80)">
+        <rect width="240" height="180" rx="6" fill="#F4F4F0" stroke="#5F5E5A"/>
+        <rect width="240" height="20" rx="6" fill="#5F5E5A"/>
+        <text x="120" y="14" text-anchor="middle" font-size="11" fill="#FFFFFF" font-weight="500">VM (Linux)</text>
+        <g transform="translate(20, 36)">
+          <rect width="200" height="60" rx="4" fill="#5DCAA5" opacity="0.2" stroke="#1F8A60" stroke-width="1.5"/>
+          <text x="100" y="34" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">Container E</text>
+        </g>
+        <g transform="translate(20, 106)">
+          <rect width="200" height="60" rx="4" fill="#5DCAA5" opacity="0.2" stroke="#1F8A60" stroke-width="1.5"/>
+          <text x="100" y="34" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">Container F</text>
+        </g>
+      </g>
+    </g>
+    <text x="520" y="430" text-anchor="middle" font-size="14" fill="#3A3A3A">Containers are lighter than VMs but mostly run inside VMs. Virtualization remains the foundation.</text>
+  </g>
+
+  <!-- 2024: Today -->
+  <g class="mode-group mode-2024">
+    <text x="520" y="60" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">2024: VIRTUALIZATION IS INVISIBLE INFRASTRUCTURE</text>
+    <!-- Stack diagram showing the layers from user-facing down to virtualization -->
+    <g transform="translate(280, 110)">
+      <rect width="480" height="60" rx="6" fill="#5DCAA5" opacity="0.2" stroke="#1F8A60" stroke-width="1.5"/>
+      <text x="240" y="36" text-anchor="middle" font-size="14" font-weight="600" fill="#1F8A60">Your SaaS application</text>
+      <text x="240" y="52" text-anchor="middle" font-size="11" fill="#5F5E5A">"I just deployed to AWS"</text>
+    </g>
+    <g transform="translate(280, 180)">
+      <rect width="480" height="50" rx="6" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="240" y="22" text-anchor="middle" font-size="13" font-weight="500" fill="#1A1A1A">Container runtime (e.g. Fargate, GKE)</text>
+      <text x="240" y="40" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">developer interacts with this</text>
+    </g>
+    <g transform="translate(280, 240)">
+      <rect width="480" height="50" rx="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="240" y="22" text-anchor="middle" font-size="13" font-weight="500" fill="#1A1A1A">Virtual machine</text>
+      <text x="240" y="40" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">cloud provider operates this</text>
+    </g>
+    <g transform="translate(280, 300)">
+      <rect width="480" height="50" rx="6" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.5"/>
+      <text x="240" y="22" text-anchor="middle" font-size="13" font-weight="500" fill="#E8E8E0">Hypervisor (KVM, Xen, ESXi)</text>
+      <text x="240" y="40" text-anchor="middle" font-size="11" fill="#B5C0D0" font-style="italic">cloud provider operates this</text>
+    </g>
+    <g transform="translate(280, 360)">
+      <rect width="480" height="50" rx="6" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="240" y="22" text-anchor="middle" font-size="13" font-weight="500" fill="#1A1A1A">Physical hardware</text>
+      <text x="240" y="40" text-anchor="middle" font-size="11" fill="#5F5E5A" font-style="italic">in someone else's datacenter</text>
+    </g>
+    <text x="520" y="450" text-anchor="middle" font-size="14" fill="#3A3A3A">A 60-year-old idea, now invisible under almost every internet service you use.</text>
+  </g>
+
+</svg>
+
+<script>
+(function () {
+  const svg = document.getElementById('canvas');
+  const playBtn = document.getElementById('play-btn');
+  const speedSlider = document.getElementById('speed-slider');
+  const speedDisplay = document.getElementById('speed-display');
+  const stageLabel = document.getElementById('stage-label');
+  const stageText = {
+    '1960s': '1960s: virtualization is born — on mainframes only.',
+    '1998-2001': '1998–2001: VMware brings hypervisors to commodity x86.',
+    '2003': '2003: vMotion ships. Live migration becomes ordinary.',
+    '2006': '2006: AWS launches EC2. Virtualization rented by the hour.',
+    '2013': '2013: Docker. Containers complement virtualization.',
+    '2024': '2024: virtualization is invisible under every cloud and SaaS.'
+  };
+  let speed = 1.0, isPaused = false, svgClock = 0, lastFrame = performance.now();
+  svg.pauseAnimations();
+  function tick(now) {
+    const dt = (now - lastFrame) / 1000;
+    lastFrame = now;
+    if (!isPaused) { svgClock += dt * speed; svg.setCurrentTime(svgClock); }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => btn.addEventListener('click', () => {
+    const mode = btn.dataset.mode;
+    document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.toggle('active', b === btn));
+    svg.dataset.mode = mode;
+    stageLabel.textContent = stageText[mode];
+    svgClock = 0; svg.setCurrentTime(0);
+  }));
+  playBtn.addEventListener('click', () => { isPaused = !isPaused; playBtn.textContent = isPaused ? 'Play' : 'Pause'; });
+  speedSlider.addEventListener('input', e => { speed = parseFloat(e.target.value); speedDisplay.textContent = speed.toFixed(1) + '×'; });
+})();
+</script>
+</body>
+</html>

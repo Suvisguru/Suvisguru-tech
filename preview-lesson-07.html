@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<!--
+  Lesson 07 — Software-Defined Datacenter and the foundation of public cloud
+  Interactive preview. Follows STYLE.md "Lesson preview page" conventions.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SDDC and public cloud — Lesson 7 — vSphere Fundamentals</title>
+<style>
+  :root { --bg: #FAFAF6; --bg-elevated: #FFFFFF; --bg-soft: #F4F1E8; --bg-deep: #1F2433; --text: #1A1A1A; --text-muted: #5F5E5A; --text-subtle: #9D9C95; --accent: #3F4A5E; --accent-soft: #E8EAEF; --accent-light: #536179; --success: #1F8A60; --success-soft: #E0F2EA; --warn: #B85829; --warn-soft: #FCEBE0; --slate-fill: #5A6B81; --border: #E8E5DD; --border-soft: #F0EDE4; --shadow-sm: 0 1px 2px rgba(20,20,18,0.04); --shadow-md: 0 4px 12px rgba(20,20,18,0.06); --shadow-lg: 0 12px 32px rgba(20,20,18,0.08); --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-pill: 999px; --ease: cubic-bezier(0.4, 0, 0.2, 1); --ease-out: cubic-bezier(0.2, 0.6, 0.2, 1); }
+  [data-theme="dark"] { --bg: #16181D; --bg-elevated: #1F2229; --bg-soft: #25282F; --bg-deep: #0E1015; --text: #ECECE8; --text-muted: #B5B5AC; --text-subtle: #75756E; --accent: #8DA3C7; --accent-soft: #2A3140; --accent-light: #ABB7CC; --success: #5DCAA5; --success-soft: #1F3329; --warn: #E8946A; --warn-soft: #3A2820; --border: #2C3038; --border-soft: #22262D; }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 18px; line-height: 1.7; -webkit-font-smoothing: antialiased; transition: background 0.3s var(--ease), color 0.3s var(--ease); }
+  ::selection { background: var(--accent-soft); }
+  .container { max-width: 680px; margin: 0 auto; padding: 0 24px; }
+  .container-wide { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  .topbar { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--border-soft); backdrop-filter: saturate(180%) blur(8px); }
+  .topbar-inner { display: flex; align-items: center; max-width: 1100px; margin: 0 auto; padding: 12px 24px; }
+  .brand { font-size: 13px; font-weight: 600; letter-spacing: 0.4px; color: var(--text-muted); }
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .icon-btn { width: 36px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.15s var(--ease); }
+  .icon-btn:hover { background: var(--bg-elevated); border-color: var(--border); color: var(--text); }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .progress-bar { position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: transparent; pointer-events: none; }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.06s linear; }
+  .course-nav { background: var(--bg-elevated); border-bottom: 1px solid var(--border-soft); position: sticky; top: 49px; z-index: 95; }
+  .course-nav-inner { display: flex; gap: 6px; max-width: 1100px; margin: 0 auto; padding: 8px 24px; overflow-x: auto; scrollbar-width: thin; }
+  .course-nav-inner::-webkit-scrollbar { height: 6px; }
+  .course-nav-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .lesson-link { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; border-radius: var(--r-pill); border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); text-decoration: none; font-size: 12px; flex-shrink: 0; transition: all 0.15s var(--ease); white-space: nowrap; }
+  .lesson-link:hover:not(.active) { background: var(--accent-soft); color: var(--text); border-color: var(--accent-light); }
+  .lesson-link.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  [data-theme="dark"] .lesson-link.active { color: var(--bg); }
+  .lesson-link .num { font-weight: 700; opacity: 0.8; }
+  .lesson-link .name { font-weight: 500; }
+  @media (max-width: 600px) { .lesson-link .name { display: none; } .lesson-link { padding: 6px 10px; min-width: 32px; justify-content: center; } }
+
+  .hero { padding: 72px 0 32px 0; text-align: center; }
+  .hero-eyebrow { color: var(--accent); font-size: 12px; letter-spacing: 1.8px; text-transform: uppercase; font-weight: 600; margin: 0 0 16px 0; }
+  .hero h1 { font-size: 56px; font-weight: 500; line-height: 1.05; letter-spacing: -1.2px; margin: 0 0 24px 0; }
+  .hero-subtitle { color: var(--text-muted); font-size: 21px; line-height: 1.5; max-width: 600px; margin: 0 auto 32px auto; }
+  .hero-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 56px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-pill); font-size: 13px; color: var(--text-muted); font-weight: 500; }
+  .hero-widget { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-md); padding: 28px; margin: 0 auto 64px auto; max-width: 920px; text-align: left; }
+  .hero-widget-eyebrow { color: var(--accent); font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; font-weight: 600; margin: 0 0 6px 0; }
+  .hero-widget-title { font-size: 18px; font-weight: 500; margin: 0 0 4px 0; }
+  .hero-widget-tip { color: var(--text-muted); font-size: 14px; margin: 0 0 20px 0; }
+  .layer-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 18px; }
+  .layer-tab { padding: 10px 12px; background: var(--bg-soft); border: 1px solid transparent; border-radius: var(--r-md); cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--text-muted); text-align: left; transition: all 0.15s var(--ease); }
+  .layer-tab:hover:not(.active) { background: var(--accent-soft); color: var(--text); }
+  .layer-tab.active { background: var(--accent); color: #FFFFFF; border-color: var(--accent); }
+  [data-theme="dark"] .layer-tab.active { color: var(--bg); }
+  .layer-tab .num { display: block; font-size: 10px; opacity: 0.65; letter-spacing: 1.4px; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .layer-tab .name { font-size: 13px; font-weight: 600; }
+  .layer-stage { background: var(--bg-soft); border-radius: var(--r-md); padding: 24px; min-height: 320px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .layer-stage svg { width: 100%; max-width: 700px; height: auto; }
+  .layer-stage-readout { color: var(--text-muted); font-size: 14px; text-align: center; line-height: 1.5; max-width: 580px; }
+  .layer-stage-readout strong { color: var(--text); font-weight: 600; }
+  .stage-controls { display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 18px; }
+  @keyframes btn-pop { 0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(63, 74, 94, 0.18); } 50% { transform: scale(1.035); box-shadow: 0 8px 22px rgba(63, 74, 94, 0.28); } }
+  .btn { background: var(--accent); color: #fff; border: 1px solid var(--accent); padding: 11px 22px; font-size: 14px; font-weight: 500; border-radius: var(--r-sm); cursor: pointer; font-family: inherit; transition: all 0.15s var(--ease); box-shadow: 0 4px 14px rgba(63,74,94,0.18); animation: btn-pop 2.4s ease-in-out infinite; }
+  .btn:hover { animation: none; transform: translateY(-1px); }
+  .btn:disabled { background: var(--border); color: var(--text-subtle); border-color: var(--border); cursor: not-allowed; animation: none; box-shadow: none; transform: none; }
+  .btn.btn-secondary { background: transparent; color: var(--accent); border-color: var(--accent); box-shadow: none; animation: none; }
+  .btn.btn-secondary:hover { background: var(--accent); color: #fff; }
+  [data-theme="dark"] .btn { color: var(--bg); }
+  @media (prefers-reduced-motion: reduce) { .btn, .quiz-card .reveal-btn { animation: none !important; } }
+  section.lesson-section { margin: 88px 0; scroll-margin-top: 80px; }
+  .section-eyebrow { color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 1.8px; text-transform: uppercase; margin: 0 0 12px 0; }
+  h2.section-heading { font-size: 38px; font-weight: 500; line-height: 1.15; letter-spacing: -0.6px; margin: 0 0 32px 0; }
+  .lesson-section p { margin: 0 0 22px 0; }
+  .lesson-section strong { font-weight: 600; }
+  .pullquote { font-size: 24px; line-height: 1.4; border-left: 3px solid var(--accent); padding: 8px 0 8px 24px; margin: 36px 0; font-style: italic; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 32px 0; }
+  .compare-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-md); padding: 28px; box-shadow: var(--shadow-sm); }
+  .compare-card .label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; margin: 0 0 6px 0; }
+  .compare-card.before .label { color: var(--warn); }
+  .compare-card.after .label { color: var(--success); }
+  .compare-card h3 { font-size: 18px; font-weight: 500; margin: 0 0 14px 0; line-height: 1.3; }
+  .compare-card p { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin: 0 0 12px 0; }
+  .check-card { background: var(--bg-elevated); border: 1px solid var(--border); border-left: 4px solid var(--success); border-radius: var(--r-md); padding: 24px 28px; margin: 28px 0; box-shadow: var(--shadow-sm); }
+  .check-eyebrow { color: var(--success); font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin: 0 0 8px 0; }
+  .check-question { font-size: 17px; font-weight: 500; margin: 0 0 16px 0; line-height: 1.4; }
+  .check-options { display: flex; flex-direction: column; gap: 8px; }
+  .check-option { text-align: left; padding: 12px 16px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--r-sm); cursor: pointer; font-family: inherit; font-size: 15px; color: var(--text); transition: all 0.15s var(--ease); }
+  .check-option:hover:not(.locked) { background: var(--accent-soft); border-color: var(--accent); }
+  .check-option.correct { background: var(--success-soft); border-color: var(--success); }
+  .check-option.wrong { background: var(--warn-soft); border-color: var(--warn); }
+  .check-option.locked { cursor: default; }
+  .check-feedback { margin-top: 14px; padding: 14px 16px; background: var(--bg-soft); border-radius: var(--r-sm); font-size: 14px; line-height: 1.6; color: var(--text-muted); display: none; }
+  .check-feedback.shown { display: block; }
+  .check-feedback strong { color: var(--text); }
+  .eli-tabs { display: flex; gap: 0; background: var(--bg-soft); padding: 4px; border-radius: var(--r-pill); margin: 28px 0 20px 0; }
+  .eli-tab { flex: 1; padding: 12px 16px; background: transparent; border: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; color: var(--text-muted); border-radius: var(--r-pill); transition: all 0.2s var(--ease); }
+  .eli-tab:hover:not(.active) { color: var(--text); }
+  .eli-tab.active { background: var(--bg-elevated); color: var(--text); box-shadow: var(--shadow-sm); }
+  .eli-tab .tab-eyebrow { display: block; font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; opacity: 0.6; margin-bottom: 1px; font-weight: 600; }
+  .eli-content { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-md); padding: 28px; box-shadow: var(--shadow-sm); }
+  .eli-panel { display: none; }
+  .eli-panel.active { display: block; }
+  .eli-panel p { margin: 0 0 16px 0; }
+  .eli-panel p:last-child { margin-bottom: 0; }
+  .scenarios-list { display: flex; flex-direction: column; gap: 12px; margin: 28px 0; }
+  .scenario-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-md); box-shadow: var(--shadow-sm); overflow: hidden; transition: border-color 0.15s; }
+  .scenario-card.expanded { border-color: var(--accent-light); }
+  .scenario-card-header { display: grid; grid-template-columns: 44px 1fr 22px; gap: 16px; align-items: center; padding: 20px 24px; cursor: pointer; user-select: none; }
+  .scenario-icon-circle { width: 44px; height: 44px; border-radius: 50%; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; color: var(--accent); }
+  .scenario-icon-circle svg { width: 22px; height: 22px; }
+  .scenario-headline { min-width: 0; }
+  .scenario-industry { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-subtle); font-weight: 600; }
+  .scenario-title { font-size: 17px; font-weight: 500; margin: 2px 0 0 0; line-height: 1.3; }
+  .scenario-chevron { width: 22px; height: 22px; color: var(--text-subtle); transition: transform 0.3s var(--ease); }
+  .scenario-card.expanded .scenario-chevron { transform: rotate(180deg); }
+  .scenario-card-body { max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease); }
+  .scenario-card.expanded .scenario-card-body { max-height: 400px; }
+  .scenario-card-body-inner { padding: 0 24px 24px 84px; color: var(--text-muted); font-size: 15px; line-height: 1.65; }
+  @media (max-width: 600px) { .scenario-card-body-inner { padding-left: 24px; } }
+  .visual-wrap { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--shadow-md); margin: 28px 0; overflow: hidden; }
+  .animation-frame { width: 100%; height: 660px; border: none; display: block; background: var(--bg-elevated); }
+  @media (max-width: 720px) { .animation-frame { height: 540px; } }
+  .flashcards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin: 28px 0; }
+  .flashcard { perspective: 1200px; cursor: pointer; height: 220px; }
+  .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s var(--ease-out); transform-style: preserve-3d; }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .flashcard-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--r-md); padding: 22px; display: flex; flex-direction: column; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+  .flashcard-front { background: var(--bg-elevated); }
+  .flashcard-back { background: var(--accent); color: #fff; transform: rotateY(180deg); border-color: var(--accent); }
+  [data-theme="dark"] .flashcard-back { color: var(--bg); }
+  .flashcard .number { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-subtle); margin-bottom: 14px; font-weight: 600; }
+  .flashcard-back .number { color: rgba(255,255,255,0.6); }
+  .flashcard .question { font-size: 17px; font-weight: 500; line-height: 1.4; flex-grow: 1; }
+  .flashcard .answer { font-size: 14px; line-height: 1.5; flex-grow: 1; overflow-y: auto; }
+  .flashcard .hint { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-subtle); margin-top: 12px; text-align: right; font-weight: 500; }
+  .flashcard-back .hint { color: rgba(255,255,255,0.65); }
+  .quiz-card { background: var(--bg-elevated); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: var(--r-md); padding: 26px; margin: 18px 0; box-shadow: var(--shadow-sm); }
+  .quiz-card .pause-cue { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #fff; background: var(--accent); padding: 5px 12px; border-radius: var(--r-pill); margin-bottom: 14px; font-weight: 600; }
+  [data-theme="dark"] .quiz-card .pause-cue { color: var(--bg); }
+  .quiz-card .q-num { color: var(--text-subtle); font-size: 12px; letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+  .quiz-card .prompt { font-size: 17px; line-height: 1.55; margin: 0 0 18px 0; }
+  .quiz-card .reveal-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: var(--r-sm); cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; transition: all 0.15s var(--ease); animation: btn-pop 2.4s ease-in-out infinite; }
+  .quiz-card .reveal-btn:hover { background: var(--accent); color: #fff; animation: none; }
+  [data-theme="dark"] .quiz-card .reveal-btn:hover { color: var(--bg); }
+  .quiz-card .reveal-btn.shown { display: none; }
+  .quiz-card .reveal-content { max-height: 0; overflow: hidden; transition: max-height 0.5s var(--ease); }
+  .quiz-card .reveal-content.shown { max-height: 800px; margin-top: 16px; }
+  .quiz-card .answer-block, .quiz-card .reasoning-block { border-radius: var(--r-sm); padding: 16px 20px; margin-bottom: 12px; }
+  .quiz-card .answer-block { background: var(--success-soft); }
+  .quiz-card .reasoning-block { background: var(--bg-soft); margin-bottom: 0; }
+  .quiz-card .answer-block .label, .quiz-card .reasoning-block .label { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
+  .quiz-card .answer-block .label { color: var(--success); }
+  .quiz-card .reasoning-block .label { color: var(--text-muted); }
+  .quiz-card .answer-block .text { font-size: 15px; line-height: 1.6; }
+  .quiz-card .reasoning-block .text { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+  .recap-card { background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-soft) 100%); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 40px 36px; margin: 96px 0 80px 0; box-shadow: var(--shadow-sm); }
+  .recap-card .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--success); background: var(--success-soft); padding: 6px 14px; border-radius: var(--r-pill); margin-bottom: 20px; font-weight: 600; }
+  .recap-card h3 { font-size: 28px; font-weight: 500; margin: 0 0 24px 0; }
+  .recap-list { list-style: none; padding: 0; margin: 0 0 16px 0; display: flex; flex-direction: column; gap: 14px; }
+  .recap-list li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; font-size: 16px; }
+  .recap-list li svg { width: 22px; height: 22px; color: var(--success); margin-top: 2px; }
+  .recap-card p { color: var(--text-muted); margin: 0; padding-top: 24px; border-top: 1px solid var(--border); font-size: 15px; line-height: 1.6; }
+  .term { border-bottom: 1px dashed var(--accent); cursor: help; position: relative; }
+  .term:hover { color: var(--accent); }
+  .term .tooltip { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%) translateY(4px); background: var(--bg-deep); color: #fff; padding: 12px 16px; border-radius: var(--r-sm); font-size: 14px; line-height: 1.5; width: 280px; max-width: calc(100vw - 48px); text-align: left; box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none; transition: opacity 0.15s, transform 0.15s; z-index: 50; }
+  .term .tooltip::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px; border-width: 6px; border-style: solid; border-color: var(--bg-deep) transparent transparent transparent; }
+  .term:hover .tooltip, .term:focus-within .tooltip, .term.active .tooltip { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .back-to-top { position: fixed; bottom: 24px; right: 24px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: #fff; border: none; cursor: pointer; box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 150; }
+  .back-to-top.visible { opacity: 1; pointer-events: auto; }
+  .back-to-top svg { width: 18px; height: 18px; }
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+  @media (max-width: 720px) { .hero { padding: 44px 0 16px 0; } .hero h1 { font-size: 38px; } .hero-subtitle { font-size: 18px; } h2.section-heading { font-size: 28px; } body { font-size: 17px; } .compare-grid { grid-template-columns: 1fr; } .eli-tabs { flex-direction: column; padding: 4px; border-radius: var(--r-md); } .eli-tab { border-radius: var(--r-sm); } .recap-card { padding: 28px 24px; } .layer-tabs { grid-template-columns: repeat(5, 1fr); gap: 4px; } .layer-tab { padding: 8px 6px; } .layer-tab .name { font-size: 11px; } }
+  /* ==== Uniform glossary / callouts ==== */
+  .glossary-block{background:linear-gradient(135deg,#FBF4D6 0%,#FFFFFF 100%);border:2px solid #F2C94C;border-radius:12px;padding:24px 26px;margin:24px auto;box-shadow:0 1px 3px rgba(0,0,0,0.04);max-width:1100px}
+  .glossary-block .gloss-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .glossary-block .gloss-icon{width:36px;height:36px;border-radius:50%;background:#F2C94C;display:flex;align-items:center;justify-content:center;color:#1F2937;font-weight:700;font-size:18px;flex-shrink:0}
+  .glossary-block h3{margin:0;font-size:16px;font-weight:700;color:#1F2937;text-transform:none;letter-spacing:0}
+  .glossary-block .gloss-intro{margin:4px 0 16px;font-size:14px;color:#5A6B81}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .gloss-card{background:#FFFFFF;border:1.5px solid #D5DCE6;border-radius:8px;padding:14px 16px;border-left-width:5px}
+  .gloss-card.tag-tool{border-left-color:#1F8A60}
+  .gloss-card.tag-driver{border-left-color:#5E4A8E}
+  .gloss-card.tag-protocol{border-left-color:#2E7A8C}
+  .gloss-card.tag-hardware{border-left-color:#3F4A5E}
+  .gloss-card.tag-security{border-left-color:#8E2A2A}
+  .gloss-card.tag-config{border-left-color:#B85829}
+  .gloss-card.tag-concept{border-left-color:#1A6FA8}
+  .gloss-name{font-weight:700;font-size:14px;color:#1F2937;display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .gloss-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:1px;color:#FFFFFF}
+  .gloss-card.tag-tool .gloss-tag{background:#1F8A60}
+  .gloss-card.tag-driver .gloss-tag{background:#5E4A8E}
+  .gloss-card.tag-protocol .gloss-tag{background:#2E7A8C}
+  .gloss-card.tag-hardware .gloss-tag{background:#3F4A5E}
+  .gloss-card.tag-security .gloss-tag{background:#8E2A2A}
+  .gloss-card.tag-config .gloss-tag{background:#B85829}
+  .gloss-card.tag-concept .gloss-tag{background:#1A6FA8}
+  .gloss-what{font-size:13px;color:#1F2937;margin:6px 0 4px;line-height:1.45}
+  .gloss-what strong{color:#3F4A5E}
+  .gloss-why{font-size:12.5px;color:#5A6B81;font-style:italic;line-height:1.45;border-top:1px dashed #E5E9F0;padding-top:6px;margin-top:6px}
+  .gloss-why::before{content:"⚡ why it matters: ";font-style:normal;font-weight:700;color:#3F4A5E;font-size:11px}
+  .callout{display:flex;gap:14px;padding:14px 18px;border-radius:8px;margin:14px auto;border-left:5px solid;max-width:1100px}
+  .callout-icon{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-weight:700;font-size:14px}
+  .callout-body{flex:1;font-size:13.5px;line-height:1.55;color:#1F2937}
+  .callout-body strong{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+  .callout.tip{background:rgba(31,138,96,0.08);border-left-color:#1F8A60}
+  .callout.tip .callout-icon{background:#1F8A60}.callout.tip strong{color:#1F8A60}
+  .callout.warn{background:rgba(184,88,41,0.08);border-left-color:#B85829}
+  .callout.warn .callout-icon{background:#B85829}.callout.warn strong{color:#B85829}
+  .callout.danger{background:rgba(142,42,42,0.08);border-left-color:#8E2A2A}
+  .callout.danger .callout-icon{background:#8E2A2A}.callout.danger strong{color:#8E2A2A}
+  .callout.note{background:rgba(26,111,168,0.08);border-left-color:#1A6FA8}
+  .callout.note .callout-icon{background:#1A6FA8}.callout.note strong{color:#1A6FA8}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">vSphere Fundamentals</span>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="theme-toggle" type="button"><svg id="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><svg id="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<nav class="course-nav" aria-label="Course lessons">
+  <div class="course-nav-inner">
+    <a href="preview-lesson-01.html" class="lesson-link"><span class="num">01</span><span class="name">Intro</span></a>
+    <a href="preview-lesson-02.html" class="lesson-link"><span class="num">02</span><span class="name">Benefits</span></a>
+    <a href="preview-lesson-03.html" class="lesson-link"><span class="num">03</span><span class="name">Components</span></a>
+    <a href="preview-lesson-04.html" class="lesson-link"><span class="num">04</span><span class="name">History</span></a>
+    <a href="preview-lesson-05.html" class="lesson-link"><span class="num">05</span><span class="name">Context &amp; resources</span></a>
+    <a href="preview-lesson-06.html" class="lesson-link"><span class="num">06</span><span class="name">Types</span></a>
+    <a href="preview-lesson-07.html" class="lesson-link active"><span class="num">07</span><span class="name">SDDC</span></a>
+    <a href="preview-lesson-08.html" class="lesson-link"><span class="num">08</span><span class="name">Installing &amp; configuring ESXi</span></a>
+    <a href="preview-lesson-09.html" class="lesson-link"><span class="num">09</span><span class="name">Deploying &amp; configuring vCenter</span></a>
+    <a href="preview-lesson-10.html" class="lesson-link"><span class="num">10</span><span class="name">Configuring vSphere networking</span></a>
+    <a href="preview-lesson-11.html" class="lesson-link"><span class="num">11</span><span class="name">Configuring vSphere storage</span></a>
+    <a href="preview-lesson-12.html" class="lesson-link"><span class="num">12</span><span class="name">Deploying virtual machines</span></a>
+  </div>
+</nav>
+
+<button class="back-to-top" id="back-to-top" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg></button>
+
+<header class="hero">
+  <div class="container">
+    <p class="hero-eyebrow">vSphere Fundamentals · Lesson 7</p>
+    <h1>SDDC and the foundation of public cloud</h1>
+    <p class="hero-subtitle">A datacenter where every layer is software. The architectural pattern that made the cloud possible.</p>
+    <div class="hero-meta"><span class="pill">12 minute read</span><span class="pill">Beginner</span><span class="pill">VMware</span></div>
+  </div>
+
+  <div class="container-wide">
+    <div class="hero-widget">
+      <p class="hero-widget-eyebrow">Build the SDDC</p>
+      <p class="hero-widget-title">Click each layer in order. End with the cloud.</p>
+      <p class="hero-widget-tip">Five tabs. The first four are the SDDC layers; the fifth shows that public cloud is the same pattern at hyperscale.</p>
+      <div class="layer-tabs">
+        <button class="layer-tab active" data-layer="0" type="button"><span class="num">Layer 1</span><span class="name">Compute</span></button>
+        <button class="layer-tab" data-layer="1" type="button"><span class="num">Layer 2</span><span class="name">Storage</span></button>
+        <button class="layer-tab" data-layer="2" type="button"><span class="num">Layer 3</span><span class="name">Network</span></button>
+        <button class="layer-tab" data-layer="3" type="button"><span class="num">Layer 4</span><span class="name">Management</span></button>
+        <button class="layer-tab" data-layer="4" type="button"><span class="num">→</span><span class="name">Cloud</span></button>
+      </div>
+      <div class="layer-stage">
+        <svg id="layer-svg" viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="layer-stage-readout" id="layer-readout"></div>
+      </div>
+      <div class="stage-controls">
+        <button class="btn btn-secondary" id="layer-prev" type="button">← Previous</button>
+        <button class="btn" id="layer-next" type="button">Next layer →</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <article class="glossary-block">
+    <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this lesson</h3></div>
+    <p class="gloss-intro">SDDC and cloud terminology — three-letter acronyms galore. Plain language for each.</p>
+    <div class="glossary-grid">
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">SDDC · Software-Defined Data Center <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> An architecture pattern where compute, storage, and networking are all virtualized and managed as software. The opposite of fixed-purpose physical infrastructure.</div>
+        <div class="gloss-why">SDDC is the destination VMware has been pulling the industry toward for a decade. vSphere + vSAN + NSX = the SDDC stack.</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">vSphere (compute layer) <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The compute / virtualization layer of the SDDC. Provides VMs that run on pooled CPU and memory.</div>
+        <div class="gloss-why">vSphere virtualized the first leg of the SDDC stool: compute. The other two (storage, network) followed.</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">vSAN (storage layer) <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> VMware's software-defined storage. Pools each host's local disks into one shared datastore. Detailed in lesson 11.</div>
+        <div class="gloss-why">Replaces the external SAN/NAS array with a software layer running on the same servers as vSphere. Storage joins compute as software-defined.</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">NSX (network layer) <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> VMware's software-defined networking. Virtual networks, virtual firewalls, micro-segmentation — all defined in software, decoupled from physical switches.</div>
+        <div class="gloss-why">Rounds out the SDDC. Lets the network be deployed and reconfigured at software speed instead of cabling speed.</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">vCenter / vRealize / Aria (management) <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The management plane on top — vCenter for vSphere, plus vRealize/Aria suite for monitoring, automation, lifecycle.</div>
+        <div class="gloss-why">SDDC is more than the three infrastructure layers — it's also the unified management on top that lets you treat them as one system.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Public cloud <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Compute / storage / networking rented from a provider over the internet — AWS, Microsoft Azure, Google Cloud Platform. Pay per use.</div>
+        <div class="gloss-why">Public cloud is virtualization at hyperscale, with self-service APIs. Every public cloud is built on SDDC-like patterns underneath.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Private cloud <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> An SDDC you run yourself in your own data center. All the cloud-like behaviors (self-service VMs, pooled resources) without using a public provider.</div>
+        <div class="gloss-why">vSphere + vSAN + NSX is the most common way to build a private cloud. Combine with vCloud Director / Aria for cloud-portal experience.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Hybrid cloud <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> A mix — workloads run in both your private data center and a public cloud, with some integration between them.</div>
+        <div class="gloss-why">Most large enterprises are hybrid. Pure private was the old world; pure public is rare; hybrid is the practical reality.</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">VMware Cloud on AWS <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> A service where AWS runs VMware's full SDDC stack on bare-metal AWS hardware. You get vSphere/vSAN/NSX as a managed service inside AWS.</div>
+        <div class="gloss-why">Lets vSphere shops extend into AWS without rewriting workloads. Hybrid cloud done well — same vSphere on both sides.</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">Azure VMware Solution · Google Cloud VMware Engine <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Same model as VMware Cloud on AWS but on Azure / GCP. Bare-metal hosts running the VMware SDDC stack as a managed service.</div>
+        <div class="gloss-why">All three major clouds offer "VMware as a managed service." Pick by which cloud you're already in.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">IaaS · PaaS · SaaS <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Three cloud service tiers. <em>IaaS</em> = rent VMs (most VMware-shaped). <em>PaaS</em> = rent app platforms. <em>SaaS</em> = rent finished apps.</div>
+        <div class="gloss-why">vSphere fundamentally provides IaaS. The other tiers build on top.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Multi-cloud <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Using more than one public cloud (e.g., AWS + Azure) — sometimes with a private cloud too. Different from "hybrid" in that it's multiple publics.</div>
+        <div class="gloss-why">Avoids single-vendor lock-in. Costs operational complexity. Most large enterprises end up multi-cloud whether they planned it or not.</div>
+      </div>
+
+    </div>
+  </article>
+
+  <section class="lesson-section reveal" id="concept">
+    <p class="section-eyebrow">Section 1 · Concept</p>
+    <h2 class="section-heading">Four layers, one architectural pattern</h2>
+    <p>A <span class="term" tabindex="0">Software-Defined Datacenter<span class="tooltip">An SDDC is a datacenter where every infrastructure layer (compute, storage, network, management) is delivered as software running on commodity hardware. The hardware is generic; the intelligence is in software.</span></span> (SDDC) is a datacenter where every layer of infrastructure is delivered as software running on commodity hardware. Lesson 1 made compute virtualization concrete; SDDC extends the same idea to storage and networking.</p>
+    <p><strong>Compute virtualization.</strong> Many VMs on each host. VMware's product is vSphere.</p>
+    <p><strong>Storage virtualization.</strong> A storage pool that's software, not a specific physical SAN. VMware's product is <span class="term" tabindex="0">vSAN<span class="tooltip">vSAN is VMware's software-defined storage product. It pools the local disks across many ESXi hosts into a single logical datastore. No separate SAN appliance needed.</span></span>. AWS equivalent: EBS.</p>
+    <p><strong>Network virtualization.</strong> Switches, routers, firewalls — all in software, riding on top of the physical network. VMware's product is <span class="term" tabindex="0">NSX<span class="tooltip">NSX is VMware's network virtualization product. Runs virtual switches, routers, firewalls, and load balancers in software on top of the physical network. Each application can have the network topology it needs without reconfiguring physical hardware.</span></span>. AWS equivalent: VPC.</p>
+    <p><strong>Management and automation.</strong> A control plane that operates compute, storage, and network as one. vCenter + vRealize. AWS equivalent: AWS Console + IAM.</p>
+    <p class="pullquote">Every public cloud is an SDDC at <span class="term" tabindex="0">hyperscale<span class="tooltip">Hyperscale refers to operating at the scale of major public cloud providers (AWS, Azure, GCP) — millions of servers, multiple regions worldwide, automated everything. The architectural pattern is the same SDDC; the size and rental model are different.</span></span>.</p>
+    <p>When AWS launched EC2 in 2006, what they had built was an SDDC the size of a city block, rented by the hour. Today every cloud provider operates SDDCs the size of regions. The cloud isn't magic. It's an SDDC at scale, with managed services on top.</p>
+
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>The cloud isn't magic</strong>Every public cloud (AWS, Azure, GCP) is an SDDC at hyperscale. They run their own hypervisors, software-defined storage, and software-defined networking — the same architectural pattern, just at city-block scale rented by the hour. Knowing SDDC means knowing how the cloud works under the hood.</div>
+    </div>
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>VMware's hybrid play</strong>VMware Cloud on AWS / Azure VMware Solution / Google Cloud VMware Engine put the entire vSphere/vSAN/NSX stack on bare-metal cloud hardware. Same vSphere skills work on both sides of the line. If you know vSphere, you know hybrid cloud.</div>
+    </div>
+  </section>
+
+  <section class="lesson-section reveal" id="before-after">
+    <p class="section-eyebrow">Section 2 · Before and after</p>
+    <h2 class="section-heading">Three teams or one operational system</h2>
+    <div class="compare-grid">
+      <div class="compare-card before">
+        <p class="label">Before SDDC</p>
+        <h3>Three vendor stacks, three teams</h3>
+        <p>Compute, storage, network as separate stacks, each procured from a different vendor and managed by a different team. Adding capacity means coordinating three RFPs, three rack-and-stack projects.</p>
+        <p>New applications wait six months for network configuration approvals. Storage policies live in a Storage team's tooling that's invisible to Compute.</p>
+      </div>
+      <div class="compare-card after">
+        <p class="label">After SDDC (and public cloud)</p>
+        <h3>One operational system</h3>
+        <p>Compute, storage, network, and management are one system. New applications get their full infrastructure stack provisioned by software in minutes. Policy lives in code.</p>
+        <p>Public cloud takes this even further: you don't even own the hardware.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="lesson-section reveal" id="analogy">
+    <p class="section-eyebrow">Section 3 · The analogy, extended</p>
+    <h2 class="section-heading">A city, software-defined</h2>
+    <p>The apartment building has been our anchor through the course. Now zoom out.</p>
+    <p>A traditional datacenter is a city built before zoning laws — roads, plumbing, electrical, residential, commercial all built by different contractors in different decades. Adding a new neighborhood requires coordinating across all of them.</p>
+    <p>An SDDC is a city designed end-to-end as software. The roads (network) reroute themselves. The water and electricity (storage) flow wherever capacity allows. New neighborhoods (workloads) appear in minutes.</p>
+    <p class="pullquote">A public cloud is a city this big, run by AWS or Microsoft or Google, where you can rent any neighborhood by the hour.</p>
+
+    <div class="check-card">
+      <p class="check-eyebrow">Quick check</p>
+      <p class="check-question">A startup runs entirely on AWS. They never see physical hardware. Are they using an SDDC?</p>
+      <div class="check-options" id="check-options">
+        <button class="check-option" data-correct="false" type="button">No — SDDC is a private datacenter concept. They're using public cloud.</button>
+        <button class="check-option" data-correct="true" type="button">Yes. Public cloud is built on the SDDC pattern. Their EC2/EBS/VPC stack is exactly an SDDC operated by AWS.</button>
+        <button class="check-option" data-correct="false" type="button">Only if they specifically buy VMware Cloud on AWS.</button>
+      </div>
+      <div class="check-feedback" id="check-feedback"></div>
+    </div>
+  </section>
+
+  <section class="lesson-section reveal" id="eli">
+    <p class="section-eyebrow">Section 4 · At your level</p>
+    <h2 class="section-heading">The same idea, two depths</h2>
+    <div class="eli-tabs">
+      <button class="eli-tab active" data-level="eli5" type="button"><span class="tab-eyebrow">Like I'm 5</span>Simplest version</button>
+      <button class="eli-tab" data-level="eli10" type="button"><span class="tab-eyebrow">Like I'm 10</span>With the vocabulary</button>
+    </div>
+    <div class="eli-content">
+      <div class="eli-panel active" data-level="eli5">
+        <p>Imagine a whole city where every street, every pipe, every wire is run by a computer instead of a person. When someone needs a new house, the city's computer just makes one — connects the water, the power, the road. The cloud is a really big city like this, where you can rent a house for an hour. AWS, Microsoft, and Google each run a giant city like this.</p>
+      </div>
+      <div class="eli-panel" data-level="eli10">
+        <p>An SDDC has four layers: compute (vSphere), storage (vSAN), network (NSX), and management/automation (vCenter, vRealize). The pattern: replace specialized hardware appliances with software running on standard servers, and put a management plane on top.</p>
+        <p>Public cloud is an SDDC at hyperscale. EC2 is compute. EBS is storage. VPC is network. The AWS console is the management plane. Same pattern; different scale and ownership.</p>
+        <p>Hybrid cloud runs both at once: workloads on-prem in your own SDDC, plus burst capacity in a public cloud SDDC. The architectural similarity is what makes hybrid mobility technically possible.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="lesson-section reveal" id="scenarios">
+    <p class="section-eyebrow">Section 5 · How teams use SDDCs</p>
+    <h2 class="section-heading">Where each model wins</h2>
+    <div class="scenarios-list" id="scenarios-list"></div>
+  </section>
+</main>
+
+<div class="container-wide">
+  <section class="lesson-section reveal" id="animation">
+    <p class="section-eyebrow">Section 6 · Tour the layers</p>
+    <h2 class="section-heading">Each layer, then the cloud</h2>
+    <div class="visual-wrap">
+      <iframe class="animation-frame" src="courses/vmware/vsphere-fundamentals/scenarios/07-sddc-and-public-cloud/animation.html"></iframe>
+    </div>
+  </section>
+</div>
+
+<div class="container">
+  <section class="lesson-section reveal" id="flashcards">
+    <p class="section-eyebrow">Section 7 · Lock it in</p>
+    <h2 class="section-heading">Flashcards</h2>
+    <p style="color: var(--text-muted);">Click any card to flip it.</p>
+    <div class="flashcards-grid" id="flashcards-container"></div>
+  </section>
+  <section class="lesson-section reveal" id="quiz">
+    <p class="section-eyebrow">Quiz</p>
+    <h2 class="section-heading">Predict what happens next</h2>
+    <div id="quiz-container"></div>
+  </section>
+  <div class="recap-card reveal">
+    <span class="badge"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="5 12 10 17 19 8"/></svg>Lesson 7 complete</span>
+    <h3>The cloud isn't magic. It's an SDDC at scale.</h3>
+    <ul class="recap-list">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>SDDC</strong> = compute + storage + network + management, all software-defined.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>VMware</strong>: vSphere · vSAN · NSX · vCenter/vRealize.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>AWS equivalent</strong>: EC2 · EBS · VPC · Console + IAM. Same pattern, hyperscale.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span>Hybrid cloud runs both at once. The architectural similarity is what makes it possible.</span></li>
+    </ul>
+    <p>You've completed the foundational arc of vSphere Fundamentals: what virtualization is (Lesson 1), what it gives you (Lesson 2), the products that ship it (Lesson 3), how it got here (Lesson 4), the two kinds of hypervisors (Lesson 6), and how it scales to the public cloud (this lesson). From here, deep-dives — vMotion mechanics, HA, DRS, FT, vSAN policies, NSX features — each get their own treatment.</p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+<script>
+const LESSON_PATH = 'courses/vmware/vsphere-fundamentals/scenarios/07-sddc-and-public-cloud';
+
+(function () {
+  const toggle = document.getElementById('theme-toggle');
+  const sun = document.getElementById('theme-sun');
+  const moon = document.getElementById('theme-moon');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) document.documentElement.setAttribute('data-theme', stored);
+  function syncIcons() { const isDark = document.documentElement.getAttribute('data-theme') === 'dark'; sun.style.display = isDark ? 'none' : 'block'; moon.style.display = isDark ? 'block' : 'none'; }
+  syncIcons();
+  toggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('lesson-theme', 'light'); }
+    else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('lesson-theme', 'dark'); }
+    syncIcons();
+  });
+})();
+
+(function () {
+  const terms = document.querySelectorAll('.term');
+  terms.forEach(el => { el.addEventListener('click', e => { e.stopPropagation(); terms.forEach(o => { if (o !== el) o.classList.remove('active'); }); el.classList.toggle('active'); }); });
+  document.addEventListener('click', () => { terms.forEach(el => el.classList.remove('active')); });
+})();
+
+/* HERO LAYER TOUR */
+(function () {
+  const svg = document.getElementById('layer-svg');
+  const readout = document.getElementById('layer-readout');
+  const tabs = document.querySelectorAll('.layer-tab');
+  const prevBtn = document.getElementById('layer-prev');
+  const nextBtn = document.getElementById('layer-next');
+  let active = 0;
+
+  // Hero stage SVG viewBox 700 × 320. Stack layout: Mgmt (y=0-50) → Services row (y=50-180) → Hardware (y=180-260). All abut.
+  function buildLayer(highlight, title, vmwareName, awsName) {
+    const isMgmt = highlight === 'mgmt';
+    const isCompute = highlight === 'compute';
+    const isStorage = highlight === 'storage';
+    const isNetwork = highlight === 'network';
+    return `
+      <text x="350" y="22" text-anchor="middle" font-size="11" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">${title}</text>
+      <!-- Management y=40-90 -->
+      <rect x="50" y="40" width="600" height="50" rx="6" fill="${isMgmt ? '#5DCAA5' : '#3F4A5E'}" opacity="${isMgmt ? '0.7' : '1'}" stroke="#1F2433" stroke-width="${isMgmt ? '2.5' : '1.5'}">
+        ${isMgmt ? '<animate attributeName="opacity" values="0.7;0.95;0.7" dur="2s" repeatCount="indefinite"/>' : ''}
+      </rect>
+      <text x="350" y="64" text-anchor="middle" font-size="13" font-weight="600" fill="${isMgmt ? '#1F8A60' : '#FFFFFF'}" letter-spacing="1.5">MANAGEMENT &amp; AUTOMATION</text>
+      <text x="350" y="80" text-anchor="middle" font-size="10" fill="${isMgmt ? '#1F8A60' : '#B5C0D0'}" font-style="italic">vCenter · vRealize</text>
+      <!-- Services row y=90-200 (110 tall, abuts) -->
+      <rect x="50" y="90" width="200" height="110" fill="${isCompute ? '#5DCAA5' : '#FFFFFF'}" opacity="${isCompute ? '0.5' : '1'}" stroke="${isCompute ? '#1F8A60' : '#5F5E5A'}" stroke-width="${isCompute ? '2.5' : '1.2'}">
+        ${isCompute ? '<animate attributeName="opacity" values="0.5;0.8;0.5" dur="2s" repeatCount="indefinite"/>' : ''}
+      </rect>
+      <text x="150" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">COMPUTE</text>
+      <text x="150" y="140" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">${highlight === 'cloud' ? 'EC2' : 'vSphere'}</text>
+      <g transform="translate(80, 156)">
+        <rect width="32" height="22" rx="2" fill="#F4F4F0" stroke="#5F5E5A"/><rect width="32" height="6" rx="2" fill="#5F5E5A"/>
+        <rect x="36" width="32" height="22" rx="2" fill="#F4F4F0" stroke="#5F5E5A"/><rect x="36" width="32" height="6" rx="2" fill="#5F5E5A"/>
+        <rect x="72" width="32" height="22" rx="2" fill="#F4F4F0" stroke="#5F5E5A"/><rect x="72" width="32" height="6" rx="2" fill="#5F5E5A"/>
+      </g>
+      <rect x="250" y="90" width="200" height="110" fill="${isStorage ? '#5DCAA5' : '#FFFFFF'}" opacity="${isStorage ? '0.5' : '1'}" stroke="${isStorage ? '#1F8A60' : '#5F5E5A'}" stroke-width="${isStorage ? '2.5' : '1.2'}">
+        ${isStorage ? '<animate attributeName="opacity" values="0.5;0.8;0.5" dur="2s" repeatCount="indefinite"/>' : ''}
+      </rect>
+      <text x="350" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">STORAGE</text>
+      <text x="350" y="140" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">${highlight === 'cloud' ? 'EBS · S3' : 'vSAN'}</text>
+      <g transform="translate(310, 154)">
+        <ellipse cx="20" cy="6" rx="20" ry="6" fill="#A8A8AC" stroke="#5F5E5A"/>
+        <rect x="0" y="6" width="40" height="24" fill="#A8A8AC" stroke="#5F5E5A"/>
+        <ellipse cx="20" cy="30" rx="20" ry="6" fill="#A8A8AC" stroke="#5F5E5A"/>
+      </g>
+      <rect x="450" y="90" width="200" height="110" fill="${isNetwork ? '#5DCAA5' : '#FFFFFF'}" opacity="${isNetwork ? '0.5' : '1'}" stroke="${isNetwork ? '#1F8A60' : '#5F5E5A'}" stroke-width="${isNetwork ? '2.5' : '1.2'}">
+        ${isNetwork ? '<animate attributeName="opacity" values="0.5;0.8;0.5" dur="2s" repeatCount="indefinite"/>' : ''}
+      </rect>
+      <text x="550" y="120" text-anchor="middle" font-size="12" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">NETWORK</text>
+      <text x="550" y="140" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">${highlight === 'cloud' ? 'VPC' : 'NSX'}</text>
+      <g transform="translate(490, 156)">
+        <circle cx="14" cy="14" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+        <circle cx="48" cy="14" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+        <circle cx="82" cy="14" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+        <circle cx="31" cy="32" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+        <circle cx="65" cy="32" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+        <line x1="14" y1="14" x2="31" y2="32" stroke="#3F4A5E"/>
+        <line x1="48" y1="14" x2="31" y2="32" stroke="#3F4A5E"/>
+        <line x1="48" y1="14" x2="65" y2="32" stroke="#3F4A5E"/>
+        <line x1="82" y1="14" x2="65" y2="32" stroke="#3F4A5E"/>
+      </g>
+      <!-- Hardware y=200-260 -->
+      <rect x="50" y="200" width="600" height="60" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="350" y="226" text-anchor="middle" font-size="13" font-weight="600" fill="#1A1A1A" letter-spacing="1.5">PHYSICAL HARDWARE</text>
+      <text x="350" y="246" text-anchor="middle" font-size="11" fill="#5F5E5A" font-style="italic">${highlight === 'cloud' ? "AWS's commodity servers" : 'commodity x86 servers'}</text>
+    `;
+  }
+
+  const layers = [
+    { readout: '<strong>Layer 1 — Compute.</strong> Many VMs on each host. vSphere is VMware\'s product. AWS equivalent: EC2.', svg: buildLayer('compute', 'SDDC LAYER 1 OF 4 — COMPUTE') },
+    { readout: '<strong>Layer 2 — Storage.</strong> Disks across many hosts pooled into a logical datastore. vSAN is VMware\'s product. AWS equivalent: EBS.', svg: buildLayer('storage', 'SDDC LAYER 2 OF 4 — STORAGE') },
+    { readout: '<strong>Layer 3 — Network.</strong> Switches, routers, firewalls — all in software. NSX is VMware\'s product. AWS equivalent: VPC.', svg: buildLayer('network', 'SDDC LAYER 3 OF 4 — NETWORK') },
+    { readout: '<strong>Layer 4 — Management.</strong> Operates compute, storage, and network as one. vCenter and vRealize. AWS equivalent: Console + IAM.', svg: buildLayer('mgmt', 'SDDC LAYER 4 OF 4 — MANAGEMENT') },
+    { readout: '<strong>Public cloud is the same SDDC pattern at hyperscale.</strong> EC2 = vSphere. EBS = vSAN. VPC = NSX. AWS Console = vCenter. The shape is identical; only the scale and ownership differ.', svg: buildLayer('cloud', 'PUBLIC CLOUD = SDDC AT HYPERSCALE') }
+  ];
+
+  function render() {
+    svg.innerHTML = layers[active].svg;
+    readout.innerHTML = layers[active].readout;
+    tabs.forEach((t, i) => t.classList.toggle('active', i === active));
+    prevBtn.disabled = active === 0;
+    nextBtn.disabled = active === layers.length - 1;
+    nextBtn.textContent = active === layers.length - 1 ? 'Tour complete ✓' : 'Next →';
+  }
+  tabs.forEach(t => t.addEventListener('click', () => { active = parseInt(t.dataset.layer, 10); render(); }));
+  prevBtn.addEventListener('click', () => { if (active > 0) { active--; render(); } });
+  nextBtn.addEventListener('click', () => { if (active < layers.length - 1) { active++; render(); } });
+  render();
+})();
+
+(function () {
+  const options = document.querySelectorAll('#check-options .check-option');
+  const feedback = document.getElementById('check-feedback');
+  let answered = false;
+  const correctMsg = '<strong>Right.</strong> Public cloud is built on the SDDC pattern. The startup\'s EC2 instances run on AWS\'s compute virtualization, their EBS volumes run on AWS\'s storage virtualization, their VPCs run on AWS\'s network virtualization. They\'re using an SDDC operated by AWS — they just don\'t see the layers individually.';
+  options.forEach(opt => opt.addEventListener('click', () => {
+    if (answered) return;
+    answered = true;
+    options.forEach(o => o.classList.add('locked'));
+    if (opt.dataset.correct === 'true') { opt.classList.add('correct'); feedback.innerHTML = correctMsg; }
+    else { opt.classList.add('wrong'); options.forEach(o => { if (o.dataset.correct === 'true') o.classList.add('correct'); }); feedback.innerHTML = '<strong>Not quite.</strong> SDDC is the architectural pattern, not a specific deployment. Public cloud uses the same pattern. Whether you operate the SDDC yourself (private/on-prem) or rent capacity from AWS (public cloud), the four layers are the same.'; }
+    feedback.classList.add('shown');
+  }));
+})();
+
+document.querySelectorAll('.eli-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const level = tab.dataset.level;
+    document.querySelectorAll('.eli-tab').forEach(t => t.classList.toggle('active', t === tab));
+    document.querySelectorAll('.eli-panel').forEach(p => p.classList.toggle('active', p.dataset.level === level));
+  });
+});
+
+const SCENARIOS = [
+  { industry: 'Retailer', title: 'Black Friday burst into AWS', icon: '<rect x="3" y="6" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/>', body: 'A retailer keeps core systems in their on-prem SDDC (vSphere + vSAN + NSX), but bursts into AWS for Black Friday traffic spikes. The same workload moves between datacenters because both are SDDCs running the same patterns. The complication: data egress charges, plus the operational complexity of managing two environments.' },
+  { industry: 'Startup', title: 'Never owned hardware', icon: '<rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="18" x2="12" y2="20"/>', body: 'A 25-person startup runs entirely on AWS. EC2, RDS, Lambda, S3 — they\'ve never seen physical hardware. They\'re sitting on top of an SDDC operated by AWS. They never have to think about the four layers individually because AWS abstracts them all. The cost: vendor lock-in. The benefit: nothing to operate at the infrastructure layer.' },
+  { industry: 'Government', title: 'Private cloud for compliance', icon: '<path d="M12 2L4 7v6c0 5.55 3.84 10 8 10s8-4.45 8-10V7l-8-5z"/>', body: 'A government agency builds a private cloud — an SDDC inside their own datacenter, with all four layers, but no public-cloud connection. Compliance and data sovereignty drive this choice. They get the operational benefits of an SDDC without sending data to a third party. The trade-off: they have to operate everything themselves.' },
+  { industry: 'Bank', title: 'Hybrid by regulation', icon: '<path d="M3 21h18"/><path d="M5 21V10l7-5 7 5v11"/><path d="M9 21v-7h6v7"/>', body: 'A bank runs core ledgers on-prem in a fully built-out SDDC, with retail-facing applications on AWS. Both sides are SDDCs; both are managed by overlapping teams. When demand spikes, a workload can move from on-prem to AWS using the same VM image. The complication: regulators require certain data stay on-prem, which constrains what can move and when.' }
+];
+
+(function () {
+  const list = document.getElementById('scenarios-list');
+  SCENARIOS.forEach((s) => {
+    const card = document.createElement('div');
+    card.className = 'scenario-card';
+    card.innerHTML = `<div class="scenario-card-header" role="button" tabindex="0"><div class="scenario-icon-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${s.icon}</svg></div><div class="scenario-headline"><div class="scenario-industry">${s.industry}</div><h3 class="scenario-title">${s.title}</h3></div><svg class="scenario-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="scenario-card-body"><div class="scenario-card-body-inner"><p>${s.body}</p></div></div>`;
+    const header = card.querySelector('.scenario-card-header');
+    const toggle = () => card.classList.toggle('expanded');
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    list.appendChild(card);
+  });
+})();
+
+fetch(LESSON_PATH + '/flashcards.yaml').then(r => r.text()).then(text => {
+  const data = jsyaml.load(text);
+  const container = document.getElementById('flashcards-container');
+  data.cards.forEach((card, i) => {
+    const el = document.createElement('div');
+    el.className = 'flashcard';
+    const num = String(i + 1).padStart(2, '0') + ' / ' + String(data.cards.length).padStart(2, '0');
+    el.innerHTML = `<div class="flashcard-inner"><div class="flashcard-face flashcard-front"><div class="number">Card ${num}</div><div class="question">${escapeHtml(card.front)}</div><div class="hint">Click to flip →</div></div><div class="flashcard-face flashcard-back"><div class="number">Card ${num}</div><div class="answer">${escapeHtml(card.back)}</div><div class="hint">← Flip back</div></div></div>`;
+    el.addEventListener('click', () => el.classList.toggle('flipped'));
+    container.appendChild(el);
+  });
+});
+
+fetch(LESSON_PATH + '/quiz.yaml').then(r => r.text()).then(text => {
+  const data = jsyaml.load(text);
+  const container = document.getElementById('quiz-container');
+  data.questions.forEach((q, i) => {
+    const el = document.createElement('div');
+    el.className = 'quiz-card';
+    const pauseIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+    el.innerHTML = `<span class="pause-cue">${pauseIcon} ${escapeHtml(q.pause_at_mode)}</span><div class="q-num">Question ${i + 1} of ${data.questions.length}</div><div class="prompt">${escapeHtml(q.prompt)}</div><button class="reveal-btn" type="button">Show answer</button><div class="reveal-content"><div class="answer-block"><div class="label">Answer</div><div class="text">${escapeHtml(q.answer)}</div></div><div class="reasoning-block"><div class="label">Why</div><div class="text">${escapeHtml(q.reasoning)}</div></div></div>`;
+    const btn = el.querySelector('.reveal-btn');
+    const content = el.querySelector('.reveal-content');
+    btn.addEventListener('click', () => { btn.classList.add('shown'); content.classList.add('shown'); });
+    container.appendChild(el);
+  });
+});
+
+const progressFill = document.getElementById('progress-fill');
+const backToTop = document.getElementById('back-to-top');
+function onScroll() {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  progressFill.style.width = pct + '%';
+  backToTop.classList.toggle('visible', scrollTop > 600);
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+onScroll();
+
+const observer = new IntersectionObserver(entries => { entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } }); }, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+function escapeHtml(s) { return String(s).trim().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+</script>
+</body>
+</html>

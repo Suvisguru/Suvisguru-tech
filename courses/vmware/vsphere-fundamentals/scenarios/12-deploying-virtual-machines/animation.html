@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<!--
+  Lesson 12 — Deploying Virtual Machines
+  Eight modes: overview / create / templates / library / ovf / snapshots / tools / lifecycle
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Deploying Virtual Machines — animation</title>
+<style>
+  body { background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 24px; color: #1a1a1a; margin: 0; }
+  .controls { display: flex; gap: 6px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .mode-btn { border: 1px solid #d8d6cf; background: #ffffff; color: #3a3a3a; padding: 8px 11px; font-size: 12px; font-weight: 500; cursor: pointer; border-radius: 6px; font-family: inherit; transition: all 0.15s; animation: btn-pop 2.4s ease-in-out infinite; }
+  @keyframes btn-pop { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(63,74,94,0); } 50% { transform: scale(1.035); box-shadow: 0 0 0 4px rgba(63,74,94,0.08); } }
+  .mode-btn:hover:not(.active) { background: #f4f1e8; border-color: #5F5E5A; }
+  .mode-btn.active { background: #3F4A5E; color: #FFFFFF; border-color: #3F4A5E; animation: none; }
+  .stage-label { font-size: 15px; color: #3a3a3a; margin: 12px 0 18px 0; font-weight: 500; }
+  .speed-control { margin-left: auto; font-size: 13px; color: #5F5E5A; display: flex; gap: 8px; align-items: center; }
+  .speed-control input[type=range] { accent-color: #3F4A5E; }
+  #canvas { width: 100%; max-width: 1040px; height: auto; display: block; }
+  #canvas .mode-group { display: none; }
+  #canvas[data-mode="overview"]  .mode-overview,
+  #canvas[data-mode="create"]    .mode-create,
+  #canvas[data-mode="templates"] .mode-templates,
+  #canvas[data-mode="library"]   .mode-library,
+  #canvas[data-mode="ovf"]       .mode-ovf,
+  #canvas[data-mode="snapshots"] .mode-snapshots,
+  #canvas[data-mode="tools"]     .mode-tools,
+  #canvas[data-mode="lifecycle"] .mode-lifecycle { display: block; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button class="mode-btn active" data-mode="overview" type="button">1 · Overview</button>
+  <button class="mode-btn" data-mode="create" type="button">2 · Create</button>
+  <button class="mode-btn" data-mode="templates" type="button">3 · Templates</button>
+  <button class="mode-btn" data-mode="library" type="button">4 · Libraries</button>
+  <button class="mode-btn" data-mode="ovf" type="button">5 · OVF/OVA</button>
+  <button class="mode-btn" data-mode="snapshots" type="button">6 · Snapshots</button>
+  <button class="mode-btn" data-mode="tools" type="button">7 · Tools</button>
+  <button class="mode-btn" data-mode="lifecycle" type="button">8 · Lifecycle</button>
+  <button class="mode-btn" id="play-btn" type="button">Pause</button>
+  <span class="speed-control"><span>Speed</span><input type="range" min="0.3" max="2" step="0.1" value="1" id="speed-slider"><span id="speed-display">1.0&times;</span></span>
+</div>
+<div class="stage-label" id="stage-label">Subtopic 1 of 8 · Overview: a VM is virtual hardware (vCPU, vRAM, vDisk, vNIC) presenting itself to the guest OS as a real computer.</div>
+
+<svg id="canvas" data-mode="overview" viewBox="0 0 1040 540" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="aArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/></marker>
+    <marker id="aArrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#1F8A60"/></marker>
+  </defs>
+
+  <!-- MODE 1: OVERVIEW — show a VM with its virtual hardware labelled -->
+  <g class="mode-group mode-overview">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 1 — INSIDE A VIRTUAL MACHINE</text>
+
+    <!-- Big VM container -->
+    <g transform="translate(220,80)">
+      <rect width="600" height="380" rx="14" fill="#FFFFFF" stroke="#5DCAA5" stroke-width="3"/>
+      <text x="300" y="34" text-anchor="middle" font-size="16" font-weight="700" fill="#1F2937">VM: vm-app1</text>
+      <text x="300" y="54" text-anchor="middle" font-size="11" fill="#5A6B81">guest OS thinks this is a real computer</text>
+
+      <!-- vCPU -->
+      <g transform="translate(40,80)">
+        <rect width="120" height="80" rx="8" fill="#3F4A5E"/>
+        <text x="60" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vCPU × 4</text>
+        <text x="60" y="52" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">scheduled onto</text>
+        <text x="60" y="66" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">physical cores</text>
+      </g>
+
+      <!-- vRAM -->
+      <g transform="translate(180,80)">
+        <rect width="120" height="80" rx="8" fill="#5E4A8E"/>
+        <text x="60" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vRAM</text>
+        <text x="60" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">8 GB</text>
+        <text x="60" y="66" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">overcommit possible</text>
+      </g>
+
+      <!-- vDisk -->
+      <g transform="translate(320,80)">
+        <rect width="120" height="80" rx="8" fill="#1F8A60"/>
+        <text x="60" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vDisk</text>
+        <text x="60" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">60 GB · vmdk</text>
+        <text x="60" y="66" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">on a datastore</text>
+      </g>
+
+      <!-- vNIC -->
+      <g transform="translate(460,80)">
+        <rect width="120" height="80" rx="8" fill="#B85829"/>
+        <text x="60" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vNIC</text>
+        <text x="60" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">VMXNET3</text>
+        <text x="60" y="66" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">port group</text>
+      </g>
+
+      <!-- BIOS/EFI + controllers + version -->
+      <g transform="translate(40,180)">
+        <rect width="180" height="60" rx="8" fill="#FFFFFF" stroke="#5A6B81"/>
+        <text x="90" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">BIOS / EFI firmware</text>
+        <text x="90" y="42" text-anchor="middle" font-size="10" fill="#5A6B81">EFI for modern guests</text>
+      </g>
+      <g transform="translate(240,180)">
+        <rect width="180" height="60" rx="8" fill="#FFFFFF" stroke="#5A6B81"/>
+        <text x="90" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">Paravirtual SCSI / NVMe</text>
+        <text x="90" y="42" text-anchor="middle" font-size="10" fill="#5A6B81">storage controller</text>
+      </g>
+      <g transform="translate(440,180)">
+        <rect width="140" height="60" rx="8" fill="#FFFFFF" stroke="#5A6B81"/>
+        <text x="70" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">CD/DVD</text>
+        <text x="70" y="42" text-anchor="middle" font-size="10" fill="#5A6B81">ISO mountable</text>
+      </g>
+
+      <!-- HW version -->
+      <g transform="translate(40,260)">
+        <rect width="540" height="40" rx="6" fill="#F2C94C" opacity="0.4"/>
+        <text x="270" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">virtual hardware version: vmx-20 (defines available devices &amp; features)</text>
+      </g>
+
+      <!-- Files -->
+      <g transform="translate(40,320)">
+        <text x="0" y="14" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#5A6B81">files on datastore: [ds-vsan-cluster1] vm-app1/</text>
+        <text x="0" y="30" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">  vm-app1.vmx · vm-app1-flat.vmdk · vm-app1.nvram · vmware.log</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- MODE 2: CREATE — visual wizard steps -->
+  <g class="mode-group mode-create">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 2 — NEW-VM WIZARD</text>
+
+    <g transform="translate(80,90)">
+      <text x="440" y="0" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">vSphere Client → cluster → New Virtual Machine</text>
+    </g>
+
+    <g transform="translate(80,120)">
+      <!-- step 1 -->
+      <g>
+        <rect width="200" height="50" rx="6" fill="#FFFFFF" stroke="#5A6B81" stroke-width="1.5"/>
+        <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">① Name + folder</text>
+        <text x="100" y="40" text-anchor="middle" font-size="10" fill="#5A6B81">vm-app2 → Production</text>
+      </g>
+      <g transform="translate(220,0)">
+        <rect width="200" height="50" rx="6" fill="#FFFFFF" stroke="#5A6B81" stroke-width="1.5"/>
+        <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">② Compute</text>
+        <text x="100" y="40" text-anchor="middle" font-size="10" fill="#5A6B81">cluster-A (DRS picks)</text>
+      </g>
+      <g transform="translate(440,0)">
+        <rect width="200" height="50" rx="6" fill="#FFFFFF" stroke="#5A6B81" stroke-width="1.5"/>
+        <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">③ Storage</text>
+        <text x="100" y="40" text-anchor="middle" font-size="10" fill="#5A6B81">policy: Gold</text>
+      </g>
+      <g transform="translate(660,0)">
+        <rect width="200" height="50" rx="6" fill="#FFFFFF" stroke="#5A6B81" stroke-width="1.5"/>
+        <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">④ Compatibility</text>
+        <text x="100" y="40" text-anchor="middle" font-size="10" fill="#5A6B81">vmx-20 (ESXi 8)</text>
+      </g>
+
+      <!-- step 5 -->
+      <g transform="translate(0,70)">
+        <rect width="200" height="50" rx="6" fill="#FFFFFF" stroke="#5A6B81" stroke-width="1.5"/>
+        <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">⑤ Guest OS</text>
+        <text x="100" y="40" text-anchor="middle" font-size="10" fill="#5A6B81">Ubuntu 22.04 (64-bit)</text>
+      </g>
+      <g transform="translate(220,70)">
+        <rect width="200" height="50" rx="6" fill="#FFFFFF" stroke="#5A6B81" stroke-width="1.5"/>
+        <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">⑥ Hardware</text>
+        <text x="100" y="40" text-anchor="middle" font-size="10" fill="#5A6B81">2 vCPU · 4GB · 60GB</text>
+      </g>
+      <g transform="translate(440,70)">
+        <rect width="200" height="50" rx="6" fill="#1F8A60" opacity="0.85"/>
+        <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">VMXNET3 + PVSCSI</text>
+        <text x="100" y="40" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.9">paravirt drivers</text>
+      </g>
+      <g transform="translate(660,70)">
+        <rect width="200" height="50" rx="6" fill="#F2C94C"/>
+        <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">⑦ ISO + EFI</text>
+        <text x="100" y="40" text-anchor="middle" font-size="10" fill="#1F2937">mount ubuntu.iso</text>
+      </g>
+    </g>
+
+    <!-- power on -->
+    <g transform="translate(80,290)">
+      <rect width="880" height="50" rx="8" fill="#3F4A5E"/>
+      <text x="440" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">⑧ Power on → walk OS installer → install VMware Tools → configure</text>
+    </g>
+
+    <!-- progress dot animating across stages -->
+    <circle cx="180" cy="240" r="6" fill="#F2C94C" stroke="#1F2937" stroke-width="0.5">
+      <animate attributeName="cx" values="180;400;620;840;180;400;620;840;480" keyTimes="0;0.1;0.2;0.3;0.4;0.5;0.6;0.7;1" dur="8s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="145;145;145;145;215;215;215;215;315" keyTimes="0;0.1;0.2;0.3;0.4;0.5;0.6;0.7;1" dur="8s" repeatCount="indefinite"/>
+    </circle>
+
+    <text x="520" y="490" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">After the wizard, the VM exists but is powered off — install OS to make it useful</text>
+  </g>
+
+  <!-- MODE 3: TEMPLATES — template → 3 clones with customization -->
+  <g class="mode-group mode-templates">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 3 — TEMPLATE → CLONES (with customization)</text>
+
+    <!-- Template -->
+    <g transform="translate(80,140)">
+      <rect width="200" height="100" rx="8" fill="#2E7A8C"/>
+      <text x="100" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">TEMPLATE</text>
+      <text x="100" y="52" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">vm-template-ubuntu-22</text>
+      <text x="100" y="74" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">OS + patches + agents + baseline</text>
+      <text x="100" y="92" text-anchor="middle" font-size="9" font-style="italic" fill="#FFFFFF" opacity="0.85">cannot power on</text>
+    </g>
+
+    <!-- Customization spec -->
+    <g transform="translate(380,150)">
+      <rect width="200" height="80" rx="8" fill="#F2C94C"/>
+      <text x="100" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">customization spec</text>
+      <text x="100" y="46" text-anchor="middle" font-size="10" fill="#1F2937">unique hostname</text>
+      <text x="100" y="60" text-anchor="middle" font-size="10" fill="#1F2937">unique IP / MAC / SID</text>
+    </g>
+
+    <!-- Clones being created (3 in sequence) -->
+    <g transform="translate(680,90)">
+      <text x="120" y="0" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">CLONES</text>
+      <g transform="translate(0,20)" opacity="0">
+        <animate attributeName="opacity" values="0;1;1;1;1;1;1" keyTimes="0;0.15;0.3;0.5;0.7;0.85;1" dur="6s" repeatCount="indefinite"/>
+        <rect width="240" height="44" rx="6" fill="#5DCAA5" opacity="0.6"/>
+        <text x="120" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">clone-1: app-web-01</text>
+        <text x="120" y="36" text-anchor="middle" font-size="10" fill="#1F2937">10.10.10.51</text>
+      </g>
+      <g transform="translate(0,80)" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1;1;1" keyTimes="0;0.15;0.3;0.4;0.55;0.85;1" dur="6s" repeatCount="indefinite"/>
+        <rect width="240" height="44" rx="6" fill="#5DCAA5" opacity="0.6"/>
+        <text x="120" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">clone-2: app-web-02</text>
+        <text x="120" y="36" text-anchor="middle" font-size="10" fill="#1F2937">10.10.10.52</text>
+      </g>
+      <g transform="translate(0,140)" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;1;1;1" keyTimes="0;0.15;0.3;0.5;0.6;0.85;1" dur="6s" repeatCount="indefinite"/>
+        <rect width="240" height="44" rx="6" fill="#5DCAA5" opacity="0.6"/>
+        <text x="120" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">clone-3: app-web-03</text>
+        <text x="120" y="36" text-anchor="middle" font-size="10" fill="#1F2937">10.10.10.53</text>
+      </g>
+    </g>
+
+    <!-- arrows -->
+    <line x1="280" y1="190" x2="380" y2="190" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#aArrow)"/>
+    <line x1="580" y1="190" x2="680" y2="190" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#aArrow)"/>
+
+    <text x="520" y="350" text-anchor="middle" font-size="12" fill="#1F2937">Build template once · stamp out clones with unique identities</text>
+    <text x="520" y="490" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">no drift · no manual OS installs · 5 minutes vs 1 hour per VM</text>
+  </g>
+
+  <!-- MODE 4: LIBRARY — central published library, subscribed elsewhere -->
+  <g class="mode-group mode-library">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 4 — CONTENT LIBRARY: PUBLISHED + SUBSCRIBED</text>
+
+    <!-- Central published library -->
+    <g transform="translate(380,90)">
+      <rect width="280" height="120" rx="10" fill="#1F8A60"/>
+      <text x="140" y="28" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">PUBLISHED library</text>
+      <text x="140" y="48" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">vc-central.lab.local</text>
+      <rect x="20" y="60" width="240" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+      <text x="140" y="74" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">ubuntu-22-template · win2022-template · isos · ovas</text>
+      <text x="140" y="100" text-anchor="middle" font-size="10" font-style="italic" fill="#FFFFFF" opacity="0.85">single source of truth</text>
+    </g>
+
+    <!-- Lines down to subscribed libraries -->
+    <line x1="450" y1="210" x2="180" y2="290" stroke="#1F8A60" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#aArrowGreen)">
+      <animate attributeName="stroke-dashoffset" values="0;-100" dur="2s" repeatCount="indefinite"/>
+    </line>
+    <line x1="520" y1="210" x2="520" y2="290" stroke="#1F8A60" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#aArrowGreen)">
+      <animate attributeName="stroke-dashoffset" values="0;-100" dur="2s" repeatCount="indefinite"/>
+    </line>
+    <line x1="590" y1="210" x2="860" y2="290" stroke="#1F8A60" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#aArrowGreen)">
+      <animate attributeName="stroke-dashoffset" values="0;-100" dur="2s" repeatCount="indefinite"/>
+    </line>
+
+    <text x="520" y="260" text-anchor="middle" font-size="11" fill="#5A6B81">subscribe (sync on schedule or on-demand)</text>
+
+    <!-- Subscribed libraries -->
+    <g transform="translate(80,290)">
+      <rect width="200" height="100" rx="10" fill="#FFFFFF" stroke="#5DCAA5" stroke-width="2"/>
+      <text x="100" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#1F8A60">SUBSCRIBED</text>
+      <text x="100" y="48" text-anchor="middle" font-size="11" fill="#1F2937">vc-east.lab.local</text>
+      <text x="100" y="78" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">same templates · local copy</text>
+    </g>
+    <g transform="translate(420,290)">
+      <rect width="200" height="100" rx="10" fill="#FFFFFF" stroke="#5DCAA5" stroke-width="2"/>
+      <text x="100" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#1F8A60">SUBSCRIBED</text>
+      <text x="100" y="48" text-anchor="middle" font-size="11" fill="#1F2937">vc-west.lab.local</text>
+      <text x="100" y="78" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">same templates · local copy</text>
+    </g>
+    <g transform="translate(760,290)">
+      <rect width="200" height="100" rx="10" fill="#FFFFFF" stroke="#5DCAA5" stroke-width="2"/>
+      <text x="100" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#1F8A60">SUBSCRIBED</text>
+      <text x="100" y="48" text-anchor="middle" font-size="11" fill="#1F2937">vc-eu.lab.local</text>
+      <text x="100" y="78" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">same templates · local copy</text>
+    </g>
+
+    <text x="520" y="450" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">publish once · every site has it · provisioning uses local copy (no WAN at deploy time)</text>
+  </g>
+
+  <!-- MODE 5: OVF/OVA — vendor's .ova → wizard → running VM -->
+  <g class="mode-group mode-ovf">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 5 — DEPLOY OVA: VENDOR APPLIANCE IN MINUTES</text>
+
+    <!-- Vendor portal -->
+    <g transform="translate(60,140)">
+      <rect width="180" height="100" rx="8" fill="#3F4A5E"/>
+      <text x="90" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vendor portal</text>
+      <text x="90" y="50" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">download:</text>
+      <rect x="20" y="62" width="140" height="22" rx="3" fill="#B85829"/>
+      <text x="90" y="77" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">vendor-1.2.ova</text>
+    </g>
+
+    <line x1="240" y1="190" x2="370" y2="190" stroke="#3F4A5E" stroke-width="2" marker-end="url(#aArrow)"/>
+    <text x="305" y="180" text-anchor="middle" font-size="10" fill="#5A6B81">upload</text>
+
+    <!-- Deploy wizard -->
+    <g transform="translate(370,120)">
+      <rect width="280" height="160" rx="8" fill="#FFFFFF" stroke="#5A6B81" stroke-width="1.5"/>
+      <text x="140" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">Deploy OVF Template</text>
+      <g transform="translate(20,36)">
+        <text x="0" y="14" font-size="10" fill="#1F2937">① name + folder</text>
+        <text x="0" y="32" font-size="10" fill="#1F2937">② compute target</text>
+        <text x="0" y="50" font-size="10" fill="#1F2937">③ datastore</text>
+        <text x="0" y="68" font-size="10" fill="#1F2937">④ network mapping</text>
+        <text x="0" y="86" font-size="10" fill="#1F2937">⑤ vendor config (IP, password)</text>
+        <text x="0" y="106" font-size="10" font-weight="700" fill="#1F8A60">⑥ Finish → unpack disks</text>
+      </g>
+    </g>
+
+    <line x1="650" y1="190" x2="780" y2="190" stroke="#3F4A5E" stroke-width="2" marker-end="url(#aArrow)"/>
+
+    <!-- Running appliance -->
+    <g transform="translate(780,140)">
+      <rect width="200" height="100" rx="8" fill="#5DCAA5" opacity="0.6" stroke="#1F8A60" stroke-width="2"/>
+      <text x="100" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">running VM</text>
+      <text x="100" y="48" text-anchor="middle" font-size="11" fill="#1F2937">vendor-appliance-01</text>
+      <text x="100" y="68" text-anchor="middle" font-size="10" fill="#1F2937">UI at https://...</text>
+      <text x="100" y="86" text-anchor="middle" font-size="9" font-style="italic" fill="#5A6B81">no OS install needed</text>
+    </g>
+
+    <text x="520" y="360" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">also works in reverse: export VM → OVA → ship to another vSphere</text>
+    <text x="520" y="490" text-anchor="middle" font-size="12" fill="#1F2937">~5 minutes from .ova download to working appliance</text>
+  </g>
+
+  <!-- MODE 6: SNAPSHOTS — base + delta chain growing, then deletion -->
+  <g class="mode-group mode-snapshots">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 6 — SNAPSHOTS: SHORT-TERM SAFETY NET</text>
+
+    <!-- Stack of disks/deltas -->
+    <g transform="translate(120,100)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">VM disk chain over time</text>
+
+      <!-- base disk -->
+      <g transform="translate(0,20)">
+        <rect width="600" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/>
+        <text x="300" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">base.vmdk · 60 GB · all writes start here</text>
+      </g>
+
+      <!-- snapshot 1 appears at t=0.1, growing -->
+      <g transform="translate(0,60)" opacity="0">
+        <animate attributeName="opacity" values="0;1;1;1;1;1;0" keyTimes="0;0.1;0.3;0.5;0.7;0.85;1" dur="10s" repeatCount="indefinite"/>
+        <rect width="0" height="32" rx="3" fill="#F2C94C" opacity="0.7">
+          <animate attributeName="width" values="0;100;200;300;420;0" keyTimes="0;0.1;0.3;0.5;0.7;0.85" dur="10s" repeatCount="indefinite"/>
+        </rect>
+        <text x="200" y="20" font-size="11" font-weight="700" fill="#1F2937">snap-1.vmdk · growing as VM writes</text>
+      </g>
+
+      <!-- snapshot 2 -->
+      <g transform="translate(0,100)" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1;1;0" keyTimes="0;0.1;0.3;0.4;0.6;0.85;1" dur="10s" repeatCount="indefinite"/>
+        <rect width="0" height="32" rx="3" fill="#F2C94C" opacity="0.5">
+          <animate attributeName="width" values="0;0;0;60;180;0" keyTimes="0;0.1;0.3;0.4;0.6;0.85" dur="10s" repeatCount="indefinite"/>
+        </rect>
+        <text x="160" y="20" font-size="11" font-weight="700" fill="#1F2937">snap-2.vmdk · stack growing</text>
+      </g>
+
+      <!-- snapshot 3 -->
+      <g transform="translate(0,140)" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;1;1;0" keyTimes="0;0.1;0.3;0.5;0.6;0.85;1" dur="10s" repeatCount="indefinite"/>
+        <rect width="0" height="32" rx="3" fill="#F2C94C" opacity="0.4">
+          <animate attributeName="width" values="0;0;0;0;100;0" keyTimes="0;0.1;0.3;0.5;0.6;0.85" dur="10s" repeatCount="indefinite"/>
+        </rect>
+        <text x="120" y="20" font-size="11" font-weight="700" fill="#B85829">snap-3.vmdk · performance degrading</text>
+      </g>
+    </g>
+
+    <!-- After deletion: base only -->
+    <g transform="translate(120,300)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F8A60" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;0;1;1" keyTimes="0;0.1;0.3;0.5;0.7;0.85;1" dur="10s" repeatCount="indefinite"/>
+        ✓ snapshots deleted (committed back into base) · single fast disk again
+      </text>
+      <rect x="0" y="14" width="600" height="32" rx="3" fill="#5DCAA5" opacity="0.6">
+        <animate attributeName="opacity" values="0.6;0.6;0.6;0.6;0.6;1;1" keyTimes="0;0.1;0.3;0.5;0.7;0.85;1" dur="10s" repeatCount="indefinite"/>
+      </rect>
+      <text x="300" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">base.vmdk (deltas committed)</text>
+    </g>
+
+    <text x="520" y="430" text-anchor="middle" font-size="12" font-weight="600" fill="#B85829">⚠ snapshots are NOT backups · delete within 24-72h</text>
+    <text x="520" y="490" text-anchor="middle" font-size="11" font-style="italic" fill="#5A6B81">long chains = performance degradation + slow deletion = bad day</text>
+  </g>
+
+  <!-- MODE 7: TOOLS — VM with tools shows graceful shutdown vs hard power off -->
+  <g class="mode-group mode-tools">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 7 — VMware TOOLS: BRIDGE BETWEEN HOST AND GUEST</text>
+
+    <!-- Two VMs side by side: with Tools, without -->
+    <g transform="translate(80,100)">
+      <rect width="380" height="280" rx="10" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2"/>
+      <text x="190" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#1F8A60">WITH VMware Tools</text>
+
+      <text x="20" y="68" font-size="11" fill="#1F2937">✓ paravirt drivers (VMXNET3, PVSCSI)</text>
+      <text x="20" y="92" font-size="11" fill="#1F2937">✓ "Shut Down Guest OS" → graceful</text>
+      <text x="20" y="116" font-size="11" fill="#1F2937">✓ time sync</text>
+      <text x="20" y="140" font-size="11" fill="#1F2937">✓ heartbeat (HA VM Monitoring)</text>
+      <text x="20" y="164" font-size="11" fill="#1F2937">✓ snapshot quiesce (app-consistent)</text>
+      <text x="20" y="188" font-size="11" fill="#1F2937">✓ mouse / screen integration</text>
+
+      <rect x="20" y="208" width="340" height="50" rx="6" fill="#1F8A60" opacity="0.15"/>
+      <text x="190" y="228" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60">install method:</text>
+      <text x="190" y="246" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">apt install open-vm-tools (Linux)</text>
+    </g>
+
+    <g transform="translate(580,100)">
+      <rect width="380" height="280" rx="10" fill="#FFFFFF" stroke="#B85829" stroke-width="2"/>
+      <text x="190" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#B85829">WITHOUT VMware Tools</text>
+
+      <text x="20" y="68" font-size="11" fill="#1F2937">✗ emulated drivers (slower)</text>
+      <text x="20" y="92" font-size="11" fill="#1F2937">✗ "Shut Down" = hard power off</text>
+      <text x="20" y="116" font-size="11" fill="#1F2937">✗ time can drift</text>
+      <text x="20" y="140" font-size="11" fill="#1F2937">✗ no heartbeat</text>
+      <text x="20" y="164" font-size="11" fill="#1F2937">✗ snapshots are crash-consistent</text>
+      <text x="20" y="188" font-size="11" fill="#1F2937">✗ mouse / console worse</text>
+
+      <rect x="20" y="208" width="340" height="50" rx="6" fill="#B85829" opacity="0.15"/>
+      <text x="190" y="234" text-anchor="middle" font-size="11" font-weight="700" fill="#B85829">don't ship a production VM like this</text>
+    </g>
+
+    <text x="520" y="430" text-anchor="middle" font-size="12" font-weight="700" fill="#1F8A60">every production VM should have VMware Tools current</text>
+  </g>
+
+  <!-- MODE 8: LIFECYCLE — show edit settings hot-add memory, then vMotion -->
+  <g class="mode-group mode-lifecycle">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 8 — DAY-2: HOT-ADD MEMORY, vMOTION</text>
+
+    <!-- VM card showing memory grow -->
+    <g transform="translate(80,100)">
+      <rect width="380" height="180" rx="10" fill="#FFFFFF" stroke="#5C7A1F" stroke-width="2"/>
+      <text x="190" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">vm-app1 · running</text>
+
+      <text x="20" y="60" font-size="12" font-weight="700" fill="#5A6B81">Memory:</text>
+      <rect x="80" y="48" width="120" height="20" rx="3" fill="#5E4A8E"/>
+      <text x="140" y="62" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">
+        <tspan>
+          <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.4;0.45;1" dur="6s" repeatCount="indefinite"/>
+        </tspan>
+        8 GB
+      </text>
+      <text x="140" y="62" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1" keyTimes="0;0.4;0.45;0.5;1" dur="6s" repeatCount="indefinite"/>
+        12 GB
+      </text>
+
+      <text x="20" y="100" font-size="11" fill="#1F2937">Edit Settings → Memory: 8 → 12 GB</text>
+      <text x="20" y="116" font-size="11" font-weight="700" fill="#1F8A60" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;1;1" keyTimes="0;0.4;0.45;0.5;0.55;1" dur="6s" repeatCount="indefinite"/>
+        ✓ guest OS sees 12 GB · no reboot
+      </text>
+
+      <text x="20" y="160" font-size="10" font-style="italic" fill="#5A6B81">requires hot-add enabled + guest OS support</text>
+    </g>
+
+    <!-- vMotion -->
+    <g transform="translate(580,100)">
+      <rect width="380" height="180" rx="10" fill="#FFFFFF" stroke="#5C7A1F" stroke-width="2"/>
+      <text x="190" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">vMotion</text>
+
+      <g transform="translate(20,50)">
+        <rect width="100" height="50" rx="6" fill="#3F4A5E"/>
+        <text x="50" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">host-3</text>
+        <text x="50" y="38" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">source</text>
+      </g>
+      <g transform="translate(240,50)">
+        <rect width="100" height="50" rx="6" fill="#3F4A5E"/>
+        <text x="50" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">host-7</text>
+        <text x="50" y="38" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">destination</text>
+      </g>
+
+      <!-- moving VM -->
+      <g>
+        <rect x="0" y="0" width="40" height="20" rx="3" fill="#F2C94C">
+          <animate attributeName="x" values="40;40;240" keyTimes="0;0.5;1" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="y" values="62;62;62" keyTimes="0;0.5;1" dur="3s" repeatCount="indefinite"/>
+        </rect>
+        <text font-size="9" fill="#1F2937">
+          <animate attributeName="x" values="60;60;260" keyTimes="0;0.5;1" dur="3s" repeatCount="indefinite"/>
+          <animate attributeName="y" values="76;76;76" keyTimes="0;0.5;1" dur="3s" repeatCount="indefinite"/>
+          vm-app1
+        </text>
+      </g>
+
+      <text x="190" y="135" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60">live · ping continues with one missed packet</text>
+      <text x="190" y="160" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">also: Storage vMotion (move files between datastores)</text>
+    </g>
+
+    <text x="520" y="350" text-anchor="middle" font-size="12" font-weight="700" fill="#5A6B81">most day-2 ops are non-disruptive on modern vSphere</text>
+    <text x="520" y="490" text-anchor="middle" font-size="13" font-weight="700" fill="#1F8A60">— vSphere Fundamentals course complete —</text>
+  </g>
+
+</svg>
+
+<script>
+const svg = document.getElementById('canvas');
+const playBtn = document.getElementById('play-btn');
+const speedSlider = document.getElementById('speed-slider');
+const speedDisplay = document.getElementById('speed-display');
+const stageLabel = document.getElementById('stage-label');
+
+const labels = {
+  overview:  'Subtopic 1 of 8 · Overview: a VM is virtual hardware (vCPU, vRAM, vDisk, vNIC) presenting itself to the guest OS as a real computer.',
+  create:    'Subtopic 2 of 8 · Create: walk the new-VM wizard (name, compute, storage policy, guest OS, hardware, ISO). VM exists powered off; install OS.',
+  templates: 'Subtopic 3 of 8 · Templates + clones: build a gold VM once, convert to template, stamp out clones with customization specs for unique identity.',
+  library:   'Subtopic 4 of 8 · Content libraries: publish gold templates centrally; subscribed libraries pull them to every other vCenter automatically.',
+  ovf:       'Subtopic 5 of 8 · OVF/OVA: vendor packages a complete VM as a single .ova; you import in 5 minutes; ready to use.',
+  snapshots: 'Subtopic 6 of 8 · Snapshots: short-term safety net before risky changes. NOT backups. Delete within 24-72h.',
+  tools:     'Subtopic 7 of 8 · VMware Tools: paravirt drivers, graceful shutdown, time sync, snapshot quiesce. Every production VM should have it.',
+  lifecycle: 'Subtopic 8 of 8 · Day-2 ops: power, edit settings, hot-add CPU/RAM/disk, vMotion, Storage vMotion. Most ops non-disruptive on modern vSphere.',
+};
+
+let isPaused = false; let speed = 1; let svgClock = 0; let lastWall = performance.now(); let rafId = null;
+function loop(now) {
+  if (!isPaused) { const dt = (now - lastWall) / 1000; svgClock += dt * speed; svg.setCurrentTime(svgClock); }
+  lastWall = now; rafId = requestAnimationFrame(loop);
+}
+function startLoop() { svg.pauseAnimations(); svgClock = svg.getCurrentTime(); lastWall = performance.now(); if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(loop); }
+
+document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const mode = btn.getAttribute('data-mode');
+    svg.setAttribute('data-mode', mode);
+    stageLabel.textContent = labels[mode] || '';
+    svgClock = 0; svg.setCurrentTime(0);
+  });
+});
+playBtn.addEventListener('click', () => { isPaused = !isPaused; playBtn.textContent = isPaused ? 'Play' : 'Pause'; });
+speedSlider.addEventListener('input', () => { speed = parseFloat(speedSlider.value); speedDisplay.innerHTML = speed.toFixed(1) + '&times;'; });
+startLoop();
+</script>
+</body>
+</html>

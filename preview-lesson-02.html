@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<!--
+  Lesson 02 — Benefits of virtualization
+  Interactive preview. Follows STYLE.md "Lesson preview page" conventions.
+  Reference implementation: preview-lesson-01.html.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benefits of virtualization — Lesson 2 — vSphere Fundamentals</title>
+<style>
+  :root {
+    --bg: #FAFAF6;
+    --bg-elevated: #FFFFFF;
+    --bg-soft: #F4F1E8;
+    --bg-deep: #1F2433;
+    --text: #1A1A1A;
+    --text-muted: #5F5E5A;
+    --text-subtle: #9D9C95;
+    --accent: #3F4A5E;
+    --accent-soft: #E8EAEF;
+    --accent-light: #536179;
+    --success: #1F8A60;
+    --success-soft: #E0F2EA;
+    --warn: #B85829;
+    --warn-soft: #FCEBE0;
+    --slate-fill: #5A6B81;
+    --border: #E8E5DD;
+    --border-soft: #F0EDE4;
+    --shadow-sm: 0 1px 2px rgba(20, 20, 18, 0.04), 0 2px 4px rgba(20, 20, 18, 0.04);
+    --shadow-md: 0 4px 12px rgba(20, 20, 18, 0.06), 0 2px 4px rgba(20, 20, 18, 0.04);
+    --shadow-lg: 0 12px 32px rgba(20, 20, 18, 0.08), 0 4px 8px rgba(20, 20, 18, 0.04);
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 16px;
+    --r-pill: 999px;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out: cubic-bezier(0.2, 0.6, 0.2, 1);
+  }
+
+  [data-theme="dark"] {
+    --bg: #16181D;
+    --bg-elevated: #1F2229;
+    --bg-soft: #25282F;
+    --bg-deep: #0E1015;
+    --text: #ECECE8;
+    --text-muted: #B5B5AC;
+    --text-subtle: #75756E;
+    --accent: #8DA3C7;
+    --accent-soft: #2A3140;
+    --accent-light: #ABB7CC;
+    --success: #5DCAA5;
+    --success-soft: #1F3329;
+    --warn: #E8946A;
+    --warn-soft: #3A2820;
+    --slate-fill: #7A8AA1;
+    --border: #2C3038;
+    --border-soft: #22262D;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background 0.3s var(--ease), color 0.3s var(--ease);
+  }
+  ::selection { background: var(--accent-soft); }
+
+  .container { max-width: 680px; margin: 0 auto; padding: 0 24px; }
+  .container-wide { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* ============== Top bar ============== */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border-soft);
+    backdrop-filter: saturate(180%) blur(8px);
+  }
+  .topbar-inner {
+    display: flex; align-items: center;
+    max-width: 1100px; margin: 0 auto;
+    padding: 12px 24px;
+  }
+  .brand {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.4px;
+    color: var(--text-muted);
+  }
+  .topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: transparent; border: 1px solid transparent;
+    cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+    color: var(--text-muted);
+    transition: all 0.15s var(--ease);
+  }
+  .icon-btn:hover {
+    background: var(--bg-elevated);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .progress-bar {
+    position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+    background: transparent; pointer-events: none;
+  }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.06s linear; }
+
+  /* ============== Hero ============== */
+  /* Course navigation across lessons */
+  .course-nav { background: var(--bg-elevated); border-bottom: 1px solid var(--border-soft); position: sticky; top: 49px; z-index: 95; }
+  .course-nav-inner { display: flex; gap: 6px; max-width: 1100px; margin: 0 auto; padding: 8px 24px; overflow-x: auto; scrollbar-width: thin; }
+  .course-nav-inner::-webkit-scrollbar { height: 6px; }
+  .course-nav-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .lesson-link { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; border-radius: var(--r-pill); border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); text-decoration: none; font-size: 12px; flex-shrink: 0; transition: all 0.15s var(--ease); white-space: nowrap; }
+  .lesson-link:hover:not(.active) { background: var(--accent-soft); color: var(--text); border-color: var(--accent-light); }
+  .lesson-link.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  [data-theme="dark"] .lesson-link.active { color: var(--bg); }
+  .lesson-link .num { font-weight: 700; opacity: 0.8; }
+  .lesson-link .name { font-weight: 500; }
+  @media (max-width: 600px) { .lesson-link .name { display: none; } .lesson-link { padding: 6px 10px; min-width: 32px; justify-content: center; } }
+
+  .hero { padding: 72px 0 32px 0; text-align: center; }
+  .hero-eyebrow {
+    color: var(--accent); font-size: 12px; letter-spacing: 1.8px;
+    text-transform: uppercase; font-weight: 600; margin: 0 0 16px 0;
+  }
+  .hero h1 {
+    font-size: 56px; font-weight: 500; line-height: 1.05;
+    letter-spacing: -1.2px; margin: 0 0 24px 0;
+  }
+  .hero-subtitle {
+    color: var(--text-muted); font-size: 21px; line-height: 1.5;
+    max-width: 600px; margin: 0 auto 32px auto;
+  }
+  .hero-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 56px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; background: var(--bg-elevated);
+    border: 1px solid var(--border); border-radius: var(--r-pill);
+    font-size: 13px; color: var(--text-muted); font-weight: 500;
+  }
+  .pill svg { width: 14px; height: 14px; flex: 0 0 14px; opacity: 0.7; }
+
+  /* ============== Hero widget — 5-benefits tour ============== */
+  .hero-widget {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border); border-radius: var(--r-lg);
+    box-shadow: var(--shadow-md);
+    padding: 28px 24px 24px 24px;
+    margin: 0 auto 64px auto; max-width: 880px;
+    text-align: left;
+  }
+  .hero-widget-eyebrow {
+    color: var(--accent); font-size: 11px; letter-spacing: 1.6px;
+    text-transform: uppercase; font-weight: 600; margin: 0 0 6px 0;
+  }
+  .hero-widget-title {
+    font-size: 18px; font-weight: 500; margin: 0 0 4px 0;
+  }
+  .hero-widget-tip {
+    color: var(--text-muted); font-size: 14px; margin: 0 0 20px 0;
+    line-height: 1.5;
+  }
+  /* Benefit selector dots */
+  .benefit-tabs {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 8px; margin-bottom: 18px;
+  }
+  .benefit-tab {
+    padding: 10px 12px;
+    background: var(--bg-soft);
+    border: 1px solid transparent;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px; font-weight: 500;
+    color: var(--text-muted);
+    text-align: left;
+    transition: all 0.15s var(--ease);
+  }
+  .benefit-tab:hover:not(.active) {
+    background: var(--accent-soft);
+    color: var(--text);
+  }
+  .benefit-tab.active {
+    background: var(--accent);
+    color: #FFFFFF;
+    border-color: var(--accent);
+  }
+  [data-theme="dark"] .benefit-tab.active { color: var(--bg); }
+  .benefit-tab .num {
+    display: block;
+    font-size: 10px; opacity: 0.65; letter-spacing: 1.4px;
+    text-transform: uppercase; font-weight: 600; margin-bottom: 2px;
+  }
+  .benefit-tab .name { font-size: 13px; font-weight: 600; }
+  /* Stage */
+  .benefit-stage {
+    background: var(--bg-soft); border-radius: var(--r-md);
+    padding: 24px;
+    min-height: 280px;
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+  }
+  .benefit-stage svg { width: 100%; max-width: 600px; height: auto; }
+  .benefit-stage-readout {
+    color: var(--text-muted); font-size: 14px; text-align: center;
+    line-height: 1.5; max-width: 540px;
+  }
+  .benefit-stage-readout strong { color: var(--text); font-weight: 600; }
+  .stage-controls {
+    display: flex; gap: 10px; align-items: center; justify-content: center;
+    margin-top: 18px;
+  }
+
+  /* Primary action buttons pulse per STYLE.md / memory rule. */
+  @keyframes btn-pop {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 4px 14px rgba(63, 74, 94, 0.18), 0 0 0 0 rgba(63, 74, 94, 0.18);
+    }
+    50% {
+      transform: scale(1.035);
+      box-shadow: 0 8px 22px rgba(63, 74, 94, 0.28), 0 0 0 6px rgba(63, 74, 94, 0.06);
+    }
+  }
+  @keyframes btn-pop-dark {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 14px rgba(141, 163, 199, 0.16), 0 0 0 0 rgba(141, 163, 199, 0.16); }
+    50% { transform: scale(1.035); box-shadow: 0 8px 22px rgba(141, 163, 199, 0.28), 0 0 0 6px rgba(141, 163, 199, 0.06); }
+  }
+  .btn {
+    background: var(--accent); color: #fff; border: 1px solid var(--accent);
+    padding: 11px 22px; font-size: 14px; font-weight: 500;
+    border-radius: var(--r-sm); cursor: pointer; font-family: inherit;
+    transition: background 0.15s var(--ease), border-color 0.15s var(--ease), transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+    box-shadow: 0 4px 14px rgba(63, 74, 94, 0.18);
+    animation: btn-pop 2.4s ease-in-out infinite;
+  }
+  .btn:hover { background: #2C3849; border-color: #2C3849; animation: none; transform: translateY(-1px); box-shadow: 0 8px 22px rgba(63, 74, 94, 0.32); }
+  .btn:active { transform: translateY(0); animation: none; box-shadow: 0 2px 6px rgba(63, 74, 94, 0.2); }
+  .btn:disabled { background: var(--border); color: var(--text-subtle); border-color: var(--border); cursor: not-allowed; animation: none; box-shadow: none; transform: none; }
+  .btn.btn-secondary { background: transparent; color: var(--accent); border-color: var(--accent); box-shadow: none; animation: none; }
+  .btn.btn-secondary:hover { background: var(--accent); color: #fff; }
+  [data-theme="dark"] .btn { color: var(--bg); }
+  [data-theme="dark"] .btn:hover { background: var(--accent-light); border-color: var(--accent-light); }
+  [data-theme="dark"] .btn:not(:hover):not(:disabled):not(.btn-secondary) { animation: btn-pop-dark 2.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .btn, .quiz-card .reveal-btn { animation: none !important; transform: none !important; }
+  }
+
+  /* ============== Section ============== */
+  section.lesson-section { margin: 88px 0; scroll-margin-top: 80px; }
+  .section-eyebrow {
+    color: var(--accent); font-size: 12px; font-weight: 600;
+    letter-spacing: 1.8px; text-transform: uppercase; margin: 0 0 12px 0;
+  }
+  h2.section-heading {
+    font-size: 38px; font-weight: 500; line-height: 1.15;
+    letter-spacing: -0.6px; margin: 0 0 32px 0;
+  }
+  h3.subsection-heading {
+    font-size: 22px; font-weight: 500; line-height: 1.3;
+    margin: 36px 0 12px 0;
+  }
+  .lesson-section p { margin: 0 0 22px 0; }
+  .lesson-section p:last-child { margin-bottom: 0; }
+  .lesson-section strong { font-weight: 600; }
+  .pullquote {
+    font-size: 24px; line-height: 1.4;
+    border-left: 3px solid var(--accent);
+    padding: 8px 0 8px 24px; margin: 36px 0;
+    font-style: italic;
+  }
+  .callout {
+    background: var(--bg-soft); border-radius: var(--r-md);
+    padding: 18px 24px; margin: 24px 0;
+    border-left: 3px solid var(--accent-light);
+  }
+  .callout .label {
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 4px;
+  }
+  .callout p { margin: 4px 0 0 0; color: var(--text-muted); font-size: 15px; }
+
+  /* Mini illustration alongside each benefit list item */
+  .benefit-list {
+    list-style: none; padding: 0; margin: 32px 0;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .benefit-row {
+    display: grid; grid-template-columns: 64px 1fr;
+    gap: 18px; align-items: start;
+    padding: 16px; background: var(--bg-elevated);
+    border: 1px solid var(--border); border-radius: var(--r-md);
+    box-shadow: var(--shadow-sm);
+  }
+  .benefit-row .icon-cell {
+    width: 64px; height: 64px;
+    background: var(--accent-soft); border-radius: var(--r-md);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .benefit-row .icon-cell svg { width: 36px; height: 36px; }
+  .benefit-row .label-cell { min-width: 0; }
+  .benefit-row .label-cell .num {
+    font-size: 11px; letter-spacing: 1.5px;
+    color: var(--accent); font-weight: 600; text-transform: uppercase;
+  }
+  .benefit-row .label-cell .name {
+    font-size: 18px; font-weight: 500; margin: 2px 0 4px 0;
+  }
+  .benefit-row .label-cell p {
+    margin: 0; color: var(--text-muted); font-size: 15px; line-height: 1.5;
+  }
+
+  /* Compare Before/After cards */
+  .compare-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 20px; margin: 32px 0;
+  }
+  .compare-card {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 28px;
+    box-shadow: var(--shadow-sm);
+  }
+  .compare-card .label {
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    font-weight: 600; margin: 0 0 6px 0;
+  }
+  .compare-card.before .label { color: var(--warn); }
+  .compare-card.after .label { color: var(--success); }
+  .compare-card h3 {
+    font-size: 18px; font-weight: 500;
+    margin: 0 0 14px 0; line-height: 1.3;
+  }
+  .compare-card .pain-list { margin: 0; padding: 0; list-style: none; }
+  .compare-card .pain-list li {
+    padding: 8px 0 8px 24px; position: relative;
+    color: var(--text-muted); font-size: 14px; line-height: 1.5;
+  }
+  .compare-card .pain-list li::before {
+    content: ""; position: absolute; left: 0; top: 18px;
+    width: 12px; height: 2px; background: var(--text-subtle);
+  }
+  .compare-card.after .pain-list li::before { background: var(--success); }
+
+  /* Analogy mapping */
+  .analogy-map {
+    background: var(--bg-soft); border-radius: var(--r-lg);
+    padding: 8px 28px; margin: 32px 0;
+  }
+  .analogy-row {
+    display: grid; grid-template-columns: 1fr 56px 1fr; gap: 16px;
+    align-items: center; padding: 14px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  [data-theme="dark"] .analogy-row { border-bottom-color: rgba(255,255,255,0.06); }
+  .analogy-row:last-child { border-bottom: none; }
+  .analogy-row .left { text-align: right; font-size: 16px; }
+  .analogy-row .right { font-size: 16px; color: var(--text-muted); }
+  .analogy-row .arrow { color: var(--accent); text-align: center; }
+  .analogy-row.head .left, .analogy-row.head .right {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1.6px;
+    color: var(--accent); font-weight: 600;
+  }
+
+  /* Inline knowledge check */
+  .check-card {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-left: 4px solid var(--success);
+    border-radius: var(--r-md); padding: 24px 28px;
+    margin: 28px 0; box-shadow: var(--shadow-sm);
+  }
+  .check-eyebrow {
+    color: var(--success); font-size: 11px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase; margin: 0 0 8px 0;
+  }
+  .check-question { font-size: 17px; font-weight: 500; margin: 0 0 16px 0; line-height: 1.4; }
+  .check-options { display: flex; flex-direction: column; gap: 8px; }
+  .check-option {
+    text-align: left; padding: 12px 16px;
+    background: var(--bg-soft); border: 1px solid var(--border);
+    border-radius: var(--r-sm); cursor: pointer;
+    font-family: inherit; font-size: 15px; color: var(--text);
+    transition: all 0.15s var(--ease);
+  }
+  .check-option:hover:not(.locked) { background: var(--accent-soft); border-color: var(--accent); }
+  .check-option.correct { background: var(--success-soft); border-color: var(--success); }
+  .check-option.wrong { background: var(--warn-soft); border-color: var(--warn); }
+  .check-option.locked { cursor: default; }
+  .check-feedback {
+    margin-top: 14px; padding: 14px 16px;
+    background: var(--bg-soft); border-radius: var(--r-sm);
+    font-size: 14px; line-height: 1.6; color: var(--text-muted);
+    display: none;
+  }
+  .check-feedback.shown { display: block; }
+  .check-feedback strong { color: var(--text); }
+
+  /* ELI tabs */
+  .eli-tabs {
+    display: flex; gap: 0;
+    background: var(--bg-soft); padding: 4px;
+    border-radius: var(--r-pill); margin: 28px 0 20px 0;
+  }
+  .eli-tab {
+    flex: 1; padding: 12px 16px;
+    background: transparent; border: none;
+    cursor: pointer; font-family: inherit;
+    font-size: 14px; font-weight: 500;
+    color: var(--text-muted); border-radius: var(--r-pill);
+    transition: all 0.2s var(--ease);
+  }
+  .eli-tab:hover:not(.active) { color: var(--text); }
+  .eli-tab.active {
+    background: var(--bg-elevated); color: var(--text);
+    box-shadow: var(--shadow-sm);
+  }
+  .eli-tab .tab-eyebrow {
+    display: block; font-size: 10px; letter-spacing: 1.4px;
+    text-transform: uppercase; opacity: 0.6;
+    margin-bottom: 1px; font-weight: 600;
+  }
+  .eli-content {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 28px;
+    box-shadow: var(--shadow-sm);
+  }
+  .eli-panel { display: none; }
+  .eli-panel.active { display: block; animation: fadeIn 0.3s var(--ease); }
+  .eli-panel p { margin: 0 0 16px 0; }
+  .eli-panel p:last-child { margin-bottom: 0; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Scenarios accordion */
+  .scenarios-list { display: flex; flex-direction: column; gap: 12px; margin: 28px 0; }
+  .scenario-card {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: 0;
+    box-shadow: var(--shadow-sm); overflow: hidden;
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+  }
+  .scenario-card.expanded { border-color: var(--accent-light); }
+  .scenario-card-header {
+    display: grid; grid-template-columns: 44px 1fr auto 22px;
+    gap: 16px; align-items: center;
+    padding: 20px 24px; cursor: pointer; user-select: none;
+  }
+  .scenario-icon-circle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--accent-soft);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+  }
+  .scenario-icon-circle svg { width: 22px; height: 22px; }
+  .scenario-headline { min-width: 0; }
+  .scenario-industry {
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-subtle); font-weight: 600;
+  }
+  .scenario-title { font-size: 17px; font-weight: 500; margin: 2px 0 0 0; line-height: 1.3; }
+  .scenario-benefits {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.8px;
+  }
+  .scenario-benefits span {
+    background: var(--accent-soft); color: var(--accent);
+    padding: 3px 8px; border-radius: var(--r-pill);
+    text-transform: uppercase;
+  }
+  .scenario-chevron {
+    width: 22px; height: 22px; color: var(--text-subtle);
+    transition: transform 0.3s var(--ease);
+  }
+  .scenario-card.expanded .scenario-chevron { transform: rotate(180deg); }
+  .scenario-card-body { max-height: 0; overflow: hidden; transition: max-height 0.4s var(--ease); }
+  .scenario-card.expanded .scenario-card-body { max-height: 600px; }
+  .scenario-card-body-inner {
+    padding: 0 24px 24px 24px; padding-left: 84px;
+    color: var(--text-muted); font-size: 15px; line-height: 1.65;
+  }
+  .scenario-tradeoff {
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px dashed var(--border);
+    font-style: italic; color: var(--text-subtle);
+  }
+  @media (max-width: 600px) {
+    .scenario-card-header { grid-template-columns: 40px 1fr 22px; }
+    .scenario-benefits { display: none; }
+    .scenario-card-body-inner { padding-left: 24px; }
+  }
+
+  /* Animation embed */
+  .visual-wrap {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border); border-radius: var(--r-lg);
+    padding: 0; box-shadow: var(--shadow-md);
+    margin: 28px 0; overflow: hidden;
+  }
+  .animation-frame {
+    width: 100%; height: 700px; border: none; display: block;
+    background: var(--bg-elevated);
+  }
+  @media (max-width: 720px) { .animation-frame { height: 540px; } }
+
+  /* Flashcards */
+  .flashcards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 16px; margin: 28px 0;
+  }
+  .flashcard { perspective: 1200px; cursor: pointer; height: 220px; }
+  .flashcard-inner {
+    position: relative; width: 100%; height: 100%;
+    transition: transform 0.6s var(--ease-out);
+    transform-style: preserve-3d;
+  }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .flashcard-face {
+    position: absolute; width: 100%; height: 100%;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border-radius: var(--r-md); padding: 22px;
+    display: flex; flex-direction: column;
+    border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  .flashcard-front { background: var(--bg-elevated); }
+  .flashcard-back {
+    background: var(--accent); color: #fff;
+    transform: rotateY(180deg); border-color: var(--accent);
+  }
+  [data-theme="dark"] .flashcard-back { color: var(--bg); }
+  .flashcard .number {
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--text-subtle); margin-bottom: 14px; font-weight: 600;
+  }
+  .flashcard-back .number { color: rgba(255,255,255,0.6); }
+  [data-theme="dark"] .flashcard-back .number { color: rgba(0,0,0,0.5); }
+  .flashcard .question { font-size: 17px; font-weight: 500; line-height: 1.4; flex-grow: 1; }
+  .flashcard .answer { font-size: 14px; line-height: 1.5; flex-grow: 1; overflow-y: auto; }
+  .flashcard .hint { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-subtle); margin-top: 12px; text-align: right; font-weight: 500; }
+  .flashcard-back .hint { color: rgba(255,255,255,0.65); }
+  [data-theme="dark"] .flashcard-back .hint { color: rgba(0,0,0,0.5); }
+  .flashcard:hover .flashcard-front { box-shadow: var(--shadow-md); }
+
+  /* Quiz */
+  .quiz-card {
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--r-md); padding: 26px;
+    margin: 18px 0; box-shadow: var(--shadow-sm);
+  }
+  .quiz-card .pause-cue {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: #fff; background: var(--accent);
+    padding: 5px 12px; border-radius: var(--r-pill);
+    margin-bottom: 14px; font-weight: 600;
+  }
+  [data-theme="dark"] .quiz-card .pause-cue { color: var(--bg); }
+  .quiz-card .pause-cue svg { width: 12px; height: 12px; }
+  .quiz-card .q-num {
+    color: var(--text-subtle); font-size: 12px;
+    letter-spacing: 1.4px; text-transform: uppercase;
+    margin-bottom: 6px; font-weight: 600;
+  }
+  .quiz-card .prompt { font-size: 17px; line-height: 1.55; margin: 0 0 18px 0; }
+  .quiz-card .reveal-btn {
+    background: transparent; border: 1px solid var(--accent);
+    color: var(--accent); padding: 10px 20px;
+    border-radius: var(--r-sm); cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    transition: all 0.15s var(--ease);
+    box-shadow: 0 4px 14px rgba(63, 74, 94, 0.14);
+    animation: btn-pop 2.4s ease-in-out infinite;
+  }
+  .quiz-card .reveal-btn:hover { background: var(--accent); color: #fff; animation: none; }
+  [data-theme="dark"] .quiz-card .reveal-btn:hover { color: var(--bg); }
+  [data-theme="dark"] .quiz-card .reveal-btn:not(:hover) { animation: btn-pop-dark 2.4s ease-in-out infinite; }
+  .quiz-card .reveal-btn.shown { display: none; }
+  .quiz-card .reveal-content { max-height: 0; overflow: hidden; transition: max-height 0.5s var(--ease); }
+  .quiz-card .reveal-content.shown { max-height: 800px; margin-top: 16px; }
+  .quiz-card .answer-block, .quiz-card .reasoning-block {
+    border-radius: var(--r-sm); padding: 16px 20px; margin-bottom: 12px;
+  }
+  .quiz-card .answer-block { background: var(--success-soft); }
+  .quiz-card .reasoning-block { background: var(--bg-soft); margin-bottom: 0; }
+  .quiz-card .answer-block .label, .quiz-card .reasoning-block .label {
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 6px; font-weight: 600;
+  }
+  .quiz-card .answer-block .label { color: var(--success); }
+  .quiz-card .reasoning-block .label { color: var(--text-muted); }
+  .quiz-card .answer-block .text { font-size: 15px; line-height: 1.6; }
+  .quiz-card .reasoning-block .text { font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+
+  /* Recap card */
+  .recap-card {
+    background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-soft) 100%);
+    border: 1px solid var(--border); border-radius: var(--r-lg);
+    padding: 40px 36px; margin: 96px 0 80px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .recap-card .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--success); background: var(--success-soft);
+    padding: 6px 14px; border-radius: var(--r-pill);
+    margin-bottom: 20px; font-weight: 600;
+  }
+  .recap-card h3 {
+    font-size: 28px; font-weight: 500;
+    margin: 0 0 24px 0; line-height: 1.2; letter-spacing: -0.4px;
+  }
+  .recap-list {
+    list-style: none; padding: 0; margin: 0 0 16px 0;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .recap-list li {
+    display: grid; grid-template-columns: 28px 1fr;
+    gap: 12px; align-items: start;
+    font-size: 16px; color: var(--text);
+  }
+  .recap-list li svg { width: 22px; height: 22px; color: var(--success); margin-top: 2px; }
+  .recap-card p {
+    color: var(--text-muted); margin: 0;
+    padding-top: 24px; border-top: 1px solid var(--border);
+    font-size: 15px; line-height: 1.6;
+  }
+
+  /* Hover-to-define term */
+  .term { border-bottom: 1px dashed var(--accent); cursor: help; position: relative; color: inherit; }
+  .term:hover { color: var(--accent); }
+  .term .tooltip {
+    position: absolute; bottom: calc(100% + 10px); left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: var(--bg-deep); color: #fff;
+    padding: 12px 16px; border-radius: var(--r-sm);
+    font-size: 14px; line-height: 1.5; font-weight: 400;
+    width: 280px; max-width: calc(100vw - 48px);
+    text-align: left;
+    box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.15s, transform 0.15s;
+    z-index: 50;
+  }
+  .term .tooltip::after {
+    content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px;
+    border-width: 6px; border-style: solid;
+    border-color: var(--bg-deep) transparent transparent transparent;
+  }
+  .term:hover .tooltip, .term:focus .tooltip, .term:focus-within .tooltip, .term.active .tooltip {
+    opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto;
+  }
+
+  /* Back to top */
+  .back-to-top {
+    position: fixed; bottom: 24px; right: 24px;
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--accent); color: #fff; border: none;
+    cursor: pointer; box-shadow: var(--shadow-md);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transform: translateY(8px);
+    transition: opacity 0.25s, transform 0.25s, background 0.15s;
+    z-index: 150;
+  }
+  .back-to-top.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  .back-to-top:hover { background: #2C3849; }
+  .back-to-top svg { width: 18px; height: 18px; }
+
+  /* Reveal-on-scroll */
+  .reveal {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* Mobile */
+  @media (max-width: 720px) {
+    .hero { padding: 44px 0 16px 0; }
+    .hero h1 { font-size: 38px; letter-spacing: -0.5px; }
+    .hero-subtitle { font-size: 18px; }
+    h2.section-heading { font-size: 28px; }
+    h3.subsection-heading { font-size: 20px; }
+    body { font-size: 17px; }
+    .pullquote { font-size: 20px; padding-left: 20px; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .analogy-row { grid-template-columns: 1fr; gap: 4px; text-align: center; }
+    .analogy-row .left { text-align: center; }
+    .analogy-row .arrow { display: none; }
+    .analogy-row.head { display: none; }
+    .eli-tabs { flex-direction: column; gap: 0; padding: 4px; border-radius: var(--r-md); }
+    .eli-tab { border-radius: var(--r-sm); }
+    .recap-card { padding: 28px 24px; }
+    .benefit-tabs { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+    .benefit-tab { padding: 8px 6px; }
+    .benefit-tab .name { font-size: 11px; }
+  }
+  /* ==== Uniform glossary / callouts (matches lessons 8-12) ==== */
+  .glossary-block{background:linear-gradient(135deg,#FBF4D6 0%,#FFFFFF 100%);border:2px solid #F2C94C;border-radius:12px;padding:24px 26px;margin:24px auto;box-shadow:0 1px 3px rgba(0,0,0,0.04);max-width:1100px}
+  .glossary-block .gloss-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .glossary-block .gloss-icon{width:36px;height:36px;border-radius:50%;background:#F2C94C;display:flex;align-items:center;justify-content:center;color:#1F2937;font-weight:700;font-size:18px;flex-shrink:0}
+  .glossary-block h3{margin:0;font-size:16px;font-weight:700;color:#1F2937;text-transform:none;letter-spacing:0}
+  .glossary-block .gloss-intro{margin:4px 0 16px;font-size:14px;color:#5A6B81}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .gloss-card{background:#FFFFFF;border:1.5px solid #D5DCE6;border-radius:8px;padding:14px 16px;border-left-width:5px}
+  .gloss-card.tag-tool{border-left-color:#1F8A60}
+  .gloss-card.tag-driver{border-left-color:#5E4A8E}
+  .gloss-card.tag-protocol{border-left-color:#2E7A8C}
+  .gloss-card.tag-hardware{border-left-color:#3F4A5E}
+  .gloss-card.tag-security{border-left-color:#8E2A2A}
+  .gloss-card.tag-config{border-left-color:#B85829}
+  .gloss-card.tag-concept{border-left-color:#1A6FA8}
+  .gloss-name{font-weight:700;font-size:14px;color:#1F2937;display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .gloss-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:1px;color:#FFFFFF}
+  .gloss-card.tag-tool .gloss-tag{background:#1F8A60}
+  .gloss-card.tag-driver .gloss-tag{background:#5E4A8E}
+  .gloss-card.tag-protocol .gloss-tag{background:#2E7A8C}
+  .gloss-card.tag-hardware .gloss-tag{background:#3F4A5E}
+  .gloss-card.tag-security .gloss-tag{background:#8E2A2A}
+  .gloss-card.tag-config .gloss-tag{background:#B85829}
+  .gloss-card.tag-concept .gloss-tag{background:#1A6FA8}
+  .gloss-what{font-size:13px;color:#1F2937;margin:6px 0 4px;line-height:1.45}
+  .gloss-what strong{color:#3F4A5E}
+  .gloss-why{font-size:12.5px;color:#5A6B81;font-style:italic;line-height:1.45;border-top:1px dashed #E5E9F0;padding-top:6px;margin-top:6px}
+  .gloss-why::before{content:"⚡ why it matters: ";font-style:normal;font-weight:700;color:#3F4A5E;font-size:11px}
+  .callout{display:flex;gap:14px;padding:14px 18px;border-radius:8px;margin:14px auto;border-left:5px solid;max-width:1100px}
+  .callout-icon{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-weight:700;font-size:14px}
+  .callout-body{flex:1;font-size:13.5px;line-height:1.55;color:#1F2937}
+  .callout-body strong{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+  .callout.tip{background:rgba(31,138,96,0.08);border-left-color:#1F8A60}
+  .callout.tip .callout-icon{background:#1F8A60}.callout.tip strong{color:#1F8A60}
+  .callout.warn{background:rgba(184,88,41,0.08);border-left-color:#B85829}
+  .callout.warn .callout-icon{background:#B85829}.callout.warn strong{color:#B85829}
+  .callout.danger{background:rgba(142,42,42,0.08);border-left-color:#8E2A2A}
+  .callout.danger .callout-icon{background:#8E2A2A}.callout.danger strong{color:#8E2A2A}
+  .callout.note{background:rgba(26,111,168,0.08);border-left-color:#1A6FA8}
+  .callout.note .callout-icon{background:#1A6FA8}.callout.note strong{color:#1A6FA8}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">vSphere Fundamentals</span>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme" type="button">
+        <svg id="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg id="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+</div>
+
+<nav class="course-nav" aria-label="Course lessons">
+  <div class="course-nav-inner">
+    <a href="preview-lesson-01.html" class="lesson-link"><span class="num">01</span><span class="name">Intro</span></a>
+    <a href="preview-lesson-02.html" class="lesson-link active"><span class="num">02</span><span class="name">Benefits</span></a>
+    <a href="preview-lesson-03.html" class="lesson-link"><span class="num">03</span><span class="name">Components</span></a>
+    <a href="preview-lesson-04.html" class="lesson-link"><span class="num">04</span><span class="name">History</span></a>
+    <a href="preview-lesson-05.html" class="lesson-link"><span class="num">05</span><span class="name">Context &amp; resources</span></a>
+    <a href="preview-lesson-06.html" class="lesson-link"><span class="num">06</span><span class="name">Types</span></a>
+    <a href="preview-lesson-07.html" class="lesson-link"><span class="num">07</span><span class="name">SDDC</span></a>
+    <a href="preview-lesson-08.html" class="lesson-link"><span class="num">08</span><span class="name">Installing &amp; configuring ESXi</span></a>
+    <a href="preview-lesson-09.html" class="lesson-link"><span class="num">09</span><span class="name">Deploying &amp; configuring vCenter</span></a>
+    <a href="preview-lesson-10.html" class="lesson-link"><span class="num">10</span><span class="name">Configuring vSphere networking</span></a>
+    <a href="preview-lesson-11.html" class="lesson-link"><span class="num">11</span><span class="name">Configuring vSphere storage</span></a>
+    <a href="preview-lesson-12.html" class="lesson-link"><span class="num">12</span><span class="name">Deploying virtual machines</span></a>
+  </div>
+</nav>
+
+<button class="back-to-top" id="back-to-top" type="button" aria-label="Back to top">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<header class="hero">
+  <div class="container">
+    <p class="hero-eyebrow">vSphere Fundamentals · Lesson 2</p>
+    <h1>Benefits of virtualization</h1>
+    <p class="hero-subtitle">
+      Five things virtualization gives you that physical hardware on its own never could.
+      Tour them in two minutes.
+    </p>
+    <div class="hero-meta">
+      <span class="pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        14 minute read
+      </span>
+      <span class="pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 11 13 2 4 11 13 20 22 11"/></svg>
+        Beginner
+      </span>
+      <span class="pill">VMware</span>
+    </div>
+  </div>
+
+  <div class="container-wide">
+    <div class="hero-widget">
+      <p class="hero-widget-eyebrow">Tour the five benefits</p>
+      <p class="hero-widget-title">Click each benefit. Watch it happen.</p>
+      <p class="hero-widget-tip">
+        Each tab shows one benefit in motion. Step through all five — every later section of
+        this lesson goes deeper into one of these.
+      </p>
+      <div class="benefit-tabs" role="tablist">
+        <button class="benefit-tab active" data-benefit="0" role="tab" type="button"><span class="num">1 of 5</span><span class="name">Consolidation</span></button>
+        <button class="benefit-tab" data-benefit="1" role="tab" type="button"><span class="num">2 of 5</span><span class="name">Speed</span></button>
+        <button class="benefit-tab" data-benefit="2" role="tab" type="button"><span class="num">3 of 5</span><span class="name">Isolation</span></button>
+        <button class="benefit-tab" data-benefit="3" role="tab" type="button"><span class="num">4 of 5</span><span class="name">Snapshots</span></button>
+        <button class="benefit-tab" data-benefit="4" role="tab" type="button"><span class="num">5 of 5</span><span class="name">Mobility</span></button>
+      </div>
+      <div class="benefit-stage">
+        <svg id="benefit-svg" viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="benefit-stage-readout" id="benefit-readout"></div>
+      </div>
+      <div class="stage-controls">
+        <button class="btn btn-secondary" id="benefit-prev" type="button">← Previous</button>
+        <button class="btn" id="benefit-next" type="button">Next benefit →</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <article class="glossary-block">
+    <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this lesson</h3></div>
+    <p class="gloss-intro">Five benefits of virtualization come with their own vocabulary. Plain-language definitions before they show up in the prose.</p>
+    <div class="glossary-grid">
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Server consolidation <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Running many VMs on one physical host instead of one app per server. Reduces hardware count, power, cooling, and rack space.</div>
+        <div class="gloss-why">The first and most measurable benefit of virtualization. Cuts CapEx and OpEx dramatically.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Provisioning <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The process of creating and delivering a new server (or VM) ready to use. With virtualization, this means cloning a template — minutes, not weeks.</div>
+        <div class="gloss-why">Speed of provisioning is one of the killer benefits. New environment for a project? Provision in 5 min, not 6 weeks.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Isolation <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The hypervisor's guarantee that what happens in one VM stays in that VM. A crash, virus, or rogue process in VM-A doesn't reach VM-B.</div>
+        <div class="gloss-why">Lets very different workloads (production + test, finance + dev) coexist on shared hardware safely.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Snapshot <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> A point-in-time saved state of a VM. Lets you roll back if a change breaks something. Detailed in lesson 12.</div>
+        <div class="gloss-why">Powerful safety net for short-term operations (upgrades, risky changes). Not a backup — covered later.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Workload mobility <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The ability to move a running VM to a different host without stopping it. Done via vMotion in vSphere.</div>
+        <div class="gloss-why">Hardware maintenance becomes "drag the VM elsewhere," not "schedule a downtime." Workloads stop being tied to specific boxes.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">vMotion <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> VMware's signature feature — live-migrating a running VM between hosts with zero downtime. Detailed in lessons 9 and 12.</div>
+        <div class="gloss-why">The technology that makes workload mobility real. Touched on here; covered fully later.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">High Availability (HA) <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> A vSphere cluster feature that automatically restarts VMs on a healthy host when their host dies. Detailed in lesson 9.</div>
+        <div class="gloss-why">Hardware failure becomes a 2-3 minute blip instead of a manual rescue. Real reliability gain.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Disaster recovery (DR) <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> The plan + tooling to keep workloads running (or quickly recoverable) when an entire datacenter fails. Replication + failover.</div>
+        <div class="gloss-why">Virtualization makes DR much cheaper because VMs are files — easier to replicate, easier to bring up at a remote site.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">CapEx vs OpEx <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Capital expenditure (buying hardware) vs Operating expenditure (running it). Virtualization reduces both.</div>
+        <div class="gloss-why">Fewer physical servers = less buying. Faster provisioning = less staff time per workload. Both lines on the budget improve.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Test/dev environment <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Non-production environments for testing new versions, training, experiments. Cloned from templates and torn down freely.</div>
+        <div class="gloss-why">Without virtualization, test/dev was prohibitively expensive. With it, every developer can have their own production-like environment.</div>
+      </div>
+
+      <div class="gloss-card tag-concept">
+        <div class="gloss-name">Rollback <span class="gloss-tag">concept</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Returning a system to a previous state after a problem. With snapshots, rollback is a click.</div>
+        <div class="gloss-why">Failed upgrades stop being career-ending. The "we broke production, now what?" outcome shifts from hours-of-cleanup to seconds-of-revert.</div>
+      </div>
+
+      <div class="gloss-card tag-tool">
+        <div class="gloss-name">Resource pooling <span class="gloss-tag">tool</span></div>
+        <div class="gloss-what"><strong>What it is:</strong> Treating the combined CPU/RAM/storage of all hosts in a cluster as one pool VMs draw from, instead of fixed per-server allocations.</div>
+        <div class="gloss-why">Lets workloads scale across hardware without manual placement decisions. The basis for DRS and capacity planning.</div>
+      </div>
+
+    </div>
+  </article>
+
+  <!-- §1 Concept -->
+  <section class="lesson-section reveal" id="concept">
+    <p class="section-eyebrow">Section 1 · Concept</p>
+    <h2 class="section-heading">Five things you couldn't do before</h2>
+
+    <p>
+      Lesson 1 told you what virtualization is. This lesson tells you what it gives you.
+    </p>
+
+    <p>
+      Virtualization didn't just change <em>how</em> computers run software. It unlocked
+      five things physical hardware on its own never could:
+    </p>
+
+    <ul class="benefit-list">
+      <li class="benefit-row">
+        <div class="icon-cell">
+          <!-- Consolidation icon -->
+          <svg viewBox="0 0 36 36" fill="none" stroke="#3F4A5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="6" width="6" height="4" rx="1"/>
+            <rect x="11" y="6" width="6" height="4" rx="1"/>
+            <rect x="3" y="13" width="6" height="4" rx="1"/>
+            <rect x="11" y="13" width="6" height="4" rx="1"/>
+            <line x1="20" y1="11.5" x2="26" y2="11.5"/>
+            <polyline points="24 9 26 11.5 24 14"/>
+            <rect x="28" y="6" width="6" height="11" rx="1" fill="#E8EAEF"/>
+            <line x1="29" y1="9" x2="33" y2="9" stroke-width="1"/>
+            <line x1="29" y1="11" x2="33" y2="11" stroke-width="1"/>
+            <line x1="29" y1="13" x2="33" y2="13" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="label-cell">
+          <div class="num">Benefit 1</div>
+          <div class="name">Consolidation</div>
+          <p>Many workloads on one host. Fewer machines, less hardware spend, less power, less rack space.</p>
+        </div>
+      </li>
+      <li class="benefit-row">
+        <div class="icon-cell">
+          <svg viewBox="0 0 36 36" fill="none" stroke="#3F4A5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="20" r="11"/>
+            <rect x="14" y="3" width="8" height="3" fill="#E8EAEF" stroke-width="1.5"/>
+            <line x1="18" y1="6" x2="18" y2="9"/>
+            <line x1="18" y1="20" x2="24" y2="14" stroke="#1F8A60" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <div class="label-cell">
+          <div class="num">Benefit 2</div>
+          <div class="name">Speed</div>
+          <p>A new application takes minutes, not weeks. Capacity is software, not procurement.</p>
+        </div>
+      </li>
+      <li class="benefit-row">
+        <div class="icon-cell">
+          <svg viewBox="0 0 36 36" fill="none" stroke="#3F4A5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="6" width="9" height="11" rx="1.5"/>
+            <rect x="13.5" y="6" width="9" height="11" rx="1.5" fill="#FCEBE0" stroke="#B85829"/>
+            <line x1="16" y1="9" x2="20" y2="14" stroke="#B85829"/>
+            <line x1="20" y1="9" x2="16" y2="14" stroke="#B85829"/>
+            <rect x="24" y="6" width="9" height="11" rx="1.5"/>
+            <line x1="3" y1="20" x2="33" y2="20" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <div class="label-cell">
+          <div class="num">Benefit 3</div>
+          <div class="name">Isolation</div>
+          <p>One VM crashing or misbehaving doesn't reach the others. The hypervisor enforces strict separation.</p>
+        </div>
+      </li>
+      <li class="benefit-row">
+        <div class="icon-cell">
+          <svg viewBox="0 0 36 36" fill="none" stroke="#3F4A5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="6" y="10" width="24" height="18" rx="2"/>
+            <circle cx="18" cy="19" r="5" fill="#E8EAEF"/>
+            <circle cx="18" cy="19" r="2" fill="#3F4A5E"/>
+            <rect x="14" y="6" width="8" height="4" rx="0.5"/>
+            <circle cx="26" cy="14" r="1.5" fill="#3F4A5E"/>
+          </svg>
+        </div>
+        <div class="label-cell">
+          <div class="num">Benefit 4</div>
+          <div class="name">Snapshots</div>
+          <p>Capture a VM's complete state in seconds. If anything goes wrong, roll back to the captured state instantly.</p>
+        </div>
+      </li>
+      <li class="benefit-row">
+        <div class="icon-cell">
+          <svg viewBox="0 0 36 36" fill="none" stroke="#3F4A5E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="20" width="11" height="9" rx="1"/>
+            <rect x="22" y="20" width="11" height="9" rx="1"/>
+            <rect x="14" y="3" width="8" height="6" rx="1" fill="#E8EAEF"/>
+            <path d="M 9 20 Q 18 6 27 20" stroke-dasharray="2 2"/>
+          </svg>
+        </div>
+        <div class="label-cell">
+          <div class="num">Benefit 5</div>
+          <div class="name">Mobility</div>
+          <p>Move a running VM from one physical host to another with no downtime. The application keeps serving traffic.</p>
+        </div>
+      </li>
+    </ul>
+
+    <p class="pullquote">
+      Each of these existed in some form before virtualization. Each was fragile, expensive, or both.
+      Virtualization made all five normal.
+    </p>
+
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>The compounding effect</strong>The benefits multiply each other. Faster provisioning + snapshots = safe experimentation. Workload mobility + HA = resilient operations. Server consolidation + isolation = safe multi-tenancy. The whole is greater than the sum of the parts.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>Why this matters for your career</strong>Every modern infrastructure pattern — cloud, containers, DR, devops, hybrid — was built on the foundation laid by these five benefits. Understanding them deeply means you understand why everything works the way it does.</div>
+    </div>
+  </section>
+
+  <!-- §2 Before/After -->
+  <section class="lesson-section reveal" id="before-after">
+    <p class="section-eyebrow">Section 2 · Before and after</p>
+    <h2 class="section-heading">A regional retailer, two timelines</h2>
+
+    <p>
+      Same 80-store retailer. Same 120 applications. Compare what an ordinary week looks
+      like before and after virtualization.
+    </p>
+
+    <div class="compare-grid">
+      <div class="compare-card before">
+        <p class="label">Before · circa 2008</p>
+        <h3>Slow, fragile, expensive</h3>
+        <ul class="pain-list">
+          <li>120 dedicated servers, mostly idle.</li>
+          <li>New app: 6-week procurement, $15K hardware bill.</li>
+          <li>Bad update: restore from tape, hours of downtime.</li>
+          <li>Server dies: application dies with it until someone drives to the datacenter.</li>
+          <li>Routine maintenance: service goes offline.</li>
+        </ul>
+      </div>
+
+      <div class="compare-card after">
+        <p class="label">After</p>
+        <h3>Fast, recoverable, calm</h3>
+        <ul class="pain-list">
+          <li>8 hosts running the same workloads as VMs.</li>
+          <li>New app: provision a VM in 15 minutes.</li>
+          <li>Bad update: revert to <span class="term" tabindex="0">snapshot<span class="tooltip">A snapshot is a captured copy of a VM's complete state — disk, memory, configuration — taken at a specific moment. Rolling back to a snapshot restores the VM exactly to that state, instantly.</span></span> in 2 seconds.</li>
+          <li>Hardware fails: VMs auto-restart on healthy hosts within a minute.</li>
+          <li>Maintenance: move running VMs first; do the work; move them back. Zero downtime.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="label">Honest caveat</div>
+      <p>
+        The team now manages an abstraction layer (the hypervisors) that they didn't have
+        before. The work didn't disappear; it changed shape.
+      </p>
+    </div>
+  </section>
+
+  <!-- §3 Analogy -->
+  <section class="lesson-section reveal" id="analogy">
+    <p class="section-eyebrow">Section 3 · The analogy, extended</p>
+    <h2 class="section-heading">Five superpowers of an apartment building</h2>
+
+    <p>
+      Same apartment building from Lesson 1. Same superintendent. Look at what the
+      building gives the city, beyond just fitting more people.
+    </p>
+
+    <div class="analogy-map">
+      <div class="analogy-row head">
+        <div class="left">In the apartment building</div>
+        <div class="arrow">↔</div>
+        <div class="right">In the technology</div>
+      </div>
+      <div class="analogy-row"><div class="left">200 single-family houses → one high-rise</div><div class="arrow">↔</div><div class="right">Consolidation</div></div>
+      <div class="analogy-row"><div class="left">Sign a lease in a day vs. build a house in a year</div><div class="arrow">↔</div><div class="right">Speed</div></div>
+      <div class="analogy-row"><div class="left">Thick walls and locked doors between apartments</div><div class="arrow">↔</div><div class="right">Isolation</div></div>
+      <div class="analogy-row"><div class="left">Superintendent photographs every apartment at midnight</div><div class="arrow">↔</div><div class="right">Snapshots</div></div>
+      <div class="analogy-row"><div class="left">Service that lifts an entire apartment into a sister building</div><div class="arrow">↔</div><div class="right">Mobility</div></div>
+    </div>
+
+    <p>
+      The first three are obvious benefits of an apartment building over single-family
+      houses. The last two — snapshots and mobility — are the magical ones.
+    </p>
+
+    <p>
+      They feel impossible in physical real estate. The hypervisor makes them ordinary
+      in software.
+    </p>
+
+    <!-- Inline knowledge check -->
+    <div class="check-card">
+      <p class="check-eyebrow">Quick check</p>
+      <p class="check-question">A team is about to apply a risky update to a production database VM. They take a snapshot first. The update goes wrong and corrupts the database. What's the fastest path back?</p>
+      <div class="check-options" id="check-options">
+        <button class="check-option" data-correct="false" type="button">Restore the database from last night's tape backup.</button>
+        <button class="check-option" data-correct="true" type="button">Roll back the VM to the snapshot taken before the update.</button>
+        <button class="check-option" data-correct="false" type="button">Reinstall the operating system and re-run the update.</button>
+      </div>
+      <div class="check-feedback" id="check-feedback"></div>
+    </div>
+  </section>
+
+  <!-- §4 ELI tabs -->
+  <section class="lesson-section reveal" id="eli">
+    <p class="section-eyebrow">Section 4 · At your level</p>
+    <h2 class="section-heading">The same idea, two depths</h2>
+    <p style="color: var(--text-muted);">
+      Pick whichever feels right.
+    </p>
+    <div class="eli-tabs" role="tablist">
+      <button class="eli-tab active" data-level="eli5" role="tab" type="button">
+        <span class="tab-eyebrow">Like I'm 5</span>
+        Simplest version
+      </button>
+      <button class="eli-tab" data-level="eli10" role="tab" type="button">
+        <span class="tab-eyebrow">Like I'm 10</span>
+        With the vocabulary
+      </button>
+    </div>
+    <div class="eli-content">
+      <div class="eli-panel active" data-level="eli5">
+        <p>
+          The big house turned into an apartment building gave us five superpowers. Lots of
+          families fit in one building. Moving in is fast. One family being noisy doesn't
+          bother the others. The manager can take a photo of every apartment and put it back
+          the way it was. And if your apartment needs to move to another building, the
+          manager picks it up — with all your stuff inside — and puts it in a new building
+          before you even notice. That's what virtualization gives computers.
+        </p>
+      </div>
+      <div class="eli-panel" data-level="eli10">
+        <p>
+          Virtualization gives you five capabilities physical hardware on its own never could.
+          <strong>Consolidation</strong> packs many VMs onto one
+          <span class="term" tabindex="0">host<span class="tooltip">The host is the physical computer that runs the hypervisor and many virtual machines on top.</span></span>,
+          which lowers cost. <strong>Speed</strong> means
+          <span class="term" tabindex="0">provisioning<span class="tooltip">Provisioning is creating, configuring, and bringing a new workload online. With virtualization, this is software you click; with physical hardware, it's procurement that takes weeks.</span></span> a new workload in minutes,
+          because creating a VM is software, not a hardware purchase.
+          <strong>Isolation</strong> is the hypervisor enforcing strict boundaries between
+          VMs, so one crashing doesn't take down the others.
+        </p>
+        <p>
+          <strong>Snapshots</strong> capture a VM's complete state — disk, memory,
+          configuration — in seconds, and let you roll back to that exact state instantly.
+          <strong>Mobility</strong> moves a running VM from one physical host to another
+          without stopping the application — the host underneath changes; the VM keeps running.
+        </p>
+        <p>
+          Each was hard or impossible with physical machines: snapshots required restoring from
+          tape, mobility required full
+          <span class="term" tabindex="0">downtime<span class="tooltip">Downtime is the period during which an application or system is unavailable to its users. Reducing downtime — or eliminating it — is the goal of features like mobility and high availability.</span></span>,
+          isolation depended on operating-system tricks that didn't always work. Virtualization
+          made all five routine. Of course, in practice, the hypervisor has to coordinate
+          this — when many VMs need CPU, when a snapshot is taken mid-write, when a VM is
+          being moved while a packet is in flight. Those coordination problems are what later
+          lessons cover.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- §5 Real-world scenarios -->
+  <section class="lesson-section reveal" id="scenarios">
+    <p class="section-eyebrow">Section 5 · In the real world</p>
+    <h2 class="section-heading">Where these benefits combine</h2>
+
+    <p style="color: var(--text-muted);">
+      Real teams rarely use just one benefit. Each story below shows how two or three
+      come together.
+    </p>
+
+    <div class="scenarios-list" id="scenarios-list"></div>
+  </section>
+</main>
+
+<!-- Animation -->
+<div class="container-wide">
+  <section class="lesson-section reveal" id="animation">
+    <p class="section-eyebrow">Section 6 · See each benefit in motion</p>
+    <h2 class="section-heading">Tour the five benefits</h2>
+    <p style="color: var(--text-muted); max-width: 680px;">
+      Each mode shows one benefit in motion: consolidate, speed, isolate, snapshot, mobility.
+      Pause to study any moment. Speed up or slow down.
+    </p>
+    <div class="visual-wrap">
+      <iframe class="animation-frame"
+              src="courses/vmware/vsphere-fundamentals/scenarios/02-benefits-of-virtualization/animation.html"
+              title="Lesson 2 animation"></iframe>
+    </div>
+  </section>
+</div>
+
+<div class="container">
+  <!-- Flashcards -->
+  <section class="lesson-section reveal" id="flashcards">
+    <p class="section-eyebrow">Section 7 · Lock it in</p>
+    <h2 class="section-heading">Flashcards</h2>
+    <p style="color: var(--text-muted);">Click any card to flip it.</p>
+    <div class="flashcards-grid" id="flashcards-container"></div>
+  </section>
+
+  <!-- Quiz -->
+  <section class="lesson-section reveal" id="quiz">
+    <p class="section-eyebrow">Quiz</p>
+    <h2 class="section-heading">Predict what happens next</h2>
+    <p style="color: var(--text-muted);">
+      Each question pauses the animation at a specific benefit-mode moment. Try answering
+      in your head first, then reveal.
+    </p>
+    <div id="quiz-container"></div>
+  </section>
+
+  <!-- Recap -->
+  <div class="recap-card reveal">
+    <span class="badge">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="5 12 10 17 19 8"/></svg>
+      Lesson 2 complete
+    </span>
+    <h3>Five superpowers, one technology.</h3>
+    <ul class="recap-list">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>Consolidation</strong> — many workloads on one host. Less hardware, less power, less rack space.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>Speed</strong> — a new app in minutes. Capacity becomes software.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>Isolation</strong> — one VM's failure doesn't reach the others. The hypervisor enforces it.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>Snapshots</strong> — capture state, roll back instantly. Like undo, for whole VMs.</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 10 17 19 8"/></svg><span><strong>Mobility</strong> — move running VMs between hosts. Zero downtime, even during the move.</span></li>
+    </ul>
+    <p>
+      The next lesson moves from concept to product: VMware, the company; vSphere, its
+      flagship platform; and the components that make it work — ESXi, vCenter, virtual
+      machines, datastores, and virtual networks.
+    </p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+<script>
+const LESSON_PATH = 'courses/vmware/vsphere-fundamentals/scenarios/02-benefits-of-virtualization';
+
+/* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+(function () {
+  const toggle = document.getElementById('theme-toggle');
+  const sun = document.getElementById('theme-sun');
+  const moon = document.getElementById('theme-moon');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) document.documentElement.setAttribute('data-theme', stored);
+  function syncIcons() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    sun.style.display = isDark ? 'none' : 'block';
+    moon.style.display = isDark ? 'block' : 'none';
+  }
+  syncIcons();
+  toggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('lesson-theme', 'light'); }
+    else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('lesson-theme', 'dark'); }
+    syncIcons();
+  });
+})();
+
+/* ============================================================
+   TERM TOOLTIPS
+   ============================================================ */
+(function () {
+  const terms = document.querySelectorAll('.term');
+  terms.forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      terms.forEach(other => { if (other !== el) other.classList.remove('active'); });
+      el.classList.toggle('active');
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        terms.forEach(other => { if (other !== el) other.classList.remove('active'); });
+        el.classList.toggle('active');
+      }
+    });
+  });
+  document.addEventListener('click', () => { terms.forEach(el => el.classList.remove('active')); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') terms.forEach(el => el.classList.remove('active')); });
+})();
+
+/* ============================================================
+   HERO BENEFIT TOUR
+   ============================================================ */
+(function () {
+  const svg = document.getElementById('benefit-svg');
+  const readout = document.getElementById('benefit-readout');
+  const tabs = document.querySelectorAll('.benefit-tab');
+  const prevBtn = document.getElementById('benefit-prev');
+  const nextBtn = document.getElementById('benefit-next');
+  let active = 0;
+
+  const benefits = [
+    {
+      name: 'Consolidation',
+      readout: '<strong>Six servers → one host.</strong> The same workloads, the same performance, on a fraction of the hardware.',
+      svg: `
+        <!-- Left: 6 idle servers -->
+        <g transform="translate(40, 70)">
+          <text x="60" y="-8" text-anchor="middle" font-size="10" font-weight="600" fill="#5F5E5A" letter-spacing="1.2">SIX SERVERS</text>
+          <g opacity="0.7">
+            <rect x="0"  y="0"  width="32" height="20" rx="2" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="0.8"/>
+            <rect x="0"  y="3"  width="32" height="3" fill="#3F4A5E"/>
+            <rect x="40" y="0"  width="32" height="20" rx="2" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="0.8"/>
+            <rect x="40" y="3"  width="32" height="3" fill="#3F4A5E"/>
+            <rect x="80" y="0"  width="32" height="20" rx="2" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="0.8"/>
+            <rect x="80" y="3"  width="32" height="3" fill="#3F4A5E"/>
+            <rect x="0"  y="26" width="32" height="20" rx="2" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="0.8"/>
+            <rect x="0"  y="29" width="32" height="3" fill="#3F4A5E"/>
+            <rect x="40" y="26" width="32" height="20" rx="2" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="0.8"/>
+            <rect x="40" y="29" width="32" height="3" fill="#3F4A5E"/>
+            <rect x="80" y="26" width="32" height="20" rx="2" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="0.8"/>
+            <rect x="80" y="29" width="32" height="3" fill="#3F4A5E"/>
+          </g>
+          <text x="60" y="62" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">Each at ~5% utilization</text>
+        </g>
+        <!-- Arrow -->
+        <g transform="translate(220, 100)">
+          <line x1="0" y1="0" x2="80" y2="0" stroke="#3F4A5E" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 80 0 L 66 -8 L 66 8 Z" fill="#3F4A5E"/>
+          <text x="40" y="-10" text-anchor="middle" font-size="9" font-weight="600" fill="#3F4A5E" letter-spacing="1.4">CONSOLIDATE</text>
+        </g>
+        <!-- Right: 1 host with VMs. Layers abut: row1(0-22) row2(22-44) hyper(44-58) host(58-90). -->
+        <g transform="translate(360, 50)">
+          <text x="100" y="-8" text-anchor="middle" font-size="10" font-weight="600" fill="#1F8A60" letter-spacing="1.2">ONE HOST</text>
+          <!-- VM row 1: y=0 to y=22 -->
+          <g transform="translate(0, 0)">
+            <rect x="0" y="0" width="48" height="22" rx="3" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+            <rect x="0" y="0" width="48" height="6" rx="3" fill="#5F5E5A"/>
+            <text x="24" y="5" font-size="5" fill="#FFFFFF" text-anchor="middle">VM</text>
+            <rect x="3" y="9" width="42" height="4" fill="#5A6B81" opacity="0.6"/>
+            <circle cx="44" cy="3" r="1" fill="#5DCAA5"/>
+            <rect x="51" y="0" width="48" height="22" rx="3" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+            <rect x="51" y="0" width="48" height="6" rx="3" fill="#5F5E5A"/>
+            <text x="75" y="5" font-size="5" fill="#FFFFFF" text-anchor="middle">VM</text>
+            <rect x="54" y="9" width="42" height="4" fill="#5A6B81" opacity="0.7"/>
+            <circle cx="95" cy="3" r="1" fill="#5DCAA5"/>
+            <rect x="102" y="0" width="48" height="22" rx="3" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+            <rect x="102" y="0" width="48" height="6" rx="3" fill="#5F5E5A"/>
+            <text x="126" y="5" font-size="5" fill="#FFFFFF" text-anchor="middle">VM</text>
+            <rect x="105" y="9" width="42" height="4" fill="#5A6B81" opacity="0.5"/>
+            <circle cx="146" cy="3" r="1" fill="#5DCAA5"/>
+            <rect x="153" y="0" width="48" height="22" rx="3" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+            <rect x="153" y="0" width="48" height="6" rx="3" fill="#5F5E5A"/>
+            <text x="177" y="5" font-size="5" fill="#FFFFFF" text-anchor="middle">VM</text>
+            <rect x="156" y="9" width="42" height="4" fill="#5A6B81" opacity="0.8"/>
+            <circle cx="197" cy="3" r="1" fill="#5DCAA5"/>
+          </g>
+          <!-- VM row 2: y=22 to y=44 (abuts row 1) -->
+          <g transform="translate(0, 22)">
+            <rect x="0" y="0" width="48" height="22" rx="3" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+            <rect x="0" y="0" width="48" height="6" rx="3" fill="#5F5E5A"/>
+            <text x="24" y="5" font-size="5" fill="#FFFFFF" text-anchor="middle">VM</text>
+            <rect x="3" y="9" width="42" height="4" fill="#5A6B81" opacity="0.6"/>
+            <circle cx="44" cy="3" r="1" fill="#5DCAA5"/>
+            <rect x="51" y="0" width="48" height="22" rx="3" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+            <rect x="51" y="0" width="48" height="6" rx="3" fill="#5F5E5A"/>
+            <text x="75" y="5" font-size="5" fill="#FFFFFF" text-anchor="middle">VM</text>
+            <rect x="54" y="9" width="42" height="4" fill="#5A6B81" opacity="0.5"/>
+            <circle cx="95" cy="3" r="1" fill="#5DCAA5"/>
+            <rect x="102" y="0" width="48" height="22" rx="3" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+            <rect x="102" y="0" width="48" height="6" rx="3" fill="#5F5E5A"/>
+            <text x="126" y="5" font-size="5" fill="#FFFFFF" text-anchor="middle">VM</text>
+            <rect x="105" y="9" width="42" height="4" fill="#5A6B81" opacity="0.7"/>
+            <circle cx="146" cy="3" r="1" fill="#5DCAA5"/>
+            <rect x="153" y="0" width="48" height="22" rx="3" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+            <rect x="153" y="0" width="48" height="6" rx="3" fill="#5F5E5A"/>
+            <text x="177" y="5" font-size="5" fill="#FFFFFF" text-anchor="middle">VM</text>
+            <rect x="156" y="9" width="42" height="4" fill="#5A6B81" opacity="0.6"/>
+            <circle cx="197" cy="3" r="1" fill="#5DCAA5"/>
+          </g>
+          <!-- Hypervisor: y=44 to y=58 (abuts VM row 2) -->
+          <rect x="0" y="44" width="201" height="14" fill="#3F4A5E"/>
+          <text x="100" y="54" text-anchor="middle" font-size="8" font-weight="500" fill="#E8E8E0" letter-spacing="1.2">hypervisor</text>
+          <!-- Host: y=58 to y=90 (abuts hypervisor) -->
+          <rect x="0" y="58" width="201" height="32" rx="2" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect x="0" y="58" width="10" height="32" fill="#909093"/>
+          <rect x="191" y="58" width="10" height="32" fill="#909093"/>
+          <!-- Util bar centered in host (host y=58-90, util y=69-79, mid y=74 = host mid) -->
+          <rect x="20" y="69" width="160" height="10" rx="2" fill="#FFFFFF" stroke="#9D9D9D" stroke-width="0.5"/>
+          <rect x="20" y="69" width="115" height="10" rx="2" fill="#5A6B81">
+            <animate attributeName="width" values="115;124;112;126;108;115" dur="8s" repeatCount="indefinite"/>
+          </rect>
+          <text x="100" y="76" text-anchor="middle" font-size="8" font-weight="600" fill="#FFFFFF">~72%</text>
+          <text x="100" y="110" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">High utilization, used capacity</text>
+        </g>
+      `
+    },
+    {
+      name: 'Speed',
+      readout: '<strong>15 minutes from click to live VM.</strong> Provisioning is software now, not procurement.',
+      svg: `
+        <!-- Stopwatch -->
+        <g transform="translate(140, 110)">
+          <rect x="-10" y="-58" width="20" height="6" fill="#3F4A5E" rx="1"/>
+          <line x1="0" y1="-52" x2="0" y2="-46" stroke="#3F4A5E" stroke-width="2.5"/>
+          <circle cx="0" cy="0" r="48" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2.5"/>
+          <line x1="0" y1="-44" x2="0" y2="-38" stroke="#3F4A5E" stroke-width="2"/>
+          <line x1="0" y1="38" x2="0" y2="44" stroke="#3F4A5E" stroke-width="2"/>
+          <line x1="-44" y1="0" x2="-38" y2="0" stroke="#3F4A5E" stroke-width="2"/>
+          <line x1="38" y1="0" x2="44" y2="0" stroke="#3F4A5E" stroke-width="2"/>
+          <g>
+            <line x1="0" y1="0" x2="0" y2="-36" stroke="#1F8A60" stroke-width="2.5" stroke-linecap="round"/>
+            <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="4s" repeatCount="indefinite"/>
+          </g>
+          <circle cx="0" cy="0" r="4" fill="#1F8A60"/>
+          <text x="0" y="68" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">15 min vs 6 weeks</text>
+        </g>
+        <!-- Right: phases -->
+        <g transform="translate(280, 60)">
+          <text x="0" y="0" font-size="10" font-weight="600" fill="#5F5E5A" letter-spacing="1.2">DEPLOYMENT</text>
+          <g transform="translate(0, 14)">
+            <rect x="0" y="0" width="240" height="18" rx="3" fill="#F4F1E8" stroke="#E8E5DD" stroke-width="1"/>
+            <rect x="0" y="0" width="0" height="18" rx="3" fill="#1F8A60">
+              <animate attributeName="width" values="0;240;240;0" keyTimes="0;0.7;0.95;1" dur="6s" repeatCount="indefinite"/>
+            </rect>
+            <text x="120" y="13" text-anchor="middle" font-size="10" font-weight="600" fill="#FFFFFF" opacity="0">
+              provisioning…
+              <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.65;0.93;1" dur="6s" repeatCount="indefinite"/>
+            </text>
+            <text x="120" y="13" text-anchor="middle" font-size="10" font-weight="600" fill="#1F8A60" opacity="0">
+              ✓ ready
+              <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.7;0.75;0.95;1" dur="6s" repeatCount="indefinite"/>
+            </text>
+          </g>
+          <!-- Resulting VM -->
+          <g transform="translate(60, 50)" opacity="0">
+            <rect width="120" height="48" rx="5" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+            <path d="M 0 14 L 0 5 Q 0 0 5 0 L 115 0 Q 120 0 120 5 L 120 14 Z" fill="#5F5E5A"/>
+            <text x="8" y="10" font-size="8" font-weight="500" fill="#FFFFFF">new-vm</text>
+            <rect x="6" y="18" width="28" height="13" rx="2" fill="#A8A8AC"/>
+            <text x="20" y="27" font-size="9" fill="#FFFFFF" text-anchor="middle">linux</text>
+            <text x="40" y="28" font-size="9" fill="#3A3A3A">your app</text>
+            <rect x="6" y="36" width="80" height="3" rx="1" fill="#E0E0DE"/>
+            <rect x="6" y="36" width="40" height="3" rx="1" fill="#5A6B81"/>
+            <circle cx="110" cy="7" r="2" fill="#5DCAA5"/>
+            <animate attributeName="opacity" values="0;0;0;1;1;0" keyTimes="0;0.7;0.71;0.75;0.95;1" dur="6s" repeatCount="indefinite"/>
+          </g>
+        </g>
+      `
+    },
+    {
+      name: 'Isolation',
+      readout: '<strong>One VM crashes — the others keep running.</strong> The hypervisor catches the failure inside the failed VM.',
+      svg: `
+        <g transform="translate(60, 30)">
+          <text x="240" y="0" text-anchor="middle" font-size="10" font-weight="600" fill="#5F5E5A" letter-spacing="1.2">FOUR VMS ON ONE HOST</text>
+          <!-- 4 VMs -->
+          <g transform="translate(0, 14)">
+            <rect width="110" height="50" rx="5" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+            <path d="M 0 16 L 0 6 Q 0 0 6 0 L 104 0 Q 110 0 110 6 L 110 16 Z" fill="#5F5E5A"/>
+            <text x="9" y="12" font-size="9" font-weight="500" fill="#FFFFFF">vm-01</text>
+            <text x="55" y="36" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+            <circle cx="100" cy="8" r="2.5" fill="#5DCAA5"/>
+          </g>
+          <g transform="translate(120, 14)">
+            <rect width="110" height="50" rx="5" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2">
+              <animate attributeName="fill" values="#FFFFFF;#FFFFFF;#FCEBE0;#FCEBE0;#FFFFFF" keyTimes="0;0.3;0.32;0.85;1" dur="6s" repeatCount="indefinite"/>
+              <animate attributeName="stroke" values="#5F5E5A;#5F5E5A;#B85829;#B85829;#5F5E5A" keyTimes="0;0.3;0.32;0.85;1" dur="6s" repeatCount="indefinite"/>
+            </rect>
+            <path d="M 0 16 L 0 6 Q 0 0 6 0 L 104 0 Q 110 0 110 6 L 110 16 Z" fill="#5F5E5A">
+              <animate attributeName="fill" values="#5F5E5A;#5F5E5A;#B85829;#B85829;#5F5E5A" keyTimes="0;0.3;0.32;0.85;1" dur="6s" repeatCount="indefinite"/>
+            </path>
+            <text x="9" y="12" font-size="9" font-weight="500" fill="#FFFFFF">vm-02</text>
+            <text x="55" y="36" text-anchor="middle" font-size="11" font-weight="600" fill="#1F8A60">
+              running
+              <animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0;0.3;0.32;0.85;1" dur="6s" repeatCount="indefinite"/>
+            </text>
+            <text x="55" y="36" text-anchor="middle" font-size="11" font-weight="600" fill="#B85829" opacity="0">
+              crashed
+              <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.3;0.32;0.85;1" dur="6s" repeatCount="indefinite"/>
+            </text>
+            <circle cx="100" cy="8" r="2.5" fill="#5DCAA5">
+              <animate attributeName="fill" values="#5DCAA5;#5DCAA5;#E24B4A;#E24B4A;#5DCAA5" keyTimes="0;0.3;0.32;0.85;1" dur="6s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          <g transform="translate(240, 14)">
+            <rect width="110" height="50" rx="5" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+            <path d="M 0 16 L 0 6 Q 0 0 6 0 L 104 0 Q 110 0 110 6 L 110 16 Z" fill="#5F5E5A"/>
+            <text x="9" y="12" font-size="9" font-weight="500" fill="#FFFFFF">vm-03</text>
+            <text x="55" y="36" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+            <circle cx="100" cy="8" r="2.5" fill="#5DCAA5"/>
+          </g>
+          <g transform="translate(360, 14)">
+            <rect width="110" height="50" rx="5" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+            <path d="M 0 16 L 0 6 Q 0 0 6 0 L 104 0 Q 110 0 110 6 L 110 16 Z" fill="#5F5E5A"/>
+            <text x="9" y="12" font-size="9" font-weight="500" fill="#FFFFFF">vm-04</text>
+            <text x="55" y="36" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+            <circle cx="100" cy="8" r="2.5" fill="#5DCAA5"/>
+          </g>
+          <!-- Hypervisor: y=64 to y=82 (abuts VMs ending at y=64) -->
+          <rect x="0" y="64" width="470" height="18" fill="#3F4A5E"/>
+          <text x="235" y="76" text-anchor="middle" font-size="9" font-weight="500" fill="#E8E8E0" letter-spacing="1.5">hypervisor — enforces isolation</text>
+          <!-- Host: y=82 to y=132 (abuts hypervisor) -->
+          <rect x="0" y="82" width="470" height="50" rx="2" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect x="0" y="82" width="14" height="50" fill="#909093"/>
+          <rect x="456" y="82" width="14" height="50" fill="#909093"/>
+          <text x="235" y="150" text-anchor="middle" font-size="9" fill="#9D9C95" font-style="italic">host stays up — only vm-02 is affected</text>
+        </g>
+      `
+    },
+    {
+      name: 'Snapshots',
+      readout: '<strong>Capture state. Roll back instantly.</strong> Like undo, for whole VMs.',
+      svg: `
+        <g transform="translate(80, 100)">
+          <line x1="0" y1="0" x2="440" y2="0" stroke="#5F5E5A" stroke-width="2"/>
+          <!-- T0 snapshot -->
+          <g transform="translate(60, 0)">
+            <line x1="0" y1="-8" x2="0" y2="8" stroke="#1F8A60" stroke-width="2"/>
+            <circle cx="0" cy="0" r="6" fill="#1F8A60"/>
+            <circle cx="0" cy="0" r="6" fill="none" stroke="#1F8A60" stroke-width="2">
+              <animate attributeName="r" values="6;14;6" dur="2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <text x="0" y="-22" text-anchor="middle" font-size="10" fill="#1F8A60" font-weight="600">12:00</text>
+            <text x="0" y="-36" text-anchor="middle" font-size="9" fill="#1F8A60" letter-spacing="1.2">SNAPSHOT</text>
+            <g transform="translate(-44, 22)">
+              <rect width="88" height="40" rx="4" fill="#E0F2EA" stroke="#1F8A60" stroke-width="1.5"/>
+              <rect x="0" y="0" width="88" height="10" rx="4" fill="#1F8A60"/>
+              <text x="6" y="8" font-size="8" font-weight="500" fill="#FFFFFF">vm-01</text>
+              <text x="44" y="28" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">healthy</text>
+            </g>
+          </g>
+          <!-- T1 bad change -->
+          <g transform="translate(220, 0)">
+            <line x1="0" y1="-8" x2="0" y2="8" stroke="#B85829" stroke-width="2"/>
+            <circle cx="0" cy="0" r="6" fill="#B85829"/>
+            <text x="0" y="-22" text-anchor="middle" font-size="10" fill="#B85829" font-weight="600">12:14</text>
+            <text x="0" y="-36" text-anchor="middle" font-size="9" fill="#B85829" letter-spacing="1.2">BAD UPDATE</text>
+            <g transform="translate(-44, 22)">
+              <rect width="88" height="40" rx="4" fill="#FCEBE0" stroke="#B85829" stroke-width="1.5"/>
+              <rect x="0" y="0" width="88" height="10" rx="4" fill="#B85829"/>
+              <text x="6" y="8" font-size="8" font-weight="500" fill="#FFFFFF">vm-01</text>
+              <text x="44" y="28" text-anchor="middle" font-size="11" fill="#B85829" font-weight="600">corrupted</text>
+            </g>
+          </g>
+          <!-- T2 rollback -->
+          <g transform="translate(380, 0)">
+            <line x1="0" y1="-8" x2="0" y2="8" stroke="#1F8A60" stroke-width="2"/>
+            <circle cx="0" cy="0" r="6" fill="#1F8A60"/>
+            <circle cx="0" cy="0" r="6" fill="none" stroke="#1F8A60" stroke-width="2">
+              <animate attributeName="r" values="6;14;6" dur="2s" begin="1s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="1;0;1" dur="2s" begin="1s" repeatCount="indefinite"/>
+            </circle>
+            <text x="0" y="-22" text-anchor="middle" font-size="10" fill="#1F8A60" font-weight="600">12:14:02</text>
+            <text x="0" y="-36" text-anchor="middle" font-size="9" fill="#1F8A60" letter-spacing="1.2">ROLLBACK</text>
+            <g transform="translate(-44, 22)">
+              <rect width="88" height="40" rx="4" fill="#E0F2EA" stroke="#1F8A60" stroke-width="1.5"/>
+              <rect x="0" y="0" width="88" height="10" rx="4" fill="#1F8A60"/>
+              <text x="6" y="8" font-size="8" font-weight="500" fill="#FFFFFF">vm-01</text>
+              <text x="44" y="28" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">healthy</text>
+            </g>
+          </g>
+          <!-- Reverts arrow -->
+          <path d="M 380 -10 Q 220 -50 60 -10" stroke="#1F8A60" stroke-width="1.5" fill="none" stroke-dasharray="3 2"/>
+        </g>
+      `
+    },
+    {
+      name: 'Mobility',
+      readout: '<strong>Move running VMs between hosts.</strong> The application keeps serving traffic during the move.',
+      svg: `
+        <!-- Source host -->
+        <g transform="translate(60, 100)">
+          <rect x="0" y="0" width="120" height="14" fill="#3F4A5E"/>
+          <text x="60" y="10" text-anchor="middle" font-size="9" fill="#E8E8E0" font-weight="500" letter-spacing="1.4">hypervisor</text>
+          <rect x="0" y="14" width="120" height="50" rx="2" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect x="0" y="14" width="10" height="50" fill="#909093"/>
+          <rect x="110" y="14" width="10" height="50" fill="#909093"/>
+          <g transform="translate(94, 26)">
+            <rect width="20" height="20" fill="#2a2a2e"/>
+            <circle cx="10" cy="10" r="7" fill="#1a1a1a"/>
+            <g>
+              <path d="M 10 10 L 9 4 L 11 4 Z" fill="#5F5E5A"/>
+              <path d="M 10 10 L 16 9 L 16 11 Z" fill="#5F5E5A"/>
+              <path d="M 10 10 L 9 16 L 11 16 Z" fill="#5F5E5A"/>
+              <path d="M 10 10 L 4 9 L 4 11 Z" fill="#5F5E5A"/>
+              <animateTransform attributeName="transform" type="rotate" from="0 10 10" to="360 10 10" dur="4s" repeatCount="indefinite"/>
+            </g>
+            <circle cx="10" cy="10" r="1.5" fill="#3a3a3a"/>
+          </g>
+          <text x="60" y="80" text-anchor="middle" font-size="10" fill="#5F5E5A">host-A</text>
+        </g>
+        <!-- Destination host -->
+        <g transform="translate(420, 100)">
+          <rect x="0" y="0" width="120" height="14" fill="#3F4A5E"/>
+          <text x="60" y="10" text-anchor="middle" font-size="9" fill="#E8E8E0" font-weight="500" letter-spacing="1.4">hypervisor</text>
+          <rect x="0" y="14" width="120" height="50" rx="2" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect x="0" y="14" width="10" height="50" fill="#909093"/>
+          <rect x="110" y="14" width="10" height="50" fill="#909093"/>
+          <g transform="translate(94, 26)">
+            <rect width="20" height="20" fill="#2a2a2e"/>
+            <circle cx="10" cy="10" r="7" fill="#1a1a1a"/>
+            <g>
+              <path d="M 10 10 L 9 4 L 11 4 Z" fill="#5F5E5A"/>
+              <path d="M 10 10 L 16 9 L 16 11 Z" fill="#5F5E5A"/>
+              <path d="M 10 10 L 9 16 L 11 16 Z" fill="#5F5E5A"/>
+              <path d="M 10 10 L 4 9 L 4 11 Z" fill="#5F5E5A"/>
+              <animateTransform attributeName="transform" type="rotate" from="0 10 10" to="360 10 10" dur="4.3s" repeatCount="indefinite"/>
+            </g>
+            <circle cx="10" cy="10" r="1.5" fill="#3a3a3a"/>
+          </g>
+          <text x="60" y="80" text-anchor="middle" font-size="10" fill="#5F5E5A">host-B</text>
+        </g>
+        <!-- Path -->
+        <path d="M 180 110 Q 300 50 420 110" stroke="#3F4A5E" stroke-width="1.5" stroke-dasharray="3 2" fill="none"/>
+        <!-- Moving VM -->
+        <g>
+          <g>
+            <rect x="-44" y="-18" width="88" height="36" rx="5" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+            <rect x="-44" y="-18" width="88" height="10" rx="5" fill="#3F4A5E"/>
+            <rect x="-44" y="-13" width="88" height="5" fill="#3F4A5E"/>
+            <text x="-37" y="-10" font-size="9" font-weight="500" fill="#FFFFFF">vm-01</text>
+            <rect x="-38" y="0" width="22" height="10" rx="2" fill="#A8A8AC"/>
+            <text x="-27" y="8" font-size="8" fill="#FFFFFF" text-anchor="middle">linux</text>
+            <text x="-12" y="8" font-size="9" fill="#3A3A3A">web-app</text>
+            <circle cx="36" cy="-12" r="2" fill="#5DCAA5">
+              <animate attributeName="opacity" values="1;0.4;1" dur="1.2s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          <animateMotion dur="6s" repeatCount="indefinite" rotate="0">
+            <mpath href="#hero-mobility-path"/>
+          </animateMotion>
+        </g>
+        <path id="hero-mobility-path" d="M 180 110 Q 300 50 420 110 Q 300 50 180 110" fill="none" opacity="0"/>
+      `
+    }
+  ];
+
+  function render() {
+    svg.innerHTML = benefits[active].svg;
+    readout.innerHTML = benefits[active].readout;
+    tabs.forEach((t, i) => t.classList.toggle('active', i === active));
+    prevBtn.disabled = active === 0;
+    nextBtn.disabled = active === benefits.length - 1;
+    nextBtn.textContent = active === benefits.length - 1 ? 'Tour complete ✓' : 'Next benefit →';
+  }
+
+  tabs.forEach(t => t.addEventListener('click', () => { active = parseInt(t.dataset.benefit, 10); render(); }));
+  prevBtn.addEventListener('click', () => { if (active > 0) { active--; render(); } });
+  nextBtn.addEventListener('click', () => { if (active < benefits.length - 1) { active++; render(); } });
+  render();
+})();
+
+/* ============================================================
+   INLINE KNOWLEDGE CHECK
+   ============================================================ */
+(function () {
+  const options = document.querySelectorAll('#check-options .check-option');
+  const feedback = document.getElementById('check-feedback');
+  let answered = false;
+  const correctMsg = '<strong>Right.</strong> The snapshot is the fastest possible recovery path. Reverting takes about two seconds and is fully complete — disk, memory, configuration. The other two options work, but each takes hours and risks more downtime.';
+  const wrongMsg = {
+    "Restore the database from last night's tape backup.":
+      '<strong>Slower path.</strong> Tape restore works, but it takes hours and you lose every legitimate change made today. The snapshot was taken minutes ago and is right there — use it.',
+    "Reinstall the operating system and re-run the update.":
+      "<strong>Even slower.</strong> Reinstalling the OS doesn't address the root issue (the bad update) and takes far longer than rolling back. The point of taking the snapshot was to make this exact case trivial."
+  };
+
+  options.forEach(opt => opt.addEventListener('click', () => {
+    if (answered) return;
+    answered = true;
+    options.forEach(o => o.classList.add('locked'));
+    if (opt.dataset.correct === 'true') {
+      opt.classList.add('correct');
+      feedback.innerHTML = correctMsg;
+    } else {
+      opt.classList.add('wrong');
+      options.forEach(o => { if (o.dataset.correct === 'true') o.classList.add('correct'); });
+      feedback.innerHTML = wrongMsg[opt.textContent.trim()] || '<strong>Not quite.</strong> Think about which option is fastest and least lossy.';
+    }
+    feedback.classList.add('shown');
+  }));
+})();
+
+/* ============================================================
+   ELI TABS
+   ============================================================ */
+document.querySelectorAll('.eli-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const level = tab.dataset.level;
+    document.querySelectorAll('.eli-tab').forEach(t => t.classList.toggle('active', t === tab));
+    document.querySelectorAll('.eli-panel').forEach(p => p.classList.toggle('active', p.dataset.level === level));
+  });
+});
+
+/* ============================================================
+   SCENARIOS — accordion
+   ============================================================ */
+const SCENARIOS = [
+  {
+    industry: 'SaaS company',
+    title: 'Friday afternoon deploys, finally',
+    benefits: ['Snapshots', 'Isolation'],
+    icon: '<rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="18" x2="12" y2="20"/><polyline points="8 12 11 15 16 9"/>',
+    body: '200-person SaaS building inventory software for restaurants. They used to refuse Friday afternoon deploys — too risky. After moving to a virtualized stack, every production VM is automatically snapshotted before each deploy. If anything breaks, rollback is two seconds.',
+    tradeoff: 'A downstream payment integration didn\'t tolerate the brief network blip during snapshot capture; they had to retune the snapshot schedule.'
+  },
+  {
+    industry: 'Hospital network',
+    title: 'Riding out a hurricane without dropping a chart',
+    benefits: ['Mobility', 'Consolidation'],
+    icon: '<path d="M12 2v4"/><path d="M19 10h-4l-1 4-2-8-1 4H7"/><circle cx="12" cy="14" r="9"/>',
+    body: 'Three coastal hospital sites in a regional network. When a hurricane warning is issued, the team moves running VMs — patient charts, lab results, scheduling — from coastal datacenters to an inland one. No appointments missed, no charts inaccessible during the storm.',
+    tradeoff: 'Legacy ultrasound gear with hardware dongles couldn\'t move; those workloads stayed coastal and rode out the storm on backup power.'
+  },
+  {
+    industry: 'Municipal IT',
+    title: 'Catching ransomware on Tuesday morning',
+    benefits: ['Snapshots', 'Isolation'],
+    icon: '<path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z"/><path d="M9 9l6 6m0-6l-6 6"/>',
+    body: 'A mid-sized city\'s IT team caught ransomware encrypting files at 11 AM. Because every server was a VM with hourly snapshots, they reverted the affected VMs to a 9 AM snapshot — before the malware ran — and were back online by lunch.',
+    tradeoff: 'The rollback meant losing two hours of legitimate work; the team had to rebuild that morning\'s records from email and paper backups.'
+  },
+  {
+    industry: 'Manufacturer',
+    title: 'Consolidating two datacenters after an acquisition',
+    benefits: ['Consolidation', 'Speed'],
+    icon: '<path d="M2 22V8l8 4V8l8 4V8l4 2v12z"/><line x1="6" y1="14" x2="6" y2="18"/><line x1="14" y1="14" x2="14" y2="18"/>',
+    body: 'A mid-sized manufacturer acquired a smaller competitor and inherited 240 servers across two datacenters running the same applications twice. Within nine months, the combined IT team consolidated everything onto 18 hosts, decommissioned three full server rooms, and renegotiated their power contracts.',
+    tradeoff: 'Cultural — the acquired team\'s "we always do it this way" took longer to migrate than the workloads themselves.'
+  }
+];
+
+(function () {
+  const list = document.getElementById('scenarios-list');
+  SCENARIOS.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'scenario-card';
+    const benefitChips = s.benefits.map(b => `<span>${b}</span>`).join('');
+    card.innerHTML = `
+      <div class="scenario-card-header" role="button" tabindex="0">
+        <div class="scenario-icon-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${s.icon}</svg>
+        </div>
+        <div class="scenario-headline">
+          <div class="scenario-industry">${s.industry}</div>
+          <h3 class="scenario-title">${s.title}</h3>
+        </div>
+        <div class="scenario-benefits">${benefitChips}</div>
+        <svg class="scenario-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="scenario-card-body">
+        <div class="scenario-card-body-inner">
+          <p>${s.body}</p>
+          <p class="scenario-tradeoff">Trade-off: ${s.tradeoff}</p>
+        </div>
+      </div>
+    `;
+    const header = card.querySelector('.scenario-card-header');
+    const toggle = () => card.classList.toggle('expanded');
+    header.addEventListener('click', toggle);
+    header.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    list.appendChild(card);
+  });
+})();
+
+/* ============================================================
+   FLASHCARDS
+   ============================================================ */
+fetch(LESSON_PATH + '/flashcards.yaml').then(r => r.text()).then(text => {
+  const data = jsyaml.load(text);
+  const container = document.getElementById('flashcards-container');
+  data.cards.forEach((card, i) => {
+    const el = document.createElement('div');
+    el.className = 'flashcard';
+    const num = String(i + 1).padStart(2, '0') + ' / ' + String(data.cards.length).padStart(2, '0');
+    el.innerHTML = `
+      <div class="flashcard-inner">
+        <div class="flashcard-face flashcard-front">
+          <div class="number">Card ${num}</div>
+          <div class="question">${escapeHtml(card.front)}</div>
+          <div class="hint">Click to flip →</div>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <div class="number">Card ${num}</div>
+          <div class="answer">${escapeHtml(card.back)}</div>
+          <div class="hint">← Flip back</div>
+        </div>
+      </div>
+    `;
+    el.addEventListener('click', () => el.classList.toggle('flipped'));
+    container.appendChild(el);
+  });
+});
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+fetch(LESSON_PATH + '/quiz.yaml').then(r => r.text()).then(text => {
+  const data = jsyaml.load(text);
+  const container = document.getElementById('quiz-container');
+  data.questions.forEach((q, i) => {
+    const el = document.createElement('div');
+    el.className = 'quiz-card';
+    const pauseIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+    el.innerHTML = `
+      <span class="pause-cue">${pauseIcon} Pause · ${escapeHtml(q.pause_at_mode)} mode</span>
+      <div class="q-num">Question ${i + 1} of ${data.questions.length}</div>
+      <div class="prompt">${escapeHtml(q.prompt)}</div>
+      <button class="reveal-btn" type="button">Show answer</button>
+      <div class="reveal-content">
+        <div class="answer-block"><div class="label">Answer</div><div class="text">${escapeHtml(q.answer)}</div></div>
+        <div class="reasoning-block"><div class="label">Why</div><div class="text">${escapeHtml(q.reasoning)}</div></div>
+      </div>
+    `;
+    const btn = el.querySelector('.reveal-btn');
+    const content = el.querySelector('.reveal-content');
+    btn.addEventListener('click', () => { btn.classList.add('shown'); content.classList.add('shown'); });
+    container.appendChild(el);
+  });
+});
+
+/* ============================================================
+   PROGRESS BAR + BACK TO TOP
+   ============================================================ */
+const progressFill = document.getElementById('progress-fill');
+const backToTop = document.getElementById('back-to-top');
+function onScroll() {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  progressFill.style.width = pct + '%';
+  backToTop.classList.toggle('visible', scrollTop > 600);
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+onScroll();
+
+/* ============================================================
+   REVEAL ON SCROLL
+   ============================================================ */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+  });
+}, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+function escapeHtml(s) {
+  return String(s).trim()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+</body>
+</html>

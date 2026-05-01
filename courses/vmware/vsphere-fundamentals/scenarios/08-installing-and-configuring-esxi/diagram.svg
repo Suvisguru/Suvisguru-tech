@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Lesson 08 — Installing and Configuring ESXi
+  Static diagram: the 6-station ESXi configuration journey.
+
+  Layout math (verified):
+    ViewBox: 1100 x 720
+    Header:  y 20..60
+    Host band: y 80..210 (chassis 200x80 at x 450..650, centered on x=550)
+    Stations row:
+      6 cards, each 160w x 340h, gap 20 between cards
+      total width = 6*160 + 5*20 = 1060; margin = (1100-1060)/2 = 20
+      card x positions: 20, 200, 380, 560, 740, 920
+      card y: 230, card bottom: 570
+    Arrows between cards: from x = (card_x + 160) to (next_card_x), midline y = 400
+    Footer note: y 600..680
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" role="img" aria-labelledby="title desc">
+  <title id="title">ESXi configuration journey: install, accounts, DCUI/Host Client, services, NTP/DNS/routing, lockdown</title>
+  <desc id="desc">Six numbered stations show the order of configuration steps for a fresh ESXi host. A single ESXi host icon at the top feeds into station 1 and is shaped by each station in turn.</desc>
+
+  <defs>
+    <!-- Card / shadow -->
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.08"/>
+    </filter>
+    <!-- Arrow head -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/>
+    </marker>
+    <!-- Subtle hatch for the SDDC frame -->
+    <pattern id="frameHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#E5E9F0" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- background -->
+  <rect width="1100" height="720" fill="#FAFBFC"/>
+
+  <!-- Header -->
+  <text x="550" y="40" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" fill="#1F2937">ESXi configuration journey</text>
+  <text x="550" y="62" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#5A6B81">One host · six configuration moves · in this order</text>
+
+  <!-- ======================================== -->
+  <!-- Host band (top): the ESXi host being configured -->
+  <!-- ======================================== -->
+
+  <!-- backing strip -->
+  <rect x="20" y="80" width="1060" height="130" rx="10" fill="#F3F5F9" stroke="#E5E9F0"/>
+
+  <!-- server chassis (centered at x=550, y=145; chassis 200x80, x=450..650, y=105..185) -->
+  <g>
+    <rect x="450" y="105" width="200" height="80" rx="6" fill="#3F4A5E" stroke="#1F2937"/>
+    <!-- 6 drive bays -->
+    <g fill="#5A6B81" stroke="#1F2937" stroke-width="0.6">
+      <rect x="460" y="115" width="26" height="20" rx="2"/>
+      <rect x="490" y="115" width="26" height="20" rx="2"/>
+      <rect x="520" y="115" width="26" height="20" rx="2"/>
+      <rect x="554" y="115" width="26" height="20" rx="2"/>
+      <rect x="584" y="115" width="26" height="20" rx="2"/>
+      <rect x="614" y="115" width="26" height="20" rx="2"/>
+    </g>
+    <!-- yellow DCUI strip on the front -->
+    <rect x="460" y="142" width="180" height="34" rx="2" fill="#F2C94C" stroke="#1F2937" stroke-width="0.6"/>
+    <text x="468" y="156" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#1F2937">VMware ESXi 8.0</text>
+    <text x="468" y="168" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#1F2937">esx-01.lab.local · 10.20.30.41</text>
+    <!-- power LED -->
+    <circle cx="640" cy="178" r="2.5" fill="#1F8A60"/>
+  </g>
+
+  <text x="550" y="200" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600" fill="#1F2937">ESXi host</text>
+
+  <!-- "starts here" cue, pointing down to station 1 -->
+  <g transform="translate(100,142)">
+    <text x="0" y="0" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#5A6B81">start here</text>
+    <path d="M0,8 L0,80" stroke="#5A6B81" stroke-width="1.5" stroke-dasharray="3,3" fill="none" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- 6 stations row (cards) -->
+  <!-- ======================================== -->
+
+  <!-- shared horizontal connecting line behind the cards -->
+  <line x1="100" y1="400" x2="1000" y2="400" stroke="#D5DCE6" stroke-width="2" stroke-dasharray="2,4"/>
+
+  <!-- ============================================
+       Station 1 — Install
+       card: x=20, y=230, w=160, h=340
+       ============================================ -->
+  <g>
+    <rect x="20" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <!-- accent strip -->
+    <rect x="20" y="562" width="160" height="8" rx="0" fill="#3F4A5E"/>
+    <!-- number circle -->
+    <circle cx="100" cy="260" r="22" fill="#3F4A5E"/>
+    <text x="100" y="266" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">1</text>
+    <!-- title -->
+    <text x="100" y="305" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">Install</text>
+    <text x="100" y="322" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">the hypervisor</text>
+    <!-- icon: USB stick + download arrow -->
+    <g transform="translate(100,380)">
+      <!-- USB stick body -->
+      <rect x="-22" y="-8" width="44" height="16" rx="2" fill="#5A6B81" stroke="#1F2937" stroke-width="0.6"/>
+      <rect x="-30" y="-5" width="8" height="10" rx="1" fill="#A0A8B8" stroke="#1F2937" stroke-width="0.6"/>
+      <!-- download arrow above -->
+      <path d="M0,-40 L0,-18 M-8,-26 L0,-18 L8,-26" stroke="#3F4A5E" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </g>
+    <!-- description -->
+    <text x="100" y="455" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">ISO · scripted ·</text>
+    <text x="100" y="470" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">Auto Deploy · OEM</text>
+    <text x="100" y="495" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">target: USB / SD /</text>
+    <text x="100" y="510" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">M.2 / SAN boot</text>
+    <text x="100" y="540" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#5A6B81">root password set</text>
+  </g>
+
+  <!-- arrow 1 -> 2 -->
+  <line x1="180" y1="400" x2="200" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 2 — Accounts
+       card: x=200, y=230, w=160, h=340
+       ============================================ -->
+  <g>
+    <rect x="200" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="200" y="562" width="160" height="8" rx="0" fill="#5E4A8E"/>
+    <circle cx="280" cy="260" r="22" fill="#5E4A8E"/>
+    <text x="280" y="266" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">2</text>
+    <text x="280" y="305" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">Accounts</text>
+    <text x="280" y="322" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">who can log in</text>
+    <!-- icon: key + 3 people -->
+    <g transform="translate(280,385)">
+      <!-- key -->
+      <circle cx="-20" cy="0" r="8" fill="none" stroke="#5E4A8E" stroke-width="2"/>
+      <line x1="-12" y1="0" x2="14" y2="0" stroke="#5E4A8E" stroke-width="2" stroke-linecap="round"/>
+      <line x1="8" y1="0" x2="8" y2="6" stroke="#5E4A8E" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="0" x2="14" y2="6" stroke="#5E4A8E" stroke-width="2" stroke-linecap="round"/>
+      <!-- vault below -->
+      <rect x="-22" y="14" width="44" height="14" rx="2" fill="#E5E9F0" stroke="#5A6B81"/>
+      <text x="0" y="24" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="7" fill="#5A6B81">vault</text>
+    </g>
+    <text x="280" y="455" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">root = glass-break</text>
+    <text x="280" y="470" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">named accounts</text>
+    <text x="280" y="495" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">delegate via vCenter</text>
+    <text x="280" y="510" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">SSO + IdP</text>
+    <text x="280" y="540" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#5A6B81">roles: NoAccess / RO / Admin</text>
+  </g>
+
+  <line x1="360" y1="400" x2="380" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 3 — DCUI / Host Client
+       card: x=380, y=230, w=160, h=340
+       ============================================ -->
+  <g>
+    <rect x="380" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="380" y="562" width="160" height="8" rx="0" fill="#2E7A8C"/>
+    <circle cx="460" cy="260" r="22" fill="#2E7A8C"/>
+    <text x="460" y="266" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">3</text>
+    <text x="460" y="305" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">DCUI · Host Client</text>
+    <text x="460" y="322" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">two front doors</text>
+    <!-- icon: yellow DCUI screen + browser window -->
+    <g transform="translate(460,385)">
+      <!-- DCUI -->
+      <rect x="-44" y="-18" width="40" height="32" rx="2" fill="#F2C94C" stroke="#1F2937" stroke-width="0.6"/>
+      <text x="-24" y="-2" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="6" fill="#1F2937">F2</text>
+      <text x="-24" y="9" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="6" fill="#1F2937">DCUI</text>
+      <!-- Host Client (browser) -->
+      <rect x="6" y="-18" width="40" height="32" rx="2" fill="#FFFFFF" stroke="#5A6B81"/>
+      <rect x="6" y="-18" width="40" height="6" rx="2" fill="#E5E9F0"/>
+      <circle cx="10" cy="-15" r="1.2" fill="#5A6B81"/>
+      <circle cx="14" cy="-15" r="1.2" fill="#5A6B81"/>
+      <circle cx="18" cy="-15" r="1.2" fill="#5A6B81"/>
+      <text x="26" y="0" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="6" fill="#1F2937">Host</text>
+      <text x="26" y="9" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="6" fill="#1F2937">Client</text>
+    </g>
+    <text x="460" y="455" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">DCUI: bootstrap +</text>
+    <text x="460" y="470" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">recovery on console</text>
+    <text x="460" y="495" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">Host Client: rich</text>
+    <text x="460" y="510" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">admin via browser</text>
+    <text x="460" y="540" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#5A6B81">restart mgmt agents = magic</text>
+  </g>
+
+  <line x1="540" y1="400" x2="560" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 4 — Services
+       card: x=560, y=230, w=160, h=340
+       ============================================ -->
+  <g>
+    <rect x="560" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="560" y="562" width="160" height="8" rx="0" fill="#1F8A60"/>
+    <circle cx="640" cy="260" r="22" fill="#1F8A60"/>
+    <text x="640" y="266" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">4</text>
+    <text x="640" y="305" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">Services</text>
+    <text x="640" y="322" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">what runs in the back</text>
+    <!-- icon: gear -->
+    <g transform="translate(640,385)">
+      <g fill="#1F8A60">
+        <!-- gear teeth (simple 8-point star approximation) -->
+        <circle cx="0" cy="0" r="22"/>
+      </g>
+      <g fill="#FFFFFF">
+        <circle cx="0" cy="0" r="14"/>
+      </g>
+      <g fill="#1F8A60">
+        <circle cx="0" cy="0" r="6"/>
+      </g>
+      <!-- gear tooth bumps -->
+      <g fill="#1F8A60">
+        <rect x="-3" y="-26" width="6" height="6" rx="1"/>
+        <rect x="-3" y="20" width="6" height="6" rx="1"/>
+        <rect x="-26" y="-3" width="6" height="6" rx="1"/>
+        <rect x="20" y="-3" width="6" height="6" rx="1"/>
+        <rect x="-20" y="-20" width="6" height="6" rx="1" transform="rotate(45 -17 -17)"/>
+        <rect x="14" y="-20" width="6" height="6" rx="1" transform="rotate(45 17 -17)"/>
+        <rect x="-20" y="14" width="6" height="6" rx="1" transform="rotate(45 -17 17)"/>
+        <rect x="14" y="14" width="6" height="6" rx="1" transform="rotate(45 17 17)"/>
+      </g>
+    </g>
+    <text x="640" y="455" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">SSH · ESXi Shell ·</text>
+    <text x="640" y="470" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">NTP · syslog · SNMP</text>
+    <text x="640" y="495" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">policy = boot state</text>
+    <text x="640" y="510" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">manual ⇢ reboot-safe</text>
+    <text x="640" y="540" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#5A6B81">SSH off by default</text>
+  </g>
+
+  <line x1="720" y1="400" x2="740" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 5 — NTP / DNS / Routing
+       card: x=740, y=230, w=160, h=340
+       ============================================ -->
+  <g>
+    <rect x="740" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="740" y="562" width="160" height="8" rx="0" fill="#B85829"/>
+    <circle cx="820" cy="260" r="22" fill="#B85829"/>
+    <text x="820" y="266" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">5</text>
+    <text x="820" y="305" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">NTP · DNS · Routing</text>
+    <text x="820" y="322" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">time · names · paths</text>
+    <!-- icon: clock + globe + arrow -->
+    <g transform="translate(820,385)">
+      <!-- clock -->
+      <circle cx="-30" cy="0" r="14" fill="#FFFFFF" stroke="#B85829" stroke-width="2"/>
+      <line x1="-30" y1="0" x2="-30" y2="-9" stroke="#B85829" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="-30" y1="0" x2="-23" y2="0" stroke="#B85829" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- globe -->
+      <circle cx="0" cy="0" r="14" fill="#FFFFFF" stroke="#B85829" stroke-width="2"/>
+      <ellipse cx="0" cy="0" rx="14" ry="6" fill="none" stroke="#B85829" stroke-width="1"/>
+      <line x1="-14" y1="0" x2="14" y2="0" stroke="#B85829" stroke-width="1"/>
+      <!-- arrow / route -->
+      <path d="M16,8 Q26,-4 36,4" stroke="#B85829" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+    </g>
+    <text x="820" y="455" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">clock right ⇢ certs ok</text>
+    <text x="820" y="470" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">DNS fwd + reverse</text>
+    <text x="820" y="495" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">vmkernel default GW</text>
+    <text x="820" y="510" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">+ static routes</text>
+    <text x="820" y="540" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#5A6B81">do this BEFORE vCenter join</text>
+  </g>
+
+  <line x1="900" y1="400" x2="920" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- ============================================
+       Station 6 — Lockdown
+       card: x=920, y=230, w=160, h=340
+       ============================================ -->
+  <g>
+    <rect x="920" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="920" y="562" width="160" height="8" rx="0" fill="#8E2A2A"/>
+    <circle cx="1000" cy="260" r="22" fill="#8E2A2A"/>
+    <text x="1000" y="266" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF">6</text>
+    <text x="1000" y="305" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#1F2937">Lockdown</text>
+    <text x="1000" y="322" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#5A6B81">who can bypass vCenter</text>
+    <!-- icon: padlock -->
+    <g transform="translate(1000,385)">
+      <!-- shackle -->
+      <path d="M-12,-6 v-8 a12,12 0 0 1 24,0 v8" fill="none" stroke="#8E2A2A" stroke-width="3" stroke-linecap="round"/>
+      <!-- body -->
+      <rect x="-16" y="-6" width="32" height="26" rx="3" fill="#8E2A2A"/>
+      <!-- keyhole -->
+      <circle cx="0" cy="3" r="3" fill="#FFFFFF"/>
+      <rect x="-1" y="3" width="2" height="8" fill="#FFFFFF"/>
+    </g>
+    <text x="1000" y="455" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">Disabled · Normal ·</text>
+    <text x="1000" y="470" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#1F2937">Strict</text>
+    <text x="1000" y="495" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">exception users for</text>
+    <text x="1000" y="510" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">service accounts</text>
+    <text x="1000" y="540" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9" fill="#5A6B81">test recovery before Strict</text>
+  </g>
+
+  <!-- ======================================== -->
+  <!-- Footer note -->
+  <!-- ======================================== -->
+  <g>
+    <rect x="20" y="600" width="1060" height="100" rx="10" fill="#F3F5F9" stroke="#E5E9F0"/>
+    <text x="40" y="625" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1F2937">How to read this lesson</text>
+    <text x="40" y="648" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#1F2937">Each numbered station is a <tspan font-weight="700">separate subtopic</tspan> in the lesson with its own concept, before/after, analogy, quick check, ELI5/ELI10, real-world, flashcards, and quiz.</text>
+    <text x="40" y="668" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#1F2937">Learn them in order on a fresh host, or jump to the one you need to fix.</text>
+    <text x="40" y="690" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic" fill="#5A6B81">Output of all six: a host that is ready to be joined to vCenter (lesson 9).</text>
+  </g>
+</svg>

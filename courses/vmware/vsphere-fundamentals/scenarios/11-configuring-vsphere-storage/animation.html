@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<!--
+  Lesson 11 — Configuring vSphere Storage
+  Six modes: overview / vmfs / nfs / vsan / vvols / spbm
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>vSphere Storage — animation</title>
+<style>
+  body { background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 24px; color: #1a1a1a; margin: 0; }
+  .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .mode-btn { border: 1px solid #d8d6cf; background: #ffffff; color: #3a3a3a; padding: 9px 14px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px; font-family: inherit; transition: all 0.15s; animation: btn-pop 2.4s ease-in-out infinite; }
+  @keyframes btn-pop { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(63,74,94,0); } 50% { transform: scale(1.035); box-shadow: 0 0 0 4px rgba(63,74,94,0.08); } }
+  .mode-btn:hover:not(.active) { background: #f4f1e8; border-color: #5F5E5A; }
+  .mode-btn.active { background: #3F4A5E; color: #FFFFFF; border-color: #3F4A5E; animation: none; }
+  .stage-label { font-size: 15px; color: #3a3a3a; margin: 12px 0 18px 0; font-weight: 500; }
+  .speed-control { margin-left: auto; font-size: 13px; color: #5F5E5A; display: flex; gap: 8px; align-items: center; }
+  .speed-control input[type=range] { accent-color: #3F4A5E; }
+  #canvas { width: 100%; max-width: 1040px; height: auto; display: block; }
+  #canvas .mode-group { display: none; }
+  #canvas[data-mode="overview"] .mode-overview,
+  #canvas[data-mode="vmfs"] .mode-vmfs,
+  #canvas[data-mode="nfs"] .mode-nfs,
+  #canvas[data-mode="vsan"] .mode-vsan,
+  #canvas[data-mode="vvols"] .mode-vvols,
+  #canvas[data-mode="spbm"] .mode-spbm { display: block; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button class="mode-btn active" data-mode="overview" type="button">1 · Overview</button>
+  <button class="mode-btn" data-mode="vmfs" type="button">2 · VMFS</button>
+  <button class="mode-btn" data-mode="nfs" type="button">3 · NFS</button>
+  <button class="mode-btn" data-mode="vsan" type="button">4 · vSAN</button>
+  <button class="mode-btn" data-mode="vvols" type="button">5 · vVols</button>
+  <button class="mode-btn" data-mode="spbm" type="button">6 · SPBM</button>
+  <button class="mode-btn" id="play-btn" type="button">Pause</button>
+  <span class="speed-control"><span>Speed</span><input type="range" min="0.3" max="2" step="0.1" value="1" id="speed-slider"><span id="speed-display">1.0&times;</span></span>
+</div>
+<div class="stage-label" id="stage-label">Subtopic 1 of 6 · Overview: a datastore is the unit of storage; four backing types — VMFS, NFS, vSAN, vVols.</div>
+
+<svg id="canvas" data-mode="overview" viewBox="0 0 1040 540" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="aArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/></marker>
+    <marker id="aArrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#1F8A60"/></marker>
+  </defs>
+
+  <!-- MODE 1: OVERVIEW — show four datastore types, with one VM and arrows pointing to all four with labels -->
+  <g class="mode-group mode-overview">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 1 — FOUR DATASTORE TYPES</text>
+
+    <g transform="translate(440,80)">
+      <rect width="160" height="60" rx="8" fill="#5DCAA5" opacity="0.6"/>
+      <text x="80" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">vm-app</text>
+      <text x="80" y="48" text-anchor="middle" font-size="10" fill="#1F2937">.vmx + .vmdk</text>
+    </g>
+
+    <text x="520" y="180" text-anchor="middle" font-size="12" fill="#5A6B81">stored on a datastore — pick the type by your storage hardware</text>
+
+    <!-- 4 datastores -->
+    <g transform="translate(60,220)">
+      <rect width="200" height="220" rx="10" fill="#FFFFFF" stroke="#5E4A8E" stroke-width="2"/>
+      <text x="100" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#5E4A8E">VMFS</text>
+      <text x="100" y="60" text-anchor="middle" font-size="11" fill="#1F2937">block over FC / iSCSI</text>
+      <text x="100" y="80" text-anchor="middle" font-size="11" fill="#1F2937">VMware clustered FS</text>
+      <text x="100" y="100" text-anchor="middle" font-size="11" fill="#1F2937">VMFS-6 latest</text>
+      <text x="100" y="180" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">"shared warehouse floor"</text>
+    </g>
+    <g transform="translate(280,220)">
+      <rect width="200" height="220" rx="10" fill="#FFFFFF" stroke="#2E7A8C" stroke-width="2"/>
+      <text x="100" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#2E7A8C">NFS</text>
+      <text x="100" y="60" text-anchor="middle" font-size="11" fill="#1F2937">file over IP</text>
+      <text x="100" y="80" text-anchor="middle" font-size="11" fill="#1F2937">NAS owns the FS</text>
+      <text x="100" y="100" text-anchor="middle" font-size="11" fill="#1F2937">v3 / v4.1</text>
+      <text x="100" y="180" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">"file room down the hall"</text>
+    </g>
+    <g transform="translate(500,220)">
+      <rect width="200" height="220" rx="10" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2"/>
+      <text x="100" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#1F8A60">vSAN</text>
+      <text x="100" y="60" text-anchor="middle" font-size="11" fill="#1F2937">HCI · local disks pooled</text>
+      <text x="100" y="80" text-anchor="middle" font-size="11" fill="#1F2937">no external array</text>
+      <text x="100" y="100" text-anchor="middle" font-size="11" fill="#1F2937">OSA · ESA</text>
+      <text x="100" y="180" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">"every closet shared"</text>
+    </g>
+    <g transform="translate(720,220)">
+      <rect width="200" height="220" rx="10" fill="#FFFFFF" stroke="#B85829" stroke-width="2"/>
+      <text x="100" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#B85829">vVols</text>
+      <text x="100" y="60" text-anchor="middle" font-size="11" fill="#1F2937">VM-centric on smart array</text>
+      <text x="100" y="80" text-anchor="middle" font-size="11" fill="#1F2937">array-native per-VM ops</text>
+      <text x="100" y="100" text-anchor="middle" font-size="11" fill="#1F2937">VASA provider</text>
+      <text x="100" y="180" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">"smart locker system"</text>
+    </g>
+
+    <!-- Highlight cycles each datastore -->
+    <rect x="60" y="220" width="200" height="220" rx="10" fill="none" stroke="#F2C94C" stroke-width="3" opacity="0">
+      <animate attributeName="opacity" values="1;1;0;0;0;0;0;0;0" keyTimes="0;0.2;0.25;1;1;1;1;1;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="280" y="220" width="200" height="220" rx="10" fill="none" stroke="#F2C94C" stroke-width="3" opacity="0">
+      <animate attributeName="opacity" values="0;0;0;1;1;0;0;0;0" keyTimes="0;0.2;0.25;0.3;0.45;0.5;1;1;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="500" y="220" width="200" height="220" rx="10" fill="none" stroke="#F2C94C" stroke-width="3" opacity="0">
+      <animate attributeName="opacity" values="0;0;0;0;0;1;1;0;0" keyTimes="0;0.2;0.45;0.5;0.55;0.6;0.7;0.75;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="720" y="220" width="200" height="220" rx="10" fill="none" stroke="#F2C94C" stroke-width="3" opacity="0">
+      <animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1" keyTimes="0;0.2;0.45;0.5;0.7;0.75;0.8;0.85;1" dur="12s" repeatCount="indefinite"/>
+    </rect>
+
+    <text x="520" y="490" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">vSphere abstracts the differences — same VM management on top of any backing</text>
+  </g>
+
+  <!-- MODE 2: VMFS — multipathing illustration; LUN with two paths from host to array; one path fails -->
+  <g class="mode-group mode-vmfs">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 2 — VMFS ON BLOCK STORAGE WITH MULTIPATHING</text>
+
+    <g transform="translate(80,140)">
+      <rect width="160" height="100" rx="8" fill="#3F4A5E"/>
+      <text x="80" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">ESXi host</text>
+      <rect x="20" y="50" width="50" height="22" rx="3" fill="#5A6B81"/><text x="45" y="65" text-anchor="middle" font-size="10" fill="#FFFFFF">vmhba0</text>
+      <rect x="90" y="50" width="50" height="22" rx="3" fill="#5A6B81"/><text x="115" y="65" text-anchor="middle" font-size="10" fill="#FFFFFF">vmhba1</text>
+      <text x="80" y="92" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">two HBAs</text>
+    </g>
+
+    <!-- Two paths -->
+    <line x1="170" y1="195" x2="730" y2="195" stroke="#1F8A60" stroke-width="2.5">
+      <animate attributeName="stroke" values="#1F8A60;#1F8A60;#B85829;#B85829;#5A6B81" keyTimes="0;0.4;0.45;0.7;0.75" dur="8s" repeatCount="indefinite"/>
+    </line>
+    <text x="450" y="188" text-anchor="middle" font-size="10" fill="#1F8A60">
+      <animate attributeName="fill" values="#1F8A60;#1F8A60;#B85829;#B85829;#5A6B81" keyTimes="0;0.4;0.45;0.7;0.75" dur="8s" repeatCount="indefinite"/>
+      path A
+      <animate attributeName="opacity" values="1;1;1;0;0" keyTimes="0;0.4;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+    </text>
+    <text x="450" y="188" text-anchor="middle" font-size="10" font-weight="700" fill="#B85829" opacity="0">
+      <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.4;0.45;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+      path A failed
+    </text>
+
+    <line x1="170" y1="225" x2="730" y2="225" stroke="#1F8A60" stroke-width="2.5"/>
+    <text x="450" y="245" text-anchor="middle" font-size="10" fill="#1F8A60">path B</text>
+
+    <!-- Storage array -->
+    <g transform="translate(740,140)">
+      <rect width="200" height="100" rx="8" fill="#5E4A8E"/>
+      <text x="100" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Storage array</text>
+      <rect x="20" y="50" width="160" height="36" rx="3" fill="#5DCAA5" opacity="0.5"/>
+      <text x="100" y="74" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">LUN_42 (2TB) · VMFS-6</text>
+    </g>
+
+    <!-- Round-robin distribution (packets toggle) -->
+    <g>
+      <circle cx="240" cy="195" r="6" fill="#F2C94C" stroke="#1F2937" stroke-width="0.5">
+        <animate attributeName="cx" values="240;730;730" keyTimes="0;0.4;1" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="240" cy="225" r="6" fill="#F2C94C" stroke="#1F2937" stroke-width="0.5">
+        <animate attributeName="cx" values="240;730;730" keyTimes="0;0.4;1" dur="2s" begin="1s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <text x="520" y="320" text-anchor="middle" font-size="12" fill="#1F2937">Round Robin distributes I/O across all paths · Path A fails → all I/O on B in milliseconds</text>
+    <text x="520" y="380" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">multiple HBAs · multiple fabrics · multiple controllers = no single point of failure</text>
+    <text x="520" y="490" text-anchor="middle" font-size="11" font-style="italic" fill="#5A6B81">VMFS handles distributed locking — multiple hosts on the same LUN, safely</text>
+  </g>
+
+  <!-- MODE 3: NFS — host mounts a share from a NAS, simpler picture -->
+  <g class="mode-group mode-nfs">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 3 — NFS DATASTORE: HOST MOUNTS A NAS SHARE</text>
+
+    <!-- Host on left -->
+    <g transform="translate(80,160)">
+      <rect width="200" height="100" rx="8" fill="#3F4A5E"/>
+      <text x="100" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">ESXi host</text>
+      <text x="100" y="50" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">vmkernel: 10.50.50.41</text>
+      <rect x="20" y="65" width="160" height="20" rx="3" fill="#2E7A8C"/>
+      <text x="100" y="79" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">mount: /vol/vsphere-prod</text>
+    </g>
+
+    <!-- IP network arrow -->
+    <line x1="280" y1="210" x2="700" y2="210" stroke="#2E7A8C" stroke-width="2" stroke-dasharray="6,4"/>
+    <text x="490" y="200" text-anchor="middle" font-size="11" fill="#2E7A8C">NFS 4.1 over 10 GbE</text>
+
+    <!-- NAS on right -->
+    <g transform="translate(700,140)">
+      <rect width="240" height="160" rx="8" fill="#2E7A8C"/>
+      <text x="120" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">NAS appliance</text>
+      <text x="120" y="52" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">nas-01.lab.local</text>
+      <rect x="20" y="68" width="200" height="20" rx="3" fill="#5DCAA5" opacity="0.6"/>
+      <text x="120" y="82" text-anchor="middle" font-size="10" fill="#1F2937">/vol/vsphere-prod (export)</text>
+      <rect x="20" y="92" width="200" height="20" rx="3" fill="#5DCAA5" opacity="0.4"/>
+      <text x="120" y="106" text-anchor="middle" font-size="10" fill="#1F2937">/vol/vsphere-iso (export)</text>
+      <text x="120" y="138" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">owns the file system</text>
+    </g>
+
+    <text x="520" y="360" text-anchor="middle" font-size="12" fill="#1F2937">Configure: server address · share path · NFS version · datastore name</text>
+    <text x="520" y="385" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">simpler to provision · file-level visibility on NAS · no FC hardware needed</text>
+    <text x="520" y="490" text-anchor="middle" font-size="11" font-style="italic" fill="#5A6B81">trade-off vs VMFS: no RDM / MSCS, slightly different feature surface</text>
+  </g>
+
+  <!-- MODE 4: vSAN — three hosts contributing local disks; resulting cluster-wide vsanDatastore -->
+  <g class="mode-group mode-vsan">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 4 — vSAN: HOST DISKS POOLED INTO A CLUSTER DATASTORE</text>
+
+    <!-- 4 hosts each contributing disks -->
+    <g transform="translate(60,100)">
+      <rect width="200" height="120" rx="8" fill="#3F4A5E"/>
+      <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">host-1</text>
+      <rect x="20" y="36" width="40" height="20" rx="2" fill="#F2C94C" opacity="0.7"/><text x="40" y="50" text-anchor="middle" font-size="9" fill="#1F2937">cache</text>
+      <rect x="65" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/><text x="85" y="50" text-anchor="middle" font-size="9" fill="#1F2937">cap</text>
+      <rect x="110" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/><text x="130" y="50" text-anchor="middle" font-size="9" fill="#1F2937">cap</text>
+      <rect x="155" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/><text x="175" y="50" text-anchor="middle" font-size="9" fill="#1F2937">cap</text>
+      <text x="100" y="90" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">disk group: 1 cache + 3 capacity</text>
+    </g>
+    <g transform="translate(280,100)">
+      <rect width="200" height="120" rx="8" fill="#3F4A5E"/>
+      <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">host-2</text>
+      <rect x="20" y="36" width="40" height="20" rx="2" fill="#F2C94C" opacity="0.7"/><text x="40" y="50" text-anchor="middle" font-size="9" fill="#1F2937">cache</text>
+      <rect x="65" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+      <rect x="110" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+      <rect x="155" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+    </g>
+    <g transform="translate(500,100)">
+      <rect width="200" height="120" rx="8" fill="#3F4A5E"/>
+      <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">host-3</text>
+      <rect x="20" y="36" width="40" height="20" rx="2" fill="#F2C94C" opacity="0.7"/><text x="40" y="50" text-anchor="middle" font-size="9" fill="#1F2937">cache</text>
+      <rect x="65" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+      <rect x="110" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+      <rect x="155" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+    </g>
+    <g transform="translate(720,100)">
+      <rect width="200" height="120" rx="8" fill="#3F4A5E"/>
+      <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">host-4</text>
+      <rect x="20" y="36" width="40" height="20" rx="2" fill="#F2C94C" opacity="0.7"/><text x="40" y="50" text-anchor="middle" font-size="9" fill="#1F2937">cache</text>
+      <rect x="65" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+      <rect x="110" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+      <rect x="155" y="36" width="40" height="20" rx="2" fill="#5DCAA5" opacity="0.6"/>
+    </g>
+
+    <!-- Pooling lines -->
+    <line x1="160" y1="225" x2="520" y2="290" stroke="#1F8A60" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <line x1="380" y1="225" x2="520" y2="290" stroke="#1F8A60" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <line x1="600" y1="225" x2="520" y2="290" stroke="#1F8A60" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <line x1="820" y1="225" x2="520" y2="290" stroke="#1F8A60" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+    <!-- vsanDatastore -->
+    <g transform="translate(280,290)">
+      <rect width="480" height="80" rx="10" fill="#1F8A60"/>
+      <text x="240" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">vsanDatastore</text>
+      <text x="240" y="58" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">visible to all 4 hosts · capacity = sum of capacity disks</text>
+    </g>
+
+    <!-- Failure scenario annotation -->
+    <text x="520" y="420" text-anchor="middle" font-size="12" fill="#1F2937">VM with FTT=1 mirroring: data has 2 copies on different hosts</text>
+    <text x="520" y="445" text-anchor="middle" font-size="12" font-weight="700" fill="#1F8A60">host-3 dies → other copy still available → vSAN rebuilds in background → VM keeps running</text>
+    <text x="520" y="490" text-anchor="middle" font-size="11" font-style="italic" fill="#5A6B81">no external array · scale by adding hosts · per-VM policy native</text>
+  </g>
+
+  <!-- MODE 5: vVols — array exposes per-VM objects; vCenter talks to VASA provider -->
+  <g class="mode-group mode-vvols">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 5 — vVols: PER-VM OBJECTS, ARRAY-NATIVE</text>
+
+    <g transform="translate(60,130)">
+      <rect width="200" height="100" rx="8" fill="#1F8A60"/>
+      <text x="100" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vCenter</text>
+      <text x="100" y="50" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">policies, names, ops</text>
+      <rect x="20" y="65" width="160" height="20" rx="3" fill="#5DCAA5" opacity="0.6"/>
+      <text x="100" y="79" text-anchor="middle" font-size="10" fill="#1F2937">SPBM policies</text>
+    </g>
+
+    <line x1="260" y1="180" x2="380" y2="180" stroke="#3F4A5E" stroke-width="2" marker-end="url(#aArrow)"/>
+    <text x="320" y="170" text-anchor="middle" font-size="10" fill="#5A6B81">VASA</text>
+
+    <g transform="translate(380,130)">
+      <rect width="160" height="100" rx="8" fill="#5E4A8E"/>
+      <text x="80" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">VASA Provider</text>
+      <text x="80" y="50" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">array's API endpoint</text>
+      <text x="80" y="78" text-anchor="middle" font-size="10" fill="#FFFFFF">talks vSphere &amp; storage</text>
+    </g>
+
+    <line x1="540" y1="180" x2="660" y2="180" stroke="#3F4A5E" stroke-width="2" marker-end="url(#aArrow)"/>
+
+    <g transform="translate(660,100)">
+      <rect width="320" height="240" rx="8" fill="#B85829"/>
+      <text x="160" y="28" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">Smart array</text>
+      <text x="160" y="48" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">storage container</text>
+
+      <!-- per-VM vVol objects -->
+      <g transform="translate(20,68)">
+        <rect width="280" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+        <text x="140" y="14" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-A · config-vVol</text>
+      </g>
+      <g transform="translate(20,92)">
+        <rect width="280" height="20" rx="3" fill="#5DCAA5" opacity="0.6"/>
+        <text x="140" y="14" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-A · data-vVol (disk1)</text>
+      </g>
+      <g transform="translate(20,116)">
+        <rect width="280" height="20" rx="3" fill="#5DCAA5" opacity="0.5"/>
+        <text x="140" y="14" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-A · swap-vVol</text>
+      </g>
+      <g transform="translate(20,140)">
+        <rect width="280" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+        <text x="140" y="14" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-A · snapshot-vVol</text>
+      </g>
+      <g transform="translate(20,164)">
+        <rect width="280" height="20" rx="3" fill="#F2C94C" opacity="0.7"/>
+        <text x="140" y="14" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-B · config-vVol</text>
+      </g>
+      <g transform="translate(20,188)">
+        <rect width="280" height="20" rx="3" fill="#F2C94C" opacity="0.6"/>
+        <text x="140" y="14" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vm-B · data-vVol</text>
+      </g>
+      <text x="160" y="226" text-anchor="middle" font-size="10" font-style="italic" fill="#FFFFFF" opacity="0.85">array tracks each vVol separately</text>
+    </g>
+
+    <text x="520" y="430" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">array-native snapshots, replication, encryption — at VM granularity</text>
+    <text x="520" y="490" text-anchor="middle" font-size="11" font-style="italic" fill="#5A6B81">cost: requires VASA-capable array; the cleanest pairing with SPBM</text>
+  </g>
+
+  <!-- MODE 6: SPBM — three policy tiers, VMs being placed -->
+  <g class="mode-group mode-spbm">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 6 — SPBM: POLICY-DRIVEN PLACEMENT</text>
+
+    <g transform="translate(60,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">Storage Policies</text>
+      <g transform="translate(0,20)">
+        <rect width="240" height="40" rx="6" fill="#F2C94C" opacity="0.85"/>
+        <text x="14" y="18" font-size="13" font-weight="700" fill="#1F2937">Gold</text>
+        <text x="14" y="34" font-size="10" fill="#1F2937">FTT=1 mirroring · &lt;5ms · encrypted</text>
+      </g>
+      <g transform="translate(0,70)">
+        <rect width="240" height="40" rx="6" fill="#F2C94C" opacity="0.55"/>
+        <text x="14" y="18" font-size="13" font-weight="700" fill="#1F2937">Silver</text>
+        <text x="14" y="34" font-size="10" fill="#1F2937">FTT=1 erasure · &lt;15ms</text>
+      </g>
+      <g transform="translate(0,120)">
+        <rect width="240" height="40" rx="6" fill="#F2C94C" opacity="0.3"/>
+        <text x="14" y="18" font-size="13" font-weight="700" fill="#1F2937">Bronze</text>
+        <text x="14" y="34" font-size="10" fill="#1F2937">FTT=0 · best-effort</text>
+      </g>
+    </g>
+
+    <!-- VMs being placed by policy -->
+    <g transform="translate(380,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">VMs assigned a policy on creation</text>
+
+      <g transform="translate(0,30)">
+        <rect width="200" height="32" rx="4" fill="#5DCAA5" opacity="0.6"/>
+        <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">vm-payments → Gold</text>
+        <line x1="0" y1="16" x2="-30" y2="16" stroke="#3F4A5E" stroke-width="1.4" marker-end="url(#aArrow)"/>
+      </g>
+      <g transform="translate(0,72)">
+        <rect width="200" height="32" rx="4" fill="#5DCAA5" opacity="0.6"/>
+        <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">vm-web1 → Silver</text>
+      </g>
+      <g transform="translate(0,114)">
+        <rect width="200" height="32" rx="4" fill="#5DCAA5" opacity="0.6"/>
+        <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">vm-test-7 → Bronze</text>
+      </g>
+    </g>
+
+    <!-- Datastores -->
+    <g transform="translate(680,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">Eligible datastores</text>
+      <g transform="translate(0,30)">
+        <rect width="220" height="40" rx="6" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2"/>
+        <text x="14" y="18" font-size="11" font-weight="700" fill="#1F8A60">vsan-fast (Gold capable)</text>
+        <text x="14" y="34" font-size="10" fill="#1F2937">vSAN · NVMe · encrypted</text>
+      </g>
+      <g transform="translate(0,80)">
+        <rect width="220" height="40" rx="6" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2"/>
+        <text x="14" y="18" font-size="11" font-weight="700" fill="#1F8A60">vmfs-medium (Silver)</text>
+        <text x="14" y="34" font-size="10" fill="#1F2937">VMFS · SSD</text>
+      </g>
+      <g transform="translate(0,130)">
+        <rect width="220" height="40" rx="6" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2"/>
+        <text x="14" y="18" font-size="11" font-weight="700" fill="#1F8A60">nfs-archive (Bronze)</text>
+        <text x="14" y="34" font-size="10" fill="#1F2937">NFS · spinning</text>
+      </g>
+    </g>
+
+    <!-- Thin/thick provisioning callout -->
+    <g transform="translate(60,300)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">Provisioning mode (separate decision)</text>
+      <g transform="translate(0,20)">
+        <rect width="900" height="50" rx="6" fill="#FFFFFF" stroke="#5A6B81"/>
+        <text x="14" y="20" font-size="11" font-weight="700" fill="#1F2937">Thin (default)</text>
+        <text x="14" y="36" font-size="10" fill="#1F2937">disk only consumes physical space as guest writes · over-commit possible · monitor used %</text>
+      </g>
+      <g transform="translate(0,80)">
+        <rect width="900" height="50" rx="6" fill="#FFFFFF" stroke="#5A6B81"/>
+        <text x="14" y="20" font-size="11" font-weight="700" fill="#1F2937">Thick lazy / Thick eager</text>
+        <text x="14" y="36" font-size="10" fill="#1F2937">full size reserved on creation · eager pre-zeroes (required for FT)</text>
+      </g>
+    </g>
+
+    <text x="520" y="490" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">declare WHAT the VM needs · vSphere finds WHERE to satisfy it</text>
+  </g>
+
+</svg>
+
+<script>
+const svg = document.getElementById('canvas');
+const playBtn = document.getElementById('play-btn');
+const speedSlider = document.getElementById('speed-slider');
+const speedDisplay = document.getElementById('speed-display');
+const stageLabel = document.getElementById('stage-label');
+
+const labels = {
+  overview: 'Subtopic 1 of 6 · Overview: a datastore is the unit of storage; four backing types — VMFS, NFS, vSAN, vVols.',
+  vmfs:     'Subtopic 2 of 6 · VMFS: clustered file system on shared block (FC, iSCSI). Multipathing keeps the LUN reachable through any failure.',
+  nfs:      'Subtopic 3 of 6 · NFS: mount a NAS file share over IP. NAS owns the FS; vSphere just stores files.',
+  vsan:     'Subtopic 4 of 6 · vSAN: pool local disks across cluster hosts into one HCI datastore. Per-VM policy native, no external array.',
+  vvols:    'Subtopic 5 of 6 · vVols: array tracks each VM as separate objects via VASA. Per-VM array-native operations.',
+  spbm:     'Subtopic 6 of 6 · SPBM + provisioning: policy-driven placement; thin disk default, thick eager-zeroed for FT.',
+};
+
+let isPaused = false; let speed = 1; let svgClock = 0; let lastWall = performance.now(); let rafId = null;
+function loop(now) {
+  if (!isPaused) { const dt = (now - lastWall) / 1000; svgClock += dt * speed; svg.setCurrentTime(svgClock); }
+  lastWall = now; rafId = requestAnimationFrame(loop);
+}
+function startLoop() { svg.pauseAnimations(); svgClock = svg.getCurrentTime(); lastWall = performance.now(); if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(loop); }
+
+document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const mode = btn.getAttribute('data-mode');
+    svg.setAttribute('data-mode', mode);
+    stageLabel.textContent = labels[mode] || '';
+    svgClock = 0; svg.setCurrentTime(0);
+  });
+});
+playBtn.addEventListener('click', () => { isPaused = !isPaused; playBtn.textContent = isPaused ? 'Play' : 'Pause'; });
+speedSlider.addEventListener('input', () => { speed = parseFloat(speedSlider.value); speedDisplay.innerHTML = speed.toFixed(1) + '&times;'; });
+startLoop();
+</script>
+</body>
+</html>

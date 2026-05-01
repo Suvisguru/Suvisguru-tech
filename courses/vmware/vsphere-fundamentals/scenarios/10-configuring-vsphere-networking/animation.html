@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<!--
+  Lesson 10 — Configuring vSphere Networking
+  Six modes: overview / vss / vds / port-groups / teaming / vmkernel
+  Pause/Play + Speed parity with prior lessons.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>vSphere Networking — animation</title>
+<style>
+  body { background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 24px; color: #1a1a1a; margin: 0; }
+  .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .mode-btn { border: 1px solid #d8d6cf; background: #ffffff; color: #3a3a3a; padding: 9px 14px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px; font-family: inherit; transition: all 0.15s; animation: btn-pop 2.4s ease-in-out infinite; }
+  @keyframes btn-pop { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(63,74,94,0); } 50% { transform: scale(1.035); box-shadow: 0 0 0 4px rgba(63,74,94,0.08); } }
+  .mode-btn:hover:not(.active) { background: #f4f1e8; border-color: #5F5E5A; }
+  .mode-btn.active { background: #3F4A5E; color: #FFFFFF; border-color: #3F4A5E; animation: none; }
+  .stage-label { font-size: 15px; color: #3a3a3a; margin: 12px 0 18px 0; font-weight: 500; }
+  .speed-control { margin-left: auto; font-size: 13px; color: #5F5E5A; display: flex; gap: 8px; align-items: center; }
+  .speed-control input[type=range] { accent-color: #3F4A5E; }
+  #canvas { width: 100%; max-width: 1040px; height: auto; display: block; }
+  #canvas .mode-group { display: none; }
+  #canvas[data-mode="overview"] .mode-overview,
+  #canvas[data-mode="vss"] .mode-vss,
+  #canvas[data-mode="vds"] .mode-vds,
+  #canvas[data-mode="port-groups"] .mode-port-groups,
+  #canvas[data-mode="teaming"] .mode-teaming,
+  #canvas[data-mode="vmkernel"] .mode-vmkernel { display: block; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button class="mode-btn active" data-mode="overview" type="button">1 · Overview</button>
+  <button class="mode-btn" data-mode="vss" type="button">2 · vSS</button>
+  <button class="mode-btn" data-mode="vds" type="button">3 · vDS</button>
+  <button class="mode-btn" data-mode="port-groups" type="button">4 · Port groups · VLANs</button>
+  <button class="mode-btn" data-mode="teaming" type="button">5 · Teaming</button>
+  <button class="mode-btn" data-mode="vmkernel" type="button">6 · vmkernel</button>
+  <button class="mode-btn" id="play-btn" type="button">Pause</button>
+  <span class="speed-control"><span>Speed</span><input type="range" min="0.3" max="2" step="0.1" value="1" id="speed-slider"><span id="speed-display">1.0&times;</span></span>
+</div>
+<div class="stage-label" id="stage-label">Subtopic 1 of 6 · Overview: VM → vNIC → port group → vSwitch → uplink → physical switch.</div>
+
+<svg id="canvas" data-mode="overview" viewBox="0 0 1040 540" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <marker id="aArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/></marker>
+    <marker id="aArrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#1F8A60"/></marker>
+    <marker id="aArrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#B85829"/></marker>
+  </defs>
+
+  <!-- ============================================
+       MODE 1: OVERVIEW
+       Story: A packet animates VM → vNIC → port group → vSwitch → uplink → physical switch.
+       ============================================ -->
+  <g class="mode-group mode-overview">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 1 — THE PACKET'S JOURNEY</text>
+
+    <!-- VM at top -->
+    <g transform="translate(440,80)">
+      <rect width="160" height="50" rx="6" fill="#5DCAA5" opacity="0.6"/>
+      <text x="80" y="20" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">VM-app1</text>
+      <text x="80" y="40" text-anchor="middle" font-size="10" fill="#1F2937">vNIC: eth0</text>
+    </g>
+
+    <!-- Port group -->
+    <g transform="translate(380,170)">
+      <rect width="280" height="40" rx="6" fill="#5DCAA5" opacity="0.4" stroke="#1F8A60"/>
+      <text x="140" y="25" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">Port group: Production-VLAN-100</text>
+    </g>
+
+    <!-- vSwitch -->
+    <g transform="translate(280,240)">
+      <rect width="480" height="60" rx="8" fill="#3F4A5E"/>
+      <text x="240" y="36" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">vSwitch (vSwitch0)</text>
+    </g>
+
+    <!-- Uplinks -->
+    <g transform="translate(380,330)">
+      <rect width="80" height="32" rx="4" fill="#1F8A60"/>
+      <text x="40" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">vmnic0</text>
+    </g>
+    <g transform="translate(580,330)">
+      <rect width="80" height="32" rx="4" fill="#1F8A60"/>
+      <text x="40" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">vmnic1</text>
+    </g>
+
+    <!-- Physical switch -->
+    <g transform="translate(380,420)">
+      <rect width="280" height="46" rx="6" fill="#1F2937"/>
+      <text x="140" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Physical switch (port: trunk)</text>
+    </g>
+
+    <!-- Packet animation: a small dot travels VM → vNIC → PG → vSwitch → uplink → switch -->
+    <circle cx="520" cy="100" r="8" fill="#F2C94C" stroke="#1F2937" stroke-width="1.5">
+      <animate attributeName="cx" values="520;520;520;520;520;420;420;420" keyTimes="0;0.15;0.3;0.45;0.6;0.75;0.85;1" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="cy" values="100;130;190;270;346;346;420;420" keyTimes="0;0.15;0.3;0.45;0.6;0.75;0.85;1" dur="6s" repeatCount="indefinite"/>
+    </circle>
+
+    <text x="520" y="500" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">VM → vNIC → port group → vSwitch → uplink → physical switch</text>
+  </g>
+
+  <!-- ============================================
+       MODE 2: vSS
+       Story: 4 hosts side by side, each with its own vSwitch labeled. New port group "DMZ" appears on host 1, slowly walks to host 2 (with delay/typo on host 3).
+       ============================================ -->
+  <g class="mode-group mode-vss">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 2 — vSS DRIFT IN ACTION</text>
+
+    <!-- 4 hosts with their own vSS -->
+    <g transform="translate(40,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">host-1</text>
+      <rect x="0" y="20" width="220" height="120" rx="6" fill="#3F4A5E"/>
+      <rect x="10" y="30" width="200" height="20" rx="3" fill="#5A6B81"/>
+      <text x="110" y="44" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">vSwitch0</text>
+      <!-- DMZ port group appears at t=0.1 -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1;1;1;1;1;1" keyTimes="0;0.1;0.2;0.5;0.7;0.9;1" dur="8s" repeatCount="indefinite"/>
+        <rect x="10" y="60" width="200" height="22" rx="3" fill="#5DCAA5" opacity="0.7"/>
+        <text x="110" y="76" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+      </g>
+    </g>
+
+    <g transform="translate(280,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">host-2</text>
+      <rect x="0" y="20" width="220" height="120" rx="6" fill="#3F4A5E"/>
+      <rect x="10" y="30" width="200" height="20" rx="3" fill="#5A6B81"/>
+      <text x="110" y="44" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">vSwitch0</text>
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0;1;1;1;1;1" keyTimes="0;0.2;0.3;0.5;0.7;0.9;1" dur="8s" repeatCount="indefinite"/>
+        <rect x="10" y="60" width="200" height="22" rx="3" fill="#5DCAA5" opacity="0.7"/>
+        <text x="110" y="76" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+      </g>
+    </g>
+
+    <g transform="translate(520,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">host-3</text>
+      <rect x="0" y="20" width="220" height="120" rx="6" fill="#3F4A5E"/>
+      <rect x="10" y="30" width="200" height="20" rx="3" fill="#5A6B81"/>
+      <text x="110" y="44" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">vSwitch0</text>
+      <!-- TYPO appears at t=0.5 -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;1;1;1" keyTimes="0;0.2;0.3;0.45;0.5;0.9;1" dur="8s" repeatCount="indefinite"/>
+        <rect x="10" y="60" width="200" height="22" rx="3" fill="#B85829" opacity="0.7"/>
+        <text x="110" y="76" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">DMZ-VLAN-220 ⚠</text>
+      </g>
+    </g>
+
+    <g transform="translate(760,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">host-4</text>
+      <rect x="0" y="20" width="220" height="120" rx="6" fill="#3F4A5E"/>
+      <rect x="10" y="30" width="200" height="20" rx="3" fill="#5A6B81"/>
+      <text x="110" y="44" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">vSwitch0</text>
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;0;1;1" keyTimes="0;0.5;0.6;0.8;0.85;0.9;1" dur="8s" repeatCount="indefinite"/>
+        <rect x="10" y="60" width="200" height="22" rx="3" fill="#5DCAA5" opacity="0.7"/>
+        <text x="110" y="76" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+      </g>
+    </g>
+
+    <!-- progress narrative -->
+    <text x="520" y="290" text-anchor="middle" font-size="12" fill="#1F2937">add new port group on each host one at a time...</text>
+
+    <!-- VM tries to vMotion to host-3 - fails -->
+    <g transform="translate(280,330)">
+      <rect width="480" height="120" rx="8" fill="#FFFFFF" stroke="#B85829" stroke-width="2" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1" keyTimes="0;0.5;0.6;0.7;0.8;0.85;0.9;0.95;1" dur="8s" repeatCount="indefinite"/>
+      </rect>
+      <text x="240" y="34" text-anchor="middle" font-size="13" font-weight="700" fill="#B85829" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1" keyTimes="0;0.5;0.6;0.7;0.8;0.85;0.9;0.95;1" dur="8s" repeatCount="indefinite"/>
+        ⚠ vMotion fails: host-3 has no matching port group
+      </text>
+      <text x="240" y="60" text-anchor="middle" font-size="11" fill="#1F2937" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1" keyTimes="0;0.5;0.6;0.7;0.8;0.85;0.9;0.95;1" dur="8s" repeatCount="indefinite"/>
+        host-3 has DMZ-VLAN-220 (typo); destination port group "DMZ-VLAN-200" missing
+      </text>
+      <text x="240" y="84" text-anchor="middle" font-size="11" font-style="italic" fill="#5A6B81" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1" keyTimes="0;0.5;0.6;0.7;0.8;0.85;0.9;0.95;1" dur="8s" repeatCount="indefinite"/>
+        manual sync on every host = drift waiting to happen
+      </text>
+    </g>
+
+    <text x="520" y="490" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">vSS = simple, free, but every host is its own snowflake</text>
+  </g>
+
+  <!-- ============================================
+       MODE 3: vDS
+       Story: vCenter at top, one config change ripples down to N hosts simultaneously
+       ============================================ -->
+  <g class="mode-group mode-vds">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 3 — vDS PUSHES CONFIG TO ALL HOSTS</text>
+
+    <!-- vCenter at top -->
+    <g transform="translate(380,80)">
+      <rect width="280" height="80" rx="8" fill="#1F8A60"/>
+      <text x="140" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">vCenter (control plane)</text>
+      <!-- changing config -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;1;1;1;1;1" keyTimes="0;0.05;0.2;0.5;0.7;1" dur="6s" repeatCount="indefinite"/>
+        <rect x="20" y="44" width="240" height="22" rx="3" fill="#5DCAA5" opacity="0.6"/>
+        <text x="140" y="60" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">+ DMZ-VLAN-200 (new port group)</text>
+      </g>
+    </g>
+
+    <!-- vDS pushes down to 4 hosts -->
+    <g>
+      <line x1="520" y1="160" x2="160" y2="240" stroke="#1F8A60" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#aArrowGreen)" opacity="0">
+        <animate attributeName="opacity" values="0;0;1;1;0.4;0.4" keyTimes="0;0.2;0.3;0.6;0.7;1" dur="6s" repeatCount="indefinite"/>
+      </line>
+      <line x1="520" y1="160" x2="400" y2="240" stroke="#1F8A60" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#aArrowGreen)" opacity="0">
+        <animate attributeName="opacity" values="0;0;1;1;0.4;0.4" keyTimes="0;0.2;0.3;0.6;0.7;1" dur="6s" repeatCount="indefinite"/>
+      </line>
+      <line x1="520" y1="160" x2="640" y2="240" stroke="#1F8A60" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#aArrowGreen)" opacity="0">
+        <animate attributeName="opacity" values="0;0;1;1;0.4;0.4" keyTimes="0;0.2;0.3;0.6;0.7;1" dur="6s" repeatCount="indefinite"/>
+      </line>
+      <line x1="520" y1="160" x2="880" y2="240" stroke="#1F8A60" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#aArrowGreen)" opacity="0">
+        <animate attributeName="opacity" values="0;0;1;1;0.4;0.4" keyTimes="0;0.2;0.3;0.6;0.7;1" dur="6s" repeatCount="indefinite"/>
+      </line>
+    </g>
+
+    <!-- 4 hosts -->
+    <g transform="translate(80,250)">
+      <rect width="160" height="100" rx="6" fill="#3F4A5E"/>
+      <text x="80" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">host-1</text>
+      <rect x="10" y="32" width="140" height="18" rx="2" fill="#5A6B81"/>
+      <text x="80" y="46" text-anchor="middle" font-size="9" fill="#FFFFFF">vDS data plane</text>
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1;1" keyTimes="0;0.2;0.3;0.4;0.7;1" dur="6s" repeatCount="indefinite"/>
+        <rect x="10" y="55" width="140" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+        <text x="80" y="69" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+      </g>
+    </g>
+    <g transform="translate(320,250)">
+      <rect width="160" height="100" rx="6" fill="#3F4A5E"/>
+      <text x="80" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">host-2</text>
+      <rect x="10" y="32" width="140" height="18" rx="2" fill="#5A6B81"/>
+      <text x="80" y="46" text-anchor="middle" font-size="9" fill="#FFFFFF">vDS data plane</text>
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1;1" keyTimes="0;0.2;0.3;0.4;0.7;1" dur="6s" repeatCount="indefinite"/>
+        <rect x="10" y="55" width="140" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+        <text x="80" y="69" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+      </g>
+    </g>
+    <g transform="translate(560,250)">
+      <rect width="160" height="100" rx="6" fill="#3F4A5E"/>
+      <text x="80" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">host-3</text>
+      <rect x="10" y="32" width="140" height="18" rx="2" fill="#5A6B81"/>
+      <text x="80" y="46" text-anchor="middle" font-size="9" fill="#FFFFFF">vDS data plane</text>
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1;1" keyTimes="0;0.2;0.3;0.4;0.7;1" dur="6s" repeatCount="indefinite"/>
+        <rect x="10" y="55" width="140" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+        <text x="80" y="69" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+      </g>
+    </g>
+    <g transform="translate(800,250)">
+      <rect width="160" height="100" rx="6" fill="#3F4A5E"/>
+      <text x="80" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">host-4</text>
+      <rect x="10" y="32" width="140" height="18" rx="2" fill="#5A6B81"/>
+      <text x="80" y="46" text-anchor="middle" font-size="9" fill="#FFFFFF">vDS data plane</text>
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1;1" keyTimes="0;0.2;0.3;0.4;0.7;1" dur="6s" repeatCount="indefinite"/>
+        <rect x="10" y="55" width="140" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+        <text x="80" y="69" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+      </g>
+    </g>
+
+    <text x="520" y="400" text-anchor="middle" font-size="12" font-weight="700" fill="#1F8A60" opacity="0">
+      <animate attributeName="opacity" values="0;0;0;0;1;1" keyTimes="0;0.3;0.5;0.65;0.7;1" dur="6s" repeatCount="indefinite"/>
+      ✓ atomic, identical config across every host
+    </text>
+    <text x="520" y="450" text-anchor="middle" font-size="11" fill="#5A6B81">data plane on each host keeps forwarding even if vCenter dies</text>
+    <text x="520" y="490" text-anchor="middle" font-size="11" font-style="italic" fill="#5A6B81">unlocks LACP · NetFlow · NIOC · port mirroring</text>
+  </g>
+
+  <!-- ============================================
+       MODE 4: PORT GROUPS + VLANs
+       Story: a host with vSwitch and 3 port groups (Prod, Dev, vMotion). Show traffic with VLAN tags and a misconfig (one VLAN dropped at the physical switch).
+       ============================================ -->
+  <g class="mode-group mode-port-groups">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 4 — PORT GROUPS &amp; VLAN TAGGING (VST)</text>
+
+    <!-- VMs (top) -->
+    <g transform="translate(120,80)">
+      <rect width="200" height="36" rx="4" fill="#5DCAA5" opacity="0.6"/>
+      <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">vm-app · VLAN 100</text>
+    </g>
+    <g transform="translate(420,80)">
+      <rect width="200" height="36" rx="4" fill="#5DCAA5" opacity="0.6"/>
+      <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">vm-dev · VLAN 110</text>
+    </g>
+    <g transform="translate(720,80)">
+      <rect width="200" height="36" rx="4" fill="#F2C94C" opacity="0.7"/>
+      <text x="100" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">vmk-vMotion · VLAN 30</text>
+    </g>
+
+    <!-- Port groups -->
+    <g transform="translate(120,140)">
+      <rect width="200" height="32" rx="4" fill="#5DCAA5" opacity="0.3" stroke="#1F8A60"/>
+      <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">PG: Prod-VLAN-100</text>
+    </g>
+    <g transform="translate(420,140)">
+      <rect width="200" height="32" rx="4" fill="#5DCAA5" opacity="0.3" stroke="#1F8A60"/>
+      <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">PG: Dev-VLAN-110</text>
+    </g>
+    <g transform="translate(720,140)">
+      <rect width="200" height="32" rx="4" fill="#F2C94C" opacity="0.3" stroke="#B85829"/>
+      <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">PG: vMotion-VLAN-30</text>
+    </g>
+
+    <!-- vSwitch -->
+    <g transform="translate(120,200)">
+      <rect width="800" height="40" rx="6" fill="#3F4A5E"/>
+      <text x="400" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vSwitch (VST tagging)</text>
+    </g>
+
+    <!-- Uplink to physical switch -->
+    <g transform="translate(420,260)">
+      <rect width="200" height="32" rx="4" fill="#1F8A60"/>
+      <text x="100" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">vmnic0 (trunk)</text>
+    </g>
+
+    <!-- Physical switch -->
+    <g transform="translate(120,320)">
+      <rect width="800" height="60" rx="6" fill="#1F2937"/>
+      <text x="400" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Physical switch port: trunk allowed VLANs</text>
+      <g transform="translate(80,32)">
+        <rect width="60" height="20" rx="3" fill="#1F8A60"/>
+        <text x="30" y="14" text-anchor="middle" font-size="10" fill="#FFFFFF">100 ✓</text>
+      </g>
+      <g transform="translate(150,32)">
+        <rect width="60" height="20" rx="3" fill="#B85829"/>
+        <text x="30" y="14" text-anchor="middle" font-size="10" fill="#FFFFFF">110 ✗</text>
+      </g>
+      <g transform="translate(220,32)">
+        <rect width="60" height="20" rx="3" fill="#1F8A60"/>
+        <text x="30" y="14" text-anchor="middle" font-size="10" fill="#FFFFFF">30 ✓</text>
+      </g>
+    </g>
+
+    <!-- Annotation about Dev-VLAN-110 being dropped -->
+    <g transform="translate(120,420)">
+      <rect width="800" height="80" rx="8" fill="#FBEDE3" stroke="#B85829"/>
+      <text x="400" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#B85829">⚠ vm-dev has no connectivity to anything outside the host</text>
+      <text x="400" y="50" text-anchor="middle" font-size="11" fill="#1F2937">vSwitch tags VLAN 110 (VST), but the physical switch trunk drops VLAN 110 (not in allowed list).</text>
+      <text x="400" y="68" text-anchor="middle" font-size="11" font-style="italic" fill="#5A6B81">Fix: have the network team add VLAN 110 to the trunk on this switch port.</text>
+    </g>
+  </g>
+
+  <!-- ============================================
+       MODE 5: TEAMING
+       Story: Two uplinks; load balancing pins each VM port to one uplink. One uplink fails (red); failover happens; traffic reroutes.
+       ============================================ -->
+  <g class="mode-group mode-teaming">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 5 — NIC TEAMING: ACTIVE/ACTIVE + FAILOVER</text>
+
+    <!-- 4 VMs -->
+    <g transform="translate(140,80)">
+      <rect width="60" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/><text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">VM-1</text>
+    </g>
+    <g transform="translate(220,80)">
+      <rect width="60" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/><text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">VM-2</text>
+    </g>
+    <g transform="translate(700,80)">
+      <rect width="60" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/><text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">VM-3</text>
+    </g>
+    <g transform="translate(780,80)">
+      <rect width="60" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/><text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">VM-4</text>
+    </g>
+
+    <!-- vSwitch -->
+    <g transform="translate(120,150)">
+      <rect width="800" height="50" rx="6" fill="#3F4A5E"/>
+      <text x="400" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vSwitch (Route based on originating port)</text>
+    </g>
+
+    <!-- Uplinks -->
+    <g transform="translate(220,250)">
+      <rect width="160" height="44" rx="6" fill="#1F8A60">
+        <animate attributeName="fill" values="#1F8A60;#1F8A60;#B85829;#B85829;#5A6B81;#5A6B81" keyTimes="0;0.4;0.45;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+      </rect>
+      <text x="80" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vmnic0</text>
+      <text x="80" y="68" text-anchor="middle" font-size="10" fill="#1F8A60">
+        <animate attributeName="fill" values="#1F8A60;#1F8A60;#B85829;#B85829;#5A6B81;#5A6B81" keyTimes="0;0.4;0.45;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+        <tspan>
+          <animate attributeName="opacity" values="1;1;1;0;0;0" keyTimes="0;0.4;0.45;0.5;0.85;1" dur="8s" repeatCount="indefinite"/>
+        </tspan>
+        active
+      </text>
+      <text x="80" y="68" text-anchor="middle" font-size="10" font-weight="700" fill="#B85829" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1;0;0" keyTimes="0;0.4;0.45;0.5;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+        link down
+      </text>
+      <text x="80" y="68" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B81" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;0;0;1;1" keyTimes="0;0.4;0.45;0.5;0.6;0.75;0.8;1" dur="8s" repeatCount="indefinite"/>
+        offline
+      </text>
+    </g>
+    <g transform="translate(660,250)">
+      <rect width="160" height="44" rx="6" fill="#1F8A60"/>
+      <text x="80" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vmnic1</text>
+      <text x="80" y="68" text-anchor="middle" font-size="10" fill="#1F8A60">active (carries all traffic after failover)</text>
+    </g>
+
+    <!-- VM-to-uplink lines (showing pin) -->
+    <g>
+      <!-- VM 1, 2 → vmnic0 normally -->
+      <line x1="170" y1="120" x2="280" y2="248" stroke="#1F8A60" stroke-width="1.5" stroke-dasharray="4,4">
+        <animate attributeName="stroke" values="#1F8A60;#1F8A60;#B85829;#B85829;#1F8A60;#1F8A60" keyTimes="0;0.4;0.5;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+      </line>
+      <line x1="250" y1="120" x2="290" y2="248" stroke="#1F8A60" stroke-width="1.5" stroke-dasharray="4,4">
+        <animate attributeName="stroke" values="#1F8A60;#1F8A60;#B85829;#B85829;#1F8A60;#1F8A60" keyTimes="0;0.4;0.5;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+      </line>
+      <!-- After failover, VM 1, 2 → vmnic1 -->
+      <line x1="170" y1="120" x2="700" y2="248" stroke="#1F8A60" stroke-width="0" stroke-dasharray="4,4">
+        <animate attributeName="stroke-width" values="0;0;0;0;1.5;1.5" keyTimes="0;0.4;0.5;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+      </line>
+      <line x1="250" y1="120" x2="710" y2="248" stroke="#1F8A60" stroke-width="0" stroke-dasharray="4,4">
+        <animate attributeName="stroke-width" values="0;0;0;0;1.5;1.5" keyTimes="0;0.4;0.5;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+      </line>
+      <!-- VM 3, 4 → vmnic1 always -->
+      <line x1="730" y1="120" x2="730" y2="248" stroke="#1F8A60" stroke-width="1.5" stroke-dasharray="4,4"/>
+      <line x1="810" y1="120" x2="780" y2="248" stroke="#1F8A60" stroke-width="1.5" stroke-dasharray="4,4"/>
+    </g>
+
+    <text x="520" y="380" text-anchor="middle" font-size="13" font-weight="700" fill="#5A6B81">vmnic0 fails → VMs 1, 2 fail over to vmnic1 in milliseconds</text>
+    <text x="520" y="410" text-anchor="middle" font-size="11" fill="#5A6B81">VMs barely notice; no vSphere HA event, no restart</text>
+    <text x="520" y="490" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">Originating-port pinning means each VM uses ONE uplink at a time</text>
+  </g>
+
+  <!-- ============================================
+       MODE 6: VMKERNEL ADAPTERS
+       Story: Show 4 vmkernels stacked, each a different VLAN, each tied to a different NIC pair. Highlight their separation.
+       ============================================ -->
+  <g class="mode-group mode-vmkernel">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 6 — vmkernel ADAPTERS: ONE PER SERVICE</text>
+
+    <text x="520" y="70" text-anchor="middle" font-size="12" fill="#1F2937">Production host: separate vmkernel per traffic type</text>
+
+    <!-- 4 vmkernel adapters -->
+    <g transform="translate(80,100)">
+      <rect width="200" height="80" rx="8" fill="#FBF4D6" stroke="#5A6B81"/>
+      <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">vmk0 — Management</text>
+      <text x="100" y="40" text-anchor="middle" font-size="10" fill="#1F2937">VLAN 10 · 10.10.10.41</text>
+      <text x="100" y="58" text-anchor="middle" font-size="10" fill="#5A6B81">services: Management</text>
+      <text x="100" y="74" text-anchor="middle" font-size="9" font-style="italic" fill="#5A6B81">vmnic0 / vmnic1 (team)</text>
+    </g>
+    <g transform="translate(300,100)">
+      <rect width="200" height="80" rx="8" fill="#FBF4D6" stroke="#5A6B81"/>
+      <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">vmk1 — vMotion</text>
+      <text x="100" y="40" text-anchor="middle" font-size="10" fill="#1F2937">VLAN 30 · 10.30.30.41</text>
+      <text x="100" y="58" text-anchor="middle" font-size="10" fill="#5A6B81">services: vMotion</text>
+      <text x="100" y="74" text-anchor="middle" font-size="9" font-style="italic" fill="#5A6B81">vmnic2 / vmnic3 (team)</text>
+    </g>
+    <g transform="translate(540,100)">
+      <rect width="200" height="80" rx="8" fill="#FBF4D6" stroke="#5A6B81"/>
+      <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">vmk2 — vSAN</text>
+      <text x="100" y="40" text-anchor="middle" font-size="10" fill="#1F2937">VLAN 40 · 10.40.40.41</text>
+      <text x="100" y="58" text-anchor="middle" font-size="10" fill="#5A6B81">services: vSAN</text>
+      <text x="100" y="74" text-anchor="middle" font-size="9" font-style="italic" fill="#5A6B81">vmnic4 / vmnic5 (team)</text>
+    </g>
+    <g transform="translate(760,100)">
+      <rect width="200" height="80" rx="8" fill="#FBF4D6" stroke="#5A6B81"/>
+      <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">vmk3 — NFS</text>
+      <text x="100" y="40" text-anchor="middle" font-size="10" fill="#1F2937">VLAN 50 · 10.50.50.41</text>
+      <text x="100" y="58" text-anchor="middle" font-size="10" fill="#5A6B81">services: Provisioning</text>
+      <text x="100" y="74" text-anchor="middle" font-size="9" font-style="italic" fill="#5A6B81">vmnic4 / vmnic5 (shared)</text>
+    </g>
+
+    <!-- ESXi host backing -->
+    <g transform="translate(80,210)">
+      <rect width="880" height="120" rx="8" fill="#3F4A5E"/>
+      <text x="440" y="34" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">ESXi host</text>
+      <text x="440" y="64" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">each service is isolated · failure or saturation in one doesn't impact others</text>
+      <text x="440" y="94" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">management stays responsive even during a multi-GB vMotion</text>
+    </g>
+
+    <!-- Animated vMotion saturating its dedicated NIC -->
+    <g transform="translate(300,360)">
+      <text x="100" y="0" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">vMotion vmkernel utilization</text>
+      <rect x="0" y="14" width="200" height="14" rx="2" fill="#F3F5F9" stroke="#D5DCE6"/>
+      <rect x="0" y="14" width="0" height="14" rx="2" fill="#B85829">
+        <animate attributeName="width" values="0;200;200;200;200;0" keyTimes="0;0.3;0.4;0.6;0.8;1" dur="4s" repeatCount="indefinite"/>
+      </rect>
+      <text x="100" y="48" text-anchor="middle" font-size="10" fill="#5A6B81">vMotion saturates ITS NIC pair · doesn't touch others</text>
+    </g>
+    <g transform="translate(560,360)">
+      <text x="100" y="0" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">Management vmkernel utilization</text>
+      <rect x="0" y="14" width="200" height="14" rx="2" fill="#F3F5F9" stroke="#D5DCE6"/>
+      <rect x="0" y="14" width="40" height="14" rx="2" fill="#1F8A60"/>
+      <text x="100" y="48" text-anchor="middle" font-size="10" fill="#5A6B81">stays calm · vCenter heartbeat unaffected</text>
+    </g>
+
+    <text x="520" y="500" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">isolation = predictable performance + sane troubleshooting + secure storage</text>
+  </g>
+
+</svg>
+
+<script>
+const svg = document.getElementById('canvas');
+const playBtn = document.getElementById('play-btn');
+const speedSlider = document.getElementById('speed-slider');
+const speedDisplay = document.getElementById('speed-display');
+const stageLabel = document.getElementById('stage-label');
+
+const labels = {
+  overview:    'Subtopic 1 of 6 · Overview: VM → vNIC → port group → vSwitch → uplink → physical switch.',
+  vss:         'Subtopic 2 of 6 · vSS: per-host networking. Configure each host independently — drift is the operational hazard.',
+  vds:         'Subtopic 3 of 6 · vDS: configure once in vCenter, applied identically to every host. Data plane survives vCenter outage.',
+  'port-groups': 'Subtopic 4 of 6 · Port groups + VLAN tagging: VST is most common. VLAN on the port group must match a trunked VLAN on the physical switch.',
+  teaming:     'Subtopic 5 of 6 · NIC teaming: ≥2 physical NICs per vSwitch. Originating-port pins each VM to one uplink; failover swaps in milliseconds.',
+  vmkernel:    'Subtopic 6 of 6 · vmkernel adapters: one per major service (management, vMotion, vSAN, NFS) on its own VLAN — isolation = predictability.',
+};
+
+let isPaused = false;
+let speed = 1;
+let svgClock = 0;
+let lastWall = performance.now();
+let rafId = null;
+
+function loop(now) {
+  if (!isPaused) {
+    const dt = (now - lastWall) / 1000;
+    svgClock += dt * speed;
+    svg.setCurrentTime(svgClock);
+  }
+  lastWall = now;
+  rafId = requestAnimationFrame(loop);
+}
+function startLoop() {
+  svg.pauseAnimations();
+  svgClock = svg.getCurrentTime();
+  lastWall = performance.now();
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(loop);
+}
+
+document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const mode = btn.getAttribute('data-mode');
+    svg.setAttribute('data-mode', mode);
+    stageLabel.textContent = labels[mode] || '';
+    svgClock = 0;
+    svg.setCurrentTime(0);
+  });
+});
+
+playBtn.addEventListener('click', () => {
+  isPaused = !isPaused;
+  playBtn.textContent = isPaused ? 'Play' : 'Pause';
+});
+
+speedSlider.addEventListener('input', () => {
+  speed = parseFloat(speedSlider.value);
+  speedDisplay.innerHTML = speed.toFixed(1) + '&times;';
+});
+
+startLoop();
+</script>
+
+</body>
+</html>

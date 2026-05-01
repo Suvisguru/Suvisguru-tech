@@ -1,0 +1,266 @@
+# Flashcards — Lesson 09: Deploying and Configuring vCenter Server
+# Per-subtopic format. ~24 cards, 3 per subtopic with section markers.
+
+cards:
+
+  # =====================================================
+  # Subtopic 1 — What vCenter is
+  # =====================================================
+
+  - id: s1c1
+    subtopic: vcenter-overview
+    front: "What is vCenter Server (VCSA), and what does it run on?"
+    back: >
+      vCenter Server is the central management plane for vSphere. The
+      modern form (vCenter Server Appliance, VCSA) is a Photon Linux VM
+      that runs on top of an ESXi host. Inside the appliance: Postgres,
+      vCenter services, vSphere Client web app, SSO, lifecycle services.
+      Windows-based vCenter was retired in vSphere 7 — the appliance is
+      the only path now.
+
+  - id: s1c2
+    subtopic: vcenter-overview
+    front: "Name three things vCenter unlocks that you can't do from a standalone host."
+    back: >
+      vMotion (live-migrate VMs between hosts), DRS (load-balance VMs
+      across a cluster), vSphere HA (restart VMs on another host after a
+      host failure). Plus: templates, content libraries, distributed
+      switches, fleet-wide policy, central audit log, central permissions.
+
+  - id: s1c3
+    subtopic: vcenter-overview
+    front: "Without vCenter, can you live-migrate a running VM between two hosts?"
+    back: >
+      No. Live migration (vMotion) is a vCenter-mediated feature; the
+      Host Client alone cannot do it. Without vCenter you can shut a VM
+      down, copy its files to another host, register and boot it — but
+      that's downtime, not vMotion.
+
+  # =====================================================
+  # Subtopic 2 — Prerequisites
+  # =====================================================
+
+  - id: s2c1
+    subtopic: prerequisites
+    front: "Why does the vCenter installer need both forward AND reverse DNS for the FQDN?"
+    back: >
+      Stage 2 generates certificates that include the hostname; vCenter
+      and its services (and AD/SSO integrations) verify both forward
+      lookup (name → IP) and reverse lookup (IP → name). Missing PTR
+      records produce a vCenter that installs but trips weird cert/AD
+      issues later. Add A and PTR records before you start.
+
+  - id: s2c2
+    subtopic: prerequisites
+    front: "What do the deployment sizes (Tiny / Small / Medium / Large / X-Large) actually map to?"
+    back: >
+      Host count and VM count.
+      Tiny: 10 hosts / 100 VMs. Small: 100 hosts / 1,000 VMs.
+      Medium: 400 hosts / 4,000 VMs. Large: 1,000 hosts / 10,000 VMs.
+      X-Large: 2,000 hosts / 35,000 VMs.
+      Choose based on your *future* fleet, not just today's.
+
+  - id: s2c3
+    subtopic: prerequisites
+    front: "What four buckets of prerequisites must be right before launching the vCenter installer?"
+    back: >
+      (1) DNS — A and PTR records for the vCenter FQDN.
+      (2) NTP — target host (and the appliance) must be in sync.
+      (3) Network — port group, IP, gateway, subnet, IP reserved in IPAM.
+      (4) Sizing — Tiny/Small/Medium/Large/X-Large + storage profile
+      chosen for current and future fleet.
+
+  # =====================================================
+  # Subtopic 3 — Stage 1
+  # =====================================================
+
+  - id: s3c1
+    subtopic: stage-1-deploy
+    front: "Where does the VCSA installer run, and what does it do in Stage 1?"
+    back: >
+      The installer runs on your laptop or jump server (mounted from the
+      VCSA ISO), not on the host. Stage 1 deploys the VCSA OVA — the
+      pre-built Photon-Linux appliance VM with all vCenter binaries —
+      onto the target ESXi host. It powers the appliance on, but does
+      NOT start vCenter services. That's Stage 2.
+
+  - id: s3c2
+    subtopic: stage-1-deploy
+    front: "What inputs does Stage 1 ask for?"
+    back: >
+      Target host + root credentials, appliance VM name, appliance root
+      password, deployment size, storage size, datastore, network port
+      group, IP/gateway/subnet, DNS servers, FQDN, time-zone choice.
+
+  - id: s3c3
+    subtopic: stage-1-deploy
+    front: "After Stage 1 finishes, why does https://vc-01.lab.local return 503?"
+    back: >
+      Because Stage 1 only deploys the appliance — the vCenter services
+      inside it haven't started. The 503 is expected until Stage 2 runs.
+      Click "Continue to Stage 2" or relaunch the installer in resume
+      mode.
+
+  # =====================================================
+  # Subtopic 4 — Stage 2
+  # =====================================================
+
+  - id: s4c1
+    subtopic: stage-2-setup
+    front: "What does Stage 2 configure?"
+    back: >
+      NTP servers, SSH access (off recommended), the SSO domain
+      (default vsphere.local), the administrator@vsphere.local password,
+      CEIP opt-in. Then it starts the vCenter services. Takes 10-15 min.
+
+  - id: s4c2
+    subtopic: stage-2-setup
+    front: "Why is the SSO domain hard to change after install?"
+    back: >
+      The SSO domain is baked into certs, internal references, and
+      replication metadata. Changing it later requires either redeploy
+      with restore-and-rename or a non-trivial migration. Pick something
+      you can live with — usually the default vsphere.local.
+
+  - id: s4c3
+    subtopic: stage-2-setup
+    front: "Stage 2 hangs at 'Starting services.' What do you do?"
+    back: >
+      Don't reboot the appliance. Reopen the VCSA installer and use
+      resume mode, or browse to https://vc-01.lab.local:5480/ (VAMI),
+      log in as appliance root, and check the install status. The Stage 1
+      OVA is persisted; Stage 2 can pick up where it left off.
+
+  # =====================================================
+  # Subtopic 5 — SSO and identity sources
+  # =====================================================
+
+  - id: s5c1
+    subtopic: sso-and-identity-sources
+    front: "What is vCenter SSO and what does it actually do?"
+    back: >
+      Single Sign-On is the identity layer of vCenter. It authenticates
+      users (against one or more identity sources) and issues tokens
+      that vCenter, ESXi hosts, vCenter HA, and solution users (vSAN
+      Health, vROps) trust. vCenter does not handle passwords
+      directly — SSO does.
+
+  - id: s5c2
+    subtopic: sso-and-identity-sources
+    front: "What is an identity source in vCenter SSO and which ones can you use?"
+    back: >
+      A directory SSO authenticates against. Options: the built-in
+      vsphere.local SSO domain, Active Directory (Integrated Windows
+      Authentication), AD over LDAP/LDAPS, OpenLDAP, AD FS federation.
+      Most production environments add corporate AD as an identity
+      source so admins log in with their AD credentials.
+
+  - id: s5c3
+    subtopic: sso-and-identity-sources
+    front: "Why don't you make administrator@vsphere.local your daily account?"
+    back: >
+      It's the SSO god-mode account — it can change SSO itself, including
+      removing all your other admins. Treat it like ESXi root: long random
+      password in the vault, glass-break only. Daily admin happens through
+      named AD accounts via SSO.
+
+  # =====================================================
+  # Subtopic 6 — Roles, privileges, permissions (RBAC)
+  # =====================================================
+
+  - id: s6c1
+    subtopic: roles-and-permissions
+    front: "Define vCenter privilege, role, and permission."
+    back: >
+      Privilege: an atomic action (e.g., Virtual Machine.Power.Power On).
+      Role: a named bundle of privileges (Read-Only, Administrator,
+      Virtual Machine User, etc.). Permission: a (user-or-group, role,
+      inventory-object) triple — "Alice has Power User on the Production
+      folder."
+
+  - id: s6c2
+    subtopic: roles-and-permissions
+    front: "What does propagating vs non-propagating mean for a permission?"
+    back: >
+      Propagating (default): the permission applies to the object AND
+      all children below it. Non-propagating: applies only to the object
+      itself. "Give Alice admin on the entire datacenter" works because
+      propagation is on by default.
+
+  - id: s6c3
+    subtopic: roles-and-permissions
+    front: "What is a global permission, and when do you use one?"
+    back: >
+      A global permission applies across the entire vCenter inventory
+      AND to objects that don't appear in the inventory (e.g., tag
+      categories). Use sparingly — typically for a small senior-admin
+      team. Most permissions should be object-level (folder / cluster /
+      VM) so you can scope precisely.
+
+  # =====================================================
+  # Subtopic 7 — Inventory hierarchy and backup
+  # =====================================================
+
+  - id: s7c1
+    subtopic: inventory-hierarchy-and-backup
+    front: "Name the five inventory object types in vCenter and how they nest."
+    back: >
+      Datacenter (top, usually one per region) → Folder (for grouping
+      VMs/hosts for permissions and tags) → Cluster (group of hosts
+      sharing HA/DRS/vMotion) → Host (an ESXi host added to vCenter) →
+      VM. Networks and datastores appear under their datacenter as
+      separate views.
+
+  - id: s7c2
+    subtopic: inventory-hierarchy-and-backup
+    front: "What is vCenter's file-based backup and where can it ship to?"
+    back: >
+      Built-in backup that exports the appliance's database and
+      configuration to an external target. Supported protocols: FTPS,
+      SFTP, HTTPS, NFS, SMB. Configured from the appliance VAMI
+      (https://vc-01:5480/) under Backup. Schedule nightly; keep at
+      least 7-30 backups.
+
+  - id: s7c3
+    subtopic: inventory-hierarchy-and-backup
+    front: "Your vCenter appliance is unrecoverable. The backup is good. What's the path back?"
+    back: >
+      Deploy a fresh VCSA OVA. In Stage 2, choose Restore instead of
+      Install and point at your most recent file-based backup. The
+      restored vCenter comes back with all inventory, permissions,
+      certs, AD binding, and config. ~30-45 minutes total. Hosts rejoin
+      automatically.
+
+  # =====================================================
+  # Subtopic 8 — vCenter HA
+  # =====================================================
+
+  - id: s8c1
+    subtopic: vcenter-ha
+    front: "Distinguish vCenter HA from vSphere HA."
+    back: >
+      vCenter HA protects the vCenter appliance itself (active/passive/
+      witness; failover in minutes). vSphere HA protects guest VMs by
+      restarting them on other hosts after a host failure. They solve
+      different problems. vSphere HA does not protect vCenter; vCenter
+      HA does.
+
+  - id: s8c2
+    subtopic: vcenter-ha
+    front: "What are the three vCenter HA roles and what does each do?"
+    back: >
+      Active — the live vCenter the world talks to. Passive — a clone
+      kept in sync via replication; promotes to Active on failure.
+      Witness — a small node whose only job is to break ties so Passive
+      doesn't promote when Active is actually still alive (network
+      partition).
+
+  - id: s8c3
+    subtopic: vcenter-ha
+    front: "When do you choose vCenter HA vs file-based backup alone?"
+    back: >
+      Choose vCenter HA when management-plane downtime (~30 min restore)
+      is unacceptable: large environments, regulated workloads, dense
+      automation. Skip it for small environments where a 30-minute
+      restore-from-backup window is fine. vCenter HA costs three
+      appliance VMs vs one.

@@ -1,0 +1,177 @@
+# Intake brief — Lesson 01, vSphere Fundamentals
+# Source: /inbox/2026-04-29-what-is-virtualization.md
+# Status: pending founder approval — no production work has started.
+
+lesson:
+  title: "What is virtualization?"
+  slug: "01-what-is-virtualization"
+  domain: "vmware"
+  course_slug: "vsphere-fundamentals"
+  position: 1
+  granularity: "concept"
+  parent_topic: null   # foundational — nothing above this in the course
+  inbox_source: "/inbox/2026-04-29-what-is-virtualization.md"
+  brief_drafted_on: "2026-04-29"
+  brief_status: "pending_founder_approval"
+
+learner_profile:
+  prerequisites:
+    - "General computing literacy (knows what an OS, CPU, and RAM are)."
+    - "Has used a personal computer; has heard the word 'server' but has never managed one."
+  assumed_zero_knowledge_of:
+    - "Virtualization, hypervisors, VMs."
+    - "VMware product names (ESXi, vCenter, vSphere, NSX, vSAN) — deliberately not introduced here."
+    - "Datacenter and rack-level concepts (covered in later lessons)."
+
+learning_outcomes:
+  - "Learner can state in plain language what virtualization is and what problem it solves."
+  - "Learner can describe the difference between a physical server and a virtual machine."
+  - "Learner can explain in their own words why one physical machine can usefully host many VMs."
+  - "Learner can name what a hypervisor is and what it does, grounded in the lesson's analogy."
+
+moments_of_confusion_to_resolve:
+  - "Why does virtualization exist at all? What specific problem made people invent it?"
+  - "What is the difference between a physical server and a VM, exactly?"
+  - "Why would you run multiple VMs on one physical machine instead of just one big OS?"
+  - "What does a hypervisor actually do, and where does it sit?"
+
+scope:
+  in_scope:
+    - "Definition of virtualization."
+    - "The pre-virtualization world: one app per server, low utilization, slow procurement."
+    - "The post-virtualization world: consolidation, dynamic allocation, fast provisioning."
+    - "The hypervisor as the abstraction layer between hardware and guest OSes."
+    - "One canonical analogy chosen from a pool of 5+ candidates per QUALITY.md."
+  out_of_scope:
+    - "VMware-specific products (ESXi, vCenter, vSphere) — start in lesson 02."
+    - "Type 1 vs Type 2 hypervisors — separate lesson."
+    - "Resource scheduling (CPU shares, memory ballooning) — separate lesson."
+    - "Storage virtualization (vSAN) and network virtualization (NSX) — separate lessons."
+    - "vMotion, HA, DRS — separate lessons."
+  decomposition_needed: false
+  decomposition_reasoning: >
+    Single foundational concept. The 'aha' moment depends on seeing the before/after
+    contrast and the hypervisor analogy together; splitting would dilute it.
+
+planned_sections:
+  concept_explanation:
+    target_words: 220
+    notes: "Define virtualization. Define hypervisor inline. State the problem and the solution at this level — no products yet."
+  before_after:
+    target_words_each_side: 110
+    before_focus: "One app per physical server. ~5% utilization. Procurement in weeks. Refreshes cost millions."
+    after_focus: "Many VMs per host. Capacity allocated dynamically. New workloads in minutes."
+    must_acknowledge: "Capacity planning did not disappear — it shifted from physical procurement to virtual resource allocation."
+  analogy:
+    candidate_pool_target: "5 minimum, per QUALITY.md"
+    direction: >
+      Generate at least five substantively different analogies (apartment building, hotel,
+      shared kitchen, theater stage hosting many plays in rotation, library private study
+      rooms, etc.). Score each against QUALITY.md analogy criteria; pick the winner with
+      explicit reasoning. Discarded candidates are saved in NOTES.md.
+    durability_requirement: >
+      The winner becomes the canonical analogy threaded through every later VMware lesson,
+      so it must extend naturally to: snapshots, vMotion (moving VMs between hosts), HA
+      (failover after a host dies), resource pools, and high consolidation ratios. If the
+      analogy collapses on any of those, it is the wrong analogy.
+  eli5:
+    target_words_max: 100
+    must_center: "the chosen analogy, in motion — no jargon"
+  eli10:
+    target_words: 200
+    must_center: "the same analogy as ELI5, with correct technical vocabulary added inline"
+    must_bridge_to: >
+      The practitioner-level concern of how the hypervisor allocates physical resources
+      when many VMs compete — sets up the resource-scheduling lesson.
+  real_world_scenarios:
+    count: 4
+    target_words_each: 110
+    candidate_industries_to_consider:
+      - "Regional bank consolidating legacy app servers."
+      - "Mid-size SaaS company running test/dev environments cheaply."
+      - "University IT consolidating decades of departmental servers."
+      - "Manufacturing company keeping 1990s control software alive on a virtualized old OS."
+      - "Hospital with regulated legacy clinical applications."
+    each_scenario_must_include:
+      - "Concrete company type."
+      - "The specific problem they faced."
+      - "How virtualization solved it, with at least one number."
+      - "An honest complication or trade-off."
+  static_diagram:
+    purpose: >
+      Side-by-side comparison: pre-virtualization rack (one app per server, mostly idle)
+      vs post-virtualization rack (one host running many VMs at high utilization).
+      The static diagram is the frame the animation animates.
+    primitives_needed:
+      - "rack_server_rear — Dell PowerEdge style rear panel (per STYLE.md hardware aesthetic)."
+      - "vm_tile — VM as a labelled rounded rectangle with OS/app slot."
+      - "hypervisor_layer — horizontal band sitting between hardware and VMs, labelled."
+      - "utilization_meter — small bar showing CPU/RAM use on each server."
+    library_state: "Empty. All four primitives must be drafted and founder-approved BEFORE the static diagram is assembled (per CLAUDE.md primitive rule)."
+  animated_illustration:
+    central_motion: >
+      Before mode: four physical servers, each with one app; three utilization meters
+      bounce low (3-12%), one occasionally spikes — visible waste. After mode: a single
+      host with the hypervisor band and 8-10 VMs stacked on top; aggregate utilization
+      runs 60-75%; VM tiles blink as their workloads process.
+    mode_toggles:
+      - "Before (physical only)"
+      - "After (virtualized)"
+    stage_labels:
+      - "Before: one application per server, most capacity idle."
+      - "After: many VMs share one host, capacity is used."
+    duration: "10s loop, per STYLE.md pacing."
+    style_constraints: >
+      Per STYLE.md: PSU fans rotate continuously, components light when active, transparent
+      background, no decorative color, two type weights only.
+  flashcards:
+    count: 10
+    must_cover:
+      - "Virtualization (definition)."
+      - "Virtual machine (definition)."
+      - "Hypervisor (definition + analogy mapping)."
+      - "Physical server vs VM."
+      - "Why consolidation works (low single-app utilization)."
+      - "What did NOT get easier after virtualization."
+      - "The analogy itself — one card asks the learner to map an analogy element back to the technical concept."
+      - "Understanding card: why running multiple VMs is safe (isolation)."
+      - "Understanding card: what would happen if you tried to run multiple OSes on one machine without a hypervisor."
+      - "The hypervisor's role in resource sharing."
+  quiz:
+    count: 3
+    style: "Pause-the-animation prediction questions on 'after' mode + one before/after comparison question."
+
+style_and_decisions_likely_to_emerge:
+  new_visual_conventions_to_log_in_STYLE_md:
+    - "Hypervisor-band visual treatment (color, label position, vertical proportion to host)."
+    - "VM-tile shape, label format, OS-icon convention."
+    - "Utilization-meter scale and color thresholds."
+  new_decisions_to_log_in_DECISIONS_md:
+    - "The canonical foundational analogy for the VMware track."
+    - "Whether the hypervisor band renders below or above the VM stack (visual convention)."
+    - "Default VM count shown in 'after' mode (proposed: 8)."
+  rule: "Each must be added to STYLE.md / DECISIONS.md in the same commit that introduces it."
+
+dependencies_and_risks:
+  blocking_dependencies:
+    - "Four new primitives must be drafted and approved before any animation/diagram assembly."
+  risks:
+    - "Wrong analogy here propagates through every later VMware lesson. QUALITY.md mandates 5+ candidates; this will not be shortcut."
+    - "Founder is the SME — analogy and before/after framing warrant especially careful review against lived experience."
+
+proposed_production_plan:
+  - "Pass 1: Concept explanation + before/after + analogy (5+ candidates → selection with reasoning) → founder review."
+  - "Pass 2: ELI5 + ELI10 + 4 real-world scenarios (3+ drafts each) → founder review."
+  - "Pass 3: Draft 4 new primitives → founder approval → commit to /library/primitives/vmware/."
+  - "Pass 4: Static side-by-side diagram → founder review."
+  - "Pass 5: Animation with before/after mode toggle → founder review."
+  - "Pass 6: 10 flashcards + 3 quiz questions + self-critique pass + first-time-learner test → ship."
+
+founder_decisions_requested_before_production:
+  - "Confirm course slug 'vsphere-fundamentals' and this lesson at position 01."
+  - "Confirm scope: no VMware product names introduced in this lesson."
+  - "Confirm 4 real-world scenarios (vs 3 or 5)."
+  - "Confirm 10 flashcards as the target count."
+  - "Confirm before/after mode toggle is the right animation device for this concept."
+  - "Confirm the 5+ analogy candidate generation step happens before any drafting of ELI5/ELI10."
+  - "Any constraints on the analogy direction the founder wants to steer toward or away from?"

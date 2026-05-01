@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<!--
+  Lesson 07 — SDDC and public cloud. Five modes: compute, storage, network, management, cloud.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SDDC and public cloud — animation</title>
+<style>
+  body { background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 24px; color: #1a1a1a; margin: 0; }
+  .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .mode-btn { border: 1px solid #d8d6cf; background: #ffffff; color: #3a3a3a; padding: 9px 14px; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px; font-family: inherit; transition: all 0.15s; }
+  .mode-btn:hover:not(.active) { background: #f4f1e8; border-color: #5F5E5A; }
+  .mode-btn.active { background: #3F4A5E; color: #FFFFFF; border-color: #3F4A5E; }
+  .stage-label { font-size: 15px; color: #3a3a3a; margin: 12px 0 18px 0; font-weight: 500; }
+  .speed-control { margin-left: auto; font-size: 13px; color: #5F5E5A; display: flex; gap: 8px; align-items: center; }
+  .speed-control input[type=range] { accent-color: #3F4A5E; }
+  #canvas { width: 100%; max-width: 1040px; height: auto; display: block; }
+  #canvas .mode-group { display: none; }
+  #canvas[data-mode="compute"] .mode-compute,
+  #canvas[data-mode="storage"] .mode-storage,
+  #canvas[data-mode="network"] .mode-network,
+  #canvas[data-mode="management"] .mode-management,
+  #canvas[data-mode="cloud"] .mode-cloud { display: block; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button class="mode-btn active" data-mode="compute" type="button">Compute</button>
+  <button class="mode-btn" data-mode="storage" type="button">Storage</button>
+  <button class="mode-btn" data-mode="network" type="button">Network</button>
+  <button class="mode-btn" data-mode="management" type="button">Management</button>
+  <button class="mode-btn" data-mode="cloud" type="button">→ Cloud</button>
+  <button class="mode-btn" id="play-btn" type="button">Pause</button>
+  <span class="speed-control"><span>Speed</span><input type="range" min="0.3" max="2" step="0.1" value="1" id="speed-slider"><span id="speed-display">1.0&times;</span></span>
+</div>
+<div class="stage-label" id="stage-label">Compute virtualization: many VMs on one host. (Lesson 1 territory.)</div>
+
+<svg id="canvas" data-mode="compute" viewBox="0 0 1040 540" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Compute mode: highlighted compute layer with VMs -->
+  <g class="mode-group mode-compute">
+    <text x="520" y="50" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SDDC LAYER 1 — COMPUTE VIRTUALIZATION</text>
+    <g transform="translate(220, 110)">
+      <rect width="600" height="60" rx="6" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.5"/>
+      <text x="300" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF" letter-spacing="1.5">MANAGEMENT &amp; AUTOMATION</text>
+      <!-- 3 service boxes y=60-180 (120 tall) -->
+      <rect x="0" y="60" width="190" height="120" fill="#5DCAA5" opacity="0.3" stroke="#1F8A60" stroke-width="2.5">
+        <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <text x="95" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#1F8A60" letter-spacing="1.5">COMPUTE</text>
+      <text x="95" y="110" text-anchor="middle" font-size="10" fill="#5F5E5A" font-style="italic">vSphere · ESXi</text>
+      <g transform="translate(20, 124)">
+        <rect width="44" height="32" rx="3" fill="#FFFFFF" stroke="#5F5E5A"/>
+        <rect width="44" height="9" rx="3" fill="#5F5E5A"/>
+        <text x="22" y="6" text-anchor="middle" font-size="6" fill="#FFFFFF">VM</text>
+        <rect x="50" width="44" height="32" rx="3" fill="#FFFFFF" stroke="#5F5E5A"/>
+        <rect x="50" width="44" height="9" rx="3" fill="#5F5E5A"/>
+        <text x="72" y="6" text-anchor="middle" font-size="6" fill="#FFFFFF">VM</text>
+        <rect x="100" width="44" height="32" rx="3" fill="#FFFFFF" stroke="#5F5E5A"/>
+        <rect x="100" width="44" height="9" rx="3" fill="#5F5E5A"/>
+        <text x="122" y="6" text-anchor="middle" font-size="6" fill="#FFFFFF">VM</text>
+      </g>
+      <rect x="205" y="60" width="190" height="120" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1" opacity="0.5"/>
+      <text x="300" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#9D9C95" letter-spacing="1.5">storage</text>
+      <rect x="410" y="60" width="190" height="120" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1" opacity="0.5"/>
+      <text x="505" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#9D9C95" letter-spacing="1.5">network</text>
+      <!-- Hardware y=180-260 (80 tall, abuts) -->
+      <rect x="0" y="180" width="600" height="80" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="300" y="210" text-anchor="middle" font-size="13" font-weight="600" fill="#1A1A1A" letter-spacing="1.5">PHYSICAL HARDWARE</text>
+      <text x="300" y="232" text-anchor="middle" font-size="11" fill="#5F5E5A" font-style="italic">commodity x86 servers</text>
+    </g>
+    <text x="520" y="430" text-anchor="middle" font-size="14" fill="#3A3A3A">Compute virtualization is what Lessons 1–6 covered: many VMs on one host, scheduled by a hypervisor.</text>
+  </g>
+
+  <!-- Storage mode -->
+  <g class="mode-group mode-storage">
+    <text x="520" y="50" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SDDC LAYER 2 — STORAGE VIRTUALIZATION</text>
+    <g transform="translate(220, 110)">
+      <rect width="600" height="60" rx="6" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.5"/>
+      <text x="300" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF" letter-spacing="1.5">MANAGEMENT &amp; AUTOMATION</text>
+      <rect x="0" y="60" width="190" height="120" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1" opacity="0.5"/>
+      <text x="95" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#9D9C95" letter-spacing="1.5">compute</text>
+      <rect x="205" y="60" width="190" height="120" fill="#5DCAA5" opacity="0.3" stroke="#1F8A60" stroke-width="2.5">
+        <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <text x="300" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#1F8A60" letter-spacing="1.5">STORAGE</text>
+      <text x="300" y="110" text-anchor="middle" font-size="10" fill="#5F5E5A" font-style="italic">vSAN</text>
+      <g transform="translate(260, 120)">
+        <ellipse cx="20" cy="6" rx="20" ry="6" fill="#A8A8AC" stroke="#5F5E5A"/>
+        <rect x="0" y="6" width="40" height="32" fill="#A8A8AC" stroke="#5F5E5A"/>
+        <ellipse cx="20" cy="38" rx="20" ry="6" fill="#A8A8AC" stroke="#5F5E5A"/>
+      </g>
+      <rect x="410" y="60" width="190" height="120" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1" opacity="0.5"/>
+      <text x="505" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#9D9C95" letter-spacing="1.5">network</text>
+      <rect x="0" y="180" width="600" height="80" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="300" y="210" text-anchor="middle" font-size="13" font-weight="600" fill="#1A1A1A" letter-spacing="1.5">PHYSICAL HARDWARE</text>
+      <text x="300" y="232" text-anchor="middle" font-size="11" fill="#5F5E5A" font-style="italic">disks across many hosts, pooled in software</text>
+    </g>
+    <text x="520" y="430" text-anchor="middle" font-size="14" fill="#3A3A3A">Software-defined storage pools the disks across hosts. VMs see datastores; the software decides where each block lives.</text>
+  </g>
+
+  <!-- Network mode -->
+  <g class="mode-group mode-network">
+    <text x="520" y="50" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SDDC LAYER 3 — NETWORK VIRTUALIZATION</text>
+    <g transform="translate(220, 110)">
+      <rect width="600" height="60" rx="6" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.5"/>
+      <text x="300" y="34" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF" letter-spacing="1.5">MANAGEMENT &amp; AUTOMATION</text>
+      <rect x="0" y="60" width="190" height="120" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1" opacity="0.5"/>
+      <text x="95" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#9D9C95" letter-spacing="1.5">compute</text>
+      <rect x="205" y="60" width="190" height="120" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1" opacity="0.5"/>
+      <text x="300" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#9D9C95" letter-spacing="1.5">storage</text>
+      <rect x="410" y="60" width="190" height="120" fill="#5DCAA5" opacity="0.3" stroke="#1F8A60" stroke-width="2.5">
+        <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <text x="505" y="92" text-anchor="middle" font-size="13" font-weight="700" fill="#1F8A60" letter-spacing="1.5">NETWORK</text>
+      <text x="505" y="110" text-anchor="middle" font-size="10" fill="#5F5E5A" font-style="italic">NSX</text>
+      <g transform="translate(440, 120)">
+        <circle cx="14" cy="14" r="8" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+        <circle cx="64" cy="14" r="8" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+        <circle cx="114" cy="14" r="8" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+        <circle cx="39" cy="40" r="8" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+        <circle cx="89" cy="40" r="8" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+        <line x1="14" y1="14" x2="39" y2="40" stroke="#3F4A5E" stroke-width="1.5"/>
+        <line x1="64" y1="14" x2="39" y2="40" stroke="#3F4A5E" stroke-width="1.5"/>
+        <line x1="64" y1="14" x2="89" y2="40" stroke="#3F4A5E" stroke-width="1.5"/>
+        <line x1="114" y1="14" x2="89" y2="40" stroke="#3F4A5E" stroke-width="1.5"/>
+      </g>
+      <rect x="0" y="180" width="600" height="80" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="300" y="210" text-anchor="middle" font-size="13" font-weight="600" fill="#1A1A1A" letter-spacing="1.5">PHYSICAL HARDWARE</text>
+      <text x="300" y="232" text-anchor="middle" font-size="11" fill="#5F5E5A" font-style="italic">virtual switches, routers, firewalls — all software</text>
+    </g>
+    <text x="520" y="430" text-anchor="middle" font-size="14" fill="#3A3A3A">Software-defined networking gives each application the network topology it needs. No physical reconfiguration.</text>
+  </g>
+
+  <!-- Management mode -->
+  <g class="mode-group mode-management">
+    <text x="520" y="50" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SDDC LAYER 4 — MANAGEMENT &amp; AUTOMATION</text>
+    <g transform="translate(220, 110)">
+      <rect width="600" height="60" rx="6" fill="#3F4A5E" stroke="#1F2433" stroke-width="2.5">
+        <animate attributeName="stroke" values="#1F2433;#5DCAA5;#1F2433" dur="2s" repeatCount="indefinite"/>
+      </rect>
+      <text x="300" y="28" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF" letter-spacing="1.5">MANAGEMENT &amp; AUTOMATION</text>
+      <text x="300" y="46" text-anchor="middle" font-size="11" fill="#5DCAA5" font-style="italic">vCenter · vRealize · APIs · policies</text>
+      <!-- arrows down to all 3 services -->
+      <line x1="100" y1="60" x2="100" y2="80" stroke="#5DCAA5" stroke-width="2"/>
+      <path d="M 100 80 L 94 70 L 106 70 Z" fill="#5DCAA5"/>
+      <line x1="300" y1="60" x2="300" y2="80" stroke="#5DCAA5" stroke-width="2"/>
+      <path d="M 300 80 L 294 70 L 306 70 Z" fill="#5DCAA5"/>
+      <line x1="500" y1="60" x2="500" y2="80" stroke="#5DCAA5" stroke-width="2"/>
+      <path d="M 500 80 L 494 70 L 506 70 Z" fill="#5DCAA5"/>
+      <rect x="0" y="80" width="190" height="100" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+      <text x="95" y="110" text-anchor="middle" font-size="12" font-weight="600" fill="#3F4A5E">COMPUTE</text>
+      <text x="95" y="128" text-anchor="middle" font-size="10" fill="#5F5E5A">vSphere</text>
+      <rect x="205" y="80" width="190" height="100" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+      <text x="300" y="110" text-anchor="middle" font-size="12" font-weight="600" fill="#3F4A5E">STORAGE</text>
+      <text x="300" y="128" text-anchor="middle" font-size="10" fill="#5F5E5A">vSAN</text>
+      <rect x="410" y="80" width="190" height="100" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1"/>
+      <text x="505" y="110" text-anchor="middle" font-size="12" font-weight="600" fill="#3F4A5E">NETWORK</text>
+      <text x="505" y="128" text-anchor="middle" font-size="10" fill="#5F5E5A">NSX</text>
+      <rect x="0" y="180" width="600" height="80" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+      <text x="300" y="210" text-anchor="middle" font-size="13" font-weight="600" fill="#1A1A1A" letter-spacing="1.5">PHYSICAL HARDWARE</text>
+    </g>
+    <text x="520" y="430" text-anchor="middle" font-size="14" fill="#3A3A3A">Management orchestrates compute, storage, and network as one system. Provisioning, policy, monitoring — all from one place.</text>
+  </g>
+
+  <!-- Cloud mode -->
+  <g class="mode-group mode-cloud">
+    <text x="520" y="50" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">PUBLIC CLOUD = SDDC AT HYPERSCALE</text>
+    <!-- Left: SDDC stack -->
+    <g transform="translate(80, 110)">
+      <rect width="380" height="50" rx="4" fill="#3F4A5E"/>
+      <text x="190" y="30" text-anchor="middle" font-size="12" font-weight="600" fill="#FFFFFF">vCenter / vRealize</text>
+      <rect y="50" width="125" height="80" fill="#FFFFFF" stroke="#5F5E5A"/>
+      <text x="62" y="80" text-anchor="middle" font-size="11" fill="#3F4A5E" font-weight="600">vSphere</text>
+      <rect x="127" y="50" width="125" height="80" fill="#FFFFFF" stroke="#5F5E5A"/>
+      <text x="190" y="80" text-anchor="middle" font-size="11" fill="#3F4A5E" font-weight="600">vSAN</text>
+      <rect x="254" y="50" width="126" height="80" fill="#FFFFFF" stroke="#5F5E5A"/>
+      <text x="317" y="80" text-anchor="middle" font-size="11" fill="#3F4A5E" font-weight="600">NSX</text>
+      <rect y="130" width="380" height="60" fill="#A8A8AC" stroke="#5F5E5A"/>
+      <text x="190" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#1A1A1A">Hardware (yours)</text>
+      <text x="190" y="220" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">ON-PREM SDDC</text>
+    </g>
+    <!-- Equivalence arrow -->
+    <g transform="translate(520, 175)">
+      <line x1="-30" y1="0" x2="30" y2="0" stroke="#1F8A60" stroke-width="3"/>
+      <path d="M 30 0 L 18 -10 L 18 10 Z" fill="#1F8A60"/>
+      <path d="M -30 0 L -18 -10 L -18 10 Z" fill="#1F8A60"/>
+      <text x="0" y="-16" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60">SAME</text>
+      <text x="0" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60">PATTERN</text>
+    </g>
+    <!-- Right: AWS stack -->
+    <g transform="translate(580, 110)">
+      <rect width="380" height="50" rx="4" fill="#1F8A60"/>
+      <text x="190" y="30" text-anchor="middle" font-size="12" font-weight="600" fill="#FFFFFF">AWS Console / IAM</text>
+      <rect y="50" width="125" height="80" fill="#FFFFFF" stroke="#5F5E5A"/>
+      <text x="62" y="80" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">EC2</text>
+      <rect x="127" y="50" width="125" height="80" fill="#FFFFFF" stroke="#5F5E5A"/>
+      <text x="190" y="80" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">EBS · S3</text>
+      <rect x="254" y="50" width="126" height="80" fill="#FFFFFF" stroke="#5F5E5A"/>
+      <text x="317" y="80" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">VPC</text>
+      <rect y="130" width="380" height="60" fill="#A8A8AC" stroke="#5F5E5A"/>
+      <text x="190" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#1A1A1A">Hardware (AWS's)</text>
+      <text x="190" y="220" text-anchor="middle" font-size="13" font-weight="700" fill="#1F8A60" letter-spacing="1.5">PUBLIC CLOUD</text>
+    </g>
+    <text x="520" y="430" text-anchor="middle" font-size="14" fill="#3A3A3A">EC2 = vSphere. EBS = vSAN. VPC = NSX. AWS Console = vCenter. The shape of the stack is identical.</text>
+    <text x="520" y="456" text-anchor="middle" font-size="13" fill="#9D9C95" font-style="italic">The cloud isn't magic. It's an SDDC at scale, with managed services on top.</text>
+  </g>
+
+</svg>
+
+<script>
+(function () {
+  const svg = document.getElementById('canvas');
+  const playBtn = document.getElementById('play-btn');
+  const speedSlider = document.getElementById('speed-slider');
+  const speedDisplay = document.getElementById('speed-display');
+  const stageLabel = document.getElementById('stage-label');
+  const stageText = {
+    compute: 'Compute virtualization: many VMs on one host. (Lesson 1 territory.)',
+    storage: 'Storage virtualization: pool the disks; software decides where each block lives.',
+    network: 'Network virtualization: switches, routers, firewalls — all in software.',
+    management: 'Management plane: orchestrates compute, storage, and network as one system.',
+    cloud: 'Public cloud is the same SDDC pattern, at hyperscale, rented by the hour.'
+  };
+  let speed = 1.0, isPaused = false, svgClock = 0, lastFrame = performance.now();
+  svg.pauseAnimations();
+  function tick(now) {
+    const dt = (now - lastFrame) / 1000;
+    lastFrame = now;
+    if (!isPaused) { svgClock += dt * speed; svg.setCurrentTime(svgClock); }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => btn.addEventListener('click', () => {
+    const mode = btn.dataset.mode;
+    document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.toggle('active', b === btn));
+    svg.dataset.mode = mode;
+    stageLabel.textContent = stageText[mode];
+    svgClock = 0; svg.setCurrentTime(0);
+  }));
+  playBtn.addEventListener('click', () => { isPaused = !isPaused; playBtn.textContent = isPaused ? 'Play' : 'Pause'; });
+  speedSlider.addEventListener('input', e => { speed = parseFloat(e.target.value); speedDisplay.textContent = speed.toFixed(1) + '×'; });
+})();
+</script>
+</body>
+</html>

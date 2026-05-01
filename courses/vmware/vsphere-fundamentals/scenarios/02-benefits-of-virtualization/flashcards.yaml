@@ -1,0 +1,70 @@
+# Flashcards — Lesson 02: Benefits of virtualization
+# 10 cards. Each tests one concept. Mix of recall (definitions) and understanding (why).
+
+cards:
+  - front: "Name the five primary benefits of virtualization."
+    back: >
+      Consolidation, speed, isolation, snapshots, and mobility. Many workloads on
+      one host; provisioning in minutes; one VM crashing doesn't affect the others;
+      capture and restore a VM's full state in seconds; move running VMs between
+      hosts without downtime.
+
+  - front: "What does consolidation give you, beyond fewer machines?"
+    back: >
+      Less hardware spend, less power and cooling, less rack space, fewer hardware
+      refresh cycles, and a smaller physical footprint to manage. The downstream
+      effects compound — a smaller datacenter has lower fixed costs across the board.
+
+  - front: "Why is provisioning a new VM faster than provisioning a new physical server?"
+    back: >
+      Because a VM is a software construct, not a hardware purchase. There's no
+      ordering, shipping, racking, or cabling. A VM is created from a template in
+      software within minutes; a physical server takes weeks of procurement.
+
+  - front: "What does VM isolation guarantee, and what enforces it?"
+    back: >
+      Isolation guarantees that one VM's crash, runaway process, or memory corruption
+      can't reach into another VM on the same host. The hypervisor enforces it — by
+      giving each VM its own slice of memory and CPU, and blocking any access outside
+      that slice.
+
+  - front: "What is a snapshot in virtualization?"
+    back: >
+      A snapshot is a captured copy of a VM's complete state at a specific moment —
+      its disk contents, its memory, its configuration. You can roll the VM back to
+      that state instantly. In the apartment-building analogy: the superintendent's
+      midnight photograph of every apartment.
+
+  - front: "Why was rolling back a server change hard before virtualization?"
+    back: >
+      Because rolling back meant restoring from tape backup or reinstalling the
+      operating system from scratch — both took hours and lost recent work.
+      Snapshots replaced both with a 2-second revert.
+
+  - front: "What does VM mobility do, and why is it surprising?"
+    back: >
+      Mobility moves a running VM from one physical host to another with no
+      downtime — the application keeps serving traffic during the move. It's
+      surprising because the same operation in physical hardware is impossible:
+      you can't lift a running computer off a desk and into another building
+      without stopping it.
+
+  - front: "In the apartment-building analogy, what is mobility?"
+    back: >
+      The building has a service that lifts an entire apartment — furniture,
+      residents, pets, water still in the kettle — and slots it into an identical
+      apartment in a sister building. The residents barely notice they moved.
+
+  - front: "What capability does virtualization NOT eliminate?"
+    back: >
+      Capacity planning. The team no longer buys a physical server for each new
+      workload, but they still have to decide how many hosts to run, how to slice
+      their resources, and how to handle competing demand. The work shifted; it
+      didn't disappear.
+
+  - front: "Which two benefits combine to make routine hardware maintenance painless?"
+    back: >
+      Mobility and isolation. The team moves running VMs off a host before doing
+      maintenance, so no application is ever interrupted; isolation guarantees
+      that the move doesn't affect other VMs on the same source or destination.
+      Maintenance becomes invisible to users.

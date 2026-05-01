@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Lesson 05 — vSphere context and resources
+  Hub-and-spoke: 4 UIs feed into vSphere center; 5 hardware resources feed out.
+  ViewBox 1100 × 720. Alignment math verified pre-ship.
+
+  Layout (top to bottom):
+    Title:       y=30
+    UI boxes:    y=80 to y=180 (100 tall) — 4 boxes 220 wide, gap 20, x=80,320,560,800
+    Trunk in:    y=180 to y=240 (drops down + horizontal bus + drop into vSphere top)
+    vSphere:     y=270 to y=400 (130 tall) — centered, x=370 to x=730 (360 wide)
+    Trunk out:   y=400 to y=470 (drops down + bus + drops up to hardware tops)
+    Hardware:    y=470 to y=600 (130 tall) — 5 boxes 180 wide, gap 16, x=68,264,460,656,852
+    Caption:     y=660
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" width="1100" height="720"
+     font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+
+  <!-- Title -->
+  <text x="550" y="32" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" letter-spacing="2.5">VSPHERE — INTERFACES IN, RESOURCES OUT</text>
+  <line x1="380" y1="48" x2="720" y2="48" stroke="#E8E5DD" stroke-width="1"/>
+
+  <!-- Eyebrow labels -->
+  <text x="550" y="68" text-anchor="middle" font-size="11" font-weight="600" fill="#9D9C95" letter-spacing="1.5">YOU TALK TO VSPHERE THROUGH ↓</text>
+
+  <!-- ============================== UI BOXES (top row) ============================== -->
+  <!-- 4 boxes at x=80, 320, 560, 800; each 220 wide × 100 tall; y=80 to 180 -->
+
+  <!-- vSphere Client -->
+  <g transform="translate(80, 80)">
+    <rect width="220" height="100" rx="10" fill="#FFFFFF" stroke="#E8E5DD" stroke-width="1.5"/>
+    <!-- Browser-style icon -->
+    <g transform="translate(20, 22)">
+      <rect width="56" height="44" rx="4" fill="#3F4A5E"/>
+      <rect x="2" y="2" width="52" height="8" fill="#536179"/>
+      <circle cx="6" cy="6" r="1.5" fill="#E24B4A"/>
+      <circle cx="11" cy="6" r="1.5" fill="#FAC775"/>
+      <circle cx="16" cy="6" r="1.5" fill="#5DCAA5"/>
+      <rect x="4" y="14" width="48" height="26" fill="#E8EAEF"/>
+      <rect x="7" y="17" width="20" height="3" fill="#5F5E5A"/>
+      <rect x="7" y="22" width="32" height="2" fill="#9D9C95"/>
+      <rect x="7" y="26" width="28" height="2" fill="#9D9C95"/>
+      <rect x="7" y="32" width="14" height="6" fill="#3F4A5E"/>
+    </g>
+    <text x="155" y="38" font-size="13" font-weight="700" fill="#1A1A1A" letter-spacing="0.5">vSphere Client</text>
+    <text x="155" y="56" font-size="10" fill="#5F5E5A">Web UI · day-to-day</text>
+    <text x="155" y="74" font-size="10" fill="#9D9C95" font-style="italic">served by vCenter</text>
+  </g>
+
+  <!-- Host Client -->
+  <g transform="translate(320, 80)">
+    <rect width="220" height="100" rx="10" fill="#FFFFFF" stroke="#E8E5DD" stroke-width="1.5"/>
+    <!-- Laptop icon -->
+    <g transform="translate(20, 22)">
+      <rect x="4" y="6" width="48" height="32" rx="2" fill="#3F4A5E"/>
+      <rect x="6" y="8" width="44" height="28" fill="#E8EAEF"/>
+      <rect x="0" y="38" width="56" height="6" rx="1" fill="#536179"/>
+      <text x="28" y="26" text-anchor="middle" font-size="10" fill="#3F4A5E" font-weight="700">ESXi</text>
+    </g>
+    <text x="155" y="38" font-size="13" font-weight="700" fill="#1A1A1A" letter-spacing="0.5">Host Client</text>
+    <text x="155" y="56" font-size="10" fill="#5F5E5A">Per-host web UI</text>
+    <text x="155" y="74" font-size="10" fill="#9D9C95" font-style="italic">when vCenter is down</text>
+  </g>
+
+  <!-- DCUI -->
+  <g transform="translate(560, 80)">
+    <rect width="220" height="100" rx="10" fill="#FFFFFF" stroke="#E8E5DD" stroke-width="1.5"/>
+    <!-- Yellow console icon -->
+    <g transform="translate(20, 22)">
+      <rect width="56" height="44" rx="3" fill="#FAC775"/>
+      <rect x="3" y="3" width="50" height="38" fill="#1F2433"/>
+      <text x="6" y="14" font-size="6" fill="#FAC775" font-family="monospace">VMware ESXi 8.0</text>
+      <text x="6" y="22" font-size="6" fill="#FAC775" font-family="monospace">F2 Customize</text>
+      <text x="6" y="30" font-size="6" fill="#FAC775" font-family="monospace">F12 Shut Down</text>
+      <rect x="6" y="34" width="3" height="3" fill="#FAC775"/>
+    </g>
+    <text x="155" y="38" font-size="13" font-weight="700" fill="#1A1A1A" letter-spacing="0.5">DCUI</text>
+    <text x="155" y="56" font-size="10" fill="#5F5E5A">Console on the host</text>
+    <text x="155" y="74" font-size="10" fill="#9D9C95" font-style="italic">F2 to log in · emergencies</text>
+  </g>
+
+  <!-- CLI / API -->
+  <g transform="translate(800, 80)">
+    <rect width="220" height="100" rx="10" fill="#FFFFFF" stroke="#E8E5DD" stroke-width="1.5"/>
+    <!-- Terminal icon -->
+    <g transform="translate(20, 22)">
+      <rect width="56" height="44" rx="4" fill="#1F2433"/>
+      <text x="4" y="14" font-size="7" fill="#5DCAA5" font-family="monospace">$ Connect-VIServer</text>
+      <text x="4" y="24" font-size="7" fill="#5DCAA5" font-family="monospace">$ Get-VM</text>
+      <text x="4" y="34" font-size="7" fill="#5DCAA5" font-family="monospace">vm-01    Powered On</text>
+      <rect x="4" y="37" width="4" height="6" fill="#5DCAA5"/>
+    </g>
+    <text x="155" y="38" font-size="13" font-weight="700" fill="#1A1A1A" letter-spacing="0.5">CLI &amp; API</text>
+    <text x="155" y="56" font-size="10" fill="#5F5E5A">PowerCLI · esxcli · REST</text>
+    <text x="155" y="74" font-size="10" fill="#9D9C95" font-style="italic">automation, scripts</text>
+  </g>
+
+  <!-- Trunk: 4 UIs → vSphere -->
+  <line x1="190" y1="180" x2="190" y2="220" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="430" y1="180" x2="430" y2="220" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="670" y1="180" x2="670" y2="220" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="910" y1="180" x2="910" y2="220" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="190" y1="220" x2="910" y2="220" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="550" y1="220" x2="550" y2="270" stroke="#3F4A5E" stroke-width="2"/>
+
+  <!-- ============================== VSPHERE CENTER ============================== -->
+  <g transform="translate(370, 270)">
+    <rect width="360" height="130" rx="14" fill="#3F4A5E" stroke="#1F2433" stroke-width="2"/>
+    <text x="180" y="42" text-anchor="middle" font-size="22" font-weight="600" fill="#FFFFFF" letter-spacing="1.5">vSphere</text>
+    <text x="180" y="68" text-anchor="middle" font-size="12" fill="#B5C0D0" font-style="italic">the compute layer of the SDDC</text>
+    <line x1="40" y1="84" x2="320" y2="84" stroke="#536179" stroke-width="1"/>
+    <text x="180" y="106" text-anchor="middle" font-size="11" fill="#E8EAEF" letter-spacing="1.2">ESXi (hypervisor)  +  vCenter (mgmt)</text>
+  </g>
+
+  <!-- Trunk: vSphere → 5 hardware -->
+  <line x1="550" y1="400" x2="550" y2="440" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="158" y1="440" x2="942" y2="440" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="158" y1="440" x2="158" y2="470" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="354" y1="440" x2="354" y2="470" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="550" y1="440" x2="550" y2="470" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="746" y1="440" x2="746" y2="470" stroke="#3F4A5E" stroke-width="2"/>
+  <line x1="942" y1="440" x2="942" y2="470" stroke="#3F4A5E" stroke-width="2"/>
+
+  <!-- Eyebrow label below trunk -->
+  <text x="550" y="460" text-anchor="middle" font-size="11" font-weight="600" fill="#9D9C95" letter-spacing="1.5">VSPHERE TOUCHES THESE FIVE RESOURCES ↓</text>
+
+  <!-- ============================== HARDWARE BOXES (bottom row) ============================== -->
+  <!-- 5 boxes 180 wide × 130 tall; centers x=158,354,550,746,942; left edges x=68,264,460,656,852 -->
+
+  <!-- CPU -->
+  <g transform="translate(68, 470)">
+    <rect width="180" height="130" rx="10" fill="#FFFFFF" stroke="#E8E5DD" stroke-width="1.5"/>
+    <!-- CPU chip icon -->
+    <g transform="translate(60, 16)">
+      <rect width="60" height="40" rx="3" fill="#3F4A5E" stroke="#1F2433" stroke-width="1"/>
+      <rect x="6" y="6" width="48" height="28" fill="#536179"/>
+      <text x="30" y="24" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">CPU</text>
+      <!-- pins -->
+      <line x1="10" y1="40" x2="10" y2="46" stroke="#3F4A5E" stroke-width="1"/>
+      <line x1="20" y1="40" x2="20" y2="46" stroke="#3F4A5E" stroke-width="1"/>
+      <line x1="30" y1="40" x2="30" y2="46" stroke="#3F4A5E" stroke-width="1"/>
+      <line x1="40" y1="40" x2="40" y2="46" stroke="#3F4A5E" stroke-width="1"/>
+      <line x1="50" y1="40" x2="50" y2="46" stroke="#3F4A5E" stroke-width="1"/>
+    </g>
+    <text x="90" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#1A1A1A">CPU</text>
+    <text x="90" y="98" text-anchor="middle" font-size="10" fill="#5F5E5A">cores, threads</text>
+    <text x="90" y="114" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">VT-x, NUMA-aware</text>
+  </g>
+
+  <!-- Memory -->
+  <g transform="translate(264, 470)">
+    <rect width="180" height="130" rx="10" fill="#FFFFFF" stroke="#E8E5DD" stroke-width="1.5"/>
+    <!-- RAM stick icon -->
+    <g transform="translate(50, 18)">
+      <rect width="80" height="32" rx="2" fill="#5DCAA5" opacity="0.3" stroke="#1F8A60" stroke-width="1.5"/>
+      <rect x="6" y="6" width="10" height="20" fill="#1F8A60"/>
+      <rect x="20" y="6" width="10" height="20" fill="#1F8A60"/>
+      <rect x="34" y="6" width="10" height="20" fill="#1F8A60"/>
+      <rect x="48" y="6" width="10" height="20" fill="#1F8A60"/>
+      <rect x="62" y="6" width="10" height="20" fill="#1F8A60"/>
+      <line x1="10" y1="32" x2="10" y2="36" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="20" y1="32" x2="20" y2="36" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="30" y1="32" x2="30" y2="36" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="40" y1="32" x2="40" y2="36" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="50" y1="32" x2="50" y2="36" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="60" y1="32" x2="60" y2="36" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="70" y1="32" x2="70" y2="36" stroke="#1F8A60" stroke-width="1"/>
+    </g>
+    <text x="90" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#1A1A1A">Memory</text>
+    <text x="90" y="98" text-anchor="middle" font-size="10" fill="#5F5E5A">RAM, allocations</text>
+    <text x="90" y="114" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">overcommit, ballooning</text>
+  </g>
+
+  <!-- Network -->
+  <g transform="translate(460, 470)">
+    <rect width="180" height="130" rx="10" fill="#FFFFFF" stroke="#E8E5DD" stroke-width="1.5"/>
+    <!-- Network nodes icon -->
+    <g transform="translate(50, 16)">
+      <circle cx="14" cy="14" r="7" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+      <circle cx="48" cy="14" r="7" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+      <circle cx="82" cy="14" r="7" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+      <circle cx="31" cy="38" r="7" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+      <circle cx="65" cy="38" r="7" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+      <line x1="14" y1="14" x2="31" y2="38" stroke="#3F4A5E" stroke-width="1.5"/>
+      <line x1="48" y1="14" x2="31" y2="38" stroke="#3F4A5E" stroke-width="1.5"/>
+      <line x1="48" y1="14" x2="65" y2="38" stroke="#3F4A5E" stroke-width="1.5"/>
+      <line x1="82" y1="14" x2="65" y2="38" stroke="#3F4A5E" stroke-width="1.5"/>
+    </g>
+    <text x="90" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#1A1A1A">Network</text>
+    <text x="90" y="98" text-anchor="middle" font-size="10" fill="#5F5E5A">vSwitches, VLANs</text>
+    <text x="90" y="114" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">port groups, NICs</text>
+  </g>
+
+  <!-- Storage -->
+  <g transform="translate(656, 470)">
+    <rect width="180" height="130" rx="10" fill="#FFFFFF" stroke="#E8E5DD" stroke-width="1.5"/>
+    <!-- Storage cylinder icon -->
+    <g transform="translate(70, 14)">
+      <ellipse cx="20" cy="6" rx="20" ry="6" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+      <rect x="0" y="6" width="40" height="36" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+      <ellipse cx="20" cy="42" rx="20" ry="6" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+      <ellipse cx="20" cy="18" rx="20" ry="6" fill="none" stroke="#5F5E5A" stroke-width="1" opacity="0.5"/>
+      <ellipse cx="20" cy="30" rx="20" ry="6" fill="none" stroke="#5F5E5A" stroke-width="1" opacity="0.5"/>
+    </g>
+    <text x="90" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#1A1A1A">Storage</text>
+    <text x="90" y="98" text-anchor="middle" font-size="10" fill="#5F5E5A">datastores, .vmdk</text>
+    <text x="90" y="114" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">VMFS, NFS, vSAN</text>
+  </g>
+
+  <!-- GPU -->
+  <g transform="translate(852, 470)">
+    <rect width="180" height="130" rx="10" fill="#FFFFFF" stroke="#E8E5DD" stroke-width="1.5"/>
+    <!-- GPU board icon -->
+    <g transform="translate(40, 16)">
+      <rect width="100" height="40" rx="3" fill="#1F8A60" stroke="#0F5F40" stroke-width="1.5"/>
+      <rect x="6" y="6" width="40" height="28" fill="#0F5F40"/>
+      <rect x="50" y="6" width="44" height="28" fill="#0F5F40"/>
+      <text x="26" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="#5DCAA5">GPU</text>
+      <text x="72" y="24" text-anchor="middle" font-size="9" font-weight="700" fill="#5DCAA5">VRAM</text>
+      <line x1="10" y1="40" x2="10" y2="46" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="22" y1="40" x2="22" y2="46" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="34" y1="40" x2="34" y2="46" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="46" y1="40" x2="46" y2="46" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="58" y1="40" x2="58" y2="46" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="70" y1="40" x2="70" y2="46" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="82" y1="40" x2="82" y2="46" stroke="#1F8A60" stroke-width="1"/>
+      <line x1="94" y1="40" x2="94" y2="46" stroke="#1F8A60" stroke-width="1"/>
+    </g>
+    <text x="90" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#1A1A1A">GPU</text>
+    <text x="90" y="98" text-anchor="middle" font-size="10" fill="#5F5E5A">vGPU, passthrough</text>
+    <text x="90" y="114" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">VDI, AI / ML</text>
+  </g>
+
+  <!-- Bottom caption -->
+  <text x="550" y="654" text-anchor="middle" font-size="13" fill="#3F4A5E" font-style="italic">Four ways for humans to talk to vSphere. Five resources vSphere coordinates underneath.</text>
+  <text x="550" y="676" text-anchor="middle" font-size="11" fill="#9D9C95">All of this sits inside the SDDC; vSphere is the compute layer.</text>
+
+</svg>

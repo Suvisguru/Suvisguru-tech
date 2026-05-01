@@ -1,0 +1,49 @@
+# Quiz — Lesson 06: Types of hypervisors
+
+questions:
+  - id: q1
+    prompt: >
+      Pause the animation in 'type1' mode. The diagram shows a stack: hardware → ESXi →
+      VMs. There is no host operating system between ESXi and the hardware. Predict:
+      what gets faster as a result?
+    pause_at_mode: type1
+    answer: >
+      Every hardware request a VM makes. CPU instructions, memory access, disk I/O,
+      network packets — all reach the hardware through the hypervisor only, with no OS
+      layer in between. This is why Type 1 gets near-native performance.
+    reasoning: >
+      The host OS in a Type 2 stack does real work — it handles drivers, scheduling,
+      file systems. Removing it means the hypervisor talks to the hardware directly,
+      which removes 15-30% of overhead. Production-scale environments multiply this
+      gain across hundreds of servers.
+
+  - id: q2
+    prompt: >
+      Pause the animation in 'type2' mode. A developer's laptop runs Windows, with
+      VMware Workstation as a Type 2 hypervisor on top. Inside Workstation, two Linux
+      VMs are running. Predict: if the user closes Workstation, what happens to the VMs?
+    pause_at_mode: type2
+    answer: >
+      The VMs stop. They're processes inside the Workstation application; closing the
+      app shuts them down (or suspends them, depending on settings). The host OS keeps
+      running normally because the hypervisor was just an application on top.
+    reasoning: >
+      In Type 2, the hypervisor is an app. Quitting the app ends the VMs. Compare to
+      Type 1, where the hypervisor IS the OS — there is no "quitting" it without
+      shutting down the entire physical machine.
+
+  - id: q3
+    prompt: >
+      Pause the animation. A startup is choosing what to run their production
+      e-commerce site on. They have 50 physical servers. Predict: should they use Type
+      1 or Type 2, and why?
+    pause_at_mode: type1
+    answer: >
+      Type 1 (specifically ESXi or another bare-metal hypervisor). At 50 hosts, losing
+      15-30% to a host OS would mean buying 8-15 additional physical servers — a real
+      capital cost. Type 2 also adds attack surface and patching burden across 50 hosts.
+    reasoning: >
+      Type 1 vs Type 2 isn't a religious debate — it's a practical one. At desktop
+      scale, the convenience of Type 2 dominates. At datacenter scale, the performance
+      and security advantages of Type 1 dominate. The decision is almost always made by
+      counting hosts.

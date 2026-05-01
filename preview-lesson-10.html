@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 10 — Configuring vSphere Networking · vSphere Fundamentals</title>
+<style>
+  :root {
+    --bg: #FAFBFC; --bg-elevated: #FFFFFF; --bg-soft: #F3F5F9;
+    --text: #1F2937; --text-muted: #5A6B81; --text-soft: #7B8A9E;
+    --border: #D5DCE6; --border-soft: #E5E9F0;
+    --accent: #3F4A5E; --accent-light: #5E6E89; --accent-soft: #ECEFF5;
+    --success: #1F8A60; --success-soft: #E5F3EC;
+    --warn: #B85829; --warn-soft: #FBEDE3;
+    --danger: #8E2A2A; --danger-soft: #F5E6E6;
+    --gold: #F2C94C; --gold-soft: #FBF4D6;
+    --r-pill: 999px; --r-card: 12px; --r-soft: 8px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04); --shadow-md: 0 4px 16px rgba(31,41,55,0.06);
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  [data-theme="dark"] {
+    --bg: #0F1419; --bg-elevated: #1A2028; --bg-soft: #1F2630;
+    --text: #E5E9F0; --text-muted: #A0A8B8; --text-soft: #7B8A9E;
+    --border: #2A3340; --border-soft: #232B36;
+    --accent: #7C8FAE; --accent-light: #9CADC9; --accent-soft: #232B36;
+    --success: #5DCAA5; --success-soft: #1F3A2E;
+    --warn: #E6804E; --warn-soft: #3A2418;
+    --danger: #E07474; --danger-soft: #3A2020;
+    --gold: #F2C94C; --gold-soft: #3A2F18;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3); --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 130px; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; transition: background 0.2s var(--ease), color 0.2s var(--ease); }
+  .topbar { background: var(--bg-elevated); border-bottom: 1px solid var(--border-soft); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); }
+  .topbar-inner { max-width: 1100px; margin: 0 auto; display: flex; gap: 16px; align-items: center; padding: 10px 24px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; color: var(--text); text-decoration: none; }
+  .brand-mark { width: 24px; height: 24px; border-radius: 6px; background: linear-gradient(135deg, var(--accent), var(--accent-light)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 11px; }
+  .brand .course { color: var(--text-muted); font-weight: 500; font-size: 13px; }
+  .progress { flex: 1; max-width: 360px; height: 6px; background: var(--border-soft); border-radius: var(--r-pill); overflow: hidden; margin: 0 16px; }
+  .progress-fill { width: 83%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); }
+  .progress-label { font-size: 12px; color: var(--text-muted); margin-right: 12px; }
+  .theme-toggle { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: var(--r-pill); cursor: pointer; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; transition: all 0.15s var(--ease); }
+  .theme-toggle:hover { background: var(--accent-soft); border-color: var(--accent-light); }
+  .course-nav { background: var(--bg-elevated); border-bottom: 1px solid var(--border-soft); position: sticky; top: 49px; z-index: 95; }
+  .course-nav-inner { display: flex; gap: 6px; max-width: 1100px; margin: 0 auto; padding: 8px 24px; overflow-x: auto; scrollbar-width: thin; }
+  .course-nav-inner::-webkit-scrollbar { height: 6px; }
+  .course-nav-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .lesson-link { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; border-radius: var(--r-pill); border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); text-decoration: none; font-size: 12px; flex-shrink: 0; transition: all 0.15s var(--ease); white-space: nowrap; }
+  .lesson-link:hover:not(.active) { background: var(--accent-soft); color: var(--text); border-color: var(--accent-light); }
+  .lesson-link.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  [data-theme="dark"] .lesson-link.active { color: var(--bg); }
+  .lesson-link .num { font-weight: 700; opacity: 0.8; }
+  .lesson-link .name { font-weight: 500; }
+  @media (max-width: 600px) { .lesson-link .name { display: none; } .lesson-link { padding: 6px 10px; min-width: 32px; justify-content: center; } }
+  .sub-nav { background: var(--bg); border-bottom: 1px solid var(--border-soft); position: sticky; top: 98px; z-index: 90; }
+  .sub-nav-inner { display: flex; gap: 6px; max-width: 1100px; margin: 0 auto; padding: 8px 24px; overflow-x: auto; align-items: center; scrollbar-width: thin; }
+  .sub-nav-inner::-webkit-scrollbar { height: 6px; }
+  .sub-nav-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  .sub-nav-label { font-size: 11px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; margin-right: 8px; }
+  .sub-link { display: inline-flex; gap: 6px; align-items: center; padding: 5px 11px; border-radius: var(--r-pill); border: 1px solid var(--border); background: var(--bg-elevated); color: var(--text-muted); text-decoration: none; font-size: 11.5px; flex-shrink: 0; transition: all 0.15s var(--ease); white-space: nowrap; }
+  .sub-link:hover { background: var(--accent-soft); color: var(--text); border-color: var(--accent-light); }
+  .sub-link.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  [data-theme="dark"] .sub-link.active { color: var(--bg); }
+  .sub-link .num { font-weight: 700; opacity: 0.85; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 24px 96px; }
+  .lesson-meta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; font-size: 12px; color: var(--text-muted); }
+  .badge { display: inline-flex; gap: 4px; align-items: center; background: var(--accent-soft); color: var(--accent); padding: 4px 10px; border-radius: var(--r-pill); font-weight: 600; font-size: 11px; }
+  h1 { font-size: 36px; margin: 0 0 14px; line-height: 1.2; letter-spacing: -0.5px; }
+  .lesson-tagline { font-size: 17px; color: var(--text-muted); margin: 0 0 32px; max-width: 760px; }
+  .hero { background: var(--bg-elevated); border: 1px solid var(--border-soft); border-radius: var(--r-card); padding: 28px; margin-bottom: 40px; box-shadow: var(--shadow-md); }
+  .hero-title { font-size: 18px; font-weight: 700; margin: 0 0 6px; color: var(--text); }
+  .hero-subtitle { color: var(--text-muted); font-size: 14px; margin: 0 0 22px; }
+  .journey { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 22px; }
+  @media (max-width: 900px) { .journey { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 540px) { .journey { grid-template-columns: repeat(2, 1fr); } }
+  .station { background: var(--bg); border: 1px solid var(--border-soft); border-radius: var(--r-card); padding: 14px; cursor: pointer; transition: all 0.15s var(--ease); display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: inherit; position: relative; animation: btn-pop 2.4s ease-in-out infinite; }
+  @keyframes btn-pop { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(63,74,94,0); } 50% { transform: scale(1.015); box-shadow: 0 0 0 4px rgba(63,74,94,0.05); } }
+  .station:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--accent-light); animation: none; }
+  .station-num { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-weight: 700; font-size: 13px; color: #fff; }
+  .station-num.s1 { background: #3F4A5E; } .station-num.s2 { background: #5E4A8E; } .station-num.s3 { background: #2E7A8C; } .station-num.s4 { background: #1F8A60; } .station-num.s5 { background: #B85829; } .station-num.s6 { background: #8E2A2A; }
+  .station-title { font-weight: 700; font-size: 13.5px; color: var(--text); margin-top: 4px; }
+  .station-desc { font-size: 11.5px; color: var(--text-muted); }
+  .hero-summary { background: var(--bg-soft); border-left: 3px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--r-soft) var(--r-soft) 0; font-size: 14px; color: var(--text); }
+  .subtopic { margin-bottom: 56px; padding-top: 8px; }
+  .subtopic-header { margin-bottom: 22px; padding: 18px 22px; background: var(--bg-elevated); border-left: 4px solid var(--accent); border-radius: var(--r-soft); box-shadow: var(--shadow-sm); }
+  .subtopic-header.s1 { border-left-color: #3F4A5E; }
+  .subtopic-header.s2 { border-left-color: #5E4A8E; }
+  .subtopic-header.s3 { border-left-color: #2E7A8C; }
+  .subtopic-header.s4 { border-left-color: #1F8A60; }
+  .subtopic-header.s5 { border-left-color: #B85829; }
+  .subtopic-header.s6 { border-left-color: #8E2A2A; }
+  .subtopic-meta { display: inline-block; font-size: 11px; color: var(--text-soft); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; }
+  .subtopic-header h2 { margin: 4px 0 4px; font-size: 24px; line-height: 1.25; color: var(--text); }
+  .subtopic-tagline { margin: 0; font-size: 14px; color: var(--text-muted); }
+  .block { background: var(--bg-elevated); border: 1px solid var(--border-soft); border-radius: var(--r-card); padding: 22px 26px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+  .block h3 { margin: 0 0 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); display: inline-flex; gap: 8px; align-items: center; }
+  .block p { margin: 0 0 10px; font-size: 15px; }
+  .block p:last-child { margin-bottom: 0; }
+  .block ul, .block ol { margin: 8px 0 0; padding-left: 22px; }
+  .block li { margin-bottom: 6px; font-size: 15px; }
+  .before-after { display: grid; grid-template-columns: 1fr 24px 1fr; gap: 14px; align-items: center; }
+  @media (max-width: 720px) { .before-after { grid-template-columns: 1fr; } .ba-arrow { transform: rotate(90deg); justify-self: center; } }
+  .ba-card { padding: 16px; border-radius: var(--r-soft); border: 1px solid var(--border-soft); }
+  .ba-card.before { background: var(--warn-soft); border-color: var(--warn); }
+  .ba-card.after { background: var(--success-soft); border-color: var(--success); }
+  .ba-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .ba-card.before .ba-label { color: var(--warn); }
+  .ba-card.after .ba-label { color: var(--success); }
+  .ba-card p { font-size: 14px; }
+  .ba-arrow { font-size: 22px; color: var(--accent); text-align: center; }
+  .analogy { background: linear-gradient(135deg, var(--gold-soft) 0%, var(--bg-elevated) 100%); border-color: var(--gold); }
+  .analogy .ico-flag { display: inline-block; padding: 2px 8px; background: var(--gold); color: #1F2937; font-weight: 700; font-size: 11px; border-radius: var(--r-pill); margin-right: 8px; }
+  .quick-check { background: var(--accent-soft); border-color: var(--accent-light); }
+  .qc-question { font-weight: 600; margin-bottom: 14px; font-size: 15px; }
+  .qc-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .qc-option { background: var(--bg-elevated); border: 1.5px solid var(--border); border-radius: var(--r-soft); padding: 12px 14px; cursor: pointer; text-align: left; font-size: 14px; color: var(--text); transition: all 0.15s var(--ease); font-family: inherit; animation: btn-pop 2.4s ease-in-out infinite; }
+  .qc-option:hover { background: var(--accent-soft); border-color: var(--accent-light); animation: none; }
+  .qc-option.correct { background: var(--success-soft); border-color: var(--success); color: var(--success); font-weight: 600; animation: none; }
+  .qc-option.wrong { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); animation: none; }
+  .qc-option.disabled { cursor: default; opacity: 0.6; animation: none; }
+  .qc-feedback { padding: 12px 14px; border-radius: var(--r-soft); background: var(--bg); border: 1px solid var(--border-soft); font-size: 14px; display: none; }
+  .qc-feedback.show { display: block; }
+  .qc-feedback.right { background: var(--success-soft); border-color: var(--success); color: var(--success); }
+  .qc-feedback.wrong-fb { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
+  .eli-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .eli-pair { grid-template-columns: 1fr; } }
+  .eli-card { background: var(--bg-soft); border: 1px solid var(--border-soft); border-radius: var(--r-soft); padding: 18px; }
+  .eli-tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: var(--r-pill); margin-bottom: 8px; }
+  .eli-tag.five { background: #FFE4B5; color: #8B5A00; }
+  .eli-tag.ten { background: #D6E4F8; color: #1F4F8B; }
+  .eli-card p { font-size: 14px; margin: 0; }
+  .real-world { background: var(--bg-soft); border-left: 4px solid var(--accent); }
+  .real-world::before { content: '👁️ ' attr(data-eyebrow); display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 8px; }
+  .term { color: var(--accent); border-bottom: 1px dashed var(--accent-light); cursor: help; position: relative; font-weight: 500; }
+  .term:hover, .term.pinned { background: var(--accent-soft); border-radius: 3px; padding: 0 3px; margin: 0 -3px; }
+  .term .tooltip { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 14px; border-radius: var(--r-soft); font-size: 12px; line-height: 1.5; font-weight: 400; white-space: normal; width: 280px; opacity: 0; pointer-events: none; transition: opacity 0.15s var(--ease); z-index: 50; box-shadow: var(--shadow-md); }
+  .term:hover .tooltip, .term.pinned .tooltip { opacity: 1; pointer-events: auto; }
+  .term .tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--text); }
+  .flashcard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .flashcard { perspective: 1000px; height: 180px; cursor: pointer; }
+  .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s var(--ease); transform-style: preserve-3d; }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .flashcard-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--r-soft); padding: 18px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 13px; line-height: 1.5; }
+  .flashcard-front { background: var(--bg-elevated); border: 1.5px solid var(--accent-light); color: var(--text); font-weight: 600; }
+  .flashcard-back { background: var(--accent); color: #fff; transform: rotateY(180deg); font-weight: 400; padding: 16px; overflow-y: auto; font-size: 12px; }
+  [data-theme="dark"] .flashcard-back { background: var(--accent-soft); color: var(--text); }
+  .flashcard-hint { position: absolute; bottom: 6px; right: 8px; font-size: 9px; color: var(--text-soft); opacity: 0.7; }
+  .quiz-grid { display: flex; flex-direction: column; gap: 12px; }
+  .quiz-card { background: var(--bg-soft); border: 1px solid var(--border-soft); border-radius: var(--r-soft); padding: 16px 18px; }
+  .quiz-prompt { font-weight: 600; margin-bottom: 10px; font-size: 14px; }
+  .quiz-pause-tag { display: inline-block; font-size: 10px; padding: 3px 8px; background: var(--gold); color: #1F2937; border-radius: var(--r-pill); margin-bottom: 8px; font-weight: 700; }
+  .quiz-reveal-btn { background: var(--accent); color: #fff; border: 0; padding: 8px 14px; border-radius: var(--r-pill); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s var(--ease); animation: btn-pop 2.4s ease-in-out infinite; font-family: inherit; }
+  [data-theme="dark"] .quiz-reveal-btn { color: var(--bg); }
+  .quiz-reveal-btn:hover { background: var(--accent-light); animation: none; }
+  .quiz-answer { margin-top: 12px; padding: 12px 14px; background: var(--bg-elevated); border-radius: var(--r-soft); border: 1px solid var(--success); font-size: 13.5px; display: none; }
+  .quiz-answer.show { display: block; }
+  .quiz-answer-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--success); margin-bottom: 6px; }
+  .quiz-reasoning { margin-top: 8px; font-size: 12.5px; color: var(--text-muted); font-style: italic; }
+  .animation-section { margin: 56px 0; padding: 28px; background: var(--bg-elevated); border: 1px solid var(--border-soft); border-radius: var(--r-card); box-shadow: var(--shadow-md); }
+  .animation-frame { width: 100%; min-height: 720px; border: 0; background: var(--bg); border-radius: var(--r-soft); }
+  .recap { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%); color: #fff; border-radius: var(--r-card); padding: 32px; margin-top: 56px; }
+  [data-theme="dark"] .recap { background: linear-gradient(135deg, var(--accent-soft) 0%, var(--bg-elevated) 100%); color: var(--text); border: 1px solid var(--border-soft); }
+  .recap h2 { margin: 0 0 14px; font-size: 24px; }
+  .recap-points { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 18px; }
+  .recap-point { background: rgba(255,255,255,0.13); padding: 14px; border-radius: var(--r-soft); font-size: 13px; }
+  [data-theme="dark"] .recap-point { background: var(--bg); border: 1px solid var(--border-soft); }
+  .recap-next { margin-top: 22px; padding: 14px 18px; background: rgba(255,255,255,0.12); border-radius: var(--r-soft); font-size: 14px; }
+  [data-theme="dark"] .recap-next { background: var(--bg); border: 1px solid var(--border-soft); }
+  footer { text-align: center; padding: 32px 24px; color: var(--text-soft); font-size: 12px; border-top: 1px solid var(--border-soft); }
+  .mini-vis { background: var(--bg-soft); border-radius: var(--r-soft); padding: 14px; margin: 14px 0; font-size: 13px; }
+  .mini-vis-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-soft); margin-bottom: 8px; }
+  .vlan-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .vlan-table th, .vlan-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border-soft); }
+  .vlan-table th { background: var(--bg); color: var(--text-muted); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .vss-vds-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 720px) { .vss-vds-grid { grid-template-columns: 1fr; } }
+  .vss-card, .vds-card { padding: 14px; border-radius: var(--r-soft); border: 1.5px solid var(--border); }
+  .vss-card { background: rgba(94, 74, 142, 0.08); border-color: #5E4A8E; }
+  .vds-card { background: rgba(46, 122, 140, 0.08); border-color: #2E7A8C; }
+  .vss-card .label, .vds-card .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .vss-card .label { color: #5E4A8E; }
+  .vds-card .label { color: #2E7A8C; }
+  .vmk-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .vmk-table th, .vmk-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); }
+  .vmk-table th { background: var(--bg); color: var(--text-muted); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  /* ---------------- Inline illustrations ---------------- */
+  .illustration-block { background: var(--bg-elevated); border: 1px solid var(--border-soft); border-radius: var(--r-card); padding: 18px 22px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+  .illustration-block h3 { margin: 0 0 12px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); }
+  .illustration { width: 100%; max-width: 1080px; margin: 0 auto; display: block; background: var(--bg-soft); border-radius: var(--r-soft); padding: 12px; }
+  .illustration svg { width: 100%; height: auto; display: block; }
+  .illustration-caption { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 10px; font-style: italic; }
+  /* Glossary */
+  .glossary-block{background:linear-gradient(135deg,#FBF4D6 0%,#FFFFFF 100%);border:2px solid var(--gold);border-radius:var(--r-card);padding:24px 26px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+  [data-theme="dark"] .glossary-block{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-elevated) 100%)}
+  .glossary-block .gloss-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .glossary-block .gloss-icon{width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;color:#1F2937;font-weight:700;font-size:18px;flex-shrink:0}
+  .glossary-block h3{margin:0;font-size:16px;font-weight:700;color:var(--text);text-transform:none;letter-spacing:0}
+  .glossary-block .gloss-intro{margin:4px 0 16px;font-size:14px;color:var(--text-muted)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .gloss-card{background:var(--bg-elevated);border:1.5px solid var(--border);border-radius:var(--r-soft);padding:14px 16px;position:relative;border-left-width:5px}
+  .gloss-card.tag-tool{border-left-color:#1F8A60}
+  .gloss-card.tag-driver{border-left-color:#5E4A8E}
+  .gloss-card.tag-protocol{border-left-color:#2E7A8C}
+  .gloss-card.tag-hardware{border-left-color:#3F4A5E}
+  .gloss-card.tag-security{border-left-color:#8E2A2A}
+  .gloss-card.tag-config{border-left-color:#B85829}
+  .gloss-card.tag-concept{border-left-color:#1A6FA8}
+  .gloss-name{font-weight:700;font-size:14px;color:var(--text);display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .gloss-tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:var(--r-pill);text-transform:uppercase;letter-spacing:1px;color:#FFFFFF}
+  .gloss-card.tag-tool .gloss-tag{background:#1F8A60}
+  .gloss-card.tag-driver .gloss-tag{background:#5E4A8E}
+  .gloss-card.tag-protocol .gloss-tag{background:#2E7A8C}
+  .gloss-card.tag-hardware .gloss-tag{background:#3F4A5E}
+  .gloss-card.tag-security .gloss-tag{background:#8E2A2A}
+  .gloss-card.tag-config .gloss-tag{background:#B85829}
+  .gloss-card.tag-concept .gloss-tag{background:#1A6FA8}
+  .gloss-what{font-size:13px;color:var(--text);margin:6px 0 4px;line-height:1.45}
+  .gloss-what strong{color:var(--accent)}
+  .gloss-why{font-size:12.5px;color:var(--text-muted);font-style:italic;line-height:1.45;border-top:1px dashed var(--border-soft);padding-top:6px;margin-top:6px}
+  .gloss-why::before{content:"⚡ why it matters: ";font-style:normal;font-weight:700;color:var(--accent);font-size:11px}
+  .term-pill{display:inline-block;padding:1px 8px;border-radius:var(--r-pill);font-weight:600;font-size:0.92em;border:1.5px solid;line-height:1.4}
+  .term-pill.tag-tool{color:#1F8A60;border-color:#1F8A60;background:rgba(31,138,96,0.08)}
+  .term-pill.tag-driver{color:#5E4A8E;border-color:#5E4A8E;background:rgba(94,74,142,0.08)}
+  .term-pill.tag-protocol{color:#2E7A8C;border-color:#2E7A8C;background:rgba(46,122,140,0.08)}
+  .term-pill.tag-hardware{color:#3F4A5E;border-color:#3F4A5E;background:rgba(63,74,94,0.08)}
+  .term-pill.tag-security{color:#8E2A2A;border-color:#8E2A2A;background:rgba(142,42,42,0.08)}
+  .term-pill.tag-config{color:#B85829;border-color:#B85829;background:rgba(184,88,41,0.08)}
+  .term-pill.tag-concept{color:#1A6FA8;border-color:#1A6FA8;background:rgba(26,111,168,0.08)}
+  [data-theme="dark"] .term-pill{background:transparent}
+  .callout{display:flex;gap:14px;padding:14px 18px;border-radius:var(--r-soft);margin:14px 0;border-left:5px solid}
+  .callout-icon{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-weight:700;font-size:14px}
+  .callout-body{flex:1;font-size:13.5px;line-height:1.55}
+  .callout-body strong{display:block;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+  .callout.tip{background:rgba(31,138,96,0.08);border-left-color:#1F8A60}
+  .callout.tip .callout-icon{background:#1F8A60}.callout.tip strong{color:#1F8A60}
+  .callout.warn{background:rgba(184,88,41,0.08);border-left-color:#B85829}
+  .callout.warn .callout-icon{background:#B85829}.callout.warn strong{color:#B85829}
+  .callout.danger{background:rgba(142,42,42,0.08);border-left-color:#8E2A2A}
+  .callout.danger .callout-icon{background:#8E2A2A}.callout.danger strong{color:#8E2A2A}
+  .callout.note{background:rgba(26,111,168,0.08);border-left-color:#1A6FA8}
+  .callout.note .callout-icon{background:#1A6FA8}.callout.note strong{color:#1A6FA8}
+</style>
+</head>
+<body data-theme="light">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · vSphere Fundamentals</span></a>
+    <span class="progress-label">Lesson 10 of 12</span>
+    <div class="progress" aria-label="Course progress"><div class="progress-fill"></div></div>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 <span id="theme-label">Dark</span></button>
+  </div>
+</header>
+
+<nav class="course-nav" aria-label="Course lessons">
+  <div class="course-nav-inner">
+    <a href="preview-lesson-01.html" class="lesson-link"><span class="num">01</span><span class="name">Intro</span></a>
+    <a href="preview-lesson-02.html" class="lesson-link"><span class="num">02</span><span class="name">Benefits</span></a>
+    <a href="preview-lesson-03.html" class="lesson-link"><span class="num">03</span><span class="name">Components</span></a>
+    <a href="preview-lesson-04.html" class="lesson-link"><span class="num">04</span><span class="name">History</span></a>
+    <a href="preview-lesson-05.html" class="lesson-link"><span class="num">05</span><span class="name">Context &amp; resources</span></a>
+    <a href="preview-lesson-06.html" class="lesson-link"><span class="num">06</span><span class="name">Types</span></a>
+    <a href="preview-lesson-07.html" class="lesson-link"><span class="num">07</span><span class="name">SDDC</span></a>
+    <a href="preview-lesson-08.html" class="lesson-link"><span class="num">08</span><span class="name">Installing &amp; configuring ESXi</span></a>
+    <a href="preview-lesson-09.html" class="lesson-link"><span class="num">09</span><span class="name">Deploying &amp; configuring vCenter</span></a>
+    <a href="preview-lesson-10.html" class="lesson-link active"><span class="num">10</span><span class="name">Configuring vSphere networking</span></a>
+    <a href="preview-lesson-11.html" class="lesson-link"><span class="num">11</span><span class="name">Configuring vSphere storage</span></a>
+    <a href="preview-lesson-12.html" class="lesson-link"><span class="num">12</span><span class="name">Deploying virtual machines</span></a>
+  </div>
+</nav>
+
+<nav class="sub-nav" aria-label="Subtopics in this lesson">
+  <div class="sub-nav-inner">
+    <span class="sub-nav-label">In this lesson</span>
+    <a href="#sub-1" class="sub-link"><span class="num">1</span> Overview</a>
+    <a href="#sub-2" class="sub-link"><span class="num">2</span> vSS</a>
+    <a href="#sub-3" class="sub-link"><span class="num">3</span> vDS</a>
+    <a href="#sub-4" class="sub-link"><span class="num">4</span> Port groups · VLANs</a>
+    <a href="#sub-5" class="sub-link"><span class="num">5</span> Teaming</a>
+    <a href="#sub-6" class="sub-link"><span class="num">6</span> vmkernel</a>
+  </div>
+</nav>
+
+<main>
+
+  <div class="lesson-meta">
+    <span class="badge">Sub-topic lesson</span>
+    <span>~30 min · 6 subtopics · 18 flashcards · 12 quiz questions</span>
+  </div>
+
+  <h1>Configuring vSphere Networking</h1>
+  <p class="lesson-tagline">
+    You have hosts (lesson 8) and a vCenter (lesson 9). Inside ESXi, all that physical connectivity is exposed through <strong>virtual networks</strong> that VMs and ESXi services plug into. Six moves to set up those networks correctly — from primitives to per-host vSwitches to cluster-wide vDS to the VLAN tagging and teaming policies that make it all reliable.
+  </p>
+
+  <section class="hero">
+    <h2 class="hero-title">The vSphere networking journey</h2>
+    <p class="hero-subtitle">Click any station below to jump to that subtopic. Each one is a complete mini-lesson.</p>
+
+    <div class="journey">
+      <a href="#sub-1" class="station"><span class="station-num s1">1</span><span class="station-title">Overview</span><span class="station-desc">vSwitch · port group · NIC · vmkernel.</span></a>
+      <a href="#sub-2" class="station"><span class="station-num s2">2</span><span class="station-title">vSS</span><span class="station-desc">Per-host. Simple. Drift-prone. Free.</span></a>
+      <a href="#sub-3" class="station"><span class="station-num s3">3</span><span class="station-title">vDS</span><span class="station-desc">Cluster-wide. No drift. Enterprise Plus.</span></a>
+      <a href="#sub-4" class="station"><span class="station-num s4">4</span><span class="station-title">Port groups · VLANs</span><span class="station-desc">VST is most common. Match the trunk.</span></a>
+      <a href="#sub-5" class="station"><span class="station-num s5">5</span><span class="station-title">Teaming</span><span class="station-desc">≥2 NICs. Load balance + failover.</span></a>
+      <a href="#sub-6" class="station"><span class="station-num s6">6</span><span class="station-title">vmkernel</span><span class="station-desc">One per service: mgmt, vMotion, vSAN, NFS.</span></a>
+    </div>
+
+    <div class="hero-summary">
+      End state: a virtual network that VMs and ESXi services plug into reliably, with predictable performance and no drift across hosts. Use the embedded animation further down to walk through any subtopic visually.
+    </div>
+  </section>
+
+  <!-- ============================ SUBTOPIC 1 ============================ -->
+  <section class="subtopic" id="sub-1">
+    <header class="subtopic-header s1">
+      <span class="subtopic-meta">Subtopic 1 of 6</span>
+      <h2>vSphere networking overview</h2>
+      <p class="subtopic-tagline">The four primitives every vSphere network is built from.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">The four building blocks of vSphere networking, plus a few related terms.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-hardware">
+          <div class="gloss-name">Physical NIC <span class="gloss-tag">hardware</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A real network card on the server. Has a physical port and a cable going to a physical switch. ESXi names them <code>vmnic0</code>, <code>vmnic1</code>, etc.</div>
+          <div class="gloss-why">The boundary between virtual and physical networking. Everything inside ESXi eventually flows through one of these to leave the host.</div>
+        </div>
+
+        <div class="gloss-card tag-hardware">
+          <div class="gloss-name">Uplink <span class="gloss-tag">hardware</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A physical NIC viewed in the context of a vSwitch — the wire from the vSwitch out to the physical world. Same physical card, different name.</div>
+          <div class="gloss-why">"vmnic0 is uplink 1 on vSwitch0." When NICs are paired into a team, they're called uplinks together.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vSwitch · virtual switch <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Software inside ESXi that behaves like a layer-2 network switch. Has uplinks (physical NICs) on one side and ports on the other. Two flavors: vSS (per-host) and vDS (cluster-wide).</div>
+          <div class="gloss-why">VMs and vmkernel adapters plug into a vSwitch through port groups. The vSwitch handles MAC learning, VLAN tagging, traffic shaping.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Port group <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A named collection of ports on a vSwitch with shared policy: VLAN ID, NIC teaming, security, traffic shaping. VMs and vmkernel adapters attach to a port group, not directly to the vSwitch.</div>
+          <div class="gloss-why">"Production-VLAN-100" is a port group that puts every VM on it onto VLAN 100. Two port groups on the same vSwitch can have different VLANs and policies.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">vmkernel adapter <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A virtual network interface that ESXi itself uses (not a VM) for management, vMotion, vSAN, NFS, etc. Has its own IP. Lives on a vmkernel port group.</div>
+          <div class="gloss-why">When ESXi needs to talk on the network — sending vMotion data, reading from NFS storage, replying to vCenter — it uses a vmkernel adapter.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">VM port group <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A port group designed for VMs to attach to. Carries VM traffic.</div>
+          <div class="gloss-why">When you create a VM and pick "Network: Production-VLAN-100" — that's a VM port group.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">vmkernel port group <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A port group for vmkernel adapters (ESXi's own NICs). Looks the same as a VM port group on the vSwitch — just used by ESXi services rather than VMs.</div>
+          <div class="gloss-why">Same mechanism, different consumer. The distinction matters mainly when you create one — vSphere asks "is this for VMs or for vmkernel services?"</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vSS · Standard vSwitch <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A vSwitch that lives entirely on a single ESXi host. Configured per-host. Default. Free.</div>
+          <div class="gloss-why">Simple but doesn't scale gracefully across many hosts (drift creeps in). Detailed in subtopic 2.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vDS · Distributed vSwitch <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A vSwitch defined in vCenter that's applied identically to many hosts. Eliminates drift. Requires Enterprise Plus license.</div>
+          <div class="gloss-why">The right choice for any environment with more than a few hosts. Detailed in subtopic 3.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">Layer 2 (L2) <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The OSI networking layer that handles MAC addresses and Ethernet frames. Switches operate at L2.</div>
+          <div class="gloss-why">vSwitches are L2 devices. They forward by MAC address. They don't route between subnets — that's L3, the physical router's job.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">vNIC · virtual NIC <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The virtual network card the guest OS sees inside a VM. Each VM can have one or more.</div>
+          <div class="gloss-why">vNIC types matter for performance: VMXNET3 (paravirt, fast) vs E1000 (emulated, slow). Always pick VMXNET3 with VMware Tools installed.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Packet path <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The complete journey: VM → vNIC → port group → vSwitch → uplink → physical switch. Reverse on the way in.</div>
+          <div class="gloss-why">Memorise this — it tells you where to look when network troubleshooting. Each step has its own visibility in vSphere Client.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A packet's path: VM → vNIC → port group → vSwitch → uplink → physical switch. The four primitives labelled as the packet travels through them.">
+          <!-- VM at top -->
+          <g transform="translate(380,16)">
+            <rect width="160" height="56" rx="8" fill="#5DCAA5" opacity="0.6" stroke="#1F8A60"/>
+            <text x="80" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">VM-app1</text>
+            <text x="80" y="38" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#1F2937">eth0 (vNIC)</text>
+            <text x="80" y="50" text-anchor="middle" font-size="9" font-style="italic" fill="#1F2937">primitive #1: vNIC</text>
+          </g>
+
+          <!-- packet dot moving down -->
+          <circle cx="460" cy="76" r="6" fill="#F2C94C" stroke="#1F2937" stroke-width="0.8"/>
+          <line x1="460" y1="76" x2="460" y2="100" stroke="#3F4A5E" stroke-width="2" marker-end="url(#a10ov)"/>
+
+          <!-- Port group -->
+          <g transform="translate(280,108)">
+            <rect width="360" height="46" rx="6" fill="#5DCAA5" opacity="0.4" stroke="#1F8A60" stroke-width="1.5"/>
+            <text x="180" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#1F2937">Port group: Production-VLAN-100</text>
+            <text x="180" y="38" text-anchor="middle" font-size="10" font-style="italic" fill="#1F2937">primitive #2: port group · carries VLAN, security, teaming policy</text>
+          </g>
+          <line x1="460" y1="158" x2="460" y2="180" stroke="#3F4A5E" stroke-width="2" marker-end="url(#a10ov)"/>
+
+          <!-- vSwitch -->
+          <g transform="translate(180,188)">
+            <rect width="560" height="56" rx="8" fill="#3F4A5E"/>
+            <text x="280" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">vSwitch (vSwitch0 · vSS or vDS)</text>
+            <text x="280" y="44" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">primitive #3: vSwitch · software layer-2 switch inside ESXi</text>
+          </g>
+          <line x1="460" y1="248" x2="460" y2="270" stroke="#3F4A5E" stroke-width="2" marker-end="url(#a10ov)"/>
+
+          <!-- Uplinks (NICs) -->
+          <g transform="translate(360,278)">
+            <rect width="80" height="36" rx="4" fill="#1F8A60"/>
+            <text x="40" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">vmnic0</text>
+          </g>
+          <g transform="translate(480,278)">
+            <rect width="80" height="36" rx="4" fill="#1F8A60"/>
+            <text x="40" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">vmnic1</text>
+          </g>
+          <text x="460" y="332" text-anchor="middle" font-size="10" font-style="italic" fill="#1F8A60">primitive #4: physical NICs (uplinks)</text>
+
+          <!-- Outside arrow -->
+          <line x1="460" y1="318" x2="460" y2="346" stroke="#1F2937" stroke-width="2" marker-end="url(#a10ov)"/>
+          <text x="500" y="346" font-size="10" font-weight="700" fill="#1F2937">→ physical switch</text>
+
+          <!-- Side: vmkernel adapter -->
+          <g transform="translate(20,108)">
+            <rect width="240" height="46" rx="6" fill="#FBF4D6" stroke="#F2C94C"/>
+            <text x="120" y="20" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">vmkernel adapter (vmk0)</text>
+            <text x="120" y="36" text-anchor="middle" font-size="10" font-style="italic" fill="#1F2937">ESXi's own NIC: management, vMotion...</text>
+          </g>
+          <line x1="260" y1="131" x2="280" y2="131" stroke="#5A6B81" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+          <defs><marker id="a10ov" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/></marker></defs>
+        </svg>
+        <div class="illustration-caption">A packet leaves a VM through its vNIC → into a port group → onto a vSwitch → out a physical NIC (uplink) → to the physical switch. Same model on every host.</div>
+      </div>
+    </article>
+
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>Memorise the packet path</strong>VM → vNIC → port group → vSwitch → uplink → physical switch. When the network breaks, walk the path. "Can the VM ping its gateway?" tests the whole chain. Each step has its own visibility in vSphere Client (port group view, vSwitch view, uplink view).</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>VMs don't attach to vSwitches directly</strong>Common confusion: VMs attach to port groups, not directly to vSwitches. The port group is what carries the policy (VLAN, security, teaming). When you change a VM's "Network" in Edit Settings, you're picking a port group.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p>vSphere networking has four primitives. Understand them and the rest of this lesson is just configuring them in different shapes.</p>
+      <ul>
+        <li><strong>Physical NIC (<span class="term">uplink<span class="tooltip">A physical network adapter on the ESXi host (vmnic0, vmnic1...). The wire from the vSwitch out to the physical world. Often called an "uplink" when discussed in the context of a vSwitch team.</span></span>)</strong> — a real network card on the host (<code>vmnic0</code>, <code>vmnic1</code>, ...).</li>
+        <li><strong><span class="term">vSwitch<span class="tooltip">Virtual Switch — software inside ESXi that behaves like a layer-2 switch. Has uplinks (physical NICs) on one side and ports/port groups on the other. Two flavors: vSS (per-host) and vDS (cluster-wide).</span></span></strong> — software inside ESXi that behaves like a layer-2 switch. Two kinds: <span class="term">vSS<span class="tooltip">Standard vSwitch — vSwitch that lives entirely on a single host. Default and free.</span></span> and <span class="term">vDS<span class="tooltip">Distributed vSwitch — vSwitch whose configuration lives in vCenter and applies identically to every host that's joined to it. Requires Enterprise Plus.</span></span>.</li>
+        <li><strong><span class="term">port group<span class="tooltip">Named bundle of ports on a vSwitch with shared policy (VLAN, NIC teaming, security, traffic shaping). VMs and vmkernel adapters attach to a port group, not directly to the vSwitch.</span></span></strong> — named collection of ports with shared policy. VM port groups for VMs; vmkernel port groups for ESXi's services.</li>
+        <li><strong><span class="term">vmkernel<span class="tooltip">Adapter — virtual NIC that ESXi itself uses (not a VM) for management, vMotion, vSAN, NFS, iSCSI, FT, replication. Has its own IP and a set of enabled services.</span></span> adapter</strong> — virtual interface that ESXi itself uses for things like management, vMotion, vSAN, NFS.</li>
+      </ul>
+      <p>The shape: <strong>NIC → vSwitch → port group → VM (or vmkernel adapter)</strong>.</p>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>VMs are running on hosts but you're fuzzy on how their network traffic gets out. "port group" and "vSwitch" and "uplink" all sound interchangeable.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>You can sketch the path: VM → vNIC → port group → vSwitch → uplink → physical switch. You know each primitive's job and where it lives.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>A vSwitch is the building's internal phone system. Port groups are the named jacks on each desk: "Sales," "Engineering," "Finance." Uplinks are the trunk cables to the city telephone exchange. VMs plug into jacks; the trunk carries traffic outside. vmkernel adapters are the building's own service phones (security, fire alarm, deliveries) on dedicated jacks.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">A new VM is being created. Its NIC needs to live on the "Production-VLAN-100" network. Where does the VM actually attach?</div>
+      <div class="qc-options" data-qc="qc1" data-correct="b">
+        <button class="qc-option" data-opt="a">Directly to <code>vmnic0</code> (the physical NIC).</button>
+        <button class="qc-option" data-opt="b">To the port group named "Production-VLAN-100" on the vSwitch. The port group carries the VLAN-100 policy. The VM doesn't attach directly to the vSwitch or to the physical NIC.</button>
+        <button class="qc-option" data-opt="c">To <code>vSwitch0</code> directly.</button>
+        <button class="qc-option" data-opt="d">To the physical switch via a routed link.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc1"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>The big computer has fake network cables inside that look just like real ones. They plug into fake switches that look just like real ones. The fake switches connect to real network cards that go out to the real network.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>vSphere networking has four building blocks. A physical NIC is the actual network card on the server. A vSwitch is software that behaves like a network switch. A port group is a named bundle of ports on a vSwitch where everything plugged in shares the same network policy. A vmkernel adapter is a virtual network interface that ESXi itself uses (for management, vMotion, vSAN, etc.) — not a VM. VMs plug into VM port groups; ESXi's own services plug into vmkernel port groups.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>Open vSphere Client → Host → Configure → Networking → Virtual switches. You see <code>vSwitch0</code> with two uplinks (<code>vmnic0</code>, <code>vmnic1</code>) and several port groups: "Management Network" (vmkernel), "VM Network" (default VM port group), and a few others you've added. Each port group lists its VLAN ID, its policy, and what's plugged into it. That single screen shows the whole networking stack on the host.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · overview (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Name the four core networking primitives in vSphere.<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Physical NIC (uplink), vSwitch (vSS or vDS), port group (with shared policy), vmkernel adapter (for ESXi's own services).</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Sketch a packet's path out of a VM.<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">VM → vNIC → port group → vSwitch (vSS/vDS) → uplink (physical NIC) → physical switch. The port group's policy decides VLAN, which uplink, security, traffic shaping along the way.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">VM port group vs vmkernel port group — difference?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">VM port groups are where VMs attach. vmkernel port groups are where ESXi itself attaches via vmkernel adapters for its own services (management, vMotion, vSAN, NFS, FT, replication). Different consumers, same underlying mechanism.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · overview (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'overview' mode</span>
+          <div class="quiz-prompt">The diagram shows a VM with a vNIC labeled 'eth0' connected to something labeled 'Production' on something labeled 'vSwitch0' with two physical wires going down to a switch icon. Name each labeled element with the right vSphere primitive name.</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>'eth0' is the VM's vNIC. 'Production' is the port group. 'vSwitch0' is the vSwitch. The two physical wires are uplinks (vmnic0/vmnic1). The switch icon is the physical switch the uplinks plug into. Path: VM → vNIC → port group → vSwitch → uplink → physical switch.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">A VM is being created and its NIC needs to be on the "Production-VLAN-100" network. Where does the VM actually attach?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>To the port group named "Production-VLAN-100" on the vSwitch. The port group carries the VLAN-100 policy. The VM doesn't attach directly to the vSwitch or to the physical NIC.</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================ SUBTOPIC 2 ============================ -->
+  <section class="subtopic" id="sub-2">
+    <header class="subtopic-header s2">
+      <span class="subtopic-meta">Subtopic 2 of 6</span>
+      <h2>Standard vSwitch (vSS)</h2>
+      <p class="subtopic-tagline">Per-host networking. Simple, free, drift-prone.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">Standard vSwitch terms — and the operational hazards that come with per-host config.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vSS · Standard vSwitch <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The default virtual switch on every ESXi host. Lives entirely on that one host — no awareness of other hosts. Free.</div>
+          <div class="gloss-why">Easy to set up; hard to keep consistent across hosts. Drift becomes the operational problem.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Drift <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Configuration on different hosts gradually diverging — different VLAN IDs, different security settings, different port group names. Often from typos or unsynchronised changes.</div>
+          <div class="gloss-why">Drift is silent until something breaks: vMotion fails because host-3 has a different port-group name; a VM lands on host-7 with the wrong VLAN.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Per-host config <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A configuration that has to be set on each host individually. Each host is its own snowflake.</div>
+          <div class="gloss-why">vSS is per-host. To add a port group on 10 hosts you click 10 times — and risk typos. vDS solves this by being defined once at the cluster level.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Free vSphere edition <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> An entry-level vSphere license that's free but limited — no vCenter clustering, no vDS, no DRS, no HA.</div>
+          <div class="gloss-why">If you're on the free edition, you're stuck with vSS — vDS isn't included. Most production customers move past free quickly.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">Host profile <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A template captured from one "reference" host's config, then applied to other hosts to make them match. Includes vSS configuration. Enterprise Plus feature.</div>
+          <div class="gloss-why">A way to fight drift on vSS without going to vDS. Useful but more setup than just using vDS.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">PowerCLI · esxcli scripting <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Command-line / scripting tools (PowerShell-based PowerCLI, ESXi-native esxcli) that can apply the same config across many hosts.</div>
+          <div class="gloss-why">Another drift-fighting option for vSS. "Run this script across 10 hosts" beats "click 10 times" — but vDS still beats both for vSwitch config.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Standalone host <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> An ESXi host that's not joined to vCenter. Managed only via Host Client / DCUI / SSH.</div>
+          <div class="gloss-why">A standalone host MUST use vSS — vDS is a vCenter feature. So vSS is the only option until you join the host to vCenter.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Bootstrapping <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The phase before vCenter exists or is reachable. ESXi installed but not yet joined to vCenter.</div>
+          <div class="gloss-why">During bootstrapping, only vSS is available. Many shops keep a small management vSS as a permanent fallback even after migrating to vDS.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">Management vSS <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A small vSS retained on each host purely for management traffic — even when the rest of networking has moved to vDS.</div>
+          <div class="gloss-why">If vCenter or vDS gets sideways, the management network still works. A safety net pattern in production.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Cluster-wide config <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Configuration defined once at the cluster level and applied identically to every member. The opposite of per-host.</div>
+          <div class="gloss-why">vDS does this for networking; permissions and many vCenter settings do it for other domains. Cluster-wide is the modern preference.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four hosts with their own Standard vSwitches. Three hosts got 'DMZ-VLAN-200' but host-3 was typo'd to VLAN 220 — vMotion to host-3 fails.">
+          <text x="460" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#5E4A8E">vSS = each host configured independently · drift creeps in</text>
+
+          <!-- 4 hosts -->
+          <g transform="translate(20,50)">
+            <text x="0" y="14" font-family="Inter,system-ui,sans-serif" font-size="11" font-weight="700" fill="#1F2937">host-1</text>
+            <rect y="22" width="200" height="100" rx="6" fill="#3F4A5E"/>
+            <rect x="10" y="32" width="180" height="20" rx="3" fill="#5A6B81"/>
+            <text x="100" y="46" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">vSwitch0</text>
+            <rect x="10" y="60" width="180" height="22" rx="3" fill="#5DCAA5" opacity="0.7"/>
+            <text x="100" y="76" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+            <text x="100" y="100" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">added by hand</text>
+          </g>
+
+          <g transform="translate(240,50)">
+            <text x="0" y="14" font-family="Inter,system-ui,sans-serif" font-size="11" font-weight="700" fill="#1F2937">host-2</text>
+            <rect y="22" width="200" height="100" rx="6" fill="#3F4A5E"/>
+            <rect x="10" y="32" width="180" height="20" rx="3" fill="#5A6B81"/>
+            <text x="100" y="46" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">vSwitch0</text>
+            <rect x="10" y="60" width="180" height="22" rx="3" fill="#5DCAA5" opacity="0.7"/>
+            <text x="100" y="76" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+            <text x="100" y="100" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">added by hand</text>
+          </g>
+
+          <g transform="translate(460,50)">
+            <text x="0" y="14" font-family="Inter,system-ui,sans-serif" font-size="11" font-weight="700" fill="#B85829">host-3 ⚠</text>
+            <rect y="22" width="200" height="100" rx="6" fill="#3F4A5E" stroke="#B85829" stroke-width="2"/>
+            <rect x="10" y="32" width="180" height="20" rx="3" fill="#5A6B81"/>
+            <text x="100" y="46" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">vSwitch0</text>
+            <rect x="10" y="60" width="180" height="22" rx="3" fill="#B85829" opacity="0.85"/>
+            <text x="100" y="76" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">DMZ-VLAN-220 (typo!)</text>
+            <text x="100" y="100" text-anchor="middle" font-size="9" font-weight="700" fill="#FBEDE3">drift !</text>
+          </g>
+
+          <g transform="translate(680,50)">
+            <text x="0" y="14" font-family="Inter,system-ui,sans-serif" font-size="11" font-weight="700" fill="#1F2937">host-4</text>
+            <rect y="22" width="200" height="100" rx="6" fill="#3F4A5E"/>
+            <rect x="10" y="32" width="180" height="20" rx="3" fill="#5A6B81"/>
+            <text x="100" y="46" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">vSwitch0</text>
+            <rect x="10" y="60" width="180" height="22" rx="3" fill="#5DCAA5" opacity="0.7"/>
+            <text x="100" y="76" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+            <text x="100" y="100" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">added by hand</text>
+          </g>
+
+          <!-- VM trying to vMotion to host-3 -->
+          <g transform="translate(20,200)">
+            <rect width="40" height="22" rx="3" fill="#F2C94C" stroke="#1F2937"/>
+            <text x="20" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">VM</text>
+            <text x="48" y="16" font-size="11" fill="#1F2937">running on host-1</text>
+          </g>
+          <path d="M150,212 L540,212" stroke="#B85829" stroke-width="2" marker-end="url(#a10vss)" stroke-dasharray="6,4"/>
+          <text x="345" y="200" text-anchor="middle" font-size="11" font-weight="700" fill="#B85829">attempt vMotion to host-3</text>
+
+          <g transform="translate(560,250)">
+            <rect width="340" height="50" rx="8" fill="#FBEDE3" stroke="#B85829" stroke-width="1.5"/>
+            <text x="170" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#B85829">⚠ vMotion fails</text>
+            <text x="170" y="40" text-anchor="middle" font-size="10" fill="#1F2937">host-3 has no port group named "DMZ-VLAN-200"</text>
+          </g>
+
+          <defs><marker id="a10vss" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#B85829"/></marker></defs>
+        </svg>
+        <div class="illustration-caption">Same port group added by hand on each host. Host-3 got a typo. vMotion to host-3 fails the moment a VM tries to land. This is what vDS solves.</div>
+      </div>
+    </article>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body"><strong>vSS doesn't scale gracefully</strong>vSS is fine for 2-3 hosts. By 10 hosts, drift is a constant headache. By 50, it's impossible to manage by hand. If you have Enterprise Plus, use vDS. If not, use host profiles or PowerCLI scripts to enforce consistency.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>Keep a small management vSS as a fallback</strong>Even when you've moved to vDS for VM and vMotion traffic, many shops keep a small vSS on each host carrying only management traffic. If vCenter or the vDS gets sideways, management still works through the vSS. It's a cheap safety net.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p>A <strong>Standard vSwitch (vSS)</strong> is a vSwitch that lives entirely on one host. It's the default and ships with every ESXi install. The host that owns the vSS configures it; nothing about it is shared with other hosts.</p>
+      <p>The trade-off: simple and free, but if you have ten hosts in a cluster and want them to all see "Production VLAN 100," you create the same port group on every single host. Drift creeps in — one host has VLAN 110 by typo, vMotion fails, you spend an hour finding it.</p>
+
+      <div class="vss-vds-grid">
+        <div class="vss-card">
+          <div class="label">vSS — when it's the right choice</div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 13px;">
+            <li>Free vSphere edition (no vDS license)</li>
+            <li>Small environments where manual consistency is manageable</li>
+            <li>Standalone host before it joins vCenter (vDS impossible off-vCenter)</li>
+            <li>Edge cases: certain DPU/NSX scenarios</li>
+            <li>As a fallback for management traffic alongside a vDS</li>
+          </ul>
+        </div>
+        <div class="vss-card">
+          <div class="label">vSS — what you don't get</div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 13px;">
+            <li>No central config; every host is its own snowflake</li>
+            <li>No LACP (active-active uplink bundling)</li>
+            <li>No NetFlow, port mirroring, traffic filtering</li>
+            <li>No private VLANs</li>
+            <li>No Network I/O Control (NIOC)</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>10 hosts, each with a vSS. New "DMZ-VLAN-200" needs to land on every host. SSH or click into each host, create the port group, set VLAN 200. By host 6 you mistype VLAN 220. VMs land on host 6 and lose connectivity.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>A vDS (next subtopic). Create the port group once in vCenter; it shows up on all 10 hosts identically. No drift.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>A vSS is each apartment building running its own phone system, with its own wiring closet. Adding a new line means walking to every building and configuring it identically. Works for one building, painful for ten.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">Your cluster has 8 hosts and uses vSS everywhere. You add a new VM port group on host-3. Will vMotion work for a VM on that port group to host-7?</div>
+      <div class="qc-options" data-qc="qc2" data-correct="c">
+        <button class="qc-option" data-opt="a">Yes — vMotion always works between hosts in the same cluster.</button>
+        <button class="qc-option" data-opt="b">No — vMotion never works across vSS.</button>
+        <button class="qc-option" data-opt="c">Only if you also create the same-named port group with the same VLAN on host-7. Otherwise vMotion fails because the destination has no matching port group.</button>
+        <button class="qc-option" data-opt="d">Only if the VM is shut down first.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc2"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>Each apartment building has its own phone closet. To add a new phone line that works in every building, you have to go to every building and add it the same way. Easy to mess up if you have many buildings.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>A Standard vSwitch is a virtual switch that lives on a single ESXi host. You configure it on each host independently. For VMs to be portable across hosts (so vMotion works, so HA works), you need to set up the same port groups with the same names and VLANs on every host. That's manageable for two hosts and a nightmare for fifty. vSS is the default and free; its cluster-wide cousin (vDS) requires Enterprise Plus.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → host-1 → Configure → Networking → vSwitches. <code>vSwitch0</code> visible. "Add Network." Choose "Virtual Machine Port Group for a Standard Switch." Pick <code>vSwitch0</code>. Name it <code>Production-VLAN-100</code>. VLAN ID: 100. Finish. Repeat on host-2, host-3, ..., host-10. Halfway through your eyes glaze. Welcome to the case for vDS.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · vSS (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a Standard vSwitch and where does it live?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A vSwitch that lives entirely on a single ESXi host. The host configures it; nothing about it is shared with other hosts. Default and free with every ESXi install. To have consistent networking across many hosts, configure each host identically — drift is the operational hazard.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does vSS NOT give you that vDS does?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Centralized config, LACP, NetFlow, port mirroring, traffic filtering, private VLANs, Network I/O Control. vSS is per-host-only and lacks features that need cluster-wide coordination.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When is vSS the right choice?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Free vSphere edition (no vDS license), small environments where manual consistency is manageable, standalone host before it joins vCenter, edge cases (DPU, certain NSX scenarios). Often kept as a fallback for management traffic alongside a vDS.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · vSS (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'vss' mode</span>
+          <div class="quiz-prompt">Your cluster has 8 hosts, all vSS. You add a new VM port group on host-3 only. Will vMotion of a VM on that port group work to host-7?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>No. vMotion requires a port group with the *same name* (and same VLAN, same policy) on the destination host. host-7 doesn't have it, so vMotion fails. To make it work, manually create the same port group on host-7 (and every other host where you want the VM to land). This consistency burden is the case for vDS.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">You're running the free vSphere edition. You want consistent networking across 4 hosts. What are your options?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Use vSS on each host and configure them identically (and carefully audit drift). vDS isn't available on the free edition; only Enterprise Plus (and certain bundles) include it. Discipline, scripts (PowerCLI/esxcli), or host profiles (Enterprise+) become important for keeping vSS configs in sync.</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================ SUBTOPIC 3 ============================ -->
+  <section class="subtopic" id="sub-3">
+    <header class="subtopic-header s3">
+      <span class="subtopic-meta">Subtopic 3 of 6</span>
+      <h2>Distributed vSwitch (vDS)</h2>
+      <p class="subtopic-tagline">Cluster-wide networking. No drift. Enterprise Plus.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">vDS unlocks a lot of features with their own names — many borrowed from physical switching.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vDS · Distributed vSwitch <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A virtual switch defined in vCenter and applied identically to every host that joins it. Configuration is centralized; forwarding still happens on each host.</div>
+          <div class="gloss-why">Eliminates drift. One change in vCenter propagates to every host atomically.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Control plane vs data plane <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Two halves of any switch. Control plane = "how am I configured?" (lives in vCenter for vDS). Data plane = "actually forward this packet" (lives on every host).</div>
+          <div class="gloss-why">vDS splits these. If vCenter dies, the control plane is offline (you can't change config), but each host's data plane keeps forwarding traffic.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">LACP · Link Aggregation Control Protocol <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A standard protocol for bundling multiple physical links between two switches into one logical link. The bundle gets the combined bandwidth and survives single-link failures.</div>
+          <div class="gloss-why">vDS supports LACP; vSS does not. With LACP, two 10 GbE uplinks become a single 20 GbE logical pipe with automatic failover.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">NetFlow <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A protocol Cisco invented for exporting flow records ("a conversation between two IPs that lasted 12s and used 3 MB"). Many tools consume it for traffic analysis.</div>
+          <div class="gloss-why">vDS can export NetFlow records. Lets your network team see what VMs are actually talking to. vSS can't do this.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">Port mirroring (SPAN) <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Copying all traffic on certain ports to another destination port for analysis. The "wiretap" of switching.</div>
+          <div class="gloss-why">When you need to capture VM traffic with Wireshark, vDS port mirroring sends a copy to a sniffer VM. vSS can't do this either.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">NIOC · Network I/O Control <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A vDS feature that allocates uplink bandwidth between traffic types (VM traffic, vMotion, vSAN, NFS, management) using shares and limits.</div>
+          <div class="gloss-why">When the uplink is congested, NIOC ensures vMotion doesn't starve management or vSAN traffic. Critical at scale.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Private VLAN (PVLAN) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A way to subdivide a single VLAN into isolated sub-groups. VMs in different sub-groups can't talk to each other even though they share a VLAN.</div>
+          <div class="gloss-why">Used for multi-tenant isolation. vDS supports PVLANs; vSS doesn't.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Distributed port group <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A port group on a vDS. Same idea as a regular port group, but defined once and applied to every member host.</div>
+          <div class="gloss-why">When you create one in vCenter, it appears on every host in the vDS atomically. No drift possible.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">vSphere license tiers <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The pricing tiers vSphere comes in: Standard, Enterprise Plus, and bundles like VMware Cloud Foundation. vDS requires Enterprise Plus or higher.</div>
+          <div class="gloss-why">If you have Enterprise Plus (most production), vDS is included. If you have Standard, you're stuck with vSS.</div>
+        </div>
+
+        <div class="gloss-card tag-tool">
+          <div class="gloss-name">Migration wizard (vSS → vDS) <span class="gloss-tag">tool</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A built-in vCenter wizard that migrates VM port groups and vmkernel adapters from a vSS to a vDS one host at a time, without breaking running VMs.</div>
+          <div class="gloss-why">Makes the vSS-to-vDS migration safe and incremental. Don't try to do it by hand.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="vDS in vCenter holds the master config and pushes it down to every host. Data plane lives on each host so traffic continues even if vCenter is down.">
+          <text x="460" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#2E7A8C">vDS = config in vCenter (control), forwarding on hosts (data)</text>
+
+          <!-- vCenter at top -->
+          <g transform="translate(340,42)">
+            <rect width="240" height="80" rx="8" fill="#1F8A60"/>
+            <text x="120" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">vCenter (control plane)</text>
+            <rect x="20" y="38" width="200" height="22" rx="3" fill="#5DCAA5" opacity="0.85"/>
+            <text x="120" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">+ DMZ-VLAN-200 (new port group)</text>
+          </g>
+
+          <!-- Push-down arrows -->
+          <g stroke="#1F8A60" stroke-width="2" stroke-dasharray="6,4" fill="none">
+            <line x1="380" y1="125" x2="120" y2="180" marker-end="url(#a10vds)"/>
+            <line x1="430" y1="125" x2="320" y2="180" marker-end="url(#a10vds)"/>
+            <line x1="490" y1="125" x2="520" y2="180" marker-end="url(#a10vds)"/>
+            <line x1="540" y1="125" x2="720" y2="180" marker-end="url(#a10vds)"/>
+          </g>
+          <text x="460" y="158" text-anchor="middle" font-size="10" font-weight="700" fill="#1F8A60">push to all members atomically</text>
+
+          <!-- 4 hosts -->
+          <g transform="translate(20,180)">
+            <rect width="200" height="100" rx="6" fill="#3F4A5E"/>
+            <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">host-1</text>
+            <rect x="10" y="30" width="180" height="14" rx="2" fill="#5A6B81"/>
+            <text x="100" y="40" text-anchor="middle" font-size="9" fill="#FFFFFF">vDS data plane</text>
+            <rect x="10" y="50" width="180" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+            <text x="100" y="64" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+            <text x="100" y="86" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">forwards locally</text>
+          </g>
+          <g transform="translate(240,180)">
+            <rect width="200" height="100" rx="6" fill="#3F4A5E"/>
+            <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">host-2</text>
+            <rect x="10" y="30" width="180" height="14" rx="2" fill="#5A6B81"/>
+            <text x="100" y="40" text-anchor="middle" font-size="9" fill="#FFFFFF">vDS data plane</text>
+            <rect x="10" y="50" width="180" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+            <text x="100" y="64" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+            <text x="100" y="86" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">forwards locally</text>
+          </g>
+          <g transform="translate(460,180)">
+            <rect width="200" height="100" rx="6" fill="#3F4A5E"/>
+            <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">host-3</text>
+            <rect x="10" y="30" width="180" height="14" rx="2" fill="#5A6B81"/>
+            <text x="100" y="40" text-anchor="middle" font-size="9" fill="#FFFFFF">vDS data plane</text>
+            <rect x="10" y="50" width="180" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+            <text x="100" y="64" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+            <text x="100" y="86" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">forwards locally</text>
+          </g>
+          <g transform="translate(680,180)">
+            <rect width="200" height="100" rx="6" fill="#3F4A5E"/>
+            <text x="100" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">host-4</text>
+            <rect x="10" y="30" width="180" height="14" rx="2" fill="#5A6B81"/>
+            <text x="100" y="40" text-anchor="middle" font-size="9" fill="#FFFFFF">vDS data plane</text>
+            <rect x="10" y="50" width="180" height="20" rx="3" fill="#5DCAA5" opacity="0.7"/>
+            <text x="100" y="64" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">DMZ-VLAN-200 ✓</text>
+            <text x="100" y="86" text-anchor="middle" font-size="9" fill="#FFFFFF" opacity="0.85">forwards locally</text>
+          </g>
+
+          <text x="460" y="305" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60">vCenter dies → forwarding continues · only config changes pause</text>
+
+          <defs><marker id="a10vds" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#1F8A60"/></marker></defs>
+        </svg>
+        <div class="illustration-caption">One config change in vCenter shows up on every member host atomically. Data plane stays on each host, so forwarding survives vCenter outages.</div>
+      </div>
+    </article>
+
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>vCenter dies, traffic continues</strong>The control plane (config) lives in vCenter, but the data plane (actual packet forwarding) lives on each host. If vCenter goes down, your VMs keep talking. You just can't change config until vCenter is back.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>Migration is incremental, not big-bang</strong>Use the built-in vSS-to-vDS migration wizard. It moves one host at a time without breaking running VMs. Don't try to migrate everything in one go — small batches let you back out if something goes wrong.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p>A <strong>Distributed vSwitch (vDS)</strong> is a vSwitch whose configuration lives in vCenter and is applied identically to every host that's joined to it. Configure once; vCenter pushes the config to all member hosts. Drift goes away.</p>
+      <p>The trick: the vDS has two halves.</p>
+      <ul>
+        <li><strong>Control plane</strong> — lives in vCenter. Holds port groups, policies, topology.</li>
+        <li><strong>Data plane</strong> — lives on each host. The hidden vSwitch on each host forwards packets locally; it just receives its config from vCenter.</li>
+      </ul>
+      <p>Hosts can keep forwarding traffic even when vCenter is down. vDS doesn't put the data path through vCenter; it just puts the <em>management</em> through vCenter.</p>
+
+      <div class="mini-vis">
+        <div class="mini-vis-title">vDS-only features</div>
+        <ul style="margin: 0;">
+          <li><strong><span class="term">LACP<span class="tooltip">Link Aggregation Control Protocol — bundles multiple physical NIC uplinks into one logical link with the upstream physical switch. Provides higher aggregate bandwidth and faster failover. vDS-only feature in vSphere.</span></span></strong> — bundle multiple uplinks into one logical link with the physical switch.</li>
+          <li><strong><span class="term">NetFlow<span class="tooltip">Flow-records export protocol — vDS exports per-flow statistics (source/dest IP, port, bytes) to a NetFlow collector for network observability and analytics.</span></span></strong> — export flow records for network observability.</li>
+          <li><strong>Port Mirroring</strong> — mirror traffic to a sniffer for analysis.</li>
+          <li><strong>Network I/O Control (NIOC)</strong> — share allocations of host bandwidth between traffic types.</li>
+          <li><strong>Traffic filtering and marking</strong> — DSCP, ACLs at the port-group level.</li>
+          <li><strong>Private VLANs</strong>.</li>
+          <li><strong>Per-port stats and policies</strong>, not just per-port-group.</li>
+        </ul>
+      </div>
+
+      <p>The cost: vDS requires the <strong>Enterprise Plus</strong> edition (or specific bundles). Most production environments at any scale have it.</p>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>10 hosts × 8 port groups = 80 places to drift. Adding a new network is an afternoon. Removing a misconfig is detective work.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>A vDS holds all the port groups. New port group: one click in vCenter, present on all 10 hosts atomically. Misconfig: one place to fix. Audit: one place to read.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>A vDS is the building complex's shared phone system, configured once at the central operations office. Adding a new line shows up in every building automatically. Every building still has its own physical wiring; the wiring just follows the central plan.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">vCenter is down. Your hosts are on a vDS. Is VM network traffic still flowing?</div>
+      <div class="qc-options" data-qc="qc3" data-correct="b">
+        <button class="qc-option" data-opt="a">No — vCenter is required for the data plane.</button>
+        <button class="qc-option" data-opt="b">Yes. The data plane lives on each host; only the control plane is in vCenter. Existing VMs keep their connectivity. You just can't make changes (add a port group, etc.) until vCenter is back.</button>
+        <button class="qc-option" data-opt="c">Yes, but only between VMs on the same host.</button>
+        <button class="qc-option" data-opt="d">Yes, but only if vSphere HA is enabled.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc3"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>The whole apartment complex's phone system is set up at one central office. Change something there once, and every building gets the new setting. If the central office goes home for the night, the phones still work — you just can't change anything new.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>A Distributed vSwitch is a vSwitch defined in vCenter and shared across many hosts. Configure port groups, policies, and uplinks once at the cluster level; vCenter pushes the configuration to every host identically. Each host still does its own packet forwarding, so traffic keeps flowing even if vCenter goes down. vDS unlocks features that vSS can't do: LACP, NetFlow, port mirroring, NIOC, traffic filtering, private VLANs. It requires Enterprise Plus.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → Networking inventory → Right-click datacenter → Distributed Switch → New. Wizard: name <code>dvs-prod</code>, version 8.0, uplinks per host (typically 2 or 4). Add member hosts. Create distributed port groups inside it (<code>Prod-VLAN-100</code>, <code>vMotion-VLAN-30</code>, etc.). Each port group's policy is set once and applied to every host. Migrate VM port groups from the old vSS to the new vDS using the migration wizard. The old vSS can hang around for management traffic as a fallback.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · vDS (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Control plane vs data plane in a vDS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Control plane (config, port groups, policies) lives in vCenter. Data plane (actual packet forwarding) lives on each host. vCenter pushes config to every member host. If vCenter goes down, hosts keep forwarding traffic.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Four features only vDS gives you?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">LACP (active-active uplink bundling), NetFlow (flow-record export), Port Mirroring, Network I/O Control. Plus: private VLANs, traffic filtering / DSCP marking, per-port stats.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What licensing is needed for vDS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Enterprise Plus (or specific bundles like VMware Cloud Foundation). Standard and Essentials editions don't include vDS — they're vSS-only.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · vDS (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'vds' mode</span>
+          <div class="quiz-prompt">vCenter is down. Hosts are on a vDS. Is VM network traffic still flowing? What can you NOT do?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Yes — VM network traffic is still flowing. The data plane lives on each host; only the control plane (where you change config) is in vCenter. What you can't do: add/edit/remove port groups or change policies, because those changes are made via vCenter and pushed down to hosts.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">Name two features vDS gives you that vSS does not, and one cost of choosing vDS.</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>LACP (active-active uplink bundling) and Network I/O Control (allocate bandwidth between traffic types). Other valid pairs: NetFlow, port mirroring, traffic filtering, private VLANs. Cost: vDS requires Enterprise Plus (or specific bundles).</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================ SUBTOPIC 4 ============================ -->
+  <section class="subtopic" id="sub-4">
+    <header class="subtopic-header s4">
+      <span class="subtopic-meta">Subtopic 4 of 6</span>
+      <h2>Port groups and VLAN tagging</h2>
+      <p class="subtopic-tagline">Named jacks for VMs and ESXi services. VLANs decide isolation.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">VLAN-tagging modes are abbreviated to three letters that all sound similar. Read these once and the rest is easy.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">VLAN · Virtual LAN <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A way to split a physical network into multiple isolated logical networks using a small "tag" (1-4094) on each Ethernet frame. Devices on different VLANs can't see each other unless a router moves traffic between them.</div>
+          <div class="gloss-why">VLANs let many tenants share one physical network safely — Sales VLAN, Engineering VLAN, Production VLAN, all on the same switches.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">802.1Q <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The IEEE standard that defines VLAN tagging. Adds a 4-byte tag to each Ethernet frame containing the VLAN ID.</div>
+          <div class="gloss-why">When network people say "trunk port" or "tagged frame," they mean 802.1Q. It's the protocol behind VLANs as you'll see them.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">Trunk port <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A physical switch port configured to carry frames from MULTIPLE VLANs (each tagged with its VLAN ID). The opposite of an "access port" which carries one VLAN untagged.</div>
+          <div class="gloss-why">The physical NIC on each ESXi host plugs into a trunk port. The trunk's "allowed VLANs" list must include every VLAN your VMs need.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">VLAN tag <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The actual marker added to a frame to say "this belongs to VLAN 100." Either added or stripped at the boundary between tagged and untagged.</div>
+          <div class="gloss-why">The point where tagging happens (host vSwitch vs physical switch vs guest OS) is what differentiates VST, EST, and VGT below.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">EST · External Switch Tagging <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The PHYSICAL switch handles all VLAN tagging. The vSwitch port group has VLAN ID = 0. The vSwitch sees only untagged frames.</div>
+          <div class="gloss-why">Rare in modern setups. Limits a host to one VLAN. Not flexible.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">VST · Virtual Switch Tagging <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The VSWITCH handles tagging. Port group has VLAN ID = the actual VLAN (1-4094). The vSwitch tags outbound frames; physical switch port is configured as an 802.1Q trunk allowing those VLANs.</div>
+          <div class="gloss-why">The default and most common setup. One trunk port carries many VLANs to the host; the host slices them up via port groups.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">VGT · Virtual Guest Tagging <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The GUEST OS handles tagging. Port group has VLAN ID = 4095 (all-VLAN trunk). The vSwitch passes tagged frames straight through; the guest OS's NIC config decides VLANs.</div>
+          <div class="gloss-why">Used for nested virtualization, virtual firewalls, virtual routers — VMs that legitimately need to see multiple VLANs through one vNIC.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">VLAN ID 0 / 4095 <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Two special VLAN IDs. <code>0</code> means "no VLAN tagging" (used by EST). <code>4095</code> means "pass all VLANs through, tagged" (used by VGT).</div>
+          <div class="gloss-why">If you see VLAN 0 or 4095 in a port group config, you're in EST or VGT mode respectively. Otherwise it's VST.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">Allowed VLANs (trunk) <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The list of VLAN IDs a physical trunk port permits. Frames tagged with VLANs not on the list are dropped silently.</div>
+          <div class="gloss-why">Most "VM has no connectivity" issues come from this list. The vSwitch tags VLAN 100, the trunk doesn't allow 100, the frame disappears. Always coordinate with network team.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">Native VLAN <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The VLAN frames go to when they arrive at a trunk port without a tag. Configured per-trunk on the physical switch.</div>
+          <div class="gloss-why">Mostly historical. Best practice is to not put traffic on the native VLAN. ESXi uses tagged frames for everything.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Port group naming <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The convention you pick for naming port groups. Common: <code>Prod-VLAN-100</code>, <code>Dev-VLAN-110</code>, <code>vMotion-VLAN-30</code>.</div>
+          <div class="gloss-why">On vSS, names must match across hosts for vMotion to work. Bad naming = drift = vMotion failures.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Static binding · ephemeral binding <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Two ways a vDS port group assigns ports to VMs. <em>Static</em> (default) — VM keeps the same port across reboots. <em>Ephemeral</em> — fresh port every time.</div>
+          <div class="gloss-why">Static is the default and right for most cases. Ephemeral is used when you need to recover via Host Client when vCenter is down.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three VMs on three port groups (VLAN 100, 110, 30). vSwitch tags via VST. Physical switch trunk allows VLAN 100 and 30 but drops VLAN 110 — vm-dev loses connectivity outside the host.">
+          <!-- VMs -->
+          <g transform="translate(40,30)">
+            <rect width="200" height="36" rx="4" fill="#5DCAA5" opacity="0.6"/>
+            <text x="100" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">vm-app · VLAN 100</text>
+          </g>
+          <g transform="translate(360,30)">
+            <rect width="200" height="36" rx="4" fill="#5DCAA5" opacity="0.6"/>
+            <text x="100" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">vm-dev · VLAN 110</text>
+          </g>
+          <g transform="translate(680,30)">
+            <rect width="200" height="36" rx="4" fill="#F2C94C" opacity="0.7"/>
+            <text x="100" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">vmk-vMotion · VLAN 30</text>
+          </g>
+
+          <!-- Port groups -->
+          <g transform="translate(40,86)">
+            <rect width="200" height="32" rx="4" fill="#5DCAA5" opacity="0.3" stroke="#1F8A60"/>
+            <text x="100" y="20" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">PG: Prod-VLAN-100</text>
+          </g>
+          <g transform="translate(360,86)">
+            <rect width="200" height="32" rx="4" fill="#5DCAA5" opacity="0.3" stroke="#1F8A60"/>
+            <text x="100" y="20" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">PG: Dev-VLAN-110</text>
+          </g>
+          <g transform="translate(680,86)">
+            <rect width="200" height="32" rx="4" fill="#F2C94C" opacity="0.3" stroke="#B85829"/>
+            <text x="100" y="20" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#1F2937">PG: vMotion-VLAN-30</text>
+          </g>
+
+          <!-- vSwitch -->
+          <g transform="translate(40,140)">
+            <rect width="840" height="40" rx="6" fill="#3F4A5E"/>
+            <text x="420" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">vSwitch (VST mode — vSwitch tags outbound frames)</text>
+          </g>
+
+          <!-- Uplink (trunk) -->
+          <g transform="translate(360,200)">
+            <rect width="200" height="34" rx="4" fill="#1F8A60"/>
+            <text x="100" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">vmnic0 (802.1Q trunk)</text>
+          </g>
+
+          <!-- Physical switch with allowed VLAN list -->
+          <g transform="translate(40,254)">
+            <rect width="840" height="64" rx="6" fill="#1F2937"/>
+            <text x="420" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Physical switch port · trunk allowed VLANs</text>
+            <g transform="translate(220,32)">
+              <rect width="80" height="22" rx="3" fill="#1F8A60"/>
+              <text x="40" y="16" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#FFFFFF">100 ✓</text>
+            </g>
+            <g transform="translate(310,32)">
+              <rect width="80" height="22" rx="3" fill="#B85829"/>
+              <text x="40" y="16" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#FFFFFF">110 ✗ DROP</text>
+            </g>
+            <g transform="translate(400,32)">
+              <rect width="80" height="22" rx="3" fill="#1F8A60"/>
+              <text x="40" y="16" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#FFFFFF">30 ✓</text>
+            </g>
+            <text x="600" y="48" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#9D9C95">(network team must allow VLAN 110)</text>
+          </g>
+
+          <!-- Annotation -->
+          <g transform="translate(40,330)">
+            <rect width="840" height="22" rx="6" fill="#FBEDE3" stroke="#B85829"/>
+            <text x="420" y="16" text-anchor="middle" font-size="11" font-weight="700" fill="#B85829">⚠ vm-dev (VLAN 110) cannot reach anything outside the host until the trunk allows VLAN 110</text>
+          </g>
+        </svg>
+        <div class="illustration-caption">VST: vSwitch adds the VLAN tag. The physical switch's trunk must allow that VLAN, or the frames are dropped silently.</div>
+      </div>
+    </article>
+
+    <div class="callout danger">
+      <div class="callout-icon">!</div>
+      <div class="callout-body"><strong>Coordinate VLANs with the network team</strong>The most common networking failure: vSwitch tags VLAN 100, but the physical trunk doesn't allow VLAN 100. Frames disappear silently — no error, no log. Before adding a port group, get the trunk's allowed-VLAN list from the network team. Or send a test frame and watch.</div>
+    </div>
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>Default to VST</strong>Unless you're nesting hypervisors or running virtual firewalls, VST is the right tagging mode. EST limits you to one VLAN per host; VGT pushes complexity into the guest OS. VST hits the sweet spot.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>Naming port groups consistently</strong><code>Prod-VLAN-100</code>, <code>vMotion-VLAN-30</code>, <code>vSAN-VLAN-40</code>. Encoding the VLAN in the name catches drift fast — at a glance you see "wait, that says VLAN 110 but the spec is 100." On vDS, naming is enforced; on vSS, naming convention is your only defence.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p>A port group is a named bundle of ports on a vSwitch with shared policy. Two kinds: VM port group (VMs attach) and vmkernel port group (ESXi's services attach). Port groups carry VLAN ID, NIC teaming, security, traffic shaping.</p>
+      <p><strong><span class="term">VLAN tagging<span class="tooltip">Mechanism for isolating traffic types over a single physical trunk. The 802.1Q standard adds a small "tag" to each frame indicating which VLAN it belongs to. The vSwitch and physical switch agree on which VLANs are allowed on which ports.</span></span></strong> isolates traffic over a single physical trunk. Three modes:</p>
+      <div class="mini-vis">
+        <div class="mini-vis-title">Three VLAN-tagging modes in vSphere</div>
+        <table class="vlan-table">
+          <thead><tr><th>Mode</th><th>VLAN ID on port group</th><th>Who tags</th><th>When to use</th></tr></thead>
+          <tbody>
+            <tr><td><strong>EST</strong> (External Switch Tagging)</td><td>0</td><td>Physical switch</td><td>Rare. Switch handles tagging, vSwitch sees untagged.</td></tr>
+            <tr><td><strong><span class="term">VST<span class="tooltip">Virtual Switch Tagging — the most common VLAN tagging mode in vSphere. The vSwitch tags outbound frames with the port group's VLAN ID and untags inbound. The physical switch port is configured as an 802.1Q trunk allowing the relevant VLANs.</span></span></strong> (Virtual Switch Tagging)</td><td>1–4094</td><td>vSwitch</td><td>Most common. Physical switch port is an 802.1Q trunk.</td></tr>
+            <tr><td><strong>VGT</strong> (Virtual Guest Tagging)</td><td>4095 (all)</td><td>VM's OS</td><td>Nested virtualization, network appliances needing multiple VLANs.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>For VST (the normal case): every port group's VLAN must match a VLAN trunked on the physical switch. Get this wrong and the VM has connectivity to nothing.</p>
+      <p><strong>Naming</strong> matters: on vSS, the port group name must match across hosts for vMotion to find a destination. On vDS, the name is defined once at the vDS level — drift is impossible by design.</p>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>A new VM lands on host-3 in the "Production" port group and can't talk to anything. An hour of debugging. Eventually you find host-3's "Production" port group is on VLAN 110, while every other host has it on VLAN 100. Typo from a year ago.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>The port groups live on a vDS. One "Production" port group with one VLAN ID. Every host gets the same. Typos can't exist.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>Port groups are the named jacks on each desk: "Sales" jack vs "Engineering" jack. The VLAN ID on the jack tells the wiring which traffic conduit to send your packets through. Same desk, multiple jacks, different worlds.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">A VM is on the "Production-VLAN-100" port group. The VM has connectivity to other VMs in the same port group on the same host but not to anything outside. What's the most likely cause?</div>
+      <div class="qc-options" data-qc="qc4" data-correct="b">
+        <button class="qc-option" data-opt="a">The VM's vNIC is broken; recreate it.</button>
+        <button class="qc-option" data-opt="b">The physical switch port (where the host's uplink connects) is not trunking VLAN 100. The vSwitch tags VLAN 100 (VST), but the physical switch drops it because its trunk doesn't allow VLAN 100. Have the network team add VLAN 100 to the trunk.</button>
+        <button class="qc-option" data-opt="c">VST mode is broken; switch to VGT.</button>
+        <button class="qc-option" data-opt="d">The VM needs to be rebooted.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc4"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>Each desk has many jacks for different networks. The jack you plug into decides what network you can talk on. If the wall socket isn't wired up for that network, plugging into the jack does nothing.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>A port group is a named group of virtual ports on a vSwitch with a shared policy: which VLAN, which uplinks, what kind of security. VMs attach to a VM port group; ESXi's own services attach to a vmkernel port group. The VLAN ID on a port group, in the most common setup (VST), tells the vSwitch what tag to add to outgoing frames. The physical switch needs to be trunking those VLANs on the port the host's uplink connects to. If the VLANs don't match, the VM has no connectivity even though everything looks right inside ESXi.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → Networking → Distributed Port Group → New. Name: <code>Prod-VLAN-100</code>. Type: Static binding (default). VLAN type: VLAN. VLAN ID: 100. Number of ports: 8 (auto-grows). Save. The new port group appears on every host. Edit a VM, change its NIC to <code>Prod-VLAN-100</code>, save. The VM is on that VLAN.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · port groups + VLANs (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three VLAN-tagging modes in vSphere?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">EST (Physical switch tags; vSwitch sees untagged; VLAN ID = 0; rare). VST (vSwitch tags; VLAN ID = actual VLAN 1-4094; most common). VGT (VM tags itself; VLAN ID = 4095 all-VLAN trunk; for nested virtualization, certain appliances).</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">VM on Production-VLAN-100. Other VMs in same PG on same host work; nothing outside reachable. Cause?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Physical switch port is not trunking VLAN 100. vSwitch tags VLAN 100 (VST mode), physical switch drops it because VLAN 100 isn't on its trunk list. Fix: add VLAN 100 to the trunk on that switch port.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why does port-group naming matter on vSS but less on vDS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">On vSS, vMotion looks for a port group with the same name on the destination host. Drift in name (or VLAN) breaks vMotion. On vDS, port group is defined once at the vDS level — every member host has the same name and config by construction.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · port groups + VLANs (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'port-groups' mode</span>
+          <div class="quiz-prompt">A VM is on the "Production-VLAN-100" port group. The VM has connectivity to other VMs in the same port group on the same host but not to anything outside. Most likely cause and fix?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>The physical switch port that the host's uplink connects to is not trunking VLAN 100. The vSwitch is tagging VLAN 100 (VST mode), but the physical switch drops it because VLAN 100 isn't on its trunk list. Fix: have the network team add VLAN 100 to the trunk on that switch port (and probably on the redundant uplink's port too).</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">What's the difference between VST and VGT, and when would you use VGT?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>VST: vSwitch tags outbound frames with the port group's VLAN ID; VM sees untagged frames. The default and most common. VGT: port group VLAN ID is 4095 (all-VLAN trunk); the VM's OS handles VLAN tagging itself. Used for nested virtualization, certain network appliances (firewalls, virtual routers) that need access to multiple VLANs through one vNIC.</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================ SUBTOPIC 5 ============================ -->
+  <section class="subtopic" id="sub-5">
+    <header class="subtopic-header s5">
+      <span class="subtopic-meta">Subtopic 5 of 6</span>
+      <h2>NIC teaming, load balancing, failover</h2>
+      <p class="subtopic-tagline">Two or more NICs per vSwitch. One logical pipe.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">NIC teaming has its own dialect — five different load-balancing modes plus failure-detection vocabulary.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">NIC teaming <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Grouping two or more physical NICs as uplinks on the same vSwitch. They act as one logical pipe with combined bandwidth and automatic failover.</div>
+          <div class="gloss-why">Single uplink = single point of failure. Two uplinks = redundancy + more bandwidth. Should be standard on every vSwitch.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Load balancing <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The rule that decides which NIC carries which traffic. Five modes available; "Originating port ID" is the default.</div>
+          <div class="gloss-why">Different modes have different bandwidth and physical-switch requirements. Most environments use the default and never change it.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Originating virtual port (load mode) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The default. Each VM port gets pinned to one uplink based on its port ID. Simple, no switch config needed.</div>
+          <div class="gloss-why">Works with any switch. Each VM uses one NIC at a time, but with many VMs the load distributes naturally.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Source MAC hash (load mode) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Hash the VM's MAC address to pick an uplink. Like originating-port but stable across vMotion (because the MAC follows the VM).</div>
+          <div class="gloss-why">Slightly nicer than originating-port for environments that vMotion a lot. No switch-side config needed.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">IP hash (load mode) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Hash source+destination IP to pick an uplink. A single VM can use multiple uplinks for different conversations. Requires EtherChannel or LACP on the switch.</div>
+          <div class="gloss-why">Better aggregate bandwidth, more switch coordination. Use only if you also configured the switch correctly.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Physical NIC load (load mode) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> vDS-only. Monitors actual uplink utilisation and rebalances VMs to underused uplinks every 30s.</div>
+          <div class="gloss-why">The "set and forget" mode for vDS. Adjusts to real load over time. Most environments with vDS pick this.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Explicit failover order (load mode) <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Always use the first listed active uplink; failover to standby only if it dies. No load distribution.</div>
+          <div class="gloss-why">Useful for predictable single-path traffic — management, sometimes vMotion. Easier to troubleshoot.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Active vs standby uplinks <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Active uplinks are used for traffic; standby uplinks sit idle until all actives fail.</div>
+          <div class="gloss-why">Used to keep traffic on predictable paths or to keep traffic types separate (e.g., management always uses uplink 1, standby on 2).</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Failure detection <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> How vSphere decides an uplink is "down." Two modes: <em>Link status only</em> (cable-level), <em>Beacon probing</em> (deeper).</div>
+          <div class="gloss-why">Link-status alone misses upstream failures (cable up, switch dead). Beacon catches more, at the cost of needing ≥3 uplinks.</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">Beacon probing <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> ESXi sends small "ping" frames between team members through each uplink. If probes don't arrive at the others through a given uplink, that uplink is considered down.</div>
+          <div class="gloss-why">Catches failures the cable-level link-status check misses. Needs at least 3 uplinks (otherwise can't isolate which side is failing).</div>
+        </div>
+
+        <div class="gloss-card tag-protocol">
+          <div class="gloss-name">EtherChannel · port-channel <span class="gloss-tag">protocol</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Cisco's term for a static link aggregation group on a physical switch. The switch treats multiple links as one logical link.</div>
+          <div class="gloss-why">Required for vSphere's "IP hash" load mode to actually distribute traffic across uplinks correctly.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Notify switches <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A team setting (yes/no). When yes (default), on failover ESXi sends a RARP frame to make the upstream switch update its MAC table to the new uplink.</div>
+          <div class="gloss-why">Without it, the switch keeps sending traffic to the dead uplink for ~5 minutes (until MAC ages out). Always leave on unless you have a specific reason.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two-NIC team. VMs 1 and 2 pinned to vmnic0, VMs 3 and 4 pinned to vmnic1. vmnic0 fails. VMs 1 and 2 fail over to vmnic1 in milliseconds.">
+          <text x="460" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#B85829">Originating-port load balancing · vmnic0 failure · failover</text>
+
+          <!-- 4 VMs -->
+          <g transform="translate(80,52)">
+            <rect width="60" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/><text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">VM-1</text>
+          </g>
+          <g transform="translate(160,52)">
+            <rect width="60" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/><text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">VM-2</text>
+          </g>
+          <g transform="translate(700,52)">
+            <rect width="60" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/><text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">VM-3</text>
+          </g>
+          <g transform="translate(780,52)">
+            <rect width="60" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/><text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">VM-4</text>
+          </g>
+
+          <!-- vSwitch -->
+          <g transform="translate(40,108)">
+            <rect width="840" height="42" rx="6" fill="#3F4A5E"/>
+            <text x="420" y="28" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">vSwitch · Route based on originating virtual port</text>
+          </g>
+
+          <!-- Uplinks -->
+          <g transform="translate(180,180)">
+            <rect width="160" height="48" rx="6" fill="#5A6B81" stroke="#B85829" stroke-width="2.5"/>
+            <text x="80" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">vmnic0</text>
+            <text x="80" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#FBEDE3">link DOWN</text>
+            <line x1="20" y1="10" x2="140" y2="38" stroke="#B85829" stroke-width="3" opacity="0.5"/>
+            <line x1="140" y1="10" x2="20" y2="38" stroke="#B85829" stroke-width="3" opacity="0.5"/>
+          </g>
+          <g transform="translate(580,180)">
+            <rect width="160" height="48" rx="6" fill="#1F8A60"/>
+            <text x="80" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">vmnic1</text>
+            <text x="80" y="40" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.9">carries all traffic now</text>
+          </g>
+
+          <!-- Pin lines: VM 1, 2 normally → vmnic0 (red dashed), now → vmnic1 (green) -->
+          <g stroke="#B85829" stroke-width="1.4" stroke-dasharray="3,3" fill="none" opacity="0.6">
+            <line x1="110" y1="84" x2="220" y2="180"/>
+            <line x1="190" y1="84" x2="240" y2="180"/>
+          </g>
+          <g stroke="#1F8A60" stroke-width="2" fill="none">
+            <line x1="110" y1="84" x2="640" y2="180" marker-end="url(#a10tm)"/>
+            <line x1="190" y1="84" x2="660" y2="180" marker-end="url(#a10tm)"/>
+            <line x1="730" y1="84" x2="680" y2="180"/>
+            <line x1="810" y1="84" x2="700" y2="180"/>
+          </g>
+
+          <text x="460" y="262" text-anchor="middle" font-size="12" font-weight="700" fill="#1F8A60">vmnic0 dies → VMs 1 &amp; 2 fail over to vmnic1 in milliseconds</text>
+          <text x="460" y="284" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">no vSphere HA event · no VM restart · ping continues</text>
+
+          <defs><marker id="a10tm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#1F8A60"/></marker></defs>
+        </svg>
+        <div class="illustration-caption">Two NICs in a team = bandwidth + resilience. Originating-port pinning means each VM uses one NIC at a time; failover swaps the pin in milliseconds.</div>
+      </div>
+    </article>
+
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>Two NICs minimum, always</strong>Single uplink = single point of failure. Even on lab hosts, give each vSwitch at least two physical NICs. Cheap insurance against a flapping cable, dead NIC, or upstream switch reboot.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>Default load mode is fine for most</strong>"Route based on originating virtual port" works on any switch and distributes load across uplinks naturally as your VM count grows. Only switch to IP hash if you have EtherChannel configured on the switch side too — otherwise you'll create more problems than you solve.</div>
+    </div>
+    <div class="callout warn">
+      <div class="callout-icon">⚠</div>
+      <div class="callout-body"><strong>Beacon probing needs 3+ uplinks</strong>With only 2 uplinks, beacon probing can't tell which side is failing — both look "silent." Enable beacon only on teams of 3 or more uplinks. Most production teams of 2 stick with "link status only."</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p>Every host should have at least two physical NICs assigned to a vSwitch. This buys two things: more bandwidth (load balancing) and resilience (failover). The set of physical NICs assigned to a vSwitch is called a <strong><span class="term">NIC teaming<span class="tooltip">Grouping multiple physical NICs as uplinks on the same vSwitch for combined bandwidth and resilience. ESXi distributes traffic across the team using a load-balancing policy and fails over to surviving members if one dies.</span></span> team</strong>.</p>
+      <p>Each port group inherits the team's policy (or overrides it). Five common load-balancing modes:</p>
+      <ul>
+        <li><strong>Route based on originating virtual port (default)</strong> — each VM port pinned to an uplink. Simple, no physical-switch config needed.</li>
+        <li><strong>Route based on source MAC hash</strong> — hash the VM's MAC. Stable across vMotion.</li>
+        <li><strong>Route based on IP hash</strong> — hash source/dest IP. Requires EtherChannel on the physical switch.</li>
+        <li><strong>Route based on physical NIC load</strong> — vDS-only. Monitors actual utilization and rebalances. Most "set and forget."</li>
+        <li><strong>Use explicit failover order</strong> — only ever use the first listed active uplink; failover to standby. No load balancing.</li>
+      </ul>
+
+      <p><strong>Active vs standby uplinks</strong>: active uplinks are used; standby uplinks sit idle and only take over if all active ones fail.</p>
+
+      <div class="mini-vis">
+        <div class="mini-vis-title">Network failure detection</div>
+        <ul style="margin: 0;">
+          <li><strong>Link status only</strong> — uplink "down" only when physical link drops. Misses the case where the cable is up but the upstream switch is unreachable.</li>
+          <li><strong><span class="term">Beacon probing<span class="tooltip">Failure-detection mode where ESXi sends probe frames between team members. If probes don't arrive at the others through a given uplink, that uplink is considered down. Catches upstream failures that link-status misses but needs ≥3 uplinks.</span></span></strong> — ESXi sends probe frames between team members; if probes don't arrive, that uplink is down. Catches more failure modes; needs ≥3 uplinks and only works for some teaming modes.</li>
+        </ul>
+      </div>
+
+      <p><strong>Notify switches</strong> (yes/no): on failover, ESXi sends a RARP so the upstream switch updates its MAC tables. Almost always yes.</p>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>Single uplink per host. NIC fails or cable unplugged → host loses all VM network → vSphere HA kicks in 30 seconds later → VMs restart elsewhere. Disruptive.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>Two-uplink team with active/active load balancing and beacon probing. Same NIC failure: ESXi notices in milliseconds, fails over to surviving uplink, VMs barely notice. No HA event.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>NIC teaming is having two phone lines into the building, both live, with rules for how calls are split between them and how to fail over if one line dies. The "load balancing" mode is the rule for splitting; the "failure detection" is how you decide a line is really dead.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">Your team policy is "Route based on originating virtual port." A VM with vCPU 4 generates a sustained 5 Gbps of traffic. Both uplinks are 10 Gbps. Will the VM use both uplinks?</div>
+      <div class="qc-options" data-qc="qc5" data-correct="c">
+        <button class="qc-option" data-opt="a">Yes — vSphere automatically distributes a VM's traffic across all available uplinks.</button>
+        <button class="qc-option" data-opt="b">Yes, but only after the VM is restarted.</button>
+        <button class="qc-option" data-opt="c">No. Originating-port load balancing pins each VM to a single uplink. The VM uses one 10 Gbps NIC, not two. To split a single-VM flow, you'd need IP hash with EtherChannel on the switch (and even then it splits per-flow).</button>
+        <button class="qc-option" data-opt="d">No — the VM is capped at 1 Gbps.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc5"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>The big computer has more than one network cable. Some cables work, some don't. We have rules for how to share traffic across them and what to do if one breaks.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>NIC teaming groups two or more physical NICs into one logical pipe. You pick a load-balancing rule that decides which NIC handles which traffic, and a failover rule that decides what happens if a NIC dies. The default rule (originating virtual port) is simple and needs no physical-switch config. Other rules give you more aggregate bandwidth or more sophisticated failover, sometimes at the cost of physical-switch configuration. You can mark some NICs as standby so they only take over if active NICs fail. Beacon probing detects upstream failures that link status alone misses.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → host → Configure → Virtual switches → vSwitch0 → Edit → Teaming and failover. Load balancing: Route based on physical NIC load (because we're on a vDS). Network failure detection: Link status only (default; beacon probing needs odd uplink count). Notify switches: Yes. Failback: Yes. Active uplinks: vmnic0, vmnic1. Standby: none. Save.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · teaming (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Five NIC teaming load-balancing modes?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">(1) Route based on originating virtual port (default; per-VM pin). (2) Source MAC hash. (3) IP hash (needs EtherChannel). (4) Physical NIC load (vDS only; rebalances by util). (5) Use explicit failover order (no balancing).</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Active vs standby uplinks?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Active uplinks are used per the load-balance policy. Standby uplinks sit idle and only take over if all active uplinks fail. Useful for predictable single-uplink behavior (e.g., management) or to keep traffic types separate.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Link status only vs beacon probing?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Link status: uplink "down" only if physical link drops. Misses upstream failures (cable up, switch unreachable). Beacon probing: ESXi sends probe frames between team members; if probes don't arrive, uplink is down. Catches more failures; needs ≥3 uplinks, only some teaming modes.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · teaming (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'teaming' mode</span>
+          <div class="quiz-prompt">Your team policy is "Route based on originating virtual port." A single VM generates a sustained 5 Gbps. Both uplinks are 10 Gbps. Does the VM use both uplinks?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>No. Originating-port load balancing pins each VM (per virtual port) to a single uplink. The VM uses one 10 Gbps NIC, not two. To split a single-VM flow across uplinks, you'd need IP hash with EtherChannel on the switch (and even then it splits per-flow, not per-packet). Most environments tolerate the per-VM cap because real workloads have many flows that distribute naturally.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">Why use beacon probing for network failure detection, and what's its main constraint?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>Beacon probing detects upstream failures that link-status alone misses (cable up, switch beyond is dead/misconfigured). ESXi sends probe frames between team members; if probes don't arrive at the others through a given uplink, that uplink is considered down. Constraint: needs at least 3 uplinks (otherwise can't isolate which side is failing) and only works for some teaming modes.</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============================ SUBTOPIC 6 ============================ -->
+  <section class="subtopic" id="sub-6">
+    <header class="subtopic-header s6">
+      <span class="subtopic-meta">Subtopic 6 of 6</span>
+      <h2>vmkernel adapters</h2>
+      <p class="subtopic-tagline">ESXi's own NICs — one per service, on its own VLAN.</p>
+    </header>
+
+    <article class="glossary-block">
+      <div class="gloss-header"><div class="gloss-icon">📖</div><h3>Words you'll meet in this section</h3></div>
+      <p class="gloss-intro">Each vmkernel service has its own purpose — many of which we cover in detail later. Here's the lay of the land.</p>
+      <div class="glossary-grid">
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">vmkernel adapter <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A virtual NIC ESXi itself uses (not a VM). Has its own IP, subnet, MAC. Lives on a vmkernel port group on a vSwitch.</div>
+          <div class="gloss-why">When ESXi needs to send anything itself — heartbeat to vCenter, vMotion data, vSAN replication, NFS reads — it uses a vmkernel adapter.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Management traffic <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Traffic between vCenter and ESXi (heartbeats, config commands, status). Also the traffic vSphere Client / Host Client / API uses to talk to the host.</div>
+          <div class="gloss-why">Always present. Lives on the management vmkernel adapter (usually <code>vmk0</code>). Should never be saturated by other traffic.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">vMotion traffic <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The data stream when a running VM is being live-migrated between hosts — primarily memory state being copied.</div>
+          <div class="gloss-why">Bursty and bandwidth-hungry. Can saturate a 10 GbE link during a big VM migration. Must not share with management or storage.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">vSAN traffic <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Storage traffic between hosts in a vSAN cluster — replication of VM data across hosts (covered in lesson 11).</div>
+          <div class="gloss-why">Sustained, high bandwidth. Latency-sensitive. Strictly requires its own dedicated VLAN — not optional.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">NFS / iSCSI traffic <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> IP-based storage traffic — host reading/writing VM files on a NAS (NFS) or block device on a SAN (iSCSI). Covered in lesson 11.</div>
+          <div class="gloss-why">Storage traffic should be on its own vmkernel and ideally its own NIC pair. Sharing with VM traffic = unpredictable storage latency.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Fault Tolerance (FT) logging <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A vSphere feature where a primary VM and a "shadow" secondary VM run in lockstep on different hosts. FT logging is the constant heartbeat / instruction stream between them.</div>
+          <div class="gloss-why">Latency-sensitive — small latency hiccups break FT. Needs its own vmkernel adapter on a low-latency network.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">vSphere Replication <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> A feature that asynchronously replicates VMs to a remote site for DR purposes. Replication traffic is its own thing.</div>
+          <div class="gloss-why">Often crosses WAN links. Worth isolating on its own vmkernel so you can rate-limit it.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Provisioning traffic <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The traffic for VM clones, cold migrations, and snapshot/template operations. Often shares with vMotion.</div>
+          <div class="gloss-why">Bursty during deployments. Usually fine to share with vMotion's vmkernel.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Backup NFC traffic <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> Network File Copy traffic used by backup tools to read VM disk data. A VMware-defined protocol.</div>
+          <div class="gloss-why">Heavy during backup windows. Knowing this traffic exists helps when planning network capacity.</div>
+        </div>
+
+        <div class="gloss-card tag-config">
+          <div class="gloss-name">Service checkbox <span class="gloss-tag">config</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> When you create a vmkernel adapter, vSphere shows checkboxes for which services it can carry: Management, vMotion, FT logging, Provisioning, vSAN, NFC Backup, Replication, Replication NFC.</div>
+          <div class="gloss-why">Same vmkernel can carry multiple services. In production, you usually give each big service its own vmkernel.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">TCP/IP stack <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> An ESXi feature where each vmkernel adapter can have its own routing table and gateway, separate from the others. Default stack handles management; vMotion, vSAN, etc., can have separate stacks.</div>
+          <div class="gloss-why">Lets vMotion traffic go through a different gateway from management — useful for cross-site vMotion or air-gapped storage networks.</div>
+        </div>
+
+        <div class="gloss-card tag-concept">
+          <div class="gloss-name">Isolation <span class="gloss-tag">concept</span></div>
+          <div class="gloss-what"><strong>What it is:</strong> The pattern of giving each big service its own vmkernel + own VLAN + own NIC pair. Each service has independent failure / congestion / security.</div>
+          <div class="gloss-why">Saturation in one (e.g., big vMotion) doesn't ripple into another (e.g., management). Production hosts should always be isolated this way.</div>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="illustration-block">
+      <h3>At a glance</h3>
+      <div class="illustration">
+        <svg viewBox="0 0 920 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Production host with 4 separate vmkernel adapters: management, vMotion, vSAN, NFS — each on its own VLAN and NIC pair. vMotion saturating its NICs doesn't impact management or storage.">
+          <text x="460" y="22" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="13" font-weight="700" fill="#8E2A2A">Production host: separate vmkernel per traffic type</text>
+
+          <!-- 4 vmkernel cards -->
+          <g transform="translate(20,50)" font-family="Inter,system-ui,sans-serif">
+            <rect width="200" height="92" rx="8" fill="#FBF4D6" stroke="#5A6B81"/>
+            <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">vmk0 — Management</text>
+            <text x="100" y="40" text-anchor="middle" font-size="10" fill="#1F2937">VLAN 10 · 10.10.10.41</text>
+            <text x="100" y="58" text-anchor="middle" font-size="10" fill="#5A6B81">enabled: Management</text>
+            <text x="100" y="78" text-anchor="middle" font-size="10" font-style="italic" fill="#1F8A60">vmnic0 · vmnic1 (team)</text>
+          </g>
+          <g transform="translate(240,50)" font-family="Inter,system-ui,sans-serif">
+            <rect width="200" height="92" rx="8" fill="#FBF4D6" stroke="#5A6B81"/>
+            <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">vmk1 — vMotion</text>
+            <text x="100" y="40" text-anchor="middle" font-size="10" fill="#1F2937">VLAN 30 · 10.30.30.41</text>
+            <text x="100" y="58" text-anchor="middle" font-size="10" fill="#5A6B81">enabled: vMotion</text>
+            <text x="100" y="78" text-anchor="middle" font-size="10" font-style="italic" fill="#1F8A60">vmnic2 · vmnic3 (team)</text>
+          </g>
+          <g transform="translate(460,50)" font-family="Inter,system-ui,sans-serif">
+            <rect width="200" height="92" rx="8" fill="#FBF4D6" stroke="#5A6B81"/>
+            <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">vmk2 — vSAN</text>
+            <text x="100" y="40" text-anchor="middle" font-size="10" fill="#1F2937">VLAN 40 · 10.40.40.41</text>
+            <text x="100" y="58" text-anchor="middle" font-size="10" fill="#5A6B81">enabled: vSAN</text>
+            <text x="100" y="78" text-anchor="middle" font-size="10" font-style="italic" fill="#1F8A60">vmnic4 · vmnic5 (team)</text>
+          </g>
+          <g transform="translate(680,50)" font-family="Inter,system-ui,sans-serif">
+            <rect width="200" height="92" rx="8" fill="#FBF4D6" stroke="#5A6B81"/>
+            <text x="100" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">vmk3 — NFS</text>
+            <text x="100" y="40" text-anchor="middle" font-size="10" fill="#1F2937">VLAN 50 · 10.50.50.41</text>
+            <text x="100" y="58" text-anchor="middle" font-size="10" fill="#5A6B81">enabled: Provisioning</text>
+            <text x="100" y="78" text-anchor="middle" font-size="10" font-style="italic" fill="#1F8A60">vmnic6 · vmnic7 (team)</text>
+          </g>
+
+          <!-- ESXi host backing -->
+          <g transform="translate(20,160)">
+            <rect width="880" height="60" rx="8" fill="#3F4A5E"/>
+            <text x="440" y="26" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">ESXi host</text>
+            <text x="440" y="46" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">each service is isolated · saturation in one doesn't impact others</text>
+          </g>
+
+          <!-- Live utilization bars -->
+          <g transform="translate(20,236)" font-family="Inter,system-ui,sans-serif">
+            <text x="100" y="0" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">Mgmt util</text>
+            <rect x="0" y="6" width="200" height="14" rx="2" fill="#F3F5F9" stroke="#D5DCE6"/>
+            <rect x="0" y="6" width="40" height="14" rx="2" fill="#1F8A60"/>
+            <text x="100" y="38" text-anchor="middle" font-size="9" fill="#5A6B81">calm</text>
+          </g>
+          <g transform="translate(240,236)" font-family="Inter,system-ui,sans-serif">
+            <text x="100" y="0" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vMotion util</text>
+            <rect x="0" y="6" width="200" height="14" rx="2" fill="#F3F5F9" stroke="#D5DCE6"/>
+            <rect x="0" y="6" width="200" height="14" rx="2" fill="#B85829"/>
+            <text x="100" y="38" text-anchor="middle" font-size="9" font-weight="700" fill="#B85829">saturated (its own NICs)</text>
+          </g>
+          <g transform="translate(460,236)" font-family="Inter,system-ui,sans-serif">
+            <text x="100" y="0" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vSAN util</text>
+            <rect x="0" y="6" width="200" height="14" rx="2" fill="#F3F5F9" stroke="#D5DCE6"/>
+            <rect x="0" y="6" width="80" height="14" rx="2" fill="#1F8A60"/>
+            <text x="100" y="38" text-anchor="middle" font-size="9" fill="#5A6B81">unaffected</text>
+          </g>
+          <g transform="translate(680,236)" font-family="Inter,system-ui,sans-serif">
+            <text x="100" y="0" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">NFS util</text>
+            <rect x="0" y="6" width="200" height="14" rx="2" fill="#F3F5F9" stroke="#D5DCE6"/>
+            <rect x="0" y="6" width="60" height="14" rx="2" fill="#1F8A60"/>
+            <text x="100" y="38" text-anchor="middle" font-size="9" fill="#5A6B81">unaffected</text>
+          </g>
+        </svg>
+        <div class="illustration-caption">Production hosts get one vmkernel per major service, each on its own VLAN and (ideally) its own NIC team. Isolation = predictable performance.</div>
+      </div>
+    </article>
+
+    <div class="callout danger">
+      <div class="callout-icon">!</div>
+      <div class="callout-body"><strong>Never share management with vMotion or storage in production</strong>vMotion can saturate a 10 GbE link mid-migration. If management traffic shares that vmkernel, vCenter heartbeat times out and the host bounces "not responding" / "responding" until vMotion finishes. Each big service gets its own vmkernel.</div>
+    </div>
+    <div class="callout tip">
+      <div class="callout-icon">★</div>
+      <div class="callout-body"><strong>Production naming convention</strong><code>vmk0-mgmt</code>, <code>vmk1-vmotion</code>, <code>vmk2-vsan</code>, <code>vmk3-nfs</code>. Names that encode the purpose at a glance prevent accidental "this VLAN is wrong, this isn't the management one" mistakes.</div>
+    </div>
+    <div class="callout note">
+      <div class="callout-icon">i</div>
+      <div class="callout-body"><strong>Lab can collapse · production cannot</strong>In a 2-host lab, one vmkernel doing everything is fine. In production with real workloads, isolation is mandatory. If you're sharing in production, you'll see flapping hosts and unpredictable latency.</div>
+    </div>
+
+    <article class="block">
+      <h3>What it is</h3>
+      <p>A vmkernel adapter is a virtual NIC that ESXi itself uses (not a VM). It lives on a vmkernel port group on a vSwitch (vSS or vDS). Each adapter has an IP, a subnet, and a set of services it carries.</p>
+
+      <div class="mini-vis">
+        <div class="mini-vis-title">Common vmkernel services</div>
+        <table class="vmk-table">
+          <thead><tr><th>Service</th><th>What it carries</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Management</td><td>vSphere Client / API to ESXi</td><td>Almost always its own VLAN</td></tr>
+            <tr><td>vMotion</td><td>Live VM migration traffic</td><td>Bandwidth-hungry; own VLAN ideal</td></tr>
+            <tr><td>Provisioning</td><td>Clone, snapshot, cold migration</td><td>Often shares with vMotion</td></tr>
+            <tr><td>Fault Tolerance</td><td>FT primary/secondary heartbeat</td><td>Latency-sensitive</td></tr>
+            <tr><td>vSAN</td><td>vSAN data between hosts</td><td>Mandatory dedicated VLAN</td></tr>
+            <tr><td>NFS / iSCSI</td><td>IP storage traffic</td><td>Often dedicated NICs too</td></tr>
+            <tr><td>Replication</td><td>vSphere Replication</td><td>Cross-site links</td></tr>
+            <tr><td>Backup NFC</td><td>Backup tool data path</td><td>Bursty</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>You <em>can</em> stack multiple services on one vmkernel adapter (lab use), but in production each big traffic type usually gets its own vmkernel on its own subnet, ideally on its own NICs. Why:</p>
+      <ul>
+        <li><strong>Performance</strong>: vMotion saturates a 10 GbE link; you don't want it competing with VM traffic.</li>
+        <li><strong>Security</strong>: storage traffic shouldn't be reachable from VMs.</li>
+        <li><strong>Troubleshooting</strong>: separate networks make packet capture sane.</li>
+      </ul>
+    </article>
+
+    <article class="block">
+      <h3>Before / After</h3>
+      <div class="before-after">
+        <div class="ba-card before"><div class="ba-label">Before</div><p>One vmkernel called "Management" carries everything — management, vMotion, NFS storage. vMotion of a big VM saturates the link, vCenter heartbeat times out, host bounces "connected" / "not responding." Storage briefly unhappy.</p></div>
+        <div class="ba-arrow">→</div>
+        <div class="ba-card after"><div class="ba-label">After</div><p>Three vmkernels: Management VLAN 10, vMotion VLAN 30, NFS VLAN 50, each on its own subnet, each with its own NIC pair. vMotion saturating its NIC doesn't touch management or storage.</p></div>
+      </div>
+    </article>
+
+    <article class="block analogy">
+      <h3><span class="ico-flag">Analogy</span></h3>
+      <p>vmkernel adapters are the building's own service phones — separate lines for security, maintenance, deliveries, fire alarm. Mixing them on one line works in a small building; in a tower, separate lines are the only sane plan.</p>
+    </article>
+
+    <article class="block quick-check">
+      <h3>Quick check</h3>
+      <div class="qc-question">A new host has a vmkernel adapter on the management VLAN. You want to enable vMotion on the same vmkernel. Should you?</div>
+      <div class="qc-options" data-qc="qc6" data-correct="c">
+        <button class="qc-option" data-opt="a">Yes — that's the recommended setup.</button>
+        <button class="qc-option" data-opt="b">Yes — vMotion can only run on the management vmkernel.</button>
+        <button class="qc-option" data-opt="c">In a lab, sure. In production, almost never. Add a separate vmkernel for vMotion on its own VLAN, ideally with its own NICs. vMotion can saturate a NIC and would compete with management traffic.</button>
+        <button class="qc-option" data-opt="d">No — vMotion is enabled at the cluster level, not the vmkernel.</button>
+      </div>
+      <div class="qc-feedback" data-qc-fb="qc6"></div>
+    </article>
+
+    <article class="block">
+      <h3>Two ways to think about it</h3>
+      <div class="eli-pair">
+        <div class="eli-card"><span class="eli-tag five">ELI5</span><p>The big computer has its own special phone lines that aren't for the people inside (the VMs). One line is for the building manager, one for moving furniture between buildings, one for the storage closet. Each gets its own line.</p></div>
+        <div class="eli-card"><span class="eli-tag ten">ELI10</span><p>A vmkernel adapter is a virtual network interface on the host that ESXi itself uses for its own services — management, vMotion, vSAN, NFS, iSCSI, FT, replication. Each adapter has an IP and a set of enabled services. In production, each big traffic type gets its own vmkernel on its own VLAN, ideally with its own NIC pair. This keeps performance predictable, security clean, and troubleshooting tractable.</p></div>
+      </div>
+    </article>
+
+    <article class="block real-world" data-eyebrow="In the real world">
+      <p>vSphere Client → host → Configure → Networking → VMkernel adapters → Add Networking. Choose "VMkernel Network Adapter." Pick the target vSwitch (or vDS port group). Network label: <code>vMotion</code>. VLAN: 30. IPv4: static, <code>10.30.30.41/24</code>. Enabled services: vMotion. Save. Repeat for vSAN, NFS, etc. Each becomes a separate adapter with its own IP, subnet, and service.</p>
+    </article>
+
+    <article class="block">
+      <h3>Flashcards · vmkernel (3)</h3>
+      <div class="flashcard-grid">
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a vmkernel adapter?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A virtual NIC that ESXi itself uses (not a VM) for its own services. Has an IP, subnet, and set of enabled services (Management, vMotion, vSAN, Provisioning, FT logging, NFS, iSCSI, Replication, Backup NFC). Lives on a vmkernel port group on a vSwitch.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why does each big service get its own vmkernel on its own subnet?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Performance (vMotion can saturate a 10 GbE link), security (storage shouldn't be VM-reachable), troubleshooting (separate networks make packet capture sane). Lab can get away with one vmkernel; production cannot.</div></div></div>
+        <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Five common services on vmkernel adapters?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Management, vMotion, vSAN, NFS/iSCSI, Fault Tolerance logging. Plus: Provisioning (clone, snapshot, cold migration), vSphere Replication, vSphere Backup NFC. Each enabled/disabled per vmkernel via checkboxes.</div></div></div>
+      </div>
+    </article>
+
+    <article class="block">
+      <h3>Quiz · vmkernel (2)</h3>
+      <div class="quiz-grid">
+        <div class="quiz-card">
+          <span class="quiz-pause-tag">⏸ pause animation in 'vmkernel' mode</span>
+          <div class="quiz-prompt">The diagram shows one vmkernel called 'Management' carrying everything: management, vMotion, vSAN, NFS. What goes wrong, and what's the production fix?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>vMotion of a big VM saturates the link, ESXi's heartbeat with vCenter times out, the host bounces "not responding" → "responding." Storage I/O suffers. vMotions can stall. Production fix: separate vmkernel adapters per service — Management on its own VLAN, vMotion on its own VLAN with its own NIC pair, vSAN on its own VLAN with its own NIC pair, NFS/iSCSI on their own. Each service gets predictable bandwidth and independent failure domains.</p></div>
+        </div>
+        <div class="quiz-card">
+          <div class="quiz-prompt">A new host has a vmkernel adapter on the management VLAN. You want to enable vMotion on it. Should you?</div>
+          <button class="quiz-reveal-btn" type="button">Show answer</button>
+          <div class="quiz-answer"><div class="quiz-answer-label">Answer</div><p>In a lab, sure. In production, almost never. Add a separate vmkernel for vMotion on its own VLAN, ideally with its own NIC pair. vMotion can saturate a NIC and would compete with management traffic on the same vmkernel — risking management timeouts and "host not responding" alarms during big migrations.</p></div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="animation-section">
+    <h2 style="margin: 0 0 6px;">Walk through the whole journey</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin: 0 0 18px;">
+      Six modes, one per subtopic. Use <strong>Pause/Play</strong> and <strong>Speed</strong> to control timing.
+    </p>
+    <iframe class="animation-frame" src="courses/vmware/vsphere-fundamentals/scenarios/10-configuring-vsphere-networking/animation.html" title="Lesson 10 animation"></iframe>
+  </section>
+
+  <section class="recap">
+    <h2>The whole lesson in one breath</h2>
+    <p>Six moves from "VMs are running and you don't know how their packets get out" to a virtual network that's ready for storage and VM workloads.</p>
+    <div class="recap-points">
+      <div class="recap-point"><strong>1 · Overview</strong><br>NIC → vSwitch → port group → VM (or vmkernel).</div>
+      <div class="recap-point"><strong>2 · vSS</strong><br>Per-host. Simple. Drift-prone. Free.</div>
+      <div class="recap-point"><strong>3 · vDS</strong><br>Cluster-wide. No drift. LACP, NetFlow, NIOC. Enterprise Plus.</div>
+      <div class="recap-point"><strong>4 · Port groups + VLANs</strong><br>VST is most common. VLAN on the port group must match a trunked VLAN on the physical switch.</div>
+      <div class="recap-point"><strong>5 · Teaming</strong><br>≥2 NICs per vSwitch. Default originating-port is fine. Beacon probing for paranoid detection.</div>
+      <div class="recap-point"><strong>6 · vmkernel</strong><br>One per big service (mgmt, vMotion, vSAN, NFS), each on its own VLAN.</div>
+    </div>
+    <div class="recap-next">
+      <strong>Next up · Lesson 11 — Configuring vSphere Storage.</strong> The network is ready; now plug storage into it: VMFS, NFS, vSAN, vVols.
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Suvis Guru · vSphere Fundamentals · Lesson 10 of 12 · per-subtopic format
+</footer>
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const themeLabel = document.getElementById('theme-label');
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.firstChild.textContent = next === 'light' ? '🌙 ' : '☀️ ';
+    themeLabel.textContent = next === 'light' ? 'Dark' : 'Light';
+  });
+  document.querySelectorAll('.term').forEach(t => {
+    t.addEventListener('click', e => {
+      e.stopPropagation();
+      document.querySelectorAll('.term.pinned').forEach(p => { if (p !== t) p.classList.remove('pinned'); });
+      t.classList.toggle('pinned');
+    });
+  });
+  document.addEventListener('click', () => { document.querySelectorAll('.term.pinned').forEach(p => p.classList.remove('pinned')); });
+  document.querySelectorAll('.qc-options').forEach(group => {
+    const correct = group.getAttribute('data-correct');
+    const fbId = group.getAttribute('data-qc');
+    const fb = document.querySelector('[data-qc-fb="' + fbId + '"]');
+    group.querySelectorAll('.qc-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (group.classList.contains('answered')) return;
+        group.classList.add('answered');
+        const chosen = opt.getAttribute('data-opt');
+        group.querySelectorAll('.qc-option').forEach(o => {
+          o.classList.add('disabled');
+          const k = o.getAttribute('data-opt');
+          if (k === correct) o.classList.add('correct');
+          else if (k === chosen) o.classList.add('wrong');
+        });
+        if (chosen === correct) { fb.textContent = '✓ Correct.'; fb.classList.add('show', 'right'); }
+        else { fb.textContent = '✗ Not quite — the highlighted green option is the strongest answer. Re-read the concept block above.'; fb.classList.add('show', 'wrong-fb'); }
+      });
+    });
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      ans.classList.toggle('show');
+      btn.textContent = ans.classList.contains('show') ? 'Hide answer' : 'Show answer';
+    });
+  });
+  const subLinks = document.querySelectorAll('.sub-link');
+  const subSections = Array.from(document.querySelectorAll('.subtopic'));
+  function updateActiveSub() {
+    const fromTop = window.scrollY + 160;
+    let active = subSections[0];
+    for (const sec of subSections) { if (sec.offsetTop <= fromTop) active = sec; }
+    subLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + active.id));
+  }
+  window.addEventListener('scroll', updateActiveSub, { passive: true });
+  updateActiveSub();
+</script>
+
+</body>
+</html>

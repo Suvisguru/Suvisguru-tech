@@ -1,0 +1,203 @@
+# Flashcards — Lesson 10: Configuring vSphere Networking
+# Per-subtopic format. 18 cards, 3 per subtopic.
+
+cards:
+
+  # =====================================================
+  # Subtopic 1 — Overview
+  # =====================================================
+
+  - id: s1c1
+    subtopic: networking-overview
+    front: "Name the four core networking primitives in vSphere and what each is."
+    back: >
+      Physical NIC (uplink) — real network card on the host (vmnic0,
+      vmnic1, ...).  vSwitch — software inside ESXi that behaves like a
+      layer-2 switch.  Port group — named collection of ports on a vSwitch
+      with shared policy (VLAN, NIC teaming, security).  vmkernel adapter
+      — virtual NIC that ESXi itself uses (not a VM) for management,
+      vMotion, vSAN, NFS, etc.
+
+  - id: s1c2
+    subtopic: networking-overview
+    front: "Sketch the path a VM's packet takes to leave the host."
+    back: >
+      VM → virtual NIC (vNIC) → port group → vSwitch (vSS or vDS) →
+      uplink (physical NIC) → physical switch. The port group's policy
+      decides VLAN tagging, which uplink to use, security, and traffic
+      shaping along the way.
+
+  - id: s1c3
+    subtopic: networking-overview
+    front: "What's the difference between a VM port group and a vmkernel port group?"
+    back: >
+      VM port groups are where VMs attach. vmkernel port groups are
+      where ESXi itself attaches via vmkernel adapters for its own
+      services (management, vMotion, vSAN, NFS, FT, replication).
+      Different consumers, same underlying mechanism (a port group on
+      a vSwitch).
+
+  # =====================================================
+  # Subtopic 2 — Standard vSwitch
+  # =====================================================
+
+  - id: s2c1
+    subtopic: standard-vswitch
+    front: "What is a Standard vSwitch (vSS) and where does it live?"
+    back: >
+      A vSwitch that lives entirely on a single ESXi host. The host
+      configures it; nothing about it is shared with other hosts.
+      Default and free with every ESXi install. To have consistent
+      networking across many hosts, you have to configure each host
+      identically — drift is the operational hazard.
+
+  - id: s2c2
+    subtopic: standard-vswitch
+    front: "What does vSS NOT give you that vDS does?"
+    back: >
+      Centralized configuration, LACP, NetFlow, port mirroring, traffic
+      filtering, private VLANs, Network I/O Control. vSS is
+      per-host-only and lacks features that need cluster-wide
+      coordination.
+
+  - id: s2c3
+    subtopic: standard-vswitch
+    front: "When is vSS the right choice?"
+    back: >
+      Free vSphere edition (no vDS license), small environments where
+      manual consistency is manageable, on a standalone host before it
+      joins vCenter (you literally can't use vDS off-vCenter), and a
+      handful of edge cases (DPU, certain NSX scenarios). Often kept as
+      a fallback for management traffic alongside a vDS for VM/vMotion.
+
+  # =====================================================
+  # Subtopic 3 — Distributed vSwitch
+  # =====================================================
+
+  - id: s3c1
+    subtopic: distributed-vswitch
+    front: "What's the control-plane / data-plane split in a vDS?"
+    back: >
+      Control plane (config, port groups, policies) lives in vCenter.
+      Data plane (actual packet forwarding) lives on each host. vCenter
+      pushes the config to every member host. If vCenter goes down,
+      hosts keep forwarding traffic — you just can't change config until
+      vCenter is back.
+
+  - id: s3c2
+    subtopic: distributed-vswitch
+    front: "Name four features only vDS gives you (not vSS)."
+    back: >
+      LACP (active-active uplink bundling), NetFlow (export flow
+      records), Port Mirroring (mirror traffic to a sniffer), Network
+      I/O Control (bandwidth allocation between traffic types). Plus:
+      private VLANs, traffic filtering / DSCP marking, per-port stats.
+
+  - id: s3c3
+    subtopic: distributed-vswitch
+    front: "What licensing is needed for vDS?"
+    back: >
+      Enterprise Plus (or specific bundles like VMware Cloud Foundation).
+      Standard and Essentials editions don't include vDS — they're
+      vSS-only.
+
+  # =====================================================
+  # Subtopic 4 — Port groups & VLANs
+  # =====================================================
+
+  - id: s4c1
+    subtopic: port-groups-and-vlans
+    front: "Three VLAN-tagging modes in vSphere?"
+    back: >
+      EST (External Switch Tagging) — physical switch tags; vSwitch
+      sees untagged. VLAN ID = 0. Rare. VST (Virtual Switch Tagging) —
+      vSwitch tags; VLAN ID is the actual VLAN (1-4094). Most common.
+      VGT (Virtual Guest Tagging) — VM tags itself; VLAN ID = 4095
+      (all-VLAN trunk). Used for nested virtualization, certain
+      appliances.
+
+  - id: s4c2
+    subtopic: port-groups-and-vlans
+    front: "A VM is on Production-VLAN-100. Other VMs in the same port group on the same host work; nothing outside reachable. Most likely cause?"
+    back: >
+      The physical switch port (where the host's uplink connects) is
+      not trunking VLAN 100. The vSwitch tags VLAN 100 (VST mode), but
+      the physical switch drops it because VLAN 100 isn't on its trunk
+      list. Fix: add VLAN 100 to the trunk on that switch port.
+
+  - id: s4c3
+    subtopic: port-groups-and-vlans
+    front: "Why does port group naming matter on a vSS but less so on a vDS?"
+    back: >
+      On vSS, vMotion looks for a port group with the same name on the
+      destination host. Drift in name (or VLAN) breaks vMotion. On vDS,
+      the port group is defined once at the vDS level — every member
+      host has the same name and config by construction. Drift is
+      impossible by design.
+
+  # =====================================================
+  # Subtopic 5 — NIC teaming, load balance, failover
+  # =====================================================
+
+  - id: s5c1
+    subtopic: nic-teaming-and-policies
+    front: "Five NIC teaming load-balancing modes in vSphere?"
+    back: >
+      (1) Route based on originating virtual port (default; per-VM pin,
+      no switch config). (2) Source MAC hash (similar; survives
+      vMotion). (3) IP hash (needs EtherChannel on the switch).
+      (4) Physical NIC load (vDS only; rebalances by actual util).
+      (5) Use explicit failover order (no balancing; first-active-only).
+
+  - id: s5c2
+    subtopic: nic-teaming-and-policies
+    front: "Active vs standby uplinks?"
+    back: >
+      Active uplinks are used for traffic according to the load-balance
+      policy. Standby uplinks sit idle and only take over if all
+      active uplinks fail. Useful for keeping certain traffic on
+      predictable single uplinks (e.g., management) or to keep traffic
+      types separate.
+
+  - id: s5c3
+    subtopic: nic-teaming-and-policies
+    front: "Network failure detection: link status only vs beacon probing?"
+    back: >
+      Link status: uplink is "down" only if its physical link drops.
+      Misses upstream failures (cable up, but switch is unreachable).
+      Beacon probing: ESXi sends probe frames between team members; if
+      probes don't arrive, the uplink is down. Catches more failure
+      modes; needs ≥3 uplinks and only works for some teaming modes.
+
+  # =====================================================
+  # Subtopic 6 — vmkernel adapters
+  # =====================================================
+
+  - id: s6c1
+    subtopic: vmkernel-adapters
+    front: "What is a vmkernel adapter and what is it NOT?"
+    back: >
+      A virtual NIC that ESXi itself uses (not a VM) for its own
+      services. Has an IP, subnet, and a set of enabled services
+      (Management, vMotion, vSAN, Provisioning, FT logging, NFS, iSCSI,
+      Replication, Backup NFC). Lives on a vmkernel port group on a
+      vSwitch.
+
+  - id: s6c2
+    subtopic: vmkernel-adapters
+    front: "Why does each big service typically get its own vmkernel adapter on its own subnet?"
+    back: >
+      Performance (vMotion can saturate a 10 GbE link; storage shouldn't
+      compete with VM traffic), security (storage traffic shouldn't be
+      reachable from VMs), troubleshooting (separate networks make
+      packet capture sane). Lab can get away with one vmkernel doing
+      everything; production cannot.
+
+  - id: s6c3
+    subtopic: vmkernel-adapters
+    front: "List five common services that ride on vmkernel adapters."
+    back: >
+      Management, vMotion, vSAN, NFS / iSCSI, Fault Tolerance logging.
+      Plus: Provisioning (clone, snapshot, cold migration), vSphere
+      Replication, vSphere Backup NFC. Each can be enabled or disabled
+      per vmkernel via checkboxes.

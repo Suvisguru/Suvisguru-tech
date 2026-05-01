@@ -1,0 +1,67 @@
+# Flashcards — Lesson 01: What is virtualization?
+# 10 cards. Each tests one concept. Backs are 1-3 sentences.
+# Mix of recall (definitions) and understanding (why / what-if).
+
+cards:
+  - front: "What is virtualization?"
+    back: >
+      Virtualization is a technology that lets a single physical computer act as many smaller,
+      independent computers at once. Each independent computer is a virtual machine, and they're
+      managed by a piece of software called a hypervisor.
+
+  - front: "What is a virtual machine (VM)?"
+    back: >
+      A virtual machine is one of the independent "computers" inside a virtualized host. It runs
+      its own operating system and applications, completely unaware that it shares the underlying
+      hardware with other VMs.
+
+  - front: "What does a hypervisor do?"
+    back: >
+      A hypervisor is the software layer that sits between physical hardware and virtual machines.
+      It takes the host's CPU, memory, disk, and network and divides them into isolated slices,
+      giving each VM its own slice and managing the sharing behind the scenes.
+
+  - front: "In the apartment-building analogy, what is the hypervisor?"
+    back: >
+      The superintendent. The superintendent owns the building's plumbing, electricity, and
+      internet, and quietly delivers each tenant their share. Tenants don't know about the
+      sharing — they just live their lives.
+
+  - front: "How is a virtual machine different from a physical server?"
+    back: >
+      A physical server is hardware — a box with CPU, RAM, and disks you can touch. A VM is a
+      software construct that behaves exactly like a physical server but runs as one of many
+      tenants on a real one. From the operating system's point of view, you can't tell the
+      difference.
+
+  - front: "Why does it make sense to run many VMs on one physical machine?"
+    back: >
+      Because before virtualization, each server typically ran one application that used only a
+      small fraction (often under 10%) of the machine's capacity. The rest sat idle. Consolidating
+      many workloads onto one host fills the empty capacity that was already being paid for.
+
+  - front: "What did virtualization NOT eliminate?"
+    back: >
+      Capacity planning. The team no longer buys a physical server for each new workload, but
+      they still have to decide how to slice the resources of the hosts they have — when to add
+      more hosts, how much CPU and RAM to give each VM, and what to do when many VMs compete at
+      once.
+
+  - front: "In the apartment-building analogy, what does it mean when a tenant 'doesn't realize they share the water with other apartments'?"
+    back: >
+      It maps to a VM not realizing it shares CPU and RAM with other VMs. The hypervisor handles
+      the resource sharing transparently — the VM sees its own CPU and memory exactly as if it
+      owned the whole machine.
+
+  - front: "Why can't one misbehaving VM crash the others on the same host?"
+    back: >
+      The hypervisor enforces isolation. Each VM gets its own slice of resources and its own
+      memory address space; the hypervisor blocks any VM from reaching outside its slice. A
+      crash inside one VM stays inside that VM.
+
+  - front: "What would happen if you tried to run two operating systems on one machine without a hypervisor?"
+    back: >
+      Both operating systems would try to control the same CPU, memory, and devices at the same
+      time. They would corrupt each other's memory, fight for the CPU, and crash within seconds.
+      The hypervisor exists precisely to make this safe by giving each OS its own controlled
+      slice.

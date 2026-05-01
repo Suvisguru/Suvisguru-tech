@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Lesson 12 — Deploying Virtual Machines
+  Static diagram: 8-station VM-deployment journey (2 rows of 4).
+  Layout math (verified):
+    ViewBox: 1100 x 720
+    2 rows, 4 cards each. Card 220w x 220h, gap 60.
+    4*220 + 3*60 + 2*20 = 1100 ✓
+    Card x: 20, 300, 580, 860
+    Row 1 y: 170. Row 2 y: 410.
+    Inter-card arrows on midline y=280 / y=520
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" role="img" aria-labelledby="title desc">
+  <title id="title">VM deployment journey: overview, create, templates, libraries, OVF, snapshots, Tools, lifecycle</title>
+  <desc id="desc">Eight numbered stations show how to deploy and manage virtual machines on a vSphere environment.</desc>
+  <defs>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.08"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/></marker>
+  </defs>
+
+  <rect width="1100" height="720" fill="#FAFBFC"/>
+  <text x="550" y="40" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" fill="#1F2937">VM deployment journey</text>
+  <text x="550" y="62" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#5A6B81">Eight moves from "I have a vSphere" to "I run VMs on it"</text>
+
+  <!-- Top illustration: a single VM atop the SDDC stack -->
+  <g transform="translate(440,80)">
+    <rect width="220" height="80" rx="8" fill="#5DCAA5" opacity="0.6" stroke="#1F8A60" stroke-width="1.5"/>
+    <text x="110" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">VM (vm-app1)</text>
+    <text x="110" y="52" text-anchor="middle" font-size="10" fill="#1F2937">4 vCPU · 8GB · 60GB · vNIC</text>
+    <text x="110" y="68" text-anchor="middle" font-size="9" font-style="italic" fill="#1F2937">+ VMware Tools · vmx-20</text>
+  </g>
+  <text x="550" y="178" text-anchor="middle" font-size="11" fill="#5A6B81">on top of the platform you built (lessons 1-11)</text>
+
+  <g transform="translate(130,128)">
+    <text x="0" y="0" text-anchor="middle" font-size="11" font-weight="600" fill="#5A6B81">begin here</text>
+    <path d="M0,8 L0,42" stroke="#5A6B81" stroke-width="1.5" stroke-dasharray="3,3" fill="none" marker-end="url(#arrow)"/>
+  </g>
+
+  <line x1="130" y1="280" x2="970" y2="280" stroke="#D5DCE6" stroke-width="2" stroke-dasharray="2,4"/>
+
+  <!-- ROW 1: stations 1-4 -->
+  <!-- Station 1 — Overview -->
+  <g>
+    <rect x="20" y="170" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="20" y="382" width="220" height="8" fill="#3F4A5E"/>
+    <circle cx="60" cy="200" r="22" fill="#3F4A5E"/>
+    <text x="60" y="206" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">1</text>
+    <text x="100" y="200" font-size="13" font-weight="700" fill="#1F2937">Overview</text>
+    <text x="100" y="217" font-size="10" fill="#5A6B81">what's in a VM</text>
+    <g transform="translate(35,250)">
+      <text x="0" y="14" font-size="10" fill="#1F2937">vCPU · vRAM</text>
+      <text x="0" y="32" font-size="10" fill="#1F2937">vDisk (vmdk)</text>
+      <text x="0" y="50" font-size="10" fill="#1F2937">vNIC · controllers</text>
+      <text x="0" y="68" font-size="10" fill="#1F2937">BIOS / EFI</text>
+      <text x="0" y="86" font-size="10" font-style="italic" fill="#5A6B81">+ HW version</text>
+    </g>
+    <text x="130" y="365" text-anchor="middle" font-size="9" fill="#5A6B81">files on a datastore</text>
+  </g>
+  <line x1="240" y1="280" x2="300" y2="280" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 2 — Create -->
+  <g>
+    <rect x="300" y="170" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="300" y="382" width="220" height="8" fill="#5E4A8E"/>
+    <circle cx="340" cy="200" r="22" fill="#5E4A8E"/>
+    <text x="340" y="206" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">2</text>
+    <text x="380" y="200" font-size="13" font-weight="700" fill="#1F2937">Create</text>
+    <text x="380" y="217" font-size="10" fill="#5A6B81">new-VM wizard</text>
+    <g transform="translate(315,250)">
+      <text x="0" y="14" font-size="10" fill="#1F2937">name · folder · cluster</text>
+      <text x="0" y="32" font-size="10" fill="#1F2937">storage policy</text>
+      <text x="0" y="50" font-size="10" fill="#1F2937">guest OS · HW</text>
+      <text x="0" y="68" font-size="10" fill="#1F2937">VMXNET3 · PVSCSI</text>
+      <text x="0" y="86" font-size="10" font-style="italic" fill="#5A6B81">mount ISO · power on</text>
+    </g>
+  </g>
+  <line x1="520" y1="280" x2="580" y2="280" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 3 — Templates -->
+  <g>
+    <rect x="580" y="170" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="580" y="382" width="220" height="8" fill="#2E7A8C"/>
+    <circle cx="620" cy="200" r="22" fill="#2E7A8C"/>
+    <text x="620" y="206" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">3</text>
+    <text x="660" y="200" font-size="13" font-weight="700" fill="#1F2937">Templates · clones</text>
+    <text x="660" y="217" font-size="10" fill="#5A6B81">stamp out copies</text>
+    <g transform="translate(595,245)">
+      <rect x="0" y="0" width="80" height="22" rx="3" fill="#2E7A8C"/>
+      <text x="40" y="15" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">template</text>
+      <line x1="80" y1="11" x2="110" y2="11" stroke="#3F4A5E" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <rect x="115" y="-5" width="80" height="14" rx="2" fill="#5DCAA5" opacity="0.6"/><text x="155" y="6" text-anchor="middle" font-size="9" fill="#1F2937">clone-1</text>
+      <rect x="115" y="11" width="80" height="14" rx="2" fill="#5DCAA5" opacity="0.6"/><text x="155" y="22" text-anchor="middle" font-size="9" fill="#1F2937">clone-2</text>
+      <rect x="115" y="27" width="80" height="14" rx="2" fill="#5DCAA5" opacity="0.6"/><text x="155" y="38" text-anchor="middle" font-size="9" fill="#1F2937">clone-3</text>
+    </g>
+    <text x="690" y="345" text-anchor="middle" font-size="10" fill="#1F2937">+ customization spec</text>
+    <text x="690" y="360" text-anchor="middle" font-size="9" font-style="italic" fill="#5A6B81">unique hostname / IP / SID</text>
+  </g>
+  <line x1="800" y1="280" x2="860" y2="280" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 4 — Libraries -->
+  <g>
+    <rect x="860" y="170" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="860" y="382" width="220" height="8" fill="#1F8A60"/>
+    <circle cx="900" cy="200" r="22" fill="#1F8A60"/>
+    <text x="900" y="206" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">4</text>
+    <text x="940" y="200" font-size="13" font-weight="700" fill="#1F2937">Content libraries</text>
+    <text x="940" y="217" font-size="10" fill="#5A6B81">share across vCenters</text>
+    <g transform="translate(875,245)">
+      <rect x="0" y="0" width="190" height="20" rx="3" fill="#5DCAA5" opacity="0.5"/><text x="95" y="14" text-anchor="middle" font-size="10" fill="#1F2937">templates · ISOs · OVFs</text>
+      <line x1="95" y1="22" x2="40" y2="48" stroke="#1F8A60" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <line x1="95" y1="22" x2="95" y2="48" stroke="#1F8A60" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <line x1="95" y1="22" x2="150" y2="48" stroke="#1F8A60" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <text x="40" y="62" text-anchor="middle" font-size="9" fill="#5A6B81">vC-east</text>
+      <text x="95" y="62" text-anchor="middle" font-size="9" fill="#5A6B81">vC-west</text>
+      <text x="150" y="62" text-anchor="middle" font-size="9" fill="#5A6B81">vC-eu</text>
+    </g>
+    <text x="970" y="365" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">published + subscribed</text>
+  </g>
+
+  <!-- Row-to-row connector -->
+  <path d="M1080,335 Q1095,335 1095,360 L1095,500 Q1095,520 1075,520 L130,520" fill="none" stroke="#5A6B81" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+  <line x1="130" y1="520" x2="970" y2="520" stroke="#D5DCE6" stroke-width="2" stroke-dasharray="2,4"/>
+
+  <!-- ROW 2: stations 5-8 -->
+  <!-- Station 5 — OVF/OVA -->
+  <g>
+    <rect x="20" y="410" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="20" y="622" width="220" height="8" fill="#B85829"/>
+    <circle cx="60" cy="440" r="22" fill="#B85829"/>
+    <text x="60" y="446" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">5</text>
+    <text x="100" y="440" font-size="13" font-weight="700" fill="#1F2937">OVF / OVA</text>
+    <text x="100" y="457" font-size="10" fill="#5A6B81">packaged VMs</text>
+    <g transform="translate(35,485)">
+      <rect x="0" y="0" width="60" height="40" rx="3" fill="#B85829" opacity="0.7"/>
+      <text x="30" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">.ova</text>
+      <text x="30" y="32" text-anchor="middle" font-size="9" fill="#FFFFFF">vendor</text>
+      <line x1="60" y1="20" x2="100" y2="20" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+      <rect x="100" y="0" width="80" height="40" rx="3" fill="#5DCAA5" opacity="0.6"/>
+      <text x="140" y="24" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2937">running VM</text>
+    </g>
+    <text x="130" y="595" text-anchor="middle" font-size="9" fill="#5A6B81">5-min import wizard</text>
+  </g>
+  <line x1="240" y1="520" x2="300" y2="520" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 6 — Snapshots -->
+  <g>
+    <rect x="300" y="410" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="300" y="622" width="220" height="8" fill="#8E2A2A"/>
+    <circle cx="340" cy="440" r="22" fill="#8E2A2A"/>
+    <text x="340" y="446" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">6</text>
+    <text x="380" y="440" font-size="13" font-weight="700" fill="#1F2937">Snapshots</text>
+    <text x="380" y="457" font-size="10" fill="#5A6B81">point-in-time</text>
+    <g transform="translate(315,490)">
+      <rect x="0" y="0" width="180" height="14" rx="2" fill="#5DCAA5" opacity="0.6"/><text x="90" y="11" text-anchor="middle" font-size="9" fill="#1F2937">base.vmdk</text>
+      <rect x="40" y="20" width="140" height="14" rx="2" fill="#F2C94C" opacity="0.7"/><text x="110" y="31" text-anchor="middle" font-size="9" fill="#1F2937">snap-1.vmdk</text>
+      <rect x="80" y="40" width="100" height="14" rx="2" fill="#F2C94C" opacity="0.5"/><text x="130" y="51" text-anchor="middle" font-size="9" fill="#1F2937">snap-2.vmdk</text>
+    </g>
+    <text x="410" y="585" text-anchor="middle" font-size="10" font-weight="700" fill="#B85829">delete within 24-72h</text>
+    <text x="410" y="600" text-anchor="middle" font-size="9" font-style="italic" fill="#5A6B81">NOT a backup</text>
+  </g>
+  <line x1="520" y1="520" x2="580" y2="520" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 7 — VMware Tools -->
+  <g>
+    <rect x="580" y="410" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="580" y="622" width="220" height="8" fill="#1A6FA8"/>
+    <circle cx="620" cy="440" r="22" fill="#1A6FA8"/>
+    <text x="620" y="446" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">7</text>
+    <text x="660" y="440" font-size="13" font-weight="700" fill="#1F2937">VMware Tools</text>
+    <text x="660" y="457" font-size="10" fill="#5A6B81">in-guest agent</text>
+    <g transform="translate(595,485)">
+      <text x="0" y="14" font-size="10" fill="#1F2937">paravirt drivers</text>
+      <text x="0" y="32" font-size="10" fill="#1F2937">graceful shutdown</text>
+      <text x="0" y="50" font-size="10" fill="#1F2937">time sync · heartbeat</text>
+      <text x="0" y="68" font-size="10" fill="#1F2937">snapshot quiesce</text>
+    </g>
+    <text x="690" y="595" text-anchor="middle" font-size="9" font-style="italic" fill="#5A6B81">open-vm-tools on Linux</text>
+  </g>
+  <line x1="800" y1="520" x2="860" y2="520" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 8 — Lifecycle ops -->
+  <g>
+    <rect x="860" y="410" width="220" height="220" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="860" y="622" width="220" height="8" fill="#5C7A1F"/>
+    <circle cx="900" cy="440" r="22" fill="#5C7A1F"/>
+    <text x="900" y="446" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">8</text>
+    <text x="940" y="440" font-size="13" font-weight="700" fill="#1F2937">Day-2 ops</text>
+    <text x="940" y="457" font-size="10" fill="#5A6B81">power · edit · move</text>
+    <g transform="translate(875,485)">
+      <text x="0" y="14" font-size="10" fill="#1F2937">power · shutdown · reset</text>
+      <text x="0" y="32" font-size="10" fill="#1F2937">edit settings · resize</text>
+      <text x="0" y="50" font-size="10" fill="#1F2937">hot-add CPU · RAM · disk</text>
+      <text x="0" y="68" font-size="10" fill="#1F2937">vMotion · Storage vMotion</text>
+    </g>
+    <text x="970" y="595" text-anchor="middle" font-size="9" font-style="italic" fill="#5A6B81">most ops non-disruptive</text>
+  </g>
+
+  <!-- Footer -->
+  <g>
+    <rect x="20" y="650" width="1060" height="56" rx="10" fill="#F3F5F9" stroke="#E5E9F0"/>
+    <text x="40" y="673" font-size="12" font-weight="700" fill="#1F2937">How to read this lesson</text>
+    <text x="40" y="693" font-size="11" fill="#1F2937">Each numbered station is a <tspan font-weight="700">separate subtopic</tspan>. End state: VMs deployed, managed, and operated. <tspan font-weight="700">vSphere Fundamentals course complete.</tspan></text>
+  </g>
+</svg>

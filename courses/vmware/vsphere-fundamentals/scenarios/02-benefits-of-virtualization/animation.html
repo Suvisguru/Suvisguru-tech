@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<!--
+  Lesson 02 — Benefits of virtualization
+  Animated SVG illustration. Five mode buttons let the learner tour each benefit
+  in motion: consolidate, speed, isolate, snapshot, mobility.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Benefits of virtualization — animation</title>
+<style>
+  body {
+    background: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    padding: 24px;
+    color: #1a1a1a;
+    margin: 0;
+  }
+  .controls {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 12px; flex-wrap: wrap;
+  }
+  .mode-btn {
+    border: 1px solid #d8d6cf;
+    background: #ffffff;
+    color: #3a3a3a;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .mode-btn:hover:not(.active) { background: #f4f1e8; border-color: #5F5E5A; }
+  .mode-btn.active {
+    background: #3F4A5E;
+    color: #FFFFFF;
+    border-color: #3F4A5E;
+  }
+  .stage-label {
+    font-size: 15px;
+    color: #3a3a3a;
+    margin: 12px 0 18px 0;
+    min-height: 22px;
+    font-weight: 500;
+  }
+  .speed-control {
+    margin-left: auto; font-size: 13px; color: #5F5E5A;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .speed-control input[type=range] { accent-color: #3F4A5E; }
+  #canvas {
+    width: 100%; max-width: 1040px;
+    height: auto; display: block;
+  }
+  #canvas .mode-group { display: none; }
+  #canvas[data-mode="consolidate"] .mode-consolidate,
+  #canvas[data-mode="speed"]      .mode-speed,
+  #canvas[data-mode="isolate"]    .mode-isolate,
+  #canvas[data-mode="snapshot"]   .mode-snapshot,
+  #canvas[data-mode="mobility"]   .mode-mobility {
+    display: block;
+  }
+  @media (max-width: 700px) {
+    body { padding: 16px; }
+    .speed-control { margin-left: 0; width: 100%; margin-top: 4px; }
+    .mode-btn { padding: 7px 11px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button class="mode-btn active" data-mode="consolidate" type="button">Consolidate</button>
+  <button class="mode-btn" data-mode="speed" type="button">Speed</button>
+  <button class="mode-btn" data-mode="isolate" type="button">Isolate</button>
+  <button class="mode-btn" data-mode="snapshot" type="button">Snapshot</button>
+  <button class="mode-btn" data-mode="mobility" type="button">Mobility</button>
+  <button class="mode-btn" id="play-btn" type="button">Pause</button>
+  <span class="speed-control">
+    <span>Speed</span>
+    <input type="range" min="0.3" max="2" step="0.1" value="1" id="speed-slider">
+    <span id="speed-display">1.0&times;</span>
+  </span>
+</div>
+
+<div class="stage-label" id="stage-label">Consolidation: many workloads on one host.</div>
+
+<svg id="canvas" data-mode="consolidate" viewBox="0 0 1040 600" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+
+  <!-- ============================== MODE: CONSOLIDATE ============================== -->
+  <g class="mode-group mode-consolidate">
+    <!-- Left: 6 idle servers in 2x3 grid -->
+    <g transform="translate(60, 80)">
+      <text x="180" y="-20" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.2">SIX PHYSICAL SERVERS</text>
+      <text x="180" y="-4" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">Each running one app at low utilization</text>
+
+      <!-- Server tile factory (simplified rear panel for compact display) -->
+      <g transform="translate(0, 20)">
+        <!-- Row 1 -->
+        <g transform="translate(0, 0)">
+          <rect width="100" height="60" rx="4" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect width="100" height="8" rx="4" fill="#3F4A5E"/>
+          <text x="50" y="6" font-size="6" fill="#FFFFFF" text-anchor="middle">server</text>
+          <rect x="6" y="14" width="60" height="6" rx="1" fill="#3a3a3a"/>
+          <rect x="72" y="14" width="22" height="14" rx="2" fill="#2a2a2e"/>
+          <circle cx="83" cy="21" r="3" fill="#1a1a1a"/>
+          <!-- Util meter -->
+          <rect x="6" y="38" width="80" height="6" rx="1" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+          <rect x="6" y="38" width="6" height="6" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="6;9;4;7;5" dur="9s" repeatCount="indefinite"/>
+          </rect>
+          <text x="92" y="44" font-size="8" font-weight="500" fill="#5F5E5A">~6%</text>
+        </g>
+        <g transform="translate(120, 0)">
+          <rect width="100" height="60" rx="4" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect width="100" height="8" rx="4" fill="#3F4A5E"/>
+          <text x="50" y="6" font-size="6" fill="#FFFFFF" text-anchor="middle">server</text>
+          <rect x="6" y="14" width="60" height="6" rx="1" fill="#3a3a3a"/>
+          <rect x="72" y="14" width="22" height="14" rx="2" fill="#2a2a2e"/>
+          <circle cx="83" cy="21" r="3" fill="#1a1a1a"/>
+          <rect x="6" y="38" width="80" height="6" rx="1" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+          <rect x="6" y="38" width="4" height="6" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="4;7;3;6;5" dur="11s" repeatCount="indefinite"/>
+          </rect>
+          <text x="92" y="44" font-size="8" font-weight="500" fill="#5F5E5A">~4%</text>
+        </g>
+        <g transform="translate(240, 0)">
+          <rect width="100" height="60" rx="4" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect width="100" height="8" rx="4" fill="#3F4A5E"/>
+          <text x="50" y="6" font-size="6" fill="#FFFFFF" text-anchor="middle">server</text>
+          <rect x="6" y="14" width="60" height="6" rx="1" fill="#3a3a3a"/>
+          <rect x="72" y="14" width="22" height="14" rx="2" fill="#2a2a2e"/>
+          <circle cx="83" cy="21" r="3" fill="#1a1a1a"/>
+          <rect x="6" y="38" width="80" height="6" rx="1" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+          <rect x="6" y="38" width="9" height="6" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="9;13;6;10;8" dur="10s" repeatCount="indefinite"/>
+          </rect>
+          <text x="92" y="44" font-size="8" font-weight="500" fill="#5F5E5A">~9%</text>
+        </g>
+        <!-- Row 2 -->
+        <g transform="translate(0, 80)">
+          <rect width="100" height="60" rx="4" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect width="100" height="8" rx="4" fill="#3F4A5E"/>
+          <text x="50" y="6" font-size="6" fill="#FFFFFF" text-anchor="middle">server</text>
+          <rect x="6" y="14" width="60" height="6" rx="1" fill="#3a3a3a"/>
+          <rect x="72" y="14" width="22" height="14" rx="2" fill="#2a2a2e"/>
+          <circle cx="83" cy="21" r="3" fill="#1a1a1a"/>
+          <rect x="6" y="38" width="80" height="6" rx="1" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+          <rect x="6" y="38" width="5" height="6" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="5;8;3;6;4" dur="13s" repeatCount="indefinite"/>
+          </rect>
+          <text x="92" y="44" font-size="8" font-weight="500" fill="#5F5E5A">~5%</text>
+        </g>
+        <g transform="translate(120, 80)">
+          <rect width="100" height="60" rx="4" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect width="100" height="8" rx="4" fill="#3F4A5E"/>
+          <text x="50" y="6" font-size="6" fill="#FFFFFF" text-anchor="middle">server</text>
+          <rect x="6" y="14" width="60" height="6" rx="1" fill="#3a3a3a"/>
+          <rect x="72" y="14" width="22" height="14" rx="2" fill="#2a2a2e"/>
+          <circle cx="83" cy="21" r="3" fill="#1a1a1a"/>
+          <rect x="6" y="38" width="80" height="6" rx="1" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+          <rect x="6" y="38" width="11" height="6" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="11;15;7;13;10" dur="12s" repeatCount="indefinite"/>
+          </rect>
+          <text x="92" y="44" font-size="8" font-weight="500" fill="#5F5E5A">~11%</text>
+        </g>
+        <g transform="translate(240, 80)">
+          <rect width="100" height="60" rx="4" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+          <rect width="100" height="8" rx="4" fill="#3F4A5E"/>
+          <text x="50" y="6" font-size="6" fill="#FFFFFF" text-anchor="middle">server</text>
+          <rect x="6" y="14" width="60" height="6" rx="1" fill="#3a3a3a"/>
+          <rect x="72" y="14" width="22" height="14" rx="2" fill="#2a2a2e"/>
+          <circle cx="83" cy="21" r="3" fill="#1a1a1a"/>
+          <rect x="6" y="38" width="80" height="6" rx="1" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+          <rect x="6" y="38" width="6" height="6" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="6;9;4;7;5" dur="9.5s" repeatCount="indefinite"/>
+          </rect>
+          <text x="92" y="44" font-size="8" font-weight="500" fill="#5F5E5A">~7%</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- Center arrow -->
+    <g transform="translate(490, 230)">
+      <line x1="0" y1="0" x2="50" y2="0" stroke="#3F4A5E" stroke-width="3" stroke-linecap="round"/>
+      <path d="M 50 0 L 38 -8 L 38 8 Z" fill="#3F4A5E"/>
+      <text x="25" y="-14" text-anchor="middle" font-size="11" fill="#3F4A5E" font-weight="600" letter-spacing="1.5">CONSOLIDATE</text>
+    </g>
+
+    <!-- Right: 1 host with 8 VMs and high util -->
+    <g transform="translate(580, 80)">
+      <text x="180" y="-20" text-anchor="middle" font-size="13" font-weight="600" fill="#1F8A60" letter-spacing="1.2">ONE HOST, EIGHT VMS</text>
+      <text x="180" y="-4" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">Same workloads at high utilization</text>
+
+      <g transform="translate(40, 30)">
+        <!-- VMs row 1 -->
+        <g transform="translate(0, 0)">
+          <rect width="60" height="32" rx="4" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+          <path d="M 0 10 L 0 4 Q 0 0 4 0 L 56 0 Q 60 0 60 4 L 60 10 Z" fill="#5F5E5A"/>
+          <text x="5" y="7" font-size="7" font-weight="500" fill="#FFFFFF">vm-01</text>
+          <rect x="4" y="14" width="20" height="9" rx="2" fill="#A8A8AC"/>
+          <text x="14" y="20" font-size="6" fill="#FFFFFF" text-anchor="middle">linux</text>
+          <text x="28" y="20" font-size="7" fill="#3A3A3A">app</text>
+          <rect x="4" y="26" width="44" height="3" rx="1" fill="#E0E0DE"/>
+          <rect x="4" y="26" width="22" height="3" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="22;28;18;24;22" dur="6s" repeatCount="indefinite"/>
+          </rect>
+          <circle cx="55" cy="5" r="1.5" fill="#5DCAA5">
+            <animate attributeName="opacity" values="1;0.5;1;0.7;1" dur="3s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <g transform="translate(64, 0)">
+          <rect width="60" height="32" rx="4" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+          <path d="M 0 10 L 0 4 Q 0 0 4 0 L 56 0 Q 60 0 60 4 L 60 10 Z" fill="#5F5E5A"/>
+          <text x="5" y="7" font-size="7" font-weight="500" fill="#FFFFFF">vm-02</text>
+          <rect x="4" y="14" width="20" height="9" rx="2" fill="#A8A8AC"/>
+          <text x="14" y="20" font-size="6" fill="#FFFFFF" text-anchor="middle">linux</text>
+          <text x="28" y="20" font-size="7" fill="#3A3A3A">db</text>
+          <rect x="4" y="26" width="44" height="3" rx="1" fill="#E0E0DE"/>
+          <rect x="4" y="26" width="32" height="3" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="32;38;26;34;30" dur="7s" repeatCount="indefinite"/>
+          </rect>
+          <circle cx="55" cy="5" r="1.5" fill="#5DCAA5">
+            <animate attributeName="opacity" values="1;0.6;1;0.8;1" dur="2.5s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <g transform="translate(128, 0)">
+          <rect width="60" height="32" rx="4" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+          <path d="M 0 10 L 0 4 Q 0 0 4 0 L 56 0 Q 60 0 60 4 L 60 10 Z" fill="#5F5E5A"/>
+          <text x="5" y="7" font-size="7" font-weight="500" fill="#FFFFFF">vm-03</text>
+          <rect x="4" y="14" width="20" height="9" rx="2" fill="#A8A8AC"/>
+          <text x="14" y="20" font-size="6" fill="#FFFFFF" text-anchor="middle">linux</text>
+          <text x="28" y="20" font-size="7" fill="#3A3A3A">web</text>
+          <rect x="4" y="26" width="44" height="3" rx="1" fill="#E0E0DE"/>
+          <rect x="4" y="26" width="28" height="3" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="28;36;22;30;26" dur="8s" repeatCount="indefinite"/>
+          </rect>
+          <circle cx="55" cy="5" r="1.5" fill="#5DCAA5">
+            <animate attributeName="opacity" values="1;0.5;1;0.7;1" dur="4s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <g transform="translate(192, 0)">
+          <rect width="60" height="32" rx="4" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+          <path d="M 0 10 L 0 4 Q 0 0 4 0 L 56 0 Q 60 0 60 4 L 60 10 Z" fill="#5F5E5A"/>
+          <text x="5" y="7" font-size="7" font-weight="500" fill="#FFFFFF">vm-04</text>
+          <rect x="4" y="14" width="20" height="9" rx="2" fill="#A8A8AC"/>
+          <text x="14" y="20" font-size="6" fill="#FFFFFF" text-anchor="middle">linux</text>
+          <text x="28" y="20" font-size="7" fill="#3A3A3A">api</text>
+          <rect x="4" y="26" width="44" height="3" rx="1" fill="#E0E0DE"/>
+          <rect x="4" y="26" width="20" height="3" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="20;26;14;22;18" dur="11s" repeatCount="indefinite"/>
+          </rect>
+          <circle cx="55" cy="5" r="1.5" fill="#5DCAA5">
+            <animate attributeName="opacity" values="1;0.7;1;0.6;1" dur="3.5s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <!-- VMs row 2 (abuts row 1: row 1 ends at y=32, row 2 starts at y=32) -->
+        <g transform="translate(0, 32)">
+          <rect width="60" height="32" rx="4" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+          <path d="M 0 10 L 0 4 Q 0 0 4 0 L 56 0 Q 60 0 60 4 L 60 10 Z" fill="#5F5E5A"/>
+          <text x="5" y="7" font-size="7" font-weight="500" fill="#FFFFFF">vm-05</text>
+          <rect x="4" y="14" width="20" height="9" rx="2" fill="#A8A8AC"/>
+          <text x="14" y="20" font-size="6" fill="#FFFFFF" text-anchor="middle">linux</text>
+          <text x="28" y="20" font-size="7" fill="#3A3A3A">cache</text>
+          <rect x="4" y="26" width="44" height="3" rx="1" fill="#E0E0DE"/>
+          <rect x="4" y="26" width="36" height="3" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="36;42;30;38;34" dur="5.5s" repeatCount="indefinite"/>
+          </rect>
+          <circle cx="55" cy="5" r="1.5" fill="#5DCAA5">
+            <animate attributeName="opacity" values="1;0.4;1;0.6;1" dur="2s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <g transform="translate(64, 32)">
+          <rect width="60" height="32" rx="4" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+          <path d="M 0 10 L 0 4 Q 0 0 4 0 L 56 0 Q 60 0 60 4 L 60 10 Z" fill="#5F5E5A"/>
+          <text x="5" y="7" font-size="7" font-weight="500" fill="#FFFFFF">vm-06</text>
+          <rect x="4" y="14" width="20" height="9" rx="2" fill="#A8A8AC"/>
+          <text x="14" y="20" font-size="6" fill="#FFFFFF" text-anchor="middle">linux</text>
+          <text x="28" y="20" font-size="7" fill="#3A3A3A">log</text>
+          <rect x="4" y="26" width="44" height="3" rx="1" fill="#E0E0DE"/>
+          <rect x="4" y="26" width="22" height="3" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="22;28;16;24;20" dur="9s" repeatCount="indefinite"/>
+          </rect>
+          <circle cx="55" cy="5" r="1.5" fill="#5DCAA5">
+            <animate attributeName="opacity" values="1;0.5;1;0.7;1" dur="4.5s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <g transform="translate(128, 32)">
+          <rect width="60" height="32" rx="4" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+          <path d="M 0 10 L 0 4 Q 0 0 4 0 L 56 0 Q 60 0 60 4 L 60 10 Z" fill="#5F5E5A"/>
+          <text x="5" y="7" font-size="7" font-weight="500" fill="#FFFFFF">vm-07</text>
+          <rect x="4" y="14" width="20" height="9" rx="2" fill="#A8A8AC"/>
+          <text x="14" y="20" font-size="6" fill="#FFFFFF" text-anchor="middle">linux</text>
+          <text x="28" y="20" font-size="7" fill="#3A3A3A">queue</text>
+          <rect x="4" y="26" width="44" height="3" rx="1" fill="#E0E0DE"/>
+          <rect x="4" y="26" width="30" height="3" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="30;36;24;32;28" dur="6s" repeatCount="indefinite"/>
+          </rect>
+          <circle cx="55" cy="5" r="1.5" fill="#5DCAA5">
+            <animate attributeName="opacity" values="1;0.6;1;0.5;1" dur="2.7s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <g transform="translate(192, 32)">
+          <rect width="60" height="32" rx="4" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+          <path d="M 0 10 L 0 4 Q 0 0 4 0 L 56 0 Q 60 0 60 4 L 60 10 Z" fill="#5F5E5A"/>
+          <text x="5" y="7" font-size="7" font-weight="500" fill="#FFFFFF">vm-08</text>
+          <rect x="4" y="14" width="20" height="9" rx="2" fill="#A8A8AC"/>
+          <text x="14" y="20" font-size="6" fill="#FFFFFF" text-anchor="middle">linux</text>
+          <text x="28" y="20" font-size="7" fill="#3A3A3A">backup</text>
+          <rect x="4" y="26" width="44" height="3" rx="1" fill="#E0E0DE"/>
+          <rect x="4" y="26" width="20" height="3" rx="1" fill="#5A6B81">
+            <animate attributeName="width" values="20;42;22;36;18" dur="15s" repeatCount="indefinite"/>
+          </rect>
+          <circle cx="55" cy="5" r="1.5" fill="#5DCAA5">
+            <animate attributeName="opacity" values="1;0.4;1;0.8;1" dur="5s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+        <!-- Hypervisor: y=64 to y=78 (abuts row 2 ending at y=64) -->
+        <rect x="0" y="64" width="252" height="14" fill="#3F4A5E"/>
+        <line x1="0" y1="68" x2="252" y2="68" stroke="#536179" stroke-width="0.5" opacity="0.6"/>
+        <line x1="0" y1="72" x2="252" y2="72" stroke="#536179" stroke-width="0.5" opacity="0.6"/>
+        <text x="126" y="74" text-anchor="middle" font-size="9" font-weight="500" fill="#E8E8E0" letter-spacing="1.4">hypervisor</text>
+        <!-- Host: y=78 to y=122 (abuts hypervisor) -->
+        <rect x="0" y="78" width="252" height="44" rx="3" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+        <rect x="0" y="78" width="14" height="44" fill="#909093"/>
+        <rect x="238" y="78" width="14" height="44" fill="#909093"/>
+        <!-- PSU fan centered in chassis right -->
+        <g transform="translate(202, 84)">
+          <rect width="32" height="32" fill="#2a2a2e"/>
+          <circle cx="16" cy="16" r="11" fill="#1a1a1a"/>
+          <g>
+            <path d="M 16 16 L 14 6 L 18 6 Z" fill="#5F5E5A"/>
+            <path d="M 16 16 L 26 14 L 26 18 Z" fill="#5F5E5A"/>
+            <path d="M 16 16 L 14 26 L 18 26 Z" fill="#5F5E5A"/>
+            <path d="M 16 16 L 6 14 L 6 18 Z" fill="#5F5E5A"/>
+            <animateTransform attributeName="transform" type="rotate" from="0 16 16" to="360 16 16" dur="4.2s" repeatCount="indefinite"/>
+          </g>
+          <circle cx="16" cy="16" r="2" fill="#3a3a3a"/>
+        </g>
+        <text x="126" y="138" text-anchor="middle" font-size="9" font-weight="500" fill="#3A3A3A">host-01</text>
+        <!-- Big util meter -->
+        <g transform="translate(36, 150)">
+          <rect width="180" height="12" rx="2" fill="#FFFFFF" stroke="#9D9D9D" stroke-width="0.5"/>
+          <rect width="130" height="12" rx="2" fill="#5A6B81">
+            <animate attributeName="width" values="130;140;126;142;120;134;128;138;130" dur="10s" repeatCount="indefinite"/>
+          </rect>
+          <text x="90" y="9" text-anchor="middle" font-size="9" font-weight="600" fill="#FFFFFF">~72% utilization</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- Caption -->
+    <text x="520" y="500" text-anchor="middle" font-size="14" font-weight="500" fill="#3A3A3A">Same workloads. Same performance. Six boxes instead of two hundred.</text>
+  </g>
+
+  <!-- ============================== MODE: SPEED ============================== -->
+  <g class="mode-group mode-speed">
+    <text x="520" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">PROVISIONING A NEW VM</text>
+    <text x="520" y="104" text-anchor="middle" font-size="14" fill="#3A3A3A" font-style="italic">Click. Wait fifteen minutes. Done.</text>
+
+    <!-- Stopwatch -->
+    <g transform="translate(380, 160)">
+      <!-- Stopwatch top stem -->
+      <rect x="65" y="-6" width="20" height="10" fill="#3F4A5E" rx="2"/>
+      <line x1="75" y1="4" x2="75" y2="14" stroke="#3F4A5E" stroke-width="3"/>
+      <!-- Body -->
+      <circle cx="75" cy="80" r="68" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="3"/>
+      <circle cx="75" cy="80" r="62" fill="none" stroke="#E8E5DD" stroke-width="1"/>
+      <!-- Hour ticks (12, 3, 6, 9) -->
+      <line x1="75" y1="20" x2="75" y2="28" stroke="#3F4A5E" stroke-width="2.5"/>
+      <line x1="75" y1="132" x2="75" y2="140" stroke="#3F4A5E" stroke-width="2.5"/>
+      <line x1="20" y1="80" x2="28" y2="80" stroke="#3F4A5E" stroke-width="2.5"/>
+      <line x1="122" y1="80" x2="130" y2="80" stroke="#3F4A5E" stroke-width="2.5"/>
+      <!-- Tick marks at 5-minute intervals -->
+      <g stroke="#5F5E5A" stroke-width="1" opacity="0.4">
+        <line x1="75" y1="22" x2="75" y2="26"/>
+        <line x1="103" y1="29.5" x2="101" y2="33.5"/>
+        <line x1="125.5" y1="52" x2="121.5" y2="54"/>
+        <line x1="125.5" y1="108" x2="121.5" y2="106"/>
+        <line x1="103" y1="130.5" x2="101" y2="126.5"/>
+        <line x1="47" y1="130.5" x2="49" y2="126.5"/>
+        <line x1="24.5" y1="108" x2="28.5" y2="106"/>
+        <line x1="24.5" y1="52" x2="28.5" y2="54"/>
+        <line x1="47" y1="29.5" x2="49" y2="33.5"/>
+      </g>
+      <!-- Second hand rotating fast -->
+      <g>
+        <line x1="75" y1="80" x2="75" y2="28" stroke="#1F8A60" stroke-width="3" stroke-linecap="round"/>
+        <animateTransform attributeName="transform" type="rotate"
+          from="0 75 80" to="360 75 80" dur="6s" repeatCount="indefinite"/>
+      </g>
+      <circle cx="75" cy="80" r="5" fill="#1F8A60"/>
+    </g>
+
+    <!-- Right: progress bar showing VM coming online -->
+    <g transform="translate(640, 200)">
+      <text x="0" y="-8" font-size="12" font-weight="600" fill="#5F5E5A" letter-spacing="1.2">DEPLOYMENT PROGRESS</text>
+      <!-- Phases -->
+      <g transform="translate(0, 12)">
+        <!-- Phase 1: Spinning up -->
+        <rect x="0" y="0" width="240" height="22" rx="4" fill="#F4F1E8" stroke="#E8E5DD" stroke-width="1"/>
+        <rect x="0" y="0" width="0" height="22" rx="4" fill="#1F8A60">
+          <animate attributeName="width" values="0;240;240;240;0" keyTimes="0;0.6;0.85;0.95;1" dur="10s" repeatCount="indefinite"/>
+        </rect>
+        <text x="120" y="15" text-anchor="middle" font-size="11" font-weight="600" fill="#FFFFFF" opacity="0">
+          provisioning…
+          <animate attributeName="opacity" values="0;1;1;1;0" keyTimes="0;0.05;0.55;0.9;1" dur="10s" repeatCount="indefinite"/>
+        </text>
+        <text x="120" y="15" text-anchor="middle" font-size="11" font-weight="600" fill="#1F8A60" opacity="0">
+          ✓ ready
+          <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.6;0.65;0.95;1" dur="10s" repeatCount="indefinite"/>
+        </text>
+      </g>
+
+      <!-- Output: VM tile appearing -->
+      <g transform="translate(60, 60)" opacity="0">
+        <rect width="120" height="60" rx="6" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+        <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#5F5E5A"/>
+        <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">new-vm</text>
+        <rect x="8" y="24" width="34" height="16" rx="3" fill="#A8A8AC"/>
+        <text x="25" y="35" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+        <text x="48" y="35" font-size="11" fill="#3A3A3A">your app</text>
+        <rect x="8" y="46" width="80" height="4" rx="1" fill="#E0E0DE"/>
+        <rect x="8" y="46" width="40" height="4" rx="1" fill="#5A6B81"/>
+        <circle cx="110" cy="9" r="2.5" fill="#5DCAA5"/>
+        <animate attributeName="opacity" values="0;0;0;1;1;0" keyTimes="0;0.6;0.61;0.65;0.95;1" dur="10s" repeatCount="indefinite"/>
+      </g>
+    </g>
+
+    <!-- Comparison -->
+    <g transform="translate(160, 460)">
+      <text x="0" y="0" font-size="12" font-weight="600" fill="#B85829" letter-spacing="1.2">BEFORE: PHYSICAL HARDWARE</text>
+      <text x="0" y="20" font-size="14" fill="#3A3A3A">Order server → wait 6 weeks → rack → install OS → deploy.</text>
+    </g>
+    <g transform="translate(160, 510)">
+      <text x="0" y="0" font-size="12" font-weight="600" fill="#1F8A60" letter-spacing="1.2">AFTER: VIRTUALIZATION</text>
+      <text x="0" y="20" font-size="14" fill="#3A3A3A">Click "new VM" → 15 minutes later it's live.</text>
+    </g>
+  </g>
+
+  <!-- ============================== MODE: ISOLATE ============================== -->
+  <g class="mode-group mode-isolate">
+    <text x="520" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">ONE VM CRASHES — THE OTHERS DON'T NOTICE</text>
+
+    <!-- Host with 4 VMs -->
+    <g transform="translate(220, 130)">
+      <!-- 4 VM tiles -->
+      <g transform="translate(0, 0)">
+        <rect width="140" height="76" rx="6" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+        <path d="M 0 22 L 0 8 Q 0 0 8 0 L 132 0 Q 140 0 140 8 L 140 22 Z" fill="#5F5E5A"/>
+        <text x="12" y="16" font-size="13" font-weight="500" fill="#FFFFFF">vm-01</text>
+        <rect x="10" y="30" width="42" height="20" rx="3" fill="#A8A8AC"/>
+        <text x="31" y="44" font-size="13" fill="#FFFFFF" text-anchor="middle">linux</text>
+        <text x="58" y="44" font-size="13" fill="#3A3A3A">payroll</text>
+        <text x="70" y="65" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+        <circle cx="128" cy="11" r="3" fill="#5DCAA5"/>
+      </g>
+      <!-- VM 2 — the one that crashes -->
+      <g transform="translate(150, 0)">
+        <rect width="140" height="76" rx="6" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2">
+          <animate attributeName="fill" values="#FFFFFF;#FFFFFF;#FCEBE0;#FCEBE0;#FFFFFF" keyTimes="0;0.3;0.32;0.85;1" dur="8s" repeatCount="indefinite"/>
+          <animate attributeName="stroke" values="#5F5E5A;#5F5E5A;#B85829;#B85829;#5F5E5A" keyTimes="0;0.3;0.32;0.85;1" dur="8s" repeatCount="indefinite"/>
+        </rect>
+        <path d="M 0 22 L 0 8 Q 0 0 8 0 L 132 0 Q 140 0 140 8 L 140 22 Z" fill="#5F5E5A">
+          <animate attributeName="fill" values="#5F5E5A;#5F5E5A;#B85829;#B85829;#5F5E5A" keyTimes="0;0.3;0.32;0.85;1" dur="8s" repeatCount="indefinite"/>
+        </path>
+        <text x="12" y="16" font-size="13" font-weight="500" fill="#FFFFFF">vm-02</text>
+        <rect x="10" y="30" width="42" height="20" rx="3" fill="#A8A8AC"/>
+        <text x="31" y="44" font-size="13" fill="#FFFFFF" text-anchor="middle">linux</text>
+        <text x="58" y="44" font-size="13" fill="#3A3A3A">app</text>
+        <text x="70" y="65" text-anchor="middle" font-size="11" font-weight="600" fill="#1F8A60">
+          running
+          <animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0;0.3;0.32;0.85;1" dur="8s" repeatCount="indefinite"/>
+        </text>
+        <text x="70" y="65" text-anchor="middle" font-size="11" font-weight="600" fill="#B85829" opacity="0">
+          crashed
+          <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.3;0.32;0.85;1" dur="8s" repeatCount="indefinite"/>
+        </text>
+        <circle cx="128" cy="11" r="3" fill="#5DCAA5">
+          <animate attributeName="fill" values="#5DCAA5;#5DCAA5;#E24B4A;#E24B4A;#5DCAA5" keyTimes="0;0.3;0.32;0.85;1" dur="8s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+      <g transform="translate(300, 0)">
+        <rect width="140" height="76" rx="6" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+        <path d="M 0 22 L 0 8 Q 0 0 8 0 L 132 0 Q 140 0 140 8 L 140 22 Z" fill="#5F5E5A"/>
+        <text x="12" y="16" font-size="13" font-weight="500" fill="#FFFFFF">vm-03</text>
+        <rect x="10" y="30" width="42" height="20" rx="3" fill="#A8A8AC"/>
+        <text x="31" y="44" font-size="13" fill="#FFFFFF" text-anchor="middle">linux</text>
+        <text x="58" y="44" font-size="13" fill="#3A3A3A">db</text>
+        <text x="70" y="65" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+        <circle cx="128" cy="11" r="3" fill="#5DCAA5"/>
+      </g>
+      <g transform="translate(450, 0)">
+        <rect width="140" height="76" rx="6" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+        <path d="M 0 22 L 0 8 Q 0 0 8 0 L 132 0 Q 140 0 140 8 L 140 22 Z" fill="#5F5E5A"/>
+        <text x="12" y="16" font-size="13" font-weight="500" fill="#FFFFFF">vm-04</text>
+        <rect x="10" y="30" width="42" height="20" rx="3" fill="#A8A8AC"/>
+        <text x="31" y="44" font-size="13" fill="#FFFFFF" text-anchor="middle">linux</text>
+        <text x="58" y="44" font-size="13" fill="#3A3A3A">cache</text>
+        <text x="70" y="65" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+        <circle cx="128" cy="11" r="3" fill="#5DCAA5"/>
+      </g>
+
+      <!-- Hypervisor: y=76 to y=98 (abuts VMs ending at y=76) -->
+      <rect x="0" y="76" width="590" height="22" fill="#3F4A5E"/>
+      <text x="295" y="91" text-anchor="middle" font-size="11" font-weight="500" fill="#E8E8E0" letter-spacing="1.5">hypervisor — enforces isolation</text>
+
+      <!-- Host: y=98 to y=178 (abuts hypervisor) -->
+      <rect x="0" y="98" width="590" height="80" rx="3" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+      <rect x="0" y="98" width="20" height="80" fill="#909093"/>
+      <rect x="570" y="98" width="20" height="80" fill="#909093"/>
+      <text x="295" y="200" text-anchor="middle" font-size="13" font-weight="500" fill="#3A3A3A">host-01</text>
+    </g>
+
+    <!-- Bottom commentary -->
+    <text x="520" y="410" text-anchor="middle" font-size="14" fill="#3A3A3A">vm-02's crash is contained. The hypervisor catches it.</text>
+    <text x="520" y="434" text-anchor="middle" font-size="14" fill="#3A3A3A">The other three VMs keep running. The host stays up.</text>
+  </g>
+
+  <!-- ============================== MODE: SNAPSHOT ============================== -->
+  <g class="mode-group mode-snapshot">
+    <text x="520" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">CAPTURE STATE. ROLL BACK INSTANTLY.</text>
+
+    <!-- Timeline -->
+    <g transform="translate(140, 180)">
+      <!-- Time line -->
+      <line x1="0" y1="80" x2="760" y2="80" stroke="#5F5E5A" stroke-width="2"/>
+
+      <!-- T0: snapshot taken -->
+      <g transform="translate(120, 80)">
+        <line x1="0" y1="-8" x2="0" y2="8" stroke="#1F8A60" stroke-width="2"/>
+        <circle cx="0" cy="0" r="6" fill="#1F8A60"/>
+        <text x="0" y="-22" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">12:00</text>
+        <text x="0" y="-36" text-anchor="middle" font-size="10" fill="#1F8A60" letter-spacing="1.2">SNAPSHOT</text>
+
+        <!-- VM in good state -->
+        <g transform="translate(-60, 30)">
+          <rect width="120" height="60" rx="6" fill="#E0F2EA" stroke="#1F8A60" stroke-width="1.5"/>
+          <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#1F8A60"/>
+          <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-01</text>
+          <text x="60" y="40" text-anchor="middle" font-size="14" fill="#1F8A60" font-weight="600">healthy</text>
+        </g>
+      </g>
+
+      <!-- T1: bad change -->
+      <g transform="translate(380, 80)">
+        <line x1="0" y1="-8" x2="0" y2="8" stroke="#B85829" stroke-width="2"/>
+        <circle cx="0" cy="0" r="6" fill="#B85829"/>
+        <text x="0" y="-22" text-anchor="middle" font-size="11" fill="#B85829" font-weight="600">12:14</text>
+        <text x="0" y="-36" text-anchor="middle" font-size="10" fill="#B85829" letter-spacing="1.2">BAD UPDATE</text>
+
+        <!-- VM in bad state -->
+        <g transform="translate(-60, 30)">
+          <rect width="120" height="60" rx="6" fill="#FCEBE0" stroke="#B85829" stroke-width="1.5"/>
+          <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#B85829"/>
+          <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-01</text>
+          <text x="60" y="40" text-anchor="middle" font-size="14" fill="#B85829" font-weight="600">corrupted</text>
+        </g>
+      </g>
+
+      <!-- T2: rollback -->
+      <g transform="translate(640, 80)">
+        <line x1="0" y1="-8" x2="0" y2="8" stroke="#1F8A60" stroke-width="2"/>
+        <circle cx="0" cy="0" r="6" fill="#1F8A60"/>
+        <text x="0" y="-22" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">12:14:02</text>
+        <text x="0" y="-36" text-anchor="middle" font-size="10" fill="#1F8A60" letter-spacing="1.2">ROLLBACK</text>
+
+        <g transform="translate(-60, 30)">
+          <rect width="120" height="60" rx="6" fill="#E0F2EA" stroke="#1F8A60" stroke-width="1.5"/>
+          <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#1F8A60"/>
+          <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-01</text>
+          <text x="60" y="40" text-anchor="middle" font-size="14" fill="#1F8A60" font-weight="600">healthy</text>
+        </g>
+      </g>
+
+      <!-- Animated indicator pulse on snapshot point and rollback point -->
+      <circle cx="120" cy="80" r="6" fill="none" stroke="#1F8A60" stroke-width="2">
+        <animate attributeName="r" values="6;14;6" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0;1" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="640" cy="80" r="6" fill="none" stroke="#1F8A60" stroke-width="2">
+        <animate attributeName="r" values="6;14;6" dur="2s" begin="1s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0;1" dur="2s" begin="1s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- "Reverts to" curved arrow from rollback point back to snapshot state -->
+      <path d="M 640 60 Q 380 -20 120 60" stroke="#1F8A60" stroke-width="2" fill="none" stroke-dasharray="4 3"/>
+      <text x="380" y="14" text-anchor="middle" font-size="12" fill="#1F8A60" font-weight="600" font-style="italic">reverts to snapshot state</text>
+    </g>
+
+    <text x="520" y="450" text-anchor="middle" font-size="14" fill="#3A3A3A">14 minutes of bad state, undone in 2 seconds.</text>
+    <text x="520" y="474" text-anchor="middle" font-size="13" fill="#9D9C95" font-style="italic">In the analogy: the superintendent's midnight photograph of every apartment.</text>
+  </g>
+
+  <!-- ============================== MODE: MOBILITY ============================== -->
+  <g class="mode-group mode-mobility">
+    <text x="520" y="80" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">MOVE A RUNNING VM BETWEEN HOSTS</text>
+    <text x="520" y="104" text-anchor="middle" font-size="14" fill="#3A3A3A" font-style="italic">No downtime. The application keeps serving traffic.</text>
+
+    <!-- Source host (left) -->
+    <g transform="translate(120, 220)">
+      <!-- Hypervisor -->
+      <rect x="0" y="0" width="240" height="20" fill="#3F4A5E"/>
+      <text x="120" y="14" text-anchor="middle" font-size="10" font-weight="500" fill="#E8E8E0" letter-spacing="1.5">hypervisor</text>
+      <!-- Host -->
+      <rect x="0" y="20" width="240" height="100" rx="3" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+      <rect x="0" y="20" width="14" height="100" fill="#909093"/>
+      <rect x="226" y="20" width="14" height="100" fill="#909093"/>
+      <!-- PSU fans -->
+      <g transform="translate(190, 38)">
+        <rect width="28" height="28" fill="#2a2a2e"/>
+        <circle cx="14" cy="14" r="10" fill="#1a1a1a"/>
+        <g>
+          <path d="M 14 14 L 12 5 L 16 5 Z" fill="#5F5E5A"/>
+          <path d="M 14 14 L 23 12 L 23 16 Z" fill="#5F5E5A"/>
+          <path d="M 14 14 L 12 23 L 16 23 Z" fill="#5F5E5A"/>
+          <path d="M 14 14 L 5 12 L 5 16 Z" fill="#5F5E5A"/>
+          <animateTransform attributeName="transform" type="rotate" from="0 14 14" to="360 14 14" dur="4.2s" repeatCount="indefinite"/>
+        </g>
+        <circle cx="14" cy="14" r="2" fill="#3a3a3a"/>
+      </g>
+      <text x="120" y="142" text-anchor="middle" font-size="13" font-weight="500" fill="#3A3A3A">host-A</text>
+      <text x="120" y="158" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">source</text>
+    </g>
+
+    <!-- Destination host (right) -->
+    <g transform="translate(680, 220)">
+      <rect x="0" y="0" width="240" height="20" fill="#3F4A5E"/>
+      <text x="120" y="14" text-anchor="middle" font-size="10" font-weight="500" fill="#E8E8E0" letter-spacing="1.5">hypervisor</text>
+      <rect x="0" y="20" width="240" height="100" rx="3" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1"/>
+      <rect x="0" y="20" width="14" height="100" fill="#909093"/>
+      <rect x="226" y="20" width="14" height="100" fill="#909093"/>
+      <g transform="translate(190, 38)">
+        <rect width="28" height="28" fill="#2a2a2e"/>
+        <circle cx="14" cy="14" r="10" fill="#1a1a1a"/>
+        <g>
+          <path d="M 14 14 L 12 5 L 16 5 Z" fill="#5F5E5A"/>
+          <path d="M 14 14 L 23 12 L 23 16 Z" fill="#5F5E5A"/>
+          <path d="M 14 14 L 12 23 L 16 23 Z" fill="#5F5E5A"/>
+          <path d="M 14 14 L 5 12 L 5 16 Z" fill="#5F5E5A"/>
+          <animateTransform attributeName="transform" type="rotate" from="0 14 14" to="360 14 14" dur="4.5s" repeatCount="indefinite"/>
+        </g>
+        <circle cx="14" cy="14" r="2" fill="#3a3a3a"/>
+      </g>
+      <text x="120" y="142" text-anchor="middle" font-size="13" font-weight="500" fill="#3A3A3A">host-B</text>
+      <text x="120" y="158" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">destination</text>
+    </g>
+
+    <!-- Path arrow connecting them (above the VMs' travel path) -->
+    <path d="M 360 180 Q 520 130 680 180" stroke="#3F4A5E" stroke-width="2" stroke-dasharray="4 3" fill="none"/>
+
+    <!-- VM tile that moves between hosts via animateMotion -->
+    <g>
+      <g>
+        <rect x="-60" y="-26" width="120" height="52" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+        <path d="M -60 -8 L -60 -22 Q -60 -26 -56 -26 L 56 -26 Q 60 -26 60 -22 L 60 -8 Z" fill="#3F4A5E"/>
+        <text x="-51" y="-13" font-size="11" font-weight="500" fill="#FFFFFF">vm-01</text>
+        <rect x="-52" y="0" width="34" height="14" rx="3" fill="#A8A8AC"/>
+        <text x="-35" y="11" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+        <text x="-12" y="11" font-size="11" fill="#3A3A3A">web-app</text>
+        <circle cx="50" cy="-17" r="2.5" fill="#5DCAA5">
+          <animate attributeName="opacity" values="1;0.4;1" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+      <animateMotion dur="8s" repeatCount="indefinite" rotate="0">
+        <mpath href="#mobility-path"/>
+      </animateMotion>
+    </g>
+    <path id="mobility-path" d="M 240 250 Q 520 130 800 250 Q 520 130 240 250" fill="none" opacity="0"/>
+
+    <!-- Status text below -->
+    <text x="520" y="430" text-anchor="middle" font-size="14" fill="#3A3A3A">vm-01 is being moved from host-A to host-B. The application keeps serving traffic.</text>
+    <text x="520" y="454" text-anchor="middle" font-size="13" fill="#9D9C95" font-style="italic">In the analogy: the superintendent lifting an entire apartment, residents and all, into a sister building.</text>
+  </g>
+
+</svg>
+
+<script>
+(function () {
+  const svg = document.getElementById('canvas');
+  const playBtn = document.getElementById('play-btn');
+  const speedSlider = document.getElementById('speed-slider');
+  const speedDisplay = document.getElementById('speed-display');
+  const stageLabel = document.getElementById('stage-label');
+
+  const stageText = {
+    consolidate: 'Consolidation: many workloads on one host.',
+    speed:       'Speed: a new app in minutes, not weeks.',
+    isolate:     'Isolation: one VM crashes — the others keep running.',
+    snapshot:    'Snapshots: capture state, roll back instantly.',
+    mobility:    'Mobility: move a running VM between hosts. No downtime.'
+  };
+
+  let speed = 1.0;
+  let isPaused = false;
+  let svgClock = 0;
+  let lastFrame = performance.now();
+
+  svg.pauseAnimations();
+
+  function tick(now) {
+    const dt = (now - lastFrame) / 1000;
+    lastFrame = now;
+    if (!isPaused) {
+      svgClock += dt * speed;
+      svg.setCurrentTime(svgClock);
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  document.querySelectorAll('.mode-btn[data-mode]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const mode = btn.dataset.mode;
+      document.querySelectorAll('.mode-btn[data-mode]').forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+      });
+      svg.dataset.mode = mode;
+      stageLabel.textContent = stageText[mode];
+      svgClock = 0;
+      svg.setCurrentTime(0);
+    });
+  });
+
+  playBtn.addEventListener('click', function () {
+    isPaused = !isPaused;
+    playBtn.textContent = isPaused ? 'Play' : 'Pause';
+  });
+
+  speedSlider.addEventListener('input', function (e) {
+    speed = parseFloat(e.target.value);
+    speedDisplay.textContent = speed.toFixed(1) + '×';
+  });
+})();
+</script>
+
+</body>
+</html>

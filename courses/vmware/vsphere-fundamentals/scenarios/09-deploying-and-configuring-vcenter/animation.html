@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<!--
+  Lesson 09 — Deploying and Configuring vCenter Server
+  Eight modes: overview / prereqs / stage1 / stage2 / sso / rbac / inventory / ha
+  Pause/Play + Speed slider parity with lessons 1-8.
+  No transform-origin on rotation groups (per DECISIONS.md).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Deploying and Configuring vCenter — animation</title>
+<style>
+  body { background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 24px; color: #1a1a1a; margin: 0; }
+  .controls { display: flex; gap: 6px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .mode-btn { border: 1px solid #d8d6cf; background: #ffffff; color: #3a3a3a; padding: 8px 11px; font-size: 12px; font-weight: 500; cursor: pointer; border-radius: 6px; font-family: inherit; transition: all 0.15s; animation: btn-pop 2.4s ease-in-out infinite; }
+  @keyframes btn-pop { 0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(63,74,94,0); } 50% { transform: scale(1.035); box-shadow: 0 0 0 4px rgba(63,74,94,0.08); } }
+  .mode-btn:hover:not(.active) { background: #f4f1e8; border-color: #5F5E5A; }
+  .mode-btn.active { background: #3F4A5E; color: #FFFFFF; border-color: #3F4A5E; animation: none; }
+  .stage-label { font-size: 15px; color: #3a3a3a; margin: 12px 0 18px 0; font-weight: 500; }
+  .speed-control { margin-left: auto; font-size: 13px; color: #5F5E5A; display: flex; gap: 8px; align-items: center; }
+  .speed-control input[type=range] { accent-color: #3F4A5E; }
+  #canvas { width: 100%; max-width: 1040px; height: auto; display: block; }
+  #canvas .mode-group { display: none; }
+  #canvas[data-mode="overview"]  .mode-overview,
+  #canvas[data-mode="prereqs"]   .mode-prereqs,
+  #canvas[data-mode="stage1"]    .mode-stage1,
+  #canvas[data-mode="stage2"]    .mode-stage2,
+  #canvas[data-mode="sso"]       .mode-sso,
+  #canvas[data-mode="rbac"]      .mode-rbac,
+  #canvas[data-mode="inventory"] .mode-inventory,
+  #canvas[data-mode="ha"]        .mode-ha { display: block; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button class="mode-btn active" data-mode="overview" type="button">1 · Overview</button>
+  <button class="mode-btn" data-mode="prereqs" type="button">2 · Prereqs</button>
+  <button class="mode-btn" data-mode="stage1" type="button">3 · Stage 1</button>
+  <button class="mode-btn" data-mode="stage2" type="button">4 · Stage 2</button>
+  <button class="mode-btn" data-mode="sso" type="button">5 · SSO</button>
+  <button class="mode-btn" data-mode="rbac" type="button">6 · RBAC</button>
+  <button class="mode-btn" data-mode="inventory" type="button">7 · Inventory · Backup</button>
+  <button class="mode-btn" data-mode="ha" type="button">8 · vCenter HA</button>
+  <button class="mode-btn" id="play-btn" type="button">Pause</button>
+  <span class="speed-control"><span>Speed</span><input type="range" min="0.3" max="2" step="0.1" value="1" id="speed-slider"><span id="speed-display">1.0&times;</span></span>
+</div>
+<div class="stage-label" id="stage-label">Subtopic 1 of 8 · Overview: vCenter ties many ESXi hosts into one managed fleet, unlocking vMotion, DRS, HA, and central RBAC.</div>
+
+<svg id="canvas" data-mode="overview" viewBox="0 0 1040 540" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <marker id="aArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/>
+    </marker>
+    <marker id="aArrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#1F8A60"/>
+    </marker>
+    <marker id="aArrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#B85829"/>
+    </marker>
+  </defs>
+
+  <!-- ============================================
+       MODE 1: OVERVIEW
+       Story: 6 hosts on the left appear one at a time, vCenter on the right gathers them into one view, then highlights vMotion (a VM jumps from one host to another).
+       ============================================ -->
+  <g class="mode-group mode-overview">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 1 — vCENTER MANAGES MANY HOSTS</text>
+
+    <!-- 6 hosts on the left -->
+    <g transform="translate(80,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">ESXi hosts</text>
+      <g>
+        <g><rect x="0" y="20" width="120" height="40" rx="4" fill="#3F4A5E"/><text x="60" y="44" text-anchor="middle" font-size="11" fill="#FFFFFF">esx-01</text></g>
+        <g><rect x="0" y="70" width="120" height="40" rx="4" fill="#3F4A5E"/><text x="60" y="94" text-anchor="middle" font-size="11" fill="#FFFFFF">esx-02</text></g>
+        <g><rect x="0" y="120" width="120" height="40" rx="4" fill="#3F4A5E"/><text x="60" y="144" text-anchor="middle" font-size="11" fill="#FFFFFF">esx-03</text></g>
+        <g><rect x="0" y="170" width="120" height="40" rx="4" fill="#3F4A5E"/><text x="60" y="194" text-anchor="middle" font-size="11" fill="#FFFFFF">esx-04</text></g>
+        <g><rect x="0" y="220" width="120" height="40" rx="4" fill="#3F4A5E"/><text x="60" y="244" text-anchor="middle" font-size="11" fill="#FFFFFF">esx-05</text></g>
+        <g><rect x="0" y="270" width="120" height="40" rx="4" fill="#3F4A5E"/><text x="60" y="294" text-anchor="middle" font-size="11" fill="#FFFFFF">esx-06</text></g>
+      </g>
+    </g>
+
+    <!-- arrows from each host to vCenter -->
+    <g>
+      <line x1="200" y1="130" x2="500" y2="240" stroke="#3F4A5E" stroke-width="1.2" opacity="0.8"/>
+      <line x1="200" y1="180" x2="500" y2="240" stroke="#3F4A5E" stroke-width="1.2" opacity="0.8"/>
+      <line x1="200" y1="230" x2="500" y2="240" stroke="#3F4A5E" stroke-width="1.2" opacity="0.8"/>
+      <line x1="200" y1="280" x2="500" y2="260" stroke="#3F4A5E" stroke-width="1.2" opacity="0.8"/>
+      <line x1="200" y1="330" x2="500" y2="260" stroke="#3F4A5E" stroke-width="1.2" opacity="0.8"/>
+      <line x1="200" y1="380" x2="500" y2="260" stroke="#3F4A5E" stroke-width="1.2" opacity="0.8"/>
+    </g>
+
+    <!-- vCenter in middle -->
+    <g transform="translate(500,200)">
+      <rect width="160" height="100" rx="8" fill="#1F8A60"/>
+      <text x="80" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">vCenter</text>
+      <text x="80" y="60" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.9">vSphere Client</text>
+      <text x="80" y="78" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">vc-01.lab.local</text>
+    </g>
+
+    <!-- right side: feature labels with VM moving (vMotion) -->
+    <g transform="translate(720,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">Features unlocked</text>
+      <g transform="translate(0,30)">
+        <rect width="180" height="34" rx="6" fill="#5DCAA5" opacity="0.25" stroke="#1F8A60"/>
+        <text x="90" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="#1F8A60">vMotion (live migrate)</text>
+      </g>
+      <g transform="translate(0,80)">
+        <rect width="180" height="34" rx="6" fill="#5DCAA5" opacity="0.25" stroke="#1F8A60"/>
+        <text x="90" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="#1F8A60">DRS (load balance)</text>
+      </g>
+      <g transform="translate(0,130)">
+        <rect width="180" height="34" rx="6" fill="#5DCAA5" opacity="0.25" stroke="#1F8A60"/>
+        <text x="90" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="#1F8A60">vSphere HA</text>
+      </g>
+      <g transform="translate(0,180)">
+        <rect width="180" height="34" rx="6" fill="#5DCAA5" opacity="0.25" stroke="#1F8A60"/>
+        <text x="90" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="#1F8A60">Templates · libraries</text>
+      </g>
+      <g transform="translate(0,230)">
+        <rect width="180" height="34" rx="6" fill="#5DCAA5" opacity="0.25" stroke="#1F8A60"/>
+        <text x="90" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="#1F8A60">Central RBAC + audit</text>
+      </g>
+    </g>
+
+    <!-- VM moving from esx-02 to esx-05 (vMotion demonstration) -->
+    <g>
+      <rect x="100" y="95" width="20" height="14" rx="2" fill="#F2C94C" stroke="#1F2937" stroke-width="0.5">
+        <animate attributeName="x" values="100;100;180;100" keyTimes="0;0.2;0.6;1" dur="6s" repeatCount="indefinite"/>
+        <animate attributeName="y" values="95;95;320;95" keyTimes="0;0.2;0.6;1" dur="6s" repeatCount="indefinite"/>
+      </rect>
+      <text font-size="9" fill="#1F2937">
+        <animate attributeName="x" values="115;115;195;115" keyTimes="0;0.2;0.6;1" dur="6s" repeatCount="indefinite"/>
+        <animate attributeName="y" values="105;105;330;105" keyTimes="0;0.2;0.6;1" dur="6s" repeatCount="indefinite"/>
+        <tspan>vm-A</tspan>
+      </text>
+    </g>
+
+    <text x="520" y="510" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">VM lives-moves between hosts under vCenter's coordination</text>
+  </g>
+
+  <!-- ============================================
+       MODE 2: PREREQS
+       Story: 4-row checklist; each row turns green in sequence; missing PTR shown red briefly
+       ============================================ -->
+  <g class="mode-group mode-prereqs">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 2 — vCENTER PREREQUISITES</text>
+
+    <g transform="translate(180,90)">
+      <text x="340" y="0" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">Pre-flight checklist</text>
+
+      <!-- DNS row -->
+      <g transform="translate(0,30)">
+        <rect width="680" height="60" rx="8" fill="#FFFFFF" stroke="#E5E9F0"/>
+        <circle cx="36" cy="30" r="14" fill="#5A6B81">
+          <animate attributeName="fill" values="#5A6B81;#5A6B81;#1F8A60;#1F8A60" keyTimes="0;0.05;0.18;1" dur="8s" repeatCount="indefinite"/>
+        </circle>
+        <text x="36" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">1</text>
+        <text x="60" y="22" font-size="13" font-weight="700" fill="#1F2937">DNS</text>
+        <text x="60" y="40" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">A: vc-01.lab.local → 10.20.30.50  ·  PTR: 10.20.30.50 → vc-01.lab.local</text>
+        <text x="660" y="35" text-anchor="end" font-size="14" font-weight="700" fill="#1F8A60" opacity="0">
+          <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.05;0.18;1" dur="8s" repeatCount="indefinite"/>
+          ✓
+        </text>
+      </g>
+
+      <!-- NTP row -->
+      <g transform="translate(0,100)">
+        <rect width="680" height="60" rx="8" fill="#FFFFFF" stroke="#E5E9F0"/>
+        <circle cx="36" cy="30" r="14" fill="#5A6B81">
+          <animate attributeName="fill" values="#5A6B81;#5A6B81;#5A6B81;#1F8A60;#1F8A60" keyTimes="0;0.18;0.3;0.4;1" dur="8s" repeatCount="indefinite"/>
+        </circle>
+        <text x="36" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">2</text>
+        <text x="60" y="22" font-size="13" font-weight="700" fill="#1F2937">NTP</text>
+        <text x="60" y="40" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">target host + appliance synced to time.lab.local</text>
+        <text x="660" y="35" text-anchor="end" font-size="14" font-weight="700" fill="#1F8A60" opacity="0">
+          <animate attributeName="opacity" values="0;0;0;1;1" keyTimes="0;0.18;0.3;0.4;1" dur="8s" repeatCount="indefinite"/>
+          ✓
+        </text>
+      </g>
+
+      <!-- Network row -->
+      <g transform="translate(0,170)">
+        <rect width="680" height="60" rx="8" fill="#FFFFFF" stroke="#E5E9F0"/>
+        <circle cx="36" cy="30" r="14" fill="#5A6B81">
+          <animate attributeName="fill" values="#5A6B81;#5A6B81;#5A6B81;#5A6B81;#1F8A60;#1F8A60" keyTimes="0;0.3;0.45;0.55;0.6;1" dur="8s" repeatCount="indefinite"/>
+        </circle>
+        <text x="36" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">3</text>
+        <text x="60" y="22" font-size="13" font-weight="700" fill="#1F2937">Network</text>
+        <text x="60" y="40" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">port group: mgmt  ·  IP: 10.20.30.50/24  ·  GW: 10.20.30.1</text>
+        <text x="660" y="35" text-anchor="end" font-size="14" font-weight="700" fill="#1F8A60" opacity="0">
+          <animate attributeName="opacity" values="0;0;0;0;1;1" keyTimes="0;0.3;0.45;0.55;0.6;1" dur="8s" repeatCount="indefinite"/>
+          ✓
+        </text>
+      </g>
+
+      <!-- Sizing row -->
+      <g transform="translate(0,240)">
+        <rect width="680" height="60" rx="8" fill="#FFFFFF" stroke="#E5E9F0"/>
+        <circle cx="36" cy="30" r="14" fill="#5A6B81">
+          <animate attributeName="fill" values="#5A6B81;#5A6B81;#5A6B81;#5A6B81;#5A6B81;#5A6B81;#1F8A60;#1F8A60" keyTimes="0;0.3;0.45;0.55;0.65;0.75;0.8;1" dur="8s" repeatCount="indefinite"/>
+        </circle>
+        <text x="36" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">4</text>
+        <text x="60" y="22" font-size="13" font-weight="700" fill="#1F2937">Sizing</text>
+        <text x="60" y="40" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">Tiny / Small / Medium / Large / X-Large  ·  picked: Small (100 hosts / 1k VMs)</text>
+        <text x="660" y="35" text-anchor="end" font-size="14" font-weight="700" fill="#1F8A60" opacity="0">
+          <animate attributeName="opacity" values="0;0;0;0;0;0;1;1" keyTimes="0;0.3;0.45;0.55;0.65;0.75;0.8;1" dur="8s" repeatCount="indefinite"/>
+          ✓
+        </text>
+      </g>
+
+      <!-- Bottom: Ready to install -->
+      <g transform="translate(0,320)">
+        <text x="340" y="22" text-anchor="middle" font-size="14" font-weight="700" fill="#1F8A60" opacity="0">
+          <animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1" keyTimes="0;0.3;0.45;0.55;0.65;0.75;0.8;0.85;1" dur="8s" repeatCount="indefinite"/>
+          ✓ Ready to launch the installer
+        </text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ============================================
+       MODE 3: STAGE 1
+       Story: laptop runs installer, OVA travels across to host, VM appears on host (powered on but services not started)
+       ============================================ -->
+  <g class="mode-group mode-stage1">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 3 — STAGE 1: DEPLOY THE OVA</text>
+
+    <!-- Laptop on left -->
+    <g transform="translate(80,150)">
+      <rect width="200" height="130" rx="8" fill="#1F2937"/>
+      <rect x="10" y="10" width="180" height="110" rx="2" fill="#0a3a73"/>
+      <text x="100" y="40" text-anchor="middle" font-size="11" font-family="ui-monospace, Menlo, monospace" font-weight="700" fill="#FFFFFF">VCSA Installer</text>
+      <text x="100" y="60" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#5DCAA5">Stage 1: Deploy</text>
+      <rect x="20" y="75" width="160" height="14" rx="2" fill="#1F2937"/>
+      <rect x="20" y="75" width="0" height="14" rx="2" fill="#5DCAA5">
+        <animate attributeName="width" values="0;160;160" keyTimes="0;0.7;1" dur="8s" repeatCount="indefinite"/>
+      </rect>
+      <text x="100" y="105" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF">vc-01.lab.local</text>
+      <rect x="-15" y="130" width="230" height="6" rx="2" fill="#5A6B81"/>
+    </g>
+
+    <!-- "OVA" travelling across -->
+    <g>
+      <line x1="280" y1="215" x2="700" y2="215" stroke="#3F4A5E" stroke-width="2" stroke-dasharray="6,6"/>
+      <g>
+        <rect x="0" y="0" width="48" height="20" rx="3" fill="#5DCAA5">
+          <animate attributeName="x" values="280;680;680;680" keyTimes="0;0.7;0.85;1" dur="8s" repeatCount="indefinite"/>
+        </rect>
+        <text font-size="10" font-weight="700" fill="#1F2937">
+          <animate attributeName="x" values="290;690;690;690" keyTimes="0;0.7;0.85;1" dur="8s" repeatCount="indefinite"/>
+          <animate attributeName="y" values="214;214;214;214" keyTimes="0;0.7;0.85;1" dur="8s" repeatCount="indefinite"/>
+          <tspan>OVA</tspan>
+        </text>
+      </g>
+      <text x="490" y="200" text-anchor="middle" font-size="11" fill="#5A6B81">push appliance OVA across the management network</text>
+    </g>
+
+    <!-- ESXi host on right -->
+    <g transform="translate(720,140)">
+      <rect width="240" height="160" rx="8" fill="#3F4A5E" stroke="#1F2937" stroke-width="1.5"/>
+      <text x="120" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF" opacity="0.85">esx-01.lab.local</text>
+      <text x="120" y="38" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.7">datastore: ds-vsan</text>
+      <!-- VM appears at end -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1" keyTimes="0;0.7;0.85;0.9;1" dur="8s" repeatCount="indefinite"/>
+        <rect x="40" y="55" width="160" height="80" rx="4" fill="#5DCAA5" opacity="0.6"/>
+        <text x="120" y="82" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">vc-01.lab.local</text>
+        <text x="120" y="100" text-anchor="middle" font-size="10" fill="#1F2937">Photon Linux</text>
+        <text x="120" y="116" text-anchor="middle" font-size="10" font-style="italic" fill="#1F2937">powered on, services NOT started</text>
+      </g>
+    </g>
+
+    <text x="520" y="380" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81" opacity="0">
+      <animate attributeName="opacity" values="0;0;0;1;1" keyTimes="0;0.7;0.85;0.9;1" dur="8s" repeatCount="indefinite"/>
+      Stage 1 complete · proceed to Stage 2 to start vCenter services
+    </text>
+  </g>
+
+  <!-- ============================================
+       MODE 4: STAGE 2
+       Story: progress bar fills "Setting up SSO ..." "Starting services ..." then login screen appears
+       ============================================ -->
+  <g class="mode-group mode-stage2">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 4 — STAGE 2: FIRST-TIME SETUP</text>
+
+    <!-- Setup phase -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="1;1;0;0;0;0" keyTimes="0;0.55;0.6;1;1;1" dur="8s" repeatCount="indefinite"/>
+      <rect x="160" y="120" width="720" height="280" rx="10" fill="#0a3a73"/>
+      <text x="520" y="160" text-anchor="middle" font-size="14" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF">vCenter Server Stage 2 Setup</text>
+
+      <!-- progressing tasks -->
+      <g transform="translate(220,200)">
+        <text x="0" y="14" font-size="12" font-family="ui-monospace, Menlo, monospace" fill="#5DCAA5" opacity="0">
+          <animate attributeName="opacity" values="0;1;1;1;1;1" keyTimes="0;0.05;0.2;0.4;0.55;1" dur="8s" repeatCount="indefinite"/>
+          ✓ Configure NTP
+        </text>
+        <text x="0" y="40" font-size="12" font-family="ui-monospace, Menlo, monospace" fill="#5DCAA5" opacity="0">
+          <animate attributeName="opacity" values="0;0;0;1;1;1" keyTimes="0;0.05;0.18;0.22;0.5;1" dur="8s" repeatCount="indefinite"/>
+          ✓ Configure SSO domain (vsphere.local)
+        </text>
+        <text x="0" y="66" font-size="12" font-family="ui-monospace, Menlo, monospace" fill="#5DCAA5" opacity="0">
+          <animate attributeName="opacity" values="0;0;0;0;1;1" keyTimes="0;0.05;0.22;0.35;0.4;1" dur="8s" repeatCount="indefinite"/>
+          ✓ Initialize Postgres database
+        </text>
+        <text x="0" y="92" font-size="12" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF">
+          ⚙ Starting vCenter services...
+          <animate attributeName="fill" values="#FFFFFF;#FFFFFF;#5DCAA5" keyTimes="0;0.5;0.6" dur="8s" repeatCount="indefinite"/>
+        </text>
+        <text x="0" y="92" font-size="12" font-family="ui-monospace, Menlo, monospace" fill="#5DCAA5" opacity="0">
+          <animate attributeName="opacity" values="0;0;0;0;0;1" keyTimes="0;0.4;0.5;0.55;0.58;0.6" dur="8s" repeatCount="indefinite"/>
+          ✓ vCenter services started
+        </text>
+
+        <rect x="0" y="110" width="500" height="14" rx="2" fill="#1F2937"/>
+        <rect x="0" y="110" width="0" height="14" rx="2" fill="#5DCAA5">
+          <animate attributeName="width" values="0;500;500" keyTimes="0;0.55;1" dur="8s" repeatCount="indefinite"/>
+        </rect>
+      </g>
+    </g>
+
+    <!-- vSphere Client login appears -->
+    <g opacity="0">
+      <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.55;0.6;1" dur="8s" repeatCount="indefinite"/>
+      <rect x="200" y="100" width="640" height="320" rx="8" fill="#FFFFFF" stroke="#5A6B81" stroke-width="2"/>
+      <rect x="200" y="100" width="640" height="36" rx="8" fill="#0a3a73"/>
+      <text x="220" y="124" font-size="13" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF">https://vc-01.lab.local/ui/</text>
+      <text x="520" y="180" text-anchor="middle" font-size="22" font-weight="700" fill="#0a3a73">vSphere Client</text>
+      <text x="520" y="210" text-anchor="middle" font-size="13" fill="#5A6B81">Single Sign-On</text>
+      <rect x="320" y="240" width="400" height="32" rx="3" fill="#FFFFFF" stroke="#D5DCE6"/>
+      <text x="332" y="260" font-size="12" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">administrator@vsphere.local</text>
+      <rect x="320" y="280" width="400" height="32" rx="3" fill="#FFFFFF" stroke="#D5DCE6"/>
+      <text x="332" y="300" font-size="12" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">●●●●●●●●●●●●●●●●</text>
+      <rect x="320" y="328" width="400" height="34" rx="4" fill="#1F8A60"/>
+      <text x="520" y="350" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Login</text>
+      <text x="520" y="396" text-anchor="middle" font-size="11" font-style="italic" fill="#1F8A60">vCenter is alive</text>
+    </g>
+  </g>
+
+  <!-- ============================================
+       MODE 5: SSO
+       Story: AD on left, SSO in middle, vCenter on right. Token flows AD→SSO→vCenter when alice logs in.
+       ============================================ -->
+  <g class="mode-group mode-sso">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 5 — vCENTER SSO + IDENTITY SOURCES</text>
+
+    <!-- Alice user on left -->
+    <g transform="translate(60,200)">
+      <circle cx="40" cy="20" r="22" fill="#5A6B81"/>
+      <rect x="14" y="42" width="52" height="40" rx="10" fill="#5A6B81"/>
+      <text x="40" y="100" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2937">Alice</text>
+      <text x="40" y="116" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#5A6B81">alice@corp.local</text>
+    </g>
+
+    <!-- AD source -->
+    <g transform="translate(220,160)">
+      <rect width="160" height="120" rx="8" fill="#5E4A8E"/>
+      <text x="80" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">Active Directory</text>
+      <text x="80" y="52" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">corp.local</text>
+      <text x="80" y="80" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF" opacity="0.85">alice ✓</text>
+      <text x="80" y="96" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF" opacity="0.85">bob ✓</text>
+      <text x="80" y="112" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF" opacity="0.85">vSphere-Admins (group)</text>
+    </g>
+
+    <!-- SSO -->
+    <g transform="translate(450,160)">
+      <rect width="160" height="120" rx="8" fill="#3F4A5E"/>
+      <text x="80" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vCenter SSO</text>
+      <text x="80" y="52" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">vsphere.local</text>
+      <text x="80" y="80" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF" opacity="0.85">identity sources:</text>
+      <text x="80" y="96" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#5DCAA5">  · vsphere.local</text>
+      <text x="80" y="112" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#5DCAA5">  · corp.local (AD)</text>
+    </g>
+
+    <!-- vCenter -->
+    <g transform="translate(720,160)">
+      <rect width="160" height="120" rx="8" fill="#1F8A60"/>
+      <text x="80" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">vCenter</text>
+      <text x="80" y="52" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">vSphere Client</text>
+      <text x="80" y="80" text-anchor="middle" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF" opacity="0.85">trusts SSO tokens</text>
+      <text x="80" y="100" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1" keyTimes="0;0.1;0.3;0.5;0.6;0.7;0.8;0.85;1" dur="8s" repeatCount="indefinite"/>
+        ✓ alice@corp.local logged in
+      </text>
+    </g>
+
+    <!-- Animated flow: alice → AD → SSO → vCenter (token) -->
+    <g>
+      <!-- alice → AD (request) -->
+      <line x1="100" y1="220" x2="220" y2="220" stroke="#3F4A5E" stroke-width="1.6" stroke-dasharray="3,3" opacity="0">
+        <animate attributeName="opacity" values="0;1;1;0;0;0" keyTimes="0;0.05;0.18;0.22;1;1" dur="8s" repeatCount="indefinite"/>
+      </line>
+      <text x="160" y="210" text-anchor="middle" font-size="9" fill="#3F4A5E" opacity="0">
+        <animate attributeName="opacity" values="0;1;1;0;0;0" keyTimes="0;0.05;0.18;0.22;1;1" dur="8s" repeatCount="indefinite"/>
+        creds
+      </text>
+
+      <!-- AD → SSO (validation) -->
+      <line x1="380" y1="220" x2="450" y2="220" stroke="#1F8A60" stroke-width="1.6" stroke-dasharray="3,3" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1;0;0" keyTimes="0;0.18;0.22;0.3;0.45;0.5;1" dur="8s" repeatCount="indefinite"/>
+      </line>
+      <text x="415" y="210" text-anchor="middle" font-size="9" fill="#1F8A60" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;1;1;0;0" keyTimes="0;0.18;0.22;0.3;0.45;0.5;1" dur="8s" repeatCount="indefinite"/>
+        ✓
+      </text>
+
+      <!-- SSO → vCenter (token) -->
+      <line x1="610" y1="220" x2="720" y2="220" stroke="#1F8A60" stroke-width="2" stroke-dasharray="3,3" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;0;1;1;1;1" keyTimes="0;0.18;0.3;0.45;0.55;0.6;0.75;0.85;1" dur="8s" repeatCount="indefinite"/>
+      </line>
+      <text x="665" y="210" text-anchor="middle" font-size="9" font-weight="700" fill="#1F8A60" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;0;1;1;1;1" keyTimes="0;0.18;0.3;0.45;0.55;0.6;0.75;0.85;1" dur="8s" repeatCount="indefinite"/>
+        SSO token
+      </text>
+    </g>
+
+    <text x="520" y="400" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">vCenter delegates auth to SSO; SSO trusts AD as the identity source</text>
+  </g>
+
+  <!-- ============================================
+       MODE 6: RBAC
+       Story: tree on left (Production folder, then vm-payments), permission overlays appear in sequence
+       ============================================ -->
+  <g class="mode-group mode-rbac">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 6 — ROLES, PRIVILEGES, PERMISSIONS</text>
+
+    <!-- Inventory tree -->
+    <g transform="translate(80,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">Inventory</text>
+      <g transform="translate(0,20)">
+        <rect width="240" height="40" rx="4" fill="#3F4A5E"/>
+        <text x="14" y="25" font-size="13" font-weight="700" fill="#FFFFFF">Datacenter-East</text>
+      </g>
+      <g transform="translate(20,70)">
+        <rect width="220" height="40" rx="4" fill="#5E4A8E"/>
+        <text x="14" y="25" font-size="13" font-weight="700" fill="#FFFFFF">📁 Production</text>
+      </g>
+      <g transform="translate(40,120)">
+        <rect width="200" height="36" rx="4" fill="#FFFFFF" stroke="#D5DCE6"/>
+        <text x="14" y="22" font-size="11" fill="#1F2937">vm-app1</text>
+      </g>
+      <g transform="translate(40,160)">
+        <rect width="200" height="36" rx="4" fill="#FFFFFF" stroke="#D5DCE6"/>
+        <text x="14" y="22" font-size="11" fill="#1F2937">vm-app2</text>
+      </g>
+      <g transform="translate(40,200)">
+        <rect width="200" height="36" rx="4" fill="#1F8A60"/>
+        <text x="14" y="22" font-size="11" font-weight="700" fill="#FFFFFF">vm-payments</text>
+      </g>
+      <g transform="translate(40,240)">
+        <rect width="200" height="36" rx="4" fill="#FFFFFF" stroke="#D5DCE6"/>
+        <text x="14" y="22" font-size="11" fill="#1F2937">vm-app3</text>
+      </g>
+    </g>
+
+    <!-- Permissions panel on right -->
+    <g transform="translate(420,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">Permissions</text>
+
+      <!-- Permission 1: Read-Only on Production -->
+      <g transform="translate(0,30)">
+        <rect width="540" height="80" rx="8" fill="#FFFFFF" stroke="#5E4A8E" stroke-width="2"/>
+        <text x="14" y="22" font-size="12" font-weight="700" fill="#1F2937">①  Permission on 📁 Production</text>
+        <text x="14" y="42" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">user: alice@corp.local</text>
+        <text x="14" y="58" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">role: Read-Only</text>
+        <text x="14" y="74" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#5A6B81">propagate: ✓ (applies to all VMs in Production)</text>
+      </g>
+
+      <!-- Permission 2: VM Power User on vm-payments -->
+      <g transform="translate(0,130)">
+        <rect width="540" height="80" rx="8" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2"/>
+        <text x="14" y="22" font-size="12" font-weight="700" fill="#1F2937">②  Permission on 🟢 vm-payments</text>
+        <text x="14" y="42" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">user: alice@corp.local</text>
+        <text x="14" y="58" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">role: Virtual Machine Power User</text>
+        <text x="14" y="74" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#5A6B81">propagate: ✗  (overrides inherited Read-Only on this VM)</text>
+      </g>
+
+      <!-- Result table -->
+      <g transform="translate(0,240)">
+        <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">What Alice can actually do:</text>
+        <text x="0" y="20" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">• vm-app1, vm-app2, vm-app3 → <tspan fill="#5A6B81">Read-Only (browse only)</tspan></text>
+        <text x="0" y="40" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">• vm-payments              → <tspan fill="#1F8A60" font-weight="700">Power User (power, snapshot, console)</tspan></text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ============================================
+       MODE 7: INVENTORY + BACKUP
+       Story: inventory tree being built (datacenter → folders → clusters → hosts), then a backup arrow ships state to an off-site SFTP target
+       ============================================ -->
+  <g class="mode-group mode-inventory">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 7 — INVENTORY HIERARCHY + BACKUP</text>
+
+    <!-- Inventory tree -->
+    <g transform="translate(80,90)">
+      <text x="0" y="0" font-size="12" font-weight="700" fill="#1F2937">vCenter inventory</text>
+
+      <!-- Datacenter -->
+      <g transform="translate(0,20)">
+        <rect width="200" height="34" rx="4" fill="#3F4A5E"/>
+        <text x="14" y="23" font-size="12" font-weight="700" fill="#FFFFFF">🏢 DC-East</text>
+      </g>
+
+      <!-- Folders -->
+      <g transform="translate(20,64)">
+        <rect width="180" height="30" rx="4" fill="#5E4A8E"/>
+        <text x="12" y="20" font-size="11" font-weight="700" fill="#FFFFFF">📁 Production</text>
+      </g>
+      <g transform="translate(20,104)">
+        <rect width="180" height="30" rx="4" fill="#5E4A8E"/>
+        <text x="12" y="20" font-size="11" font-weight="700" fill="#FFFFFF">📁 Lab</text>
+      </g>
+
+      <!-- Cluster under Production -->
+      <g transform="translate(40,144)">
+        <rect width="160" height="26" rx="4" fill="#2E7A8C"/>
+        <text x="10" y="18" font-size="11" font-weight="700" fill="#FFFFFF">🗂 cluster-A</text>
+      </g>
+
+      <!-- Hosts under cluster -->
+      <g transform="translate(60,180)">
+        <rect width="140" height="22" rx="3" fill="#FFFFFF" stroke="#5A6B81"/>
+        <text x="10" y="15" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">esx-01</text>
+      </g>
+      <g transform="translate(60,210)">
+        <rect width="140" height="22" rx="3" fill="#FFFFFF" stroke="#5A6B81"/>
+        <text x="10" y="15" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">esx-02</text>
+      </g>
+      <g transform="translate(60,240)">
+        <rect width="140" height="22" rx="3" fill="#FFFFFF" stroke="#5A6B81"/>
+        <text x="10" y="15" font-size="10" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">esx-03</text>
+      </g>
+
+      <!-- VMs under host -->
+      <g transform="translate(80,275)">
+        <rect width="120" height="18" rx="3" fill="#F3F5F9"/>
+        <text x="8" y="13" font-size="9" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">vm-payments</text>
+      </g>
+      <g transform="translate(80,298)">
+        <rect width="120" height="18" rx="3" fill="#F3F5F9"/>
+        <text x="8" y="13" font-size="9" font-family="ui-monospace, Menlo, monospace" fill="#1F2937">vm-web</text>
+      </g>
+    </g>
+
+    <!-- vCenter appliance (middle) with backup process -->
+    <g transform="translate(360,140)">
+      <rect width="180" height="120" rx="8" fill="#1F8A60"/>
+      <text x="90" y="32" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">vCenter</text>
+      <text x="90" y="52" text-anchor="middle" font-size="11" fill="#FFFFFF" opacity="0.85">vc-01.lab.local</text>
+
+      <!-- backup activity icon -->
+      <g transform="translate(60,75)" opacity="0.9">
+        <circle cx="0" cy="0" r="14" fill="#FFFFFF"/>
+        <path d="M-6,0 a6,6 0 1,1 12,0 M6,0 l-3,-4 M6,0 l3,-4" stroke="#1F8A60" stroke-width="2" fill="none">
+          <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0" to="360" dur="2s" repeatCount="indefinite"/>
+        </path>
+        <text x="30" y="5" font-size="10" font-weight="700" fill="#FFFFFF">backup</text>
+      </g>
+      <text x="90" y="108" text-anchor="middle" font-size="9" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF" opacity="0.85">file-based · nightly @ 02:00</text>
+    </g>
+
+    <!-- Arrow to SFTP target -->
+    <g>
+      <line x1="540" y1="200" x2="700" y2="200" stroke="#1F8A60" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#aArrowGreen)">
+        <animate attributeName="stroke-dashoffset" values="0;-100" dur="2s" repeatCount="indefinite"/>
+      </line>
+      <text x="620" y="190" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">backup stream</text>
+    </g>
+
+    <!-- SFTP backup target (right) -->
+    <g transform="translate(720,140)">
+      <rect width="220" height="120" rx="8" fill="#3F4A5E"/>
+      <text x="110" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">SFTP backup target</text>
+      <text x="110" y="52" text-anchor="middle" font-size="11" font-family="ui-monospace, Menlo, monospace" fill="#FFFFFF" opacity="0.85">backup.lab.local</text>
+
+      <!-- backup files -->
+      <g transform="translate(20,68)">
+        <rect width="40" height="14" rx="2" fill="#5DCAA5"/>
+        <text x="20" y="10" text-anchor="middle" font-size="8" fill="#1F2937">2026-04-30</text>
+      </g>
+      <g transform="translate(70,68)">
+        <rect width="40" height="14" rx="2" fill="#5DCAA5"/>
+        <text x="20" y="10" text-anchor="middle" font-size="8" fill="#1F2937">2026-04-29</text>
+      </g>
+      <g transform="translate(120,68)">
+        <rect width="40" height="14" rx="2" fill="#5DCAA5"/>
+        <text x="20" y="10" text-anchor="middle" font-size="8" fill="#1F2937">2026-04-28</text>
+      </g>
+      <g transform="translate(170,68)">
+        <rect width="40" height="14" rx="2" fill="#5A6B81"/>
+        <text x="20" y="10" text-anchor="middle" font-size="8" fill="#FFFFFF">...</text>
+      </g>
+
+      <text x="110" y="105" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.85">retain 30 days</text>
+    </g>
+
+    <text x="520" y="430" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">A backed-up vCenter restores to a fresh appliance in ~30 min</text>
+  </g>
+
+  <!-- ============================================
+       MODE 8: vCenter HA
+       Story: 3 nodes (Active, Passive, Witness). Active fails (red X), Passive promotes to Active (green), service stays available.
+       ============================================ -->
+  <g class="mode-group mode-ha">
+    <text x="520" y="40" text-anchor="middle" font-size="13" font-weight="600" fill="#5F5E5A" letter-spacing="1.5">SUBTOPIC 8 — vCENTER HA: ACTIVE / PASSIVE / WITNESS</text>
+
+    <!-- Three nodes side by side -->
+
+    <!-- Active node -->
+    <g transform="translate(80,150)">
+      <rect width="240" height="180" rx="10" fill="#FFFFFF" stroke="#1F8A60" stroke-width="2.5">
+        <animate attributeName="stroke" values="#1F8A60;#1F8A60;#B85829;#B85829;#5A6B81;#5A6B81" keyTimes="0;0.4;0.45;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+      </rect>
+      <text x="120" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="#1F8A60">
+        <animate attributeName="fill" values="#1F8A60;#1F8A60;#B85829;#B85829;#5A6B81;#5A6B81" keyTimes="0;0.4;0.45;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+        Active
+      </text>
+      <text x="120" y="58" text-anchor="middle" font-size="11" fill="#5A6B81">vc-01-active</text>
+      <!-- internal: serving traffic -->
+      <text x="120" y="100" text-anchor="middle" font-size="12" fill="#1F8A60" opacity="1">
+        <animate attributeName="opacity" values="1;1;0;0;0;0" keyTimes="0;0.4;0.45;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+        ⚙ serving requests
+      </text>
+      <text x="120" y="100" text-anchor="middle" font-size="12" font-weight="700" fill="#B85829" opacity="0">
+        <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.4;0.45;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+        ✗ host failure
+      </text>
+      <text x="120" y="100" text-anchor="middle" font-size="12" font-weight="700" fill="#5A6B81" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;1;1" keyTimes="0;0.4;0.45;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+        offline
+      </text>
+
+      <text x="120" y="155" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">10.20.30.50</text>
+    </g>
+
+    <!-- Passive node -->
+    <g transform="translate(400,150)">
+      <rect width="240" height="180" rx="10" fill="#FFFFFF" stroke="#5A6B81" stroke-width="2.5">
+        <animate attributeName="stroke" values="#5A6B81;#5A6B81;#5A6B81;#1F8A60;#1F8A60" keyTimes="0;0.4;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+      </rect>
+      <text x="120" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="#5A6B81">
+        <animate attributeName="fill" values="#5A6B81;#5A6B81;#5A6B81;#1F8A60;#1F8A60" keyTimes="0;0.4;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+        <tspan>Passive</tspan>
+        <animate attributeName="font-weight" values="500;500;500;700;700" keyTimes="0;0.4;0.7;0.75;1" dur="8s" repeatCount="indefinite"/>
+      </text>
+      <!-- before promotion text -->
+      <text x="120" y="58" text-anchor="middle" font-size="11" fill="#5A6B81" opacity="1">
+        <animate attributeName="opacity" values="1;1;1;0;0;0" keyTimes="0;0.4;0.7;0.72;0.75;1" dur="8s" repeatCount="indefinite"/>
+        vc-01-passive
+      </text>
+      <text x="120" y="58" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;1;1" keyTimes="0;0.4;0.7;0.72;0.75;1" dur="8s" repeatCount="indefinite"/>
+        promoted to Active
+      </text>
+
+      <!-- internal -->
+      <text x="120" y="100" text-anchor="middle" font-size="12" fill="#5A6B81" opacity="1">
+        <animate attributeName="opacity" values="1;1;1;0;0;0" keyTimes="0;0.4;0.7;0.72;0.75;1" dur="8s" repeatCount="indefinite"/>
+        ⏸ in sync via replication
+      </text>
+      <text x="120" y="100" text-anchor="middle" font-size="12" fill="#1F8A60" font-weight="700" opacity="0">
+        <animate attributeName="opacity" values="0;0;0;0;1;1" keyTimes="0;0.4;0.7;0.72;0.75;1" dur="8s" repeatCount="indefinite"/>
+        ⚙ serving requests
+      </text>
+
+      <text x="120" y="155" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">takes over 10.20.30.50</text>
+    </g>
+
+    <!-- Witness -->
+    <g transform="translate(720,150)">
+      <rect width="240" height="180" rx="10" fill="#FFFFFF" stroke="#9D9C95" stroke-width="2.5"/>
+      <text x="120" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="#9D9C95">Witness</text>
+      <text x="120" y="58" text-anchor="middle" font-size="11" fill="#5A6B81">vc-01-witness</text>
+      <text x="120" y="100" text-anchor="middle" font-size="12" fill="#9D9C95">tie-breaker (no data)</text>
+      <text x="120" y="155" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">confirms Active is really down</text>
+    </g>
+
+    <!-- Replication arrows -->
+    <line x1="320" y1="240" x2="400" y2="240" stroke="#3F4A5E" stroke-width="2" marker-end="url(#aArrow)" marker-start="url(#aArrow)"/>
+    <text x="360" y="232" text-anchor="middle" font-size="9" fill="#5A6B81">repl.</text>
+
+    <!-- Witness lines -->
+    <path d="M200,330 Q420,400 720,330" fill="none" stroke="#9D9C95" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <path d="M520,330 Q620,360 720,330" fill="none" stroke="#9D9C95" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+    <text x="520" y="450" text-anchor="middle" font-size="12" font-weight="600" fill="#5A6B81">Active fails → Witness confirms → Passive promotes → service stays up</text>
+  </g>
+
+</svg>
+
+<script>
+const svg = document.getElementById('canvas');
+const playBtn = document.getElementById('play-btn');
+const speedSlider = document.getElementById('speed-slider');
+const speedDisplay = document.getElementById('speed-display');
+const stageLabel = document.getElementById('stage-label');
+
+const labels = {
+  overview:  'Subtopic 1 of 8 · Overview: vCenter ties many ESXi hosts into one managed fleet, unlocking vMotion, DRS, HA, and central RBAC.',
+  prereqs:   'Subtopic 2 of 8 · Prerequisites: DNS (forward + reverse), NTP, network, and sizing — get all four right before launching the installer.',
+  stage1:    'Subtopic 3 of 8 · Stage 1: the installer (running on your laptop) deploys the VCSA OVA to a target ESXi host. Services not started yet.',
+  stage2:    'Subtopic 4 of 8 · Stage 2: NTP, SSO domain, and services start. When the progress bar finishes, vCenter is alive.',
+  sso:       'Subtopic 5 of 8 · SSO + identity sources: vCenter SSO authenticates against AD (or other IdP) and issues tokens vCenter trusts.',
+  rbac:      'Subtopic 6 of 8 · RBAC: privileges + roles + permissions + propagation. Object-level permissions override inherited ones.',
+  inventory: 'Subtopic 7 of 8 · Inventory + Backup: organize the fleet into datacenter/folder/cluster/host/VM, and ship file-based backups nightly.',
+  ha:        'Subtopic 8 of 8 · vCenter HA: Active + Passive + Witness. Active fails → Passive promotes in minutes. Distinct from vSphere HA.',
+};
+
+let isPaused = false;
+let speed = 1;
+let svgClock = 0;
+let lastWall = performance.now();
+let rafId = null;
+
+function loop(now) {
+  if (!isPaused) {
+    const dt = (now - lastWall) / 1000;
+    svgClock += dt * speed;
+    svg.setCurrentTime(svgClock);
+  }
+  lastWall = now;
+  rafId = requestAnimationFrame(loop);
+}
+
+function startLoop() {
+  svg.pauseAnimations();
+  svgClock = svg.getCurrentTime();
+  lastWall = performance.now();
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(loop);
+}
+
+document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const mode = btn.getAttribute('data-mode');
+    svg.setAttribute('data-mode', mode);
+    stageLabel.textContent = labels[mode] || '';
+    svgClock = 0;
+    svg.setCurrentTime(0);
+  });
+});
+
+playBtn.addEventListener('click', () => {
+  isPaused = !isPaused;
+  playBtn.textContent = isPaused ? 'Play' : 'Pause';
+});
+
+speedSlider.addEventListener('input', () => {
+  speed = parseFloat(speedSlider.value);
+  speedDisplay.innerHTML = speed.toFixed(1) + '&times;';
+});
+
+startLoop();
+</script>
+
+</body>
+</html>

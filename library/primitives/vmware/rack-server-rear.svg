@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Primitive: rack-server-rear
+  Domain: vmware
+  Status: draft, pending founder approval (lesson 01)
+
+  Description: Rear panel of a Dell PowerEdge style rack-mount server. The
+  canonical implementation of the hardware aesthetic specified in STYLE.md.
+  Reused as the fundamental hardware primitive in every VMware lesson that
+  shows a physical host.
+
+  Default viewBox: 480 x 200 (about 2U aspect).
+
+  Connection points (in primitive coordinates):
+    nic_port_1: (108, 105)  center of first RJ45 jack on the 2-port NIC card
+    nic_port_2: (148, 105)  center of second RJ45 jack on the 2-port NIC card
+
+  Slot anchors (for stacking other primitives):
+    top_chassis_left:   (20,  20)
+    top_chassis_center: (240, 20)
+    top_chassis_right:  (460, 20)
+    label_anchor:       (240, 196) center-bottom, for lesson-supplied label
+
+  States:
+    idle    PSU fans rotate continuously (always on). NIC LEDs faded.
+    active  Override .led.port-1 / .led.port-2 to opacity 1 and r 2.2.
+            Activity is signaled by LED brightening, not chassis color change.
+    failed  Override outer chassis stroke to #E24B4A; NIC LEDs to red.
+
+  Animation:
+    PSU fans rotate via SMIL animateTransform. Top fan 4.2s, bottom fan 4.5s,
+    slight offset to avoid lockstep visual.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 210" width="480" height="210">
+
+  <symbol id="rack-server-rear" overflow="visible">
+    <!-- Outer chassis -->
+    <rect x="20" y="20" width="440" height="160" fill="#A8A8AC" stroke="#707074" stroke-width="1.5"/>
+
+    <!-- Rack ears -->
+    <rect x="0" y="20" width="20" height="160" fill="#909093" stroke="#707074" stroke-width="1"/>
+    <rect x="460" y="20" width="20" height="160" fill="#909093" stroke="#707074" stroke-width="1"/>
+
+    <!-- Mounting screws -->
+    <circle cx="10" cy="35" r="3" fill="#3a3a3a"/>
+    <circle cx="10" cy="165" r="3" fill="#3a3a3a"/>
+    <circle cx="470" cy="35" r="3" fill="#3a3a3a"/>
+    <circle cx="470" cy="165" r="3" fill="#3a3a3a"/>
+
+    <!-- PCIe slot 1: 2-port NIC card -->
+    <g transform="translate(50, 60)">
+      <rect x="0" y="0" width="120" height="80" fill="#3a3a3a" stroke="#1a1a1a" stroke-width="1"/>
+      <text x="60" y="14" font-family="sans-serif" font-size="10" font-weight="500" fill="#cfcfcf" text-anchor="middle">2-port NIC</text>
+      <!-- Two RJ45 jacks -->
+      <rect x="40" y="32" width="32" height="22" fill="#1a1a1a" stroke="#0a0a0a" stroke-width="1" rx="2"/>
+      <rect x="78" y="32" width="32" height="22" fill="#1a1a1a" stroke="#0a0a0a" stroke-width="1" rx="2"/>
+      <!-- Internal jack contacts (visual texture) -->
+      <line x1="44" y1="42" x2="68" y2="42" stroke="#5F5E5A" stroke-width="0.5"/>
+      <line x1="82" y1="42" x2="106" y2="42" stroke="#5F5E5A" stroke-width="0.5"/>
+      <!-- Activity LEDs above each port -->
+      <circle cx="56" cy="64" r="1.5" fill="#5DCAA5" opacity="0.4" class="led port-1"/>
+      <circle cx="94" cy="64" r="1.5" fill="#5DCAA5" opacity="0.4" class="led port-2"/>
+    </g>
+
+    <!-- Center I/O cluster -->
+    <g transform="translate(190, 70)">
+      <rect x="0" y="0" width="80" height="60" fill="#2a2a2e" stroke="#1a1a1a" stroke-width="1"/>
+      <text x="40" y="11" font-family="sans-serif" font-size="9" fill="#cfcfcf" text-anchor="middle">I/O</text>
+      <!-- USB / serial / VGA stylized -->
+      <rect x="8"  y="18" width="22" height="9" fill="#0a0a0a"/>
+      <rect x="50" y="18" width="22" height="9" fill="#0a0a0a"/>
+      <rect x="8"  y="32" width="22" height="9" fill="#0a0a0a"/>
+      <rect x="50" y="32" width="22" height="9" fill="#0a0a0a"/>
+      <circle cx="19" cy="51" r="5" fill="#0a0a0a"/>
+      <circle cx="61" cy="51" r="5" fill="#0a0a0a"/>
+    </g>
+
+    <!-- PCIe slot 2: empty with vent slits -->
+    <g transform="translate(290, 60)">
+      <rect x="0" y="0" width="80" height="80" fill="#5F5E5A" stroke="#1a1a1a" stroke-width="1"/>
+      <text x="40" y="14" font-family="sans-serif" font-size="9" fill="#cfcfcf" text-anchor="middle">empty PCIe</text>
+      <line x1="10" y1="26" x2="70" y2="26" stroke="#1a1a1a" stroke-width="1"/>
+      <line x1="10" y1="36" x2="70" y2="36" stroke="#1a1a1a" stroke-width="1"/>
+      <line x1="10" y1="46" x2="70" y2="46" stroke="#1a1a1a" stroke-width="1"/>
+      <line x1="10" y1="56" x2="70" y2="56" stroke="#1a1a1a" stroke-width="1"/>
+      <line x1="10" y1="66" x2="70" y2="66" stroke="#1a1a1a" stroke-width="1"/>
+    </g>
+
+    <!-- PSU 1 (top right) -->
+    <g transform="translate(385, 30)">
+      <rect x="0" y="0" width="65" height="65" fill="#2a2a2e" stroke="#1a1a1a" stroke-width="1"/>
+      <circle cx="32.5" cy="32.5" r="22" fill="#1a1a1a" stroke="#0a0a0a" stroke-width="1"/>
+      <g>
+        <path d="M 32.5 32.5 L 28 13 L 37 13 Z" fill="#5F5E5A"/>
+        <path d="M 32.5 32.5 L 52 28 L 52 37 Z" fill="#5F5E5A"/>
+        <path d="M 32.5 32.5 L 28 52 L 37 52 Z" fill="#5F5E5A"/>
+        <path d="M 32.5 32.5 L 13 28 L 13 37 Z" fill="#5F5E5A"/>
+        <animateTransform attributeName="transform" type="rotate"
+          from="0 32.5 32.5" to="360 32.5 32.5" dur="4.2s" repeatCount="indefinite"/>
+      </g>
+      <circle cx="32.5" cy="32.5" r="3" fill="#3a3a3a"/>
+    </g>
+
+    <!-- PSU 2 (bottom right) -->
+    <g transform="translate(385, 105)">
+      <rect x="0" y="0" width="65" height="65" fill="#2a2a2e" stroke="#1a1a1a" stroke-width="1"/>
+      <circle cx="32.5" cy="32.5" r="22" fill="#1a1a1a" stroke="#0a0a0a" stroke-width="1"/>
+      <g>
+        <path d="M 32.5 32.5 L 28 13 L 37 13 Z" fill="#5F5E5A"/>
+        <path d="M 32.5 32.5 L 52 28 L 52 37 Z" fill="#5F5E5A"/>
+        <path d="M 32.5 32.5 L 28 52 L 37 52 Z" fill="#5F5E5A"/>
+        <path d="M 32.5 32.5 L 13 28 L 13 37 Z" fill="#5F5E5A"/>
+        <animateTransform attributeName="transform" type="rotate"
+          from="0 32.5 32.5" to="360 32.5 32.5" dur="4.5s" repeatCount="indefinite"/>
+      </g>
+      <circle cx="32.5" cy="32.5" r="3" fill="#3a3a3a"/>
+    </g>
+  </symbol>
+
+  <!-- Preview render -->
+  <use href="#rack-server-rear"/>
+  <text x="240" y="200" font-family="sans-serif" font-size="14" font-weight="500" fill="#3a3a3a" text-anchor="middle">app-server-01</text>
+</svg>

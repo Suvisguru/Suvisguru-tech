@@ -1,0 +1,219 @@
+# Quiz — Lesson 12: Deploying Virtual Machines
+
+questions:
+
+  # Subtopic 1
+  - id: s1q1
+    subtopic: vm-overview
+    pause_at_mode: overview
+    prompt: >
+      Pause the animation in 'overview' mode. The diagram shows a VM
+      with the labels 4 vCPU, 8 GB vRAM, 60 GB vDisk, vNIC. The host
+      has 16 cores and 256 GB RAM. Predict: how much of the host's
+      resources will the VM use, and what controls that?
+    answer: >
+      At most 4 cores' worth of CPU time and 8 GB of memory. The VM's
+      configured vCPU and vRAM are hard contracts: the guest OS sees
+      4 CPUs and uses up to 4; it sees 8 GB and addresses up to 8 GB.
+      Even if the host is 90% idle, the VM doesn't grow into the
+      remaining cores or memory. To use more, reconfigure the VM.
+
+  - id: s1q2
+    subtopic: vm-overview
+    prompt: >
+      Where do a VM's files live and what are the most important
+      filenames?
+    answer: >
+      As a folder on a datastore, named after the VM (e.g.,
+      [ds-vsan]/vm-app1/). Important files: <vm-name>.vmx (config),
+      <vm-name>-flat.vmdk (disk data) plus a small <vm-name>.vmdk
+      descriptor, <vm-name>.nvram (NVRAM/firmware state),
+      vmware.log (most recent host log for the VM).
+
+  # Subtopic 2
+  - id: s2q1
+    subtopic: create-new-vm
+    pause_at_mode: create
+    prompt: >
+      Pause the animation in 'create' mode. You're creating a Windows
+      Server 2022 VM. Predict: which virtual NIC type and which SCSI
+      controller do you pick by default?
+    answer: >
+      VMXNET3 NIC and VMware Paravirtual SCSI controller. Both are
+      paravirtualized — the guest uses VMware-specific drivers (shipped
+      with VMware Tools) for much better performance than emulated
+      alternatives like E1000 NIC and LSI Logic SAS.
+
+  - id: s2q2
+    subtopic: create-new-vm
+    prompt: >
+      Why is it usually wrong to give a VM 16 vCPUs "just to be safe"?
+    answer: >
+      Extra vCPUs add scheduling overhead. The hypervisor schedules a
+      VM's vCPUs with some affinity/locality; more vCPUs means more
+      competition for physical cores and higher CPU ready time —
+      counterintuitively making the VM slower, not faster. Right-size:
+      give the VM the vCPUs it actually needs, plus modest headroom.
+
+  # Subtopic 3
+  - id: s3q1
+    subtopic: templates-and-clones
+    pause_at_mode: templates
+    prompt: >
+      Pause the animation in 'templates' mode. You clone a Windows VM
+      from a template 5 times. All 5 end up with the same hostname and
+      the same Active Directory SID. Predict: what did you forget?
+    answer: >
+      A guest OS customization spec. The customization spec generates
+      a unique hostname, SID, IP per clone using a recipe you define.
+      Without it, every clone starts as an exact bit-copy of the
+      template — same identity, which causes AD chaos. Apply the spec
+      at clone time.
+
+  - id: s3q2
+    subtopic: templates-and-clones
+    prompt: >
+      You need 50 short-lived test VMs, each based on the same template,
+      created and destroyed within hours. Full clone or linked clone?
+    answer: >
+      Linked clone. Linked clones share the source's base files and
+      only store changes — much faster to create, much smaller on disk.
+      Right for VDI and short-lived test/dev pools. (Production server
+      VMs typically use full clones for independence and operational
+      simplicity.)
+
+  # Subtopic 4
+  - id: s4q1
+    subtopic: content-libraries
+    pause_at_mode: library
+    prompt: >
+      Pause the animation in 'library' mode. Your org has 5 datacenters,
+      each with its own vCenter. You want every datacenter's deployments
+      to come from the same gold Ubuntu template. Predict: cleanest way?
+    answer: >
+      A published content library on one vCenter (the central one) with
+      the gold template inside. Each of the other 4 vCenters has a
+      subscribed library pointing at it. Sync settings determine
+      on-demand vs scheduled pull. New templates published centrally
+      appear at every site automatically.
+
+  - id: s4q2
+    subtopic: content-libraries
+    prompt: >
+      Besides templates, what else does a content library hold and why
+      is that useful?
+    answer: >
+      ISOs (mountable directly from the library to a VM's CD/DVD) and
+      OVF appliances. Useful because ISOs scattered across datastores
+      become unmanageable at scale; centralizing them in a library
+      versions them, makes them findable, and lets every vCenter mount
+      the same one.
+
+  # Subtopic 5
+  - id: s5q1
+    subtopic: ovf-ova
+    pause_at_mode: ovf
+    prompt: >
+      Pause the animation in 'ovf' mode. You're given a single .ova
+      file by a vendor. Predict: how do you deploy their appliance?
+    answer: >
+      vSphere Client → File → Deploy OVF Template → upload the .ova.
+      The wizard reads the package, lets you pick a name, destination
+      folder, host or cluster, datastore, network mapping, and any
+      deployment-time config the vendor exposed (often IP, gateway,
+      root password). After import, power on. Appliance is up.
+
+  - id: s5q2
+    subtopic: ovf-ova
+    prompt: >
+      OVF and OVA — what's the difference and when do you use which?
+    answer: >
+      OVF is the industry-standard packaging format: a folder with an
+      .ovf descriptor + .vmdk disks + .mf manifest. OVA is the same
+      content packaged as a single .ova tar archive for distribution.
+      OVA is more common for distribution because it's one file. OVF
+      (folder form) is sometimes used during local development or
+      multi-disk customization.
+
+  # Subtopic 6
+  - id: s6q1
+    subtopic: snapshots
+    pause_at_mode: snapshots
+    prompt: >
+      Pause the animation in 'snapshots' mode. A senior engineer says
+      "snapshots are our backup strategy." Predict: why are they
+      wrong?
+    answer: >
+      Because snapshots depend on the VM's base disks. If the
+      datastore the VM lives on has a failure (lost LUN, vSAN cluster
+      loss, NFS export gone), both the base and the snapshots are lost
+      together. A real backup goes to a separate, independent storage
+      system (SFTP target, dedicated backup appliance, off-site). Plus
+      snapshots cause performance and capacity issues if kept long-term.
+
+  - id: s6q2
+    subtopic: snapshots
+    prompt: >
+      You're about to do a risky OS upgrade on a critical VM. What's a
+      good operational pattern that uses snapshots safely?
+    answer: >
+      Take a snapshot named clearly (e.g., "before-os-upgrade-2026-04-30").
+      Do the upgrade. Validate the VM works correctly. Then delete the
+      snapshot to commit changes. Total snapshot lifetime: hours, not
+      days. Don't leave it; the delta will grow and deletion will get
+      slow.
+
+  # Subtopic 7
+  - id: s7q1
+    subtopic: vmware-tools
+    pause_at_mode: tools
+    prompt: >
+      Pause the animation in 'tools' mode. You take a snapshot of a
+      busy database VM with no memory snapshot, and the VM has VMware
+      Tools running. Predict: what does Tools do for the snapshot?
+    answer: >
+      It quiesces the filesystem (and on Windows, asks VSS-aware
+      applications like SQL Server to flush) before the snapshot is
+      taken. Result: an application-consistent point-in-time on disk.
+      Without Tools, you'd get a crash-consistent snapshot — like a
+      power-loss recovery at restore time.
+
+  - id: s7q2
+    subtopic: vmware-tools
+    prompt: >
+      Linux VM (Ubuntu 22.04). What's the modern way to install VMware
+      Tools on it?
+    answer: >
+      <code>sudo apt install -y open-vm-tools</code>. open-vm-tools is
+      the open-source implementation of VMware Tools, packaged by the
+      Linux distro itself. Same supported codebase as VMware's, but
+      easier to install and update via the distro's package manager.
+      Don't mount the Tools ISO and run the legacy installer for Linux.
+
+  # Subtopic 8
+  - id: s8q1
+    subtopic: lifecycle-operations
+    pause_at_mode: lifecycle
+    prompt: >
+      Pause the animation in 'lifecycle' mode. A VM is running short on
+      memory. The guest OS supports memory hot-plug. You want to add
+      4 GB without shutting it down. Predict: what do you do?
+    answer: >
+      vSphere Client → VM → Edit Settings → Memory → change from 8 GB
+      to 12 GB → Save. Inside the guest, the new memory shows up
+      immediately (Linux) or after a brief moment (Windows). No
+      reboot. Note: hot-add memory must be enabled on the VM (a
+      checkbox in Edit Settings) before this works on the guest's
+      first boot.
+
+  - id: s8q2
+    subtopic: lifecycle-operations
+    prompt: >
+      Distinguish vMotion from Storage vMotion.
+    answer: >
+      vMotion — move a running VM's compute (where it executes) to a
+      different host. The VM's files stay on the same datastore.
+      Storage vMotion — move the VM's files (its disks) to a different
+      datastore while it's running. The compute stays on the same
+      host. You can do both at once for full relocation across cluster
+      / datacenter / vCenter.

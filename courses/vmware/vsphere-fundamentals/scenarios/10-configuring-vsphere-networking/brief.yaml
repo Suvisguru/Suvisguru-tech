@@ -1,0 +1,186 @@
+# Intake brief — Lesson 10, vSphere Fundamentals
+# Topic: Configuring vSphere Networking
+# Format: PER-SUBTOPIC structure.
+
+lesson:
+  title: "Configuring vSphere Networking"
+  slug: "10-configuring-vsphere-networking"
+  domain: "vmware"
+  course_slug: "vsphere-fundamentals"
+  position: 10
+  granularity: "sub-topic"
+  brief_drafted_on: "2026-05-01"
+  pedagogical_format: "per-subtopic"
+
+learner_profile:
+  prerequisites:
+    - "Lessons 01-09. Comfortable with the apartment-building analogy, ESXi host config, vCenter standup, and the SDDC model."
+  assumed_zero_knowledge_of:
+    - "What a virtual switch (vSwitch) is and how it differs from a physical switch."
+    - "Standard vSwitch (vSS) vs Distributed vSwitch (vDS)."
+    - "Port groups, VLAN tagging, and how VMs attach to networks."
+    - "NIC teaming, load balancing, and failover."
+    - "vmkernel adapters for management, vMotion, iSCSI, vSAN, NFS, FT, replication."
+
+learning_outcomes_overall:
+  - "Learner can name and place the four core networking primitives in vSphere: physical NIC (uplink), vSwitch, port group, vmkernel adapter."
+  - "Learner can describe Standard vSwitch vs Distributed vSwitch, and pick the right one for a given environment."
+  - "Learner can configure VM port groups and vmkernel port groups, including VLAN tagging."
+  - "Learner can set up NIC teaming with appropriate load-balancing and failover policies."
+  - "Learner can configure vmkernel adapters for the common services (management, vMotion, vSAN, NFS, etc.) and explain why each typically lives on its own subnet."
+
+subtopics:
+
+  - id: 1
+    slug: "networking-overview"
+    title: "vSphere networking overview: vSwitch, port group, NIC, vmkernel"
+    moments_of_confusion_resolved:
+      - "How a virtual switch differs from a physical one (it's just software inside ESXi)."
+      - "What the four primitives are and how they fit together."
+      - "Where physical NICs (uplinks) attach to virtual switches."
+      - "What a vmkernel adapter is and why it's a special kind of port."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "A vSwitch is the building's internal phone system. Port groups are the named jacks on each desk; uplinks are the trunk cables to the city telephone exchange. VMs plug into jacks; the trunk carries traffic to the rest of the world." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 2
+    slug: "standard-vswitch"
+    title: "Standard vSwitch (vSS): per-host networking"
+    moments_of_confusion_resolved:
+      - "What a vSS is and that it lives on a single host."
+      - "Why you have to repeat its config on every host in a cluster."
+      - "When vSS is the right choice (small environments, free vSphere edition, edge cases)."
+      - "Limits: no centralized config, no LACP, no most advanced features."
+    pedagogical_block:
+      concept: { target_words: 200 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "A vSS is each apartment building running its own phone system, with its own wiring closet. Adding a new line means walking to every building and configuring it identically." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 3
+    slug: "distributed-vswitch"
+    title: "Distributed vSwitch (vDS): cluster-wide networking"
+    moments_of_confusion_resolved:
+      - "What a vDS is and how the control plane (in vCenter) and data plane (on each host) split responsibilities."
+      - "Why config consistency across many hosts is the headline feature."
+      - "Features only vDS gives you: LACP, NetFlow, Port Mirroring, Network I/O Control, traffic filtering."
+      - "Licensing: vDS requires Enterprise Plus."
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy: { direction: "A vDS is the building complex's shared phone system, configured once at the central operations office. Adding a new line shows up in every building automatically. Every building still has its own physical wiring; the wiring just follows the central plan." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 4
+    slug: "port-groups-and-vlans"
+    title: "Port groups and VLAN tagging"
+    moments_of_confusion_resolved:
+      - "What a VM port group is, and the difference from a vmkernel port group."
+      - "What a VLAN ID does on a port group and what External Switch Tagging (EST), Virtual Switch Tagging (VST), and Virtual Guest Tagging (VGT) mean."
+      - "How a VM picks which port group to connect to."
+      - "Why naming port groups consistently across hosts (or across a vDS) matters."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "Port groups are the named jacks on each desk: 'Sales' jack vs 'Engineering' jack. The VLAN ID on the jack tells the wiring which traffic conduit to send your packets through. Same desk, multiple jacks, different worlds." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 5
+    slug: "nic-teaming-and-policies"
+    title: "NIC teaming, load balancing, and failover"
+    moments_of_confusion_resolved:
+      - "Why every host should have multiple physical NICs assigned to a vSwitch."
+      - "The five common load-balancing modes (originating port ID, source MAC hash, IP hash, physical NIC load, explicit failover order) and which to pick."
+      - "What active vs standby uplinks mean."
+      - "Network failure detection: link status only vs beacon probing."
+      - "Notify switches: yes/no."
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy: { direction: "NIC teaming is having two phone lines into the building, both live, with rules for how calls are split between them and how to fail over if one line dies." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 6
+    slug: "vmkernel-adapters"
+    title: "vmkernel adapters: management, vMotion, vSAN, NFS, FT, replication"
+    moments_of_confusion_resolved:
+      - "What a vmkernel adapter is and that ESXi itself uses it (not VMs)."
+      - "Each service (management, vMotion, iSCSI, vSAN, NFS, FT, replication) typically gets its own vmkernel on its own subnet."
+      - "Why isolating vMotion / vSAN / iSCSI traffic on dedicated networks matters for performance and security."
+      - "How to enable services on a vmkernel adapter (the checkboxes that determine what kind of traffic it carries)."
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "vmkernel adapters are the building's own service phones — separate lines for security, maintenance, deliveries, fire alarm. Mixing them on one line works in a small building; in a tower, separate lines are the only sane plan." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+shared_artifacts:
+  static_diagram:
+    purpose: "Single shared diagram: 6-station networking journey: overview → vSS → vDS → port groups & VLANs → teaming → vmkernel adapters."
+    file: "diagram.svg"
+
+  animated_illustration:
+    purpose: "Single shared animation with 6 mode toggles, one per subtopic. Pause/Play + Speed slider parity to lessons 1-9."
+    mode_toggles: ["overview", "vss", "vds", "port-groups", "teaming", "vmkernel"]
+    file: "animation.html"
+
+  flashcards: { file: "flashcards.yaml", structure: "Grouped by subtopic. Total ~18 cards." }
+  quiz: { file: "quiz.yaml", structure: "Grouped by subtopic. Total 12 questions." }
+  recap_card: { placement: "End of preview page.", content: "Cross-subtopic synthesis + bridge to lesson 11 (storage)." }
+
+interactive_preview_page:
+  file: "/preview-lesson-10.html"
+  hero_widget: "Interactive 6-station networking journey."
+  toc_at_top: "Sticky sub-nav listing all 6 subtopics."
+  subtopic_section_header: "Subtopic N of 6: <title>"
+  hover_to_define_terms:
+    - "vSwitch"
+    - "vSS"
+    - "vDS"
+    - "uplink"
+    - "port group"
+    - "vmkernel"
+    - "VLAN tagging"
+    - "VST"
+    - "LACP"
+    - "NetFlow"
+    - "NIC teaming"
+    - "beacon probing"
+
+estimated_scope:
+  subtopics: 6
+  total_flashcards: 18
+  total_quiz_questions: 12
+  total_quick_checks: 6

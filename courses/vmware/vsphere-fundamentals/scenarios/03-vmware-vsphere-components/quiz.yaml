@@ -1,0 +1,52 @@
+# Quiz — Lesson 03: VMware, vSphere, and the components
+
+questions:
+  - id: q1
+    prompt: >
+      Pause the animation in 'vcenter' mode. The vCenter Server box at the top is
+      shown connected to many ESXi host boxes below it. Predict: if the vCenter VM
+      crashes, what happens to the VMs running on those hosts?
+    pause_at_mode: vcenter
+    answer: >
+      Nothing immediate. Every ESXi host keeps running its VMs locally. The VMs do
+      not stop, restart, or migrate. What stops working is central management —
+      provisioning new VMs, moving running VMs between hosts, applying fleet-wide
+      policies, the single-pane monitoring view.
+    reasoning: >
+      vCenter is the management plane, not the runtime. ESXi is the runtime. This
+      separation is deliberate: production workloads should not depend on the
+      management tool being healthy. When vCenter is restored, it reconnects to the
+      hosts and resumes managing them.
+
+  - id: q2
+    prompt: >
+      Pause the animation in 'datastores' mode. The diagram shows two ESXi hosts
+      both connected to the same datastore. A VM on host 1 reads its disk. The
+      same VM is later moved to host 2 (still using the same datastore). Did the
+      VM's data move?
+    pause_at_mode: datastores
+    answer: >
+      No. The data stayed where it was. A datastore is a shared storage abstraction
+      — both hosts can reach the same disk files. When the VM moves between hosts,
+      only its compute (memory, CPU state) needs to transfer; the disk is already
+      visible to the destination host.
+    reasoning: >
+      This is exactly why shared storage matters in a vSphere environment. Mobility
+      operations like vMotion are fast because they don't have to copy disk data.
+      The disk lives in one place; the running VM moves between hosts that all see
+      that place.
+
+  - id: q3
+    prompt: >
+      Pause the animation in 'networks' mode. Two VMs on the same ESXi host are
+      connected to the same vSwitch port group. They communicate with each other.
+      Predict: does the traffic ever leave the physical host?
+    pause_at_mode: networks
+    answer: >
+      No. Traffic between VMs on the same vSwitch and same port group stays inside
+      the host. The vSwitch handles the forwarding in software, in memory. The
+      physical network card is not involved.
+    reasoning: >
+      This is one reason consolidation lowers network load — co-located VMs can
+      talk to each other at memory speed without crossing the physical network.
+      Cross-host traffic does cross the physical network, via the host's NIC.

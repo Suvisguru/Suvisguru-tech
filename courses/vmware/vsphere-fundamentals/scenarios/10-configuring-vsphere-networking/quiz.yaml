@@ -1,0 +1,195 @@
+# Quiz — Lesson 10: Configuring vSphere Networking
+# Per-subtopic format. 12 questions, 2 per subtopic.
+
+questions:
+
+  # =====================================================
+  # Subtopic 1 — Overview
+  # =====================================================
+
+  - id: s1q1
+    subtopic: networking-overview
+    pause_at_mode: overview
+    prompt: >
+      Pause the animation in 'overview' mode. The diagram shows a VM with
+      a vNIC labeled 'eth0' connected to something labeled 'Production'
+      on something labeled 'vSwitch0' with two physical wires going down
+      to a switch icon. Predict: name each labeled element with the right
+      vSphere primitive name.
+    answer: >
+      'eth0' is the VM's vNIC. 'Production' is the port group. 'vSwitch0'
+      is the vSwitch. The two physical wires are uplinks (physical NICs,
+      vmnic0/vmnic1). The switch icon below is the physical switch the
+      uplinks plug into. Path: VM → vNIC → port group → vSwitch → uplink
+      → physical switch.
+
+  - id: s1q2
+    subtopic: networking-overview
+    prompt: >
+      A VM is being created and its NIC needs to be on the
+      "Production-VLAN-100" network. Where does the VM actually attach?
+    answer: >
+      To the port group named "Production-VLAN-100" on the vSwitch. The
+      port group carries the VLAN-100 policy. The VM doesn't attach
+      directly to the vSwitch or to the physical NIC.
+
+  # =====================================================
+  # Subtopic 2 — Standard vSwitch
+  # =====================================================
+
+  - id: s2q1
+    subtopic: standard-vswitch
+    pause_at_mode: vss
+    prompt: >
+      Pause the animation in 'vss' mode. Your cluster has 8 hosts, all
+      vSS. You add a new VM port group on host-3 only. Predict: will
+      vMotion of a VM on that port group work to host-7?
+    answer: >
+      No. vMotion requires a port group with the *same name* (and same
+      VLAN, same policy) on the destination host. host-7 doesn't have
+      it, so vMotion fails. To make it work, manually create the same
+      port group on host-7 (and every other host where you want the VM
+      to land). This consistency burden is the case for vDS.
+
+  - id: s2q2
+    subtopic: standard-vswitch
+    prompt: >
+      You're running the free vSphere edition. You want consistent
+      networking across 4 hosts. What are your options?
+    answer: >
+      Use vSS on each host and configure them identically (and carefully
+      audit drift). vDS isn't available on the free edition; only
+      Enterprise Plus (and certain bundles) include it. Discipline,
+      scripts (PowerCLI / esxcli), or host profiles (Enterprise+ feature)
+      become important for keeping vSS configs in sync.
+
+  # =====================================================
+  # Subtopic 3 — Distributed vSwitch
+  # =====================================================
+
+  - id: s3q1
+    subtopic: distributed-vswitch
+    pause_at_mode: vds
+    prompt: >
+      Pause the animation in 'vds' mode. vCenter is down. Hosts are on
+      a vDS. Predict: is VM network traffic still flowing? What can you
+      not do?
+    answer: >
+      Yes — VM network traffic is still flowing. The data plane lives on
+      each host; only the control plane (where you change config) is in
+      vCenter. Existing VMs keep their connectivity unchanged. What you
+      can't do: add/edit/remove port groups or change policies, because
+      those changes are made via vCenter and pushed down to hosts.
+
+  - id: s3q2
+    subtopic: distributed-vswitch
+    prompt: >
+      Name two features that vDS gives you that vSS does not, and one
+      cost of choosing vDS.
+    answer: >
+      LACP (active-active uplink bundling with the physical switch) and
+      Network I/O Control (allocate bandwidth between traffic types like
+      VM, vMotion, vSAN). Other valid pairs: NetFlow, port mirroring,
+      traffic filtering, private VLANs. Cost: vDS requires the Enterprise
+      Plus edition (or specific bundles).
+
+  # =====================================================
+  # Subtopic 4 — Port groups & VLANs
+  # =====================================================
+
+  - id: s4q1
+    subtopic: port-groups-and-vlans
+    pause_at_mode: port-groups
+    prompt: >
+      Pause the animation in 'port-groups' mode. A VM is on the
+      "Production-VLAN-100" port group. The VM has connectivity to other
+      VMs in the same port group on the same host but not to anything
+      outside. Predict: most likely cause and fix.
+    answer: >
+      The physical switch port that the host's uplink connects to is
+      not trunking VLAN 100. The vSwitch is tagging VLAN 100 (VST mode),
+      but the physical switch drops it because its trunk doesn't allow
+      VLAN 100. Fix: have the network team add VLAN 100 to the trunk on
+      that switch port (and probably on the redundant uplink's port too).
+
+  - id: s4q2
+    subtopic: port-groups-and-vlans
+    prompt: >
+      What's the difference between VST and VGT, and when would you use
+      VGT?
+    answer: >
+      VST (Virtual Switch Tagging) — vSwitch tags outbound frames with
+      the port group's VLAN ID; VM sees untagged frames. The default
+      and most common.
+      VGT (Virtual Guest Tagging) — port group VLAN ID is 4095 (all-VLAN
+      trunk); the VM's OS handles VLAN tagging itself. Used for nested
+      virtualization, certain network appliances (firewalls, virtual
+      routers) that need access to multiple VLANs through one vNIC.
+
+  # =====================================================
+  # Subtopic 5 — NIC teaming, load balance, failover
+  # =====================================================
+
+  - id: s5q1
+    subtopic: nic-teaming-and-policies
+    pause_at_mode: teaming
+    prompt: >
+      Pause the animation in 'teaming' mode. Your team policy is "Route
+      based on originating virtual port." A single VM generates a
+      sustained 5 Gbps of traffic. Both uplinks are 10 Gbps. Predict:
+      does the VM use both uplinks?
+    answer: >
+      No. Originating-port load balancing pins each VM (per virtual port)
+      to a single uplink. The VM uses one 10 Gbps NIC, not two. To split
+      a single-VM flow across uplinks, you'd need IP hash with
+      EtherChannel on the switch (and even then it splits per-flow, not
+      per-packet). Most environments tolerate the per-VM cap because real
+      workloads have many flows that distribute across many VMs, and
+      across many uplinks naturally.
+
+  - id: s5q2
+    subtopic: nic-teaming-and-policies
+    prompt: >
+      Why use beacon probing for network failure detection, and what's
+      its main constraint?
+    answer: >
+      Beacon probing detects upstream failures that link-status alone
+      misses — e.g., the cable is up but the switch beyond it is dead or
+      misconfigured. ESXi sends probe frames between team members; if
+      probes don't arrive at the others through a given uplink, that
+      uplink is considered down. Constraint: needs at least 3 uplinks
+      (otherwise can't isolate which side is failing) and only works
+      for some teaming modes.
+
+  # =====================================================
+  # Subtopic 6 — vmkernel adapters
+  # =====================================================
+
+  - id: s6q1
+    subtopic: vmkernel-adapters
+    pause_at_mode: vmkernel
+    prompt: >
+      Pause the animation in 'vmkernel' mode. The diagram shows one
+      vmkernel called 'Management' carrying everything: management,
+      vMotion, vSAN, NFS. Predict: what goes wrong, and what's the
+      production fix?
+    answer: >
+      vMotion of a big VM saturates the link, ESXi's heartbeat with
+      vCenter times out, the host bounces "not responding" → "responding"
+      in vCenter. Storage I/O suffers. vMotions can stall. Production
+      fix: separate vmkernel adapters per service — Management on its
+      own VLAN, vMotion on its own VLAN with its own NIC pair, vSAN on
+      its own VLAN with its own NIC pair, NFS/iSCSI on their own. Each
+      service gets predictable bandwidth and independent failure domains.
+
+  - id: s6q2
+    subtopic: vmkernel-adapters
+    prompt: >
+      A new host has a vmkernel adapter on the management VLAN. You
+      want to enable vMotion on it. Should you?
+    answer: >
+      In a lab, sure. In production, almost never. Add a *separate*
+      vmkernel for vMotion on its own VLAN, ideally with its own NIC
+      pair. vMotion can saturate a NIC and would compete with management
+      traffic on the same vmkernel — risking management timeouts and
+      "host not responding" alarms during big migrations.

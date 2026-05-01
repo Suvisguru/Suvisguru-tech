@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Lesson 01 — What is virtualization?
+  Static side-by-side diagram (Pass 4, redesigned for visual clarity).
+
+  Vertical layout: Before above, After below, both at scale 1.0 for primitive
+  legibility. Connected by a "consolidate" arrow.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 1360" width="1100" height="1360"
+     font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+
+  <defs>
+    <!-- Primitive: rack-server-rear -->
+    <symbol id="rack-server-rear" overflow="visible">
+      <rect x="20" y="20" width="440" height="160" fill="#A8A8AC" stroke="#707074" stroke-width="1.5"/>
+      <rect x="0" y="20" width="20" height="160" fill="#909093" stroke="#707074" stroke-width="1"/>
+      <rect x="460" y="20" width="20" height="160" fill="#909093" stroke="#707074" stroke-width="1"/>
+      <circle cx="10" cy="35" r="3" fill="#3a3a3a"/>
+      <circle cx="10" cy="165" r="3" fill="#3a3a3a"/>
+      <circle cx="470" cy="35" r="3" fill="#3a3a3a"/>
+      <circle cx="470" cy="165" r="3" fill="#3a3a3a"/>
+      <g transform="translate(50, 60)">
+        <rect x="0" y="0" width="120" height="80" fill="#3a3a3a" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="60" y="14" font-size="10" font-weight="500" fill="#cfcfcf" text-anchor="middle">2-port NIC</text>
+        <rect x="40" y="32" width="32" height="22" fill="#1a1a1a" stroke="#0a0a0a" stroke-width="1" rx="2"/>
+        <rect x="78" y="32" width="32" height="22" fill="#1a1a1a" stroke="#0a0a0a" stroke-width="1" rx="2"/>
+        <line x1="44" y1="42" x2="68" y2="42" stroke="#5F5E5A" stroke-width="0.5"/>
+        <line x1="82" y1="42" x2="106" y2="42" stroke="#5F5E5A" stroke-width="0.5"/>
+        <circle cx="56" cy="64" r="1.5" fill="#5DCAA5" opacity="0.4"/>
+        <circle cx="94" cy="64" r="1.5" fill="#5DCAA5" opacity="0.4"/>
+      </g>
+      <g transform="translate(190, 70)">
+        <rect x="0" y="0" width="80" height="60" fill="#2a2a2e" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="40" y="11" font-size="9" fill="#cfcfcf" text-anchor="middle">I/O</text>
+        <rect x="8"  y="18" width="22" height="9" fill="#0a0a0a"/>
+        <rect x="50" y="18" width="22" height="9" fill="#0a0a0a"/>
+        <rect x="8"  y="32" width="22" height="9" fill="#0a0a0a"/>
+        <rect x="50" y="32" width="22" height="9" fill="#0a0a0a"/>
+        <circle cx="19" cy="51" r="5" fill="#0a0a0a"/>
+        <circle cx="61" cy="51" r="5" fill="#0a0a0a"/>
+      </g>
+      <g transform="translate(290, 60)">
+        <rect x="0" y="0" width="80" height="80" fill="#5F5E5A" stroke="#1a1a1a" stroke-width="1"/>
+        <text x="40" y="14" font-size="9" fill="#cfcfcf" text-anchor="middle">empty PCIe</text>
+        <line x1="10" y1="26" x2="70" y2="26" stroke="#1a1a1a" stroke-width="1"/>
+        <line x1="10" y1="36" x2="70" y2="36" stroke="#1a1a1a" stroke-width="1"/>
+        <line x1="10" y1="46" x2="70" y2="46" stroke="#1a1a1a" stroke-width="1"/>
+        <line x1="10" y1="56" x2="70" y2="56" stroke="#1a1a1a" stroke-width="1"/>
+        <line x1="10" y1="66" x2="70" y2="66" stroke="#1a1a1a" stroke-width="1"/>
+      </g>
+      <g transform="translate(385, 30)">
+        <rect x="0" y="0" width="65" height="65" fill="#2a2a2e" stroke="#1a1a1a" stroke-width="1"/>
+        <circle cx="32.5" cy="32.5" r="22" fill="#1a1a1a" stroke="#0a0a0a" stroke-width="1"/>
+        <g>
+          <path d="M 32.5 32.5 L 28 13 L 37 13 Z" fill="#5F5E5A"/>
+          <path d="M 32.5 32.5 L 52 28 L 52 37 Z" fill="#5F5E5A"/>
+          <path d="M 32.5 32.5 L 28 52 L 37 52 Z" fill="#5F5E5A"/>
+          <path d="M 32.5 32.5 L 13 28 L 13 37 Z" fill="#5F5E5A"/>
+          <animateTransform attributeName="transform" type="rotate"
+            from="0 32.5 32.5" to="360 32.5 32.5" dur="4.2s" repeatCount="indefinite"/>
+        </g>
+        <circle cx="32.5" cy="32.5" r="3" fill="#3a3a3a"/>
+      </g>
+      <g transform="translate(385, 105)">
+        <rect x="0" y="0" width="65" height="65" fill="#2a2a2e" stroke="#1a1a1a" stroke-width="1"/>
+        <circle cx="32.5" cy="32.5" r="22" fill="#1a1a1a" stroke="#0a0a0a" stroke-width="1"/>
+        <g>
+          <path d="M 32.5 32.5 L 28 13 L 37 13 Z" fill="#5F5E5A"/>
+          <path d="M 32.5 32.5 L 52 28 L 52 37 Z" fill="#5F5E5A"/>
+          <path d="M 32.5 32.5 L 28 52 L 37 52 Z" fill="#5F5E5A"/>
+          <path d="M 32.5 32.5 L 13 28 L 13 37 Z" fill="#5F5E5A"/>
+          <animateTransform attributeName="transform" type="rotate"
+            from="0 32.5 32.5" to="360 32.5 32.5" dur="4.5s" repeatCount="indefinite"/>
+        </g>
+        <circle cx="32.5" cy="32.5" r="3" fill="#3a3a3a"/>
+      </g>
+    </symbol>
+
+    <!-- Primitive: hypervisor-layer -->
+    <symbol id="hypervisor-layer" overflow="visible">
+      <rect x="0" y="0" width="480" height="30" fill="#3F4A5E" stroke="#1F2433" stroke-width="1"/>
+      <line x1="0" y1="8"  x2="480" y2="8"  stroke="#536179" stroke-width="0.5" opacity="0.6"/>
+      <line x1="0" y1="15" x2="480" y2="15" stroke="#536179" stroke-width="0.5" opacity="0.6"/>
+      <line x1="0" y1="22" x2="480" y2="22" stroke="#536179" stroke-width="0.5" opacity="0.6"/>
+      <text x="240" y="20" font-size="13" font-weight="500"
+            fill="#E8E8E0" text-anchor="middle" letter-spacing="1.5">hypervisor</text>
+    </symbol>
+
+    <!-- Reusable utilization meter (drawn inline below; symbol provided for any consumer who wants it) -->
+    <symbol id="util-meter-track" overflow="visible">
+      <rect x="0" y="0" width="100" height="10" rx="2" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+    </symbol>
+
+    <!-- Arrow marker for "consolidate" indicator -->
+    <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/>
+    </marker>
+  </defs>
+
+  <!-- ============================== BEFORE TITLE ============================== -->
+  <g>
+    <text x="550" y="58" font-size="13" font-weight="500" fill="#3F4A5E" text-anchor="middle" letter-spacing="2">BEFORE VIRTUALIZATION</text>
+    <text x="550" y="92" font-size="22" font-weight="500" fill="#1a1a1a" text-anchor="middle">Four servers, four applications</text>
+    <text x="550" y="118" font-size="14" font-weight="400" fill="#5F5E5A" text-anchor="middle" font-style="italic">~7% average utilization. Most of the hardware sits idle.</text>
+  </g>
+
+  <!-- ============================== BEFORE: 2×2 GRID ============================== -->
+
+  <!-- Server 1: mail-server, 7% (top-left) -->
+  <g transform="translate(60, 160)">
+    <use href="#rack-server-rear"/>
+    <text x="240" y="220" font-size="16" font-weight="500" fill="#3a3a3a" text-anchor="middle">mail-server</text>
+    <g transform="translate(160, 240)">
+      <rect x="0" y="4" width="160" height="14" rx="2" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+      <rect x="0" y="4" width="11" height="14" rx="2" fill="#5A6B81"/>
+      <text x="170" y="15" font-size="13" font-weight="500" fill="#3A3A3A" text-anchor="start">7%</text>
+    </g>
+  </g>
+
+  <!-- Server 2: payroll-db, 5% (top-right) -->
+  <g transform="translate(560, 160)">
+    <use href="#rack-server-rear"/>
+    <text x="240" y="220" font-size="16" font-weight="500" fill="#3a3a3a" text-anchor="middle">payroll-db</text>
+    <g transform="translate(160, 240)">
+      <rect x="0" y="4" width="160" height="14" rx="2" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+      <rect x="0" y="4" width="8" height="14" rx="2" fill="#5A6B81"/>
+      <text x="170" y="15" font-size="13" font-weight="500" fill="#3A3A3A" text-anchor="start">5%</text>
+    </g>
+  </g>
+
+  <!-- Server 3: file-share, 11% (bottom-left) -->
+  <g transform="translate(60, 460)">
+    <use href="#rack-server-rear"/>
+    <text x="240" y="220" font-size="16" font-weight="500" fill="#3a3a3a" text-anchor="middle">file-share</text>
+    <g transform="translate(160, 240)">
+      <rect x="0" y="4" width="160" height="14" rx="2" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+      <rect x="0" y="4" width="18" height="14" rx="2" fill="#5A6B81"/>
+      <text x="170" y="15" font-size="13" font-weight="500" fill="#3A3A3A" text-anchor="start">11%</text>
+    </g>
+  </g>
+
+  <!-- Server 4: dns-server, 4% (bottom-right) -->
+  <g transform="translate(560, 460)">
+    <use href="#rack-server-rear"/>
+    <text x="240" y="220" font-size="16" font-weight="500" fill="#3a3a3a" text-anchor="middle">dns-server</text>
+    <g transform="translate(160, 240)">
+      <rect x="0" y="4" width="160" height="14" rx="2" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+      <rect x="0" y="4" width="6" height="14" rx="2" fill="#5A6B81"/>
+      <text x="170" y="15" font-size="13" font-weight="500" fill="#3A3A3A" text-anchor="start">4%</text>
+    </g>
+  </g>
+
+  <!-- ============================== TRANSITION ============================== -->
+  <g transform="translate(550, 730)">
+    <line x1="-450" y1="0" x2="-100" y2="0" stroke="#cccccc" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="100" y1="0" x2="450" y2="0" stroke="#cccccc" stroke-width="1" stroke-dasharray="4 4"/>
+    <rect x="-90" y="-22" width="180" height="44" rx="22" fill="#3F4A5E"/>
+    <text x="0" y="6" font-size="13" font-weight="500" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">CONSOLIDATE</text>
+    <line x1="0" y1="34" x2="0" y2="74" stroke="#3F4A5E" stroke-width="2" marker-end="url(#arrowhead)"/>
+  </g>
+
+  <!-- ============================== AFTER TITLE ============================== -->
+  <g>
+    <text x="550" y="848" font-size="13" font-weight="500" fill="#3F4A5E" text-anchor="middle" letter-spacing="2">AFTER VIRTUALIZATION</text>
+    <text x="550" y="882" font-size="22" font-weight="500" fill="#1a1a1a" text-anchor="middle">One host, eight VMs</text>
+    <text x="550" y="908" font-size="14" font-weight="400" fill="#5F5E5A" text-anchor="middle" font-style="italic">~72% utilization. Capacity is being used.</text>
+  </g>
+
+  <!-- ============================== AFTER: SINGLE HOST STACK ============================== -->
+  <g transform="translate(310, 940)">
+    <!-- VM row 1 -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="120" height="64" rx="6" ry="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#5F5E5A"/>
+      <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-01</text>
+      <rect x="8" y="24" width="34" height="16" rx="3" fill="#A8A8AC"/>
+      <text x="25" y="35" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="48" y="35" font-size="11" fill="#3A3A3A">mail-server</text>
+      <rect x="8" y="48" width="80" height="4" rx="1" fill="#E0E0DE"/>
+      <rect x="8" y="48" width="42" height="4" rx="1" fill="#5A6B81"/>
+      <circle cx="110" cy="9" r="2.5" fill="#5DCAA5"/>
+    </g>
+
+    <g transform="translate(120, 0)">
+      <rect x="0" y="0" width="120" height="64" rx="6" ry="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#5F5E5A"/>
+      <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-02</text>
+      <rect x="8" y="24" width="34" height="16" rx="3" fill="#A8A8AC"/>
+      <text x="25" y="35" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="48" y="35" font-size="11" fill="#3A3A3A">payroll-db</text>
+      <rect x="8" y="48" width="80" height="4" rx="1" fill="#E0E0DE"/>
+      <rect x="8" y="48" width="58" height="4" rx="1" fill="#5A6B81"/>
+      <circle cx="110" cy="9" r="2.5" fill="#5DCAA5"/>
+    </g>
+
+    <g transform="translate(240, 0)">
+      <rect x="0" y="0" width="120" height="64" rx="6" ry="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#5F5E5A"/>
+      <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-03</text>
+      <rect x="8" y="24" width="34" height="16" rx="3" fill="#A8A8AC"/>
+      <text x="25" y="35" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="48" y="35" font-size="11" fill="#3A3A3A">file-share</text>
+      <rect x="8" y="48" width="80" height="4" rx="1" fill="#E0E0DE"/>
+      <rect x="8" y="48" width="50" height="4" rx="1" fill="#5A6B81"/>
+      <circle cx="110" cy="9" r="2.5" fill="#5DCAA5"/>
+    </g>
+
+    <g transform="translate(360, 0)">
+      <rect x="0" y="0" width="120" height="64" rx="6" ry="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#5F5E5A"/>
+      <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-04</text>
+      <rect x="8" y="24" width="34" height="16" rx="3" fill="#A8A8AC"/>
+      <text x="25" y="35" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="48" y="35" font-size="11" fill="#3A3A3A">dns-server</text>
+      <rect x="8" y="48" width="80" height="4" rx="1" fill="#E0E0DE"/>
+      <rect x="8" y="48" width="34" height="4" rx="1" fill="#5A6B81"/>
+      <circle cx="110" cy="9" r="2.5" fill="#5DCAA5"/>
+    </g>
+
+    <!-- VM row 2 -->
+    <g transform="translate(0, 64)">
+      <rect x="0" y="0" width="120" height="64" rx="6" ry="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#5F5E5A"/>
+      <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-05</text>
+      <rect x="8" y="24" width="34" height="16" rx="3" fill="#A8A8AC"/>
+      <text x="25" y="35" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="48" y="35" font-size="11" fill="#3A3A3A">web-app</text>
+      <rect x="8" y="48" width="80" height="4" rx="1" fill="#E0E0DE"/>
+      <rect x="8" y="48" width="64" height="4" rx="1" fill="#5A6B81"/>
+      <circle cx="110" cy="9" r="2.5" fill="#5DCAA5"/>
+    </g>
+
+    <g transform="translate(120, 64)">
+      <rect x="0" y="0" width="120" height="64" rx="6" ry="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#5F5E5A"/>
+      <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-06</text>
+      <rect x="8" y="24" width="34" height="16" rx="3" fill="#A8A8AC"/>
+      <text x="25" y="35" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="48" y="35" font-size="11" fill="#3A3A3A">staging-db</text>
+      <rect x="8" y="48" width="80" height="4" rx="1" fill="#E0E0DE"/>
+      <rect x="8" y="48" width="38" height="4" rx="1" fill="#5A6B81"/>
+      <circle cx="110" cy="9" r="2.5" fill="#5DCAA5"/>
+    </g>
+
+    <g transform="translate(240, 64)">
+      <rect x="0" y="0" width="120" height="64" rx="6" ry="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#5F5E5A"/>
+      <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-07</text>
+      <rect x="8" y="24" width="34" height="16" rx="3" fill="#A8A8AC"/>
+      <text x="25" y="35" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="48" y="35" font-size="11" fill="#3A3A3A">monitoring</text>
+      <rect x="8" y="48" width="80" height="4" rx="1" fill="#E0E0DE"/>
+      <rect x="8" y="48" width="56" height="4" rx="1" fill="#5A6B81"/>
+      <circle cx="110" cy="9" r="2.5" fill="#5DCAA5"/>
+    </g>
+
+    <g transform="translate(360, 64)">
+      <rect x="0" y="0" width="120" height="64" rx="6" ry="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 18 L 0 6 Q 0 0 6 0 L 114 0 Q 120 0 120 6 L 120 18 Z" fill="#5F5E5A"/>
+      <text x="9" y="13" font-size="11" font-weight="500" fill="#FFFFFF">vm-08</text>
+      <rect x="8" y="24" width="34" height="16" rx="3" fill="#A8A8AC"/>
+      <text x="25" y="35" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="48" y="35" font-size="11" fill="#3A3A3A">backup-job</text>
+      <rect x="8" y="48" width="80" height="4" rx="1" fill="#E0E0DE"/>
+      <rect x="8" y="48" width="46" height="4" rx="1" fill="#5A6B81"/>
+      <circle cx="110" cy="9" r="2.5" fill="#5DCAA5"/>
+    </g>
+
+    <!-- Hypervisor band, abutting VM row 2 -->
+    <use href="#hypervisor-layer" x="0" y="128"/>
+
+    <!-- Physical host (chassis top abuts hypervisor bottom) -->
+    <use href="#rack-server-rear" x="0" y="138"/>
+
+    <!-- Host name label, below chassis -->
+    <text x="240" y="365" font-size="16" font-weight="500" fill="#3a3a3a" text-anchor="middle">host-01</text>
+
+    <!-- Host-level utilization meter -->
+    <g transform="translate(60, 388)">
+      <rect x="0" y="0" width="280" height="14" rx="2" fill="#E0E0DE" stroke="#9D9D9D" stroke-width="0.5"/>
+      <rect x="0" y="0" width="202" height="14" rx="2" fill="#5A6B81"/>
+      <text x="290" y="11" font-size="13" font-weight="500" fill="#3A3A3A" text-anchor="start">72% utilization</text>
+    </g>
+  </g>
+
+</svg>

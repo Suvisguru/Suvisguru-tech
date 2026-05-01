@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Lesson 07 — SDDC and public cloud
+  Side-by-side: on-prem SDDC vs public cloud (AWS as canonical example).
+  ViewBox 1100 × 480. Alignment math verified pre-ship.
+
+  Both stacks share identical layer y-positions:
+    Management:  y=120 to y=180 (60 tall)
+    Services row: y=180 to y=300 (120 tall, abuts Management)
+    Hardware:    y=300 to y=380 (80 tall, abuts Services)
+  Each stack: 460 wide (left at x=70-530, right at x=570-1030).
+  Inside services row: 3 boxes 144 wide, gap 14: x=0, 158, 316 in stack-local.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 480" width="1100" height="480"
+     font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+
+  <!-- Title -->
+  <text x="550" y="32" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" letter-spacing="2.5">SDDC IS THE FOUNDATION OF PUBLIC CLOUD</text>
+  <line x1="380" y1="48" x2="720" y2="48" stroke="#E8E5DD" stroke-width="1"/>
+
+  <!-- Subtitle labels -->
+  <text x="300" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">ON-PREM SDDC</text>
+  <text x="300" y="100" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">Your datacenter, your hardware</text>
+
+  <text x="800" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#1F8A60" letter-spacing="1.5">PUBLIC CLOUD (e.g. AWS)</text>
+  <text x="800" y="100" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">Same pattern, hyperscale, rented by hour</text>
+
+  <!-- Equivalence arrow -->
+  <g transform="translate(550, 240)">
+    <line x1="-12" y1="0" x2="12" y2="0" stroke="#1F8A60" stroke-width="2.5"/>
+    <path d="M 12 0 L 6 -8 L 6 8 Z" fill="#1F8A60"/>
+    <path d="M -12 0 L -6 -8 L -6 8 Z" fill="#1F8A60"/>
+    <text x="0" y="-16" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60" letter-spacing="1.2">SAME</text>
+    <text x="0" y="-2" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60" letter-spacing="1.2">PATTERN</text>
+  </g>
+
+  <!-- ============================== ON-PREM SDDC ============================== -->
+  <g transform="translate(70, 120)">
+    <!-- Management: y=0 to y=60 -->
+    <rect width="460" height="60" rx="6" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.5"/>
+    <text x="230" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="#FFFFFF" letter-spacing="1.5">MANAGEMENT &amp; AUTOMATION</text>
+    <text x="230" y="46" text-anchor="middle" font-size="11" fill="#B5C0D0" font-style="italic">vCenter Server · vRealize</text>
+
+    <!-- Services row: y=60 to y=180 (120 tall, abuts Management) -->
+    <!-- Compute: x=0-144 -->
+    <rect x="0" y="60" width="144" height="120" rx="0" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="72" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">COMPUTE</text>
+    <text x="72" y="108" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">virtualization</text>
+    <!-- VMs icon -->
+    <g transform="translate(20, 122)">
+      <rect width="32" height="22" rx="2" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="0.8"/>
+      <rect width="32" height="6" rx="2" fill="#5F5E5A"/>
+      <rect x="36" width="32" height="22" rx="2" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="0.8"/>
+      <rect x="36" width="32" height="6" rx="2" fill="#5F5E5A"/>
+      <rect x="72" width="32" height="22" rx="2" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="0.8"/>
+      <rect x="72" width="32" height="6" rx="2" fill="#5F5E5A"/>
+    </g>
+    <text x="72" y="166" text-anchor="middle" font-size="11" fill="#3F4A5E" font-weight="600">vSphere</text>
+
+    <!-- Storage: x=158-302 -->
+    <rect x="158" y="60" width="144" height="120" rx="0" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="230" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">STORAGE</text>
+    <text x="230" y="108" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">virtualization</text>
+    <!-- Storage cylinders -->
+    <g transform="translate(190, 118)">
+      <ellipse cx="20" cy="6" rx="20" ry="6" fill="#A8A8AC" stroke="#5F5E5A"/>
+      <rect x="0" y="6" width="40" height="22" fill="#A8A8AC" stroke="#5F5E5A"/>
+      <ellipse cx="20" cy="28" rx="20" ry="6" fill="#A8A8AC" stroke="#5F5E5A"/>
+    </g>
+    <text x="230" y="166" text-anchor="middle" font-size="11" fill="#3F4A5E" font-weight="600">vSAN</text>
+
+    <!-- Network: x=316-460 -->
+    <rect x="316" y="60" width="144" height="120" rx="0" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="388" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">NETWORK</text>
+    <text x="388" y="108" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">virtualization</text>
+    <!-- Network nodes -->
+    <g transform="translate(346, 122)">
+      <circle cx="10" cy="10" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+      <circle cx="40" cy="10" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+      <circle cx="70" cy="10" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+      <circle cx="25" cy="26" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+      <circle cx="55" cy="26" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+      <line x1="10" y1="10" x2="25" y2="26" stroke="#3F4A5E" stroke-width="1"/>
+      <line x1="40" y1="10" x2="25" y2="26" stroke="#3F4A5E" stroke-width="1"/>
+      <line x1="40" y1="10" x2="55" y2="26" stroke="#3F4A5E" stroke-width="1"/>
+      <line x1="70" y1="10" x2="55" y2="26" stroke="#3F4A5E" stroke-width="1"/>
+    </g>
+    <text x="388" y="166" text-anchor="middle" font-size="11" fill="#3F4A5E" font-weight="600">NSX</text>
+
+    <!-- Hardware: y=180 to y=260 (80 tall, abuts Services) -->
+    <rect x="0" y="180" width="460" height="80" rx="0" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+    <text x="230" y="210" text-anchor="middle" font-size="13" font-weight="600" fill="#1A1A1A" letter-spacing="1.5">PHYSICAL HARDWARE</text>
+    <text x="230" y="232" text-anchor="middle" font-size="11" fill="#5F5E5A" font-style="italic">commodity x86 servers · disks · NICs</text>
+    <text x="230" y="252" text-anchor="middle" font-size="10" fill="#9D9C95">in your datacenter</text>
+  </g>
+
+  <!-- ============================== PUBLIC CLOUD ============================== -->
+  <g transform="translate(570, 120)">
+    <!-- Management -->
+    <rect width="460" height="60" rx="6" fill="#1F8A60" stroke="#0F5F40" stroke-width="1.5"/>
+    <text x="230" y="28" text-anchor="middle" font-size="13" font-weight="600" fill="#FFFFFF" letter-spacing="1.5">AWS CONSOLE · IAM · CLOUDWATCH</text>
+    <text x="230" y="46" text-anchor="middle" font-size="11" fill="#E0F2EA" font-style="italic">management &amp; automation</text>
+
+    <!-- Services -->
+    <rect x="0" y="60" width="144" height="120" rx="0" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="72" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60" letter-spacing="1.5">COMPUTE</text>
+    <text x="72" y="108" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">virtualization</text>
+    <g transform="translate(20, 122)">
+      <rect width="32" height="22" rx="2" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="0.8"/>
+      <rect width="32" height="6" rx="2" fill="#5F5E5A"/>
+      <rect x="36" width="32" height="22" rx="2" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="0.8"/>
+      <rect x="36" width="32" height="6" rx="2" fill="#5F5E5A"/>
+      <rect x="72" width="32" height="22" rx="2" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="0.8"/>
+      <rect x="72" width="32" height="6" rx="2" fill="#5F5E5A"/>
+    </g>
+    <text x="72" y="166" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">EC2</text>
+
+    <rect x="158" y="60" width="144" height="120" rx="0" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="230" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60" letter-spacing="1.5">STORAGE</text>
+    <text x="230" y="108" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">virtualization</text>
+    <g transform="translate(190, 118)">
+      <ellipse cx="20" cy="6" rx="20" ry="6" fill="#A8A8AC" stroke="#5F5E5A"/>
+      <rect x="0" y="6" width="40" height="22" fill="#A8A8AC" stroke="#5F5E5A"/>
+      <ellipse cx="20" cy="28" rx="20" ry="6" fill="#A8A8AC" stroke="#5F5E5A"/>
+    </g>
+    <text x="230" y="166" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">EBS · S3</text>
+
+    <rect x="316" y="60" width="144" height="120" rx="0" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.2"/>
+    <text x="388" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#1F8A60" letter-spacing="1.5">NETWORK</text>
+    <text x="388" y="108" text-anchor="middle" font-size="10" fill="#9D9C95" font-style="italic">virtualization</text>
+    <g transform="translate(346, 122)">
+      <circle cx="10" cy="10" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+      <circle cx="40" cy="10" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+      <circle cx="70" cy="10" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+      <circle cx="25" cy="26" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+      <circle cx="55" cy="26" r="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+      <line x1="10" y1="10" x2="25" y2="26" stroke="#3F4A5E" stroke-width="1"/>
+      <line x1="40" y1="10" x2="25" y2="26" stroke="#3F4A5E" stroke-width="1"/>
+      <line x1="40" y1="10" x2="55" y2="26" stroke="#3F4A5E" stroke-width="1"/>
+      <line x1="70" y1="10" x2="55" y2="26" stroke="#3F4A5E" stroke-width="1"/>
+    </g>
+    <text x="388" y="166" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">VPC</text>
+
+    <!-- Hardware -->
+    <rect x="0" y="180" width="460" height="80" rx="0" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+    <text x="230" y="210" text-anchor="middle" font-size="13" font-weight="600" fill="#1A1A1A" letter-spacing="1.5">PHYSICAL HARDWARE</text>
+    <text x="230" y="232" text-anchor="middle" font-size="11" fill="#5F5E5A" font-style="italic">commodity x86 servers · disks · NICs</text>
+    <text x="230" y="252" text-anchor="middle" font-size="10" fill="#9D9C95">in someone else's datacenter</text>
+  </g>
+
+  <!-- Bottom caption -->
+  <text x="550" y="430" text-anchor="middle" font-size="14" fill="#3F4A5E" font-style="italic">Same four-layer pattern. The cloud is an SDDC at hyperscale, with managed services on top.</text>
+  <text x="550" y="452" text-anchor="middle" font-size="12" fill="#9D9C95">Azure and GCP have equivalent products. Hybrid cloud runs both stacks at once.</text>
+
+</svg>

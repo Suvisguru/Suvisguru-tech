@@ -1,0 +1,55 @@
+# Quiz — Lesson 02: Benefits of virtualization
+# 3 pause-the-animation questions. Test mental model, not memorization.
+
+questions:
+  - id: q1
+    prompt: >
+      Pause the animation in 'snapshot' mode. The VM has just been captured and a
+      bad change is about to be applied. Predict: when the rollback happens, what
+      state does the VM return to — and what does it lose?
+    pause_at_mode: snapshot
+    answer: >
+      The VM returns to the exact state it was in when the snapshot was taken —
+      the same disk contents, memory, and configuration. It loses every change
+      made between the snapshot and the rollback: any data written, any process
+      progress, any incoming requests handled in that window.
+    reasoning: >
+      A snapshot is a point-in-time capture. Rolling back is fast and complete,
+      but it's also irreversible: the work between the snapshot and the rollback
+      simply doesn't exist for the VM anymore. This is why teams take snapshots
+      *immediately before* risky operations — so the rollback window is short.
+
+  - id: q2
+    prompt: >
+      Pause the animation in 'mobility' mode mid-move. The VM is shown traveling
+      from one host to another. The application running inside the VM is currently
+      serving a user request. What happens to that request?
+    pause_at_mode: mobility
+    answer: >
+      The request continues to be served without interruption. The user does not
+      notice the move. The VM's memory and active state are transferred to the
+      destination host while the source host continues running it; once the
+      transfer completes, the destination takes over within milliseconds.
+    reasoning: >
+      Live mobility is the magical part of virtualization. The application's
+      perspective is continuous — the same VM, the same memory, the same network
+      identity. The host underneath changed, but from inside the VM, nothing did.
+      That's only possible because the hypervisor abstracts the hardware away.
+
+  - id: q3
+    prompt: >
+      Pause the animation in 'isolate' mode. One VM has just crashed (red status
+      dot). The host is shared with several other VMs. Predict: what happens to
+      the other VMs and to the host itself?
+    pause_at_mode: isolate
+    answer: >
+      Nothing. The other VMs keep running normally. The host doesn't reboot. The
+      hypervisor catches the crash inside the failed VM's slice and contains it.
+      An operator can investigate or restart the failed VM without touching the
+      others.
+    reasoning: >
+      Isolation is what makes consolidation safe. Without it, putting many VMs
+      on one host would be reckless — one bad workload could crash the whole
+      box. The hypervisor enforces hard boundaries: each VM lives in its own
+      memory and process space, and the hypervisor itself stays alive even when
+      a tenant misbehaves.

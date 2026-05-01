@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Lesson 10 — Configuring vSphere Networking
+  Static diagram: 6-station networking journey.
+  Layout math (verified):
+    ViewBox 1100x720
+    6 cards 160w with 20px gap → 6*160 + 5*20 = 1060; margins 20 each side
+    Card x: 20, 200, 380, 560, 740, 920
+    Card y=230, h=340, accent strip at y=562
+    Inter-card arrows on midline y=400, from card right edge (e.g., 180) to next card left edge (e.g., 200)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" role="img" aria-labelledby="title desc">
+  <title id="title">vSphere networking journey: overview, vSS, vDS, port groups and VLANs, NIC teaming, vmkernel adapters</title>
+  <desc id="desc">Six numbered stations show how virtual networking is built up in vSphere from primitives through cluster-wide configuration to ESXi's own vmkernel adapters.</desc>
+
+  <defs>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.08"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#3F4A5E"/></marker>
+  </defs>
+
+  <rect width="1100" height="720" fill="#FAFBFC"/>
+
+  <!-- Header -->
+  <text x="550" y="40" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" fill="#1F2937">vSphere networking journey</text>
+  <text x="550" y="62" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#5A6B81">From primitives to cluster-wide config to ESXi's own services</text>
+
+  <!-- Top illustration: ESXi host with vSwitch in the middle, a few VMs on top, uplinks below -->
+  <g>
+    <rect x="370" y="80" width="360" height="130" rx="10" fill="#3F4A5E" stroke="#1F2937" stroke-width="1.5"/>
+    <!-- two VMs on top -->
+    <g transform="translate(395,95)">
+      <rect width="60" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/>
+      <text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">VM-A</text>
+    </g>
+    <g transform="translate(465,95)">
+      <rect width="60" height="32" rx="3" fill="#5DCAA5" opacity="0.6"/>
+      <text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">VM-B</text>
+    </g>
+    <g transform="translate(645,95)">
+      <rect width="60" height="32" rx="3" fill="#F2C94C" opacity="0.7"/>
+      <text x="30" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2937">vmk0</text>
+    </g>
+    <!-- vSwitch label inside -->
+    <rect x="385" y="135" width="330" height="22" rx="3" fill="#5A6B81"/>
+    <text x="550" y="151" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">vSwitch (vSS or vDS)</text>
+    <!-- uplinks -->
+    <g transform="translate(440,170)">
+      <rect width="40" height="16" rx="2" fill="#1F8A60"/>
+      <text x="20" y="12" text-anchor="middle" font-size="9" fill="#FFFFFF">vmnic0</text>
+    </g>
+    <g transform="translate(490,170)">
+      <rect width="40" height="16" rx="2" fill="#1F8A60"/>
+      <text x="20" y="12" text-anchor="middle" font-size="9" fill="#FFFFFF">vmnic1</text>
+    </g>
+    <text x="550" y="200" text-anchor="middle" font-size="10" fill="#FFFFFF" opacity="0.8">→ physical switch</text>
+  </g>
+  <text x="550" y="222" text-anchor="middle" font-size="11" fill="#5A6B81">ESXi host</text>
+
+  <!-- begin here cue -->
+  <g transform="translate(100,180)">
+    <text x="0" y="0" text-anchor="middle" font-size="11" font-weight="600" fill="#5A6B81">start here</text>
+    <path d="M0,8 L0,42" stroke="#5A6B81" stroke-width="1.5" stroke-dasharray="3,3" fill="none" marker-end="url(#arrow)"/>
+  </g>
+
+  <line x1="100" y1="400" x2="1000" y2="400" stroke="#D5DCE6" stroke-width="2" stroke-dasharray="2,4"/>
+
+  <!-- Station 1 — Overview -->
+  <g>
+    <rect x="20" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="20" y="562" width="160" height="8" fill="#3F4A5E"/>
+    <circle cx="100" cy="260" r="22" fill="#3F4A5E"/>
+    <text x="100" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">1</text>
+    <text x="100" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">Overview</text>
+    <text x="100" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">the four primitives</text>
+    <g transform="translate(20,355)">
+      <text x="80" y="14" text-anchor="middle" font-size="10" fill="#1F2937">NIC (uplink)</text>
+      <text x="80" y="32" text-anchor="middle" font-size="10" fill="#1F2937">vSwitch</text>
+      <text x="80" y="50" text-anchor="middle" font-size="10" fill="#1F2937">port group</text>
+      <text x="80" y="68" text-anchor="middle" font-size="10" fill="#1F2937">vmkernel adapter</text>
+    </g>
+    <text x="100" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">VM → vNIC → PG → vSwitch → uplink</text>
+  </g>
+
+  <line x1="180" y1="400" x2="200" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 2 — vSS -->
+  <g>
+    <rect x="200" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="200" y="562" width="160" height="8" fill="#5E4A8E"/>
+    <circle cx="280" cy="260" r="22" fill="#5E4A8E"/>
+    <text x="280" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">2</text>
+    <text x="280" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">Standard vSwitch</text>
+    <text x="280" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">vSS · per-host</text>
+    <g transform="translate(220,350)">
+      <rect x="0" y="0" width="50" height="20" rx="3" fill="#5A6B81"/>
+      <text x="25" y="14" text-anchor="middle" font-size="9" fill="#FFFFFF">host-1</text>
+      <rect x="60" y="0" width="50" height="20" rx="3" fill="#5A6B81"/>
+      <text x="85" y="14" text-anchor="middle" font-size="9" fill="#FFFFFF">host-2</text>
+      <rect x="0" y="26" width="50" height="20" rx="3" fill="#5A6B81"/>
+      <text x="25" y="40" text-anchor="middle" font-size="9" fill="#FFFFFF">host-3</text>
+      <rect x="60" y="26" width="50" height="20" rx="3" fill="#5A6B81"/>
+      <text x="85" y="40" text-anchor="middle" font-size="9" fill="#FFFFFF">host-...</text>
+    </g>
+    <text x="280" y="450" text-anchor="middle" font-size="11" fill="#1F2937">configure each one</text>
+    <text x="280" y="468" text-anchor="middle" font-size="11" fill="#1F2937">independently</text>
+    <text x="280" y="495" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">drift hazard</text>
+    <text x="280" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">free, simple, limited</text>
+  </g>
+
+  <line x1="360" y1="400" x2="380" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 3 — vDS -->
+  <g>
+    <rect x="380" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="380" y="562" width="160" height="8" fill="#2E7A8C"/>
+    <circle cx="460" cy="260" r="22" fill="#2E7A8C"/>
+    <text x="460" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">3</text>
+    <text x="460" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">Distributed vSwitch</text>
+    <text x="460" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">vDS · cluster-wide</text>
+    <g transform="translate(400,350)">
+      <rect x="40" y="0" width="80" height="22" rx="3" fill="#2E7A8C"/>
+      <text x="80" y="15" text-anchor="middle" font-size="9" fill="#FFFFFF">vCenter</text>
+      <line x1="80" y1="22" x2="20" y2="50" stroke="#2E7A8C" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <line x1="80" y1="22" x2="80" y2="50" stroke="#2E7A8C" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <line x1="80" y1="22" x2="140" y2="50" stroke="#2E7A8C" stroke-width="1.4" marker-end="url(#arrow)"/>
+      <rect x="0" y="50" width="40" height="20" rx="3" fill="#5A6B81"/>
+      <text x="20" y="64" text-anchor="middle" font-size="8" fill="#FFFFFF">host-1</text>
+      <rect x="60" y="50" width="40" height="20" rx="3" fill="#5A6B81"/>
+      <text x="80" y="64" text-anchor="middle" font-size="8" fill="#FFFFFF">host-2</text>
+      <rect x="120" y="50" width="40" height="20" rx="3" fill="#5A6B81"/>
+      <text x="140" y="64" text-anchor="middle" font-size="8" fill="#FFFFFF">host-N</text>
+    </g>
+    <text x="460" y="455" text-anchor="middle" font-size="11" fill="#1F2937">config once →</text>
+    <text x="460" y="470" text-anchor="middle" font-size="11" fill="#1F2937">applied everywhere</text>
+    <text x="460" y="495" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">LACP · NetFlow · NIOC</text>
+    <text x="460" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">Enterprise Plus license</text>
+  </g>
+
+  <line x1="540" y1="400" x2="560" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 4 — Port groups + VLANs -->
+  <g>
+    <rect x="560" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="560" y="562" width="160" height="8" fill="#1F8A60"/>
+    <circle cx="640" cy="260" r="22" fill="#1F8A60"/>
+    <text x="640" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">4</text>
+    <text x="640" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">Port groups + VLANs</text>
+    <text x="640" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">named jacks · tags</text>
+    <g transform="translate(580,355)">
+      <rect x="0" y="0" width="120" height="18" rx="3" fill="#5DCAA5" opacity="0.4"/>
+      <text x="60" y="13" text-anchor="middle" font-size="9" fill="#1F2937">Prod-VLAN-100</text>
+      <rect x="0" y="22" width="120" height="18" rx="3" fill="#5DCAA5" opacity="0.4"/>
+      <text x="60" y="35" text-anchor="middle" font-size="9" fill="#1F2937">Dev-VLAN-110</text>
+      <rect x="0" y="44" width="120" height="18" rx="3" fill="#F2C94C" opacity="0.5"/>
+      <text x="60" y="57" text-anchor="middle" font-size="9" fill="#1F2937">vMotion-VLAN-30</text>
+      <rect x="0" y="66" width="120" height="18" rx="3" fill="#F2C94C" opacity="0.5"/>
+      <text x="60" y="79" text-anchor="middle" font-size="9" fill="#1F2937">vSAN-VLAN-40</text>
+    </g>
+    <text x="640" y="465" text-anchor="middle" font-size="10" fill="#1F2937">VST is most common</text>
+    <text x="640" y="480" text-anchor="middle" font-size="10" fill="#1F2937">EST · VST · VGT</text>
+    <text x="640" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">match VLAN on physical trunk</text>
+  </g>
+
+  <line x1="720" y1="400" x2="740" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 5 — NIC teaming -->
+  <g>
+    <rect x="740" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="740" y="562" width="160" height="8" fill="#B85829"/>
+    <circle cx="820" cy="260" r="22" fill="#B85829"/>
+    <text x="820" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">5</text>
+    <text x="820" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">NIC teaming</text>
+    <text x="820" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">load · failover</text>
+    <g transform="translate(770,355)">
+      <rect x="0" y="0" width="40" height="18" rx="2" fill="#1F8A60"/>
+      <text x="20" y="12" text-anchor="middle" font-size="9" fill="#FFFFFF">vmnic0</text>
+      <rect x="60" y="0" width="40" height="18" rx="2" fill="#1F8A60"/>
+      <text x="80" y="12" text-anchor="middle" font-size="9" fill="#FFFFFF">vmnic1</text>
+      <text x="50" y="38" text-anchor="middle" font-size="10" font-weight="700" fill="#B85829">active+active</text>
+      <line x1="20" y1="48" x2="20" y2="68" stroke="#B85829" stroke-width="2"/>
+      <line x1="80" y1="48" x2="80" y2="68" stroke="#B85829" stroke-width="2"/>
+    </g>
+    <text x="820" y="450" text-anchor="middle" font-size="10" fill="#1F2937">5 modes incl. orig-port,</text>
+    <text x="820" y="465" text-anchor="middle" font-size="10" fill="#1F2937">IP hash, NIC load</text>
+    <text x="820" y="495" text-anchor="middle" font-size="10" font-style="italic" fill="#5A6B81">beacon probing for paranoid</text>
+    <text x="820" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">≥ 2 NICs, always</text>
+  </g>
+
+  <line x1="900" y1="400" x2="920" y2="400" stroke="#3F4A5E" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- Station 6 — vmkernel adapters -->
+  <g>
+    <rect x="920" y="230" width="160" height="340" rx="10" fill="#FFFFFF" stroke="#E5E9F0" filter="url(#softShadow)"/>
+    <rect x="920" y="562" width="160" height="8" fill="#8E2A2A"/>
+    <circle cx="1000" cy="260" r="22" fill="#8E2A2A"/>
+    <text x="1000" y="266" text-anchor="middle" font-size="18" font-weight="700" fill="#FFFFFF">6</text>
+    <text x="1000" y="305" text-anchor="middle" font-size="13" font-weight="700" fill="#1F2937">vmkernel adapters</text>
+    <text x="1000" y="322" text-anchor="middle" font-size="10" fill="#5A6B81">ESXi's own NICs</text>
+    <g transform="translate(940,350)">
+      <text x="60" y="14" text-anchor="middle" font-size="10" fill="#1F2937">mgmt</text>
+      <text x="60" y="30" text-anchor="middle" font-size="10" fill="#1F2937">vMotion</text>
+      <text x="60" y="46" text-anchor="middle" font-size="10" fill="#1F2937">vSAN</text>
+      <text x="60" y="62" text-anchor="middle" font-size="10" fill="#1F2937">NFS · iSCSI</text>
+      <text x="60" y="78" text-anchor="middle" font-size="10" fill="#1F2937">FT · replication</text>
+    </g>
+    <text x="1000" y="465" text-anchor="middle" font-size="10" fill="#1F2937">each on its own VLAN</text>
+    <text x="1000" y="480" text-anchor="middle" font-size="10" fill="#1F2937">+ NIC pair if possible</text>
+    <text x="1000" y="540" text-anchor="middle" font-size="9" fill="#5A6B81">NEVER mix mgmt + vMotion in prod</text>
+  </g>
+
+  <!-- Footer -->
+  <g>
+    <rect x="20" y="600" width="1060" height="100" rx="10" fill="#F3F5F9" stroke="#E5E9F0"/>
+    <text x="40" y="625" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#1F2937">How to read this lesson</text>
+    <text x="40" y="648" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#1F2937">Each numbered station is a <tspan font-weight="700">separate subtopic</tspan> with its own concept, before/after, analogy, quick check, ELI5/ELI10, real-world, flashcards, quiz.</text>
+    <text x="40" y="668" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#1F2937">End state: a virtual network ready for storage traffic (lesson 11) and VM deployment (lesson 12).</text>
+  </g>
+</svg>

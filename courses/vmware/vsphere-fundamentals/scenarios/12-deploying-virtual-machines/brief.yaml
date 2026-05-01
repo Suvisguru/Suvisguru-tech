@@ -1,0 +1,185 @@
+# Intake brief — Lesson 12, vSphere Fundamentals (final lesson)
+# Topic: Deploying Virtual Machines
+# Format: PER-SUBTOPIC structure.
+
+lesson:
+  title: "Deploying Virtual Machines"
+  slug: "12-deploying-virtual-machines"
+  domain: "vmware"
+  course_slug: "vsphere-fundamentals"
+  position: 12
+  granularity: "sub-topic"
+  brief_drafted_on: "2026-05-01"
+  pedagogical_format: "per-subtopic"
+
+learner_profile:
+  prerequisites:
+    - "Lessons 01-11. Hosts, vCenter, networking, and storage are all in place."
+  assumed_zero_knowledge_of:
+    - "VM internals (vCPU, vRAM, vDisk, vNIC, virtual hardware version)."
+    - "How to create a new VM from scratch in vSphere Client."
+    - "Templates and clones — reusable VM blueprints."
+    - "Content libraries — cross-vCenter sharing of templates and ISOs."
+    - "OVF/OVA — packaged VM imports."
+    - "VM snapshots — point-in-time states and their costs."
+    - "VMware Tools — the in-guest agent and what it provides."
+    - "Day-2 VM lifecycle operations — power, edit settings, hot-add."
+
+learning_outcomes_overall:
+  - "Learner can describe the major virtual hardware that makes up a VM."
+  - "Learner can step through creating a new VM from scratch in the vSphere Client."
+  - "Learner can convert a VM to a template and deploy clones from it."
+  - "Learner can use a content library to share templates and ISOs across vCenters."
+  - "Learner can deploy a VM from an OVF/OVA package."
+  - "Learner can take, consolidate, and remove a VM snapshot — and explain when not to."
+  - "Learner can describe what VMware Tools provides and why every guest should have it."
+  - "Learner can perform day-2 VM operations: edit settings, hot-add, migrate, remove."
+
+subtopics:
+  - id: 1
+    slug: "vm-overview"
+    title: "VM overview: what's inside a virtual machine"
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "A VM is a fully-furnished apartment: walls (vRAM), floor (vDisk), electricity (vCPU), windows (vNIC), and a key (BIOS/UEFI). The hypervisor is the building infrastructure that makes them possible." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 2
+    slug: "create-new-vm"
+    title: "Creating a new VM from scratch"
+    pedagogical_block:
+      concept: { target_words: 220 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "Creating a new VM is like commissioning a new apartment: pick the floor, the size, the layout, and the appliances; the building manager then carves it out for the tenant." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 3
+    slug: "templates-and-clones"
+    title: "Templates and clones"
+    pedagogical_block:
+      concept: { target_words: 200 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "A template is the gold-standard show apartment. A clone is a copy of that apartment, ready for a tenant. You build the show apartment carefully once, then stamp out copies." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 4
+    slug: "content-libraries"
+    title: "Content libraries"
+    pedagogical_block:
+      concept: { target_words: 200 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "A content library is the building chain's central catalog of approved show apartments and decor. Every building copies from the same catalog so they're consistent." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 5
+    slug: "ovf-ova"
+    title: "OVF and OVA packages"
+    pedagogical_block:
+      concept: { target_words: 200 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "OVF/OVA is the flat-pack version of a furnished apartment — boxes you unpack into a unit. Vendors ship appliances this way so customers can drop them into any vSphere." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 6
+    slug: "snapshots"
+    title: "VM snapshots"
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy: { direction: "A snapshot is a Polaroid of the apartment at a moment in time. Useful for short-term safety (before changes) — but stack too many Polaroids and the apartment slows down." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 7
+    slug: "vmware-tools"
+    title: "VMware Tools"
+    pedagogical_block:
+      concept: { target_words: 200 }
+      before_after: { target_words_each_side: 80 }
+      analogy: { direction: "VMware Tools is the building's smart-home concierge installed in the apartment. It lets the building manager (hypervisor) talk to the tenant (guest OS) — for shutdown, time sync, mouse, drivers." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 180 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+  - id: 8
+    slug: "lifecycle-operations"
+    title: "Day-2 lifecycle operations: power, edit, hot-add, migrate"
+    pedagogical_block:
+      concept: { target_words: 240 }
+      before_after: { target_words_each_side: 90 }
+      analogy: { direction: "Day-2 ops are the move-in / move-out / renovate / move-down-the-hall operations once the tenant is in the apartment. The building manager does them; the tenant rarely notices most." }
+      quick_check: { type: "multiple_choice", options: 4 }
+      eli5: { target_words_max: 80 }
+      eli10: { target_words: 200 }
+      real_world: { count: 1 }
+      flashcards: { count: 3 }
+      quiz: { count: 2 }
+
+shared_artifacts:
+  static_diagram: { purpose: "8-station VM-deployment journey.", file: "diagram.svg" }
+  animated_illustration:
+    purpose: "8-mode animation."
+    mode_toggles: ["overview", "create", "templates", "library", "ovf", "snapshots", "tools", "lifecycle"]
+    file: "animation.html"
+  flashcards: { file: "flashcards.yaml", structure: "Grouped by subtopic. ~24 cards." }
+  quiz: { file: "quiz.yaml", structure: "Grouped by subtopic. 16 questions." }
+  recap_card: { placement: "End of preview page.", content: "Cross-subtopic synthesis + course completion bridge." }
+
+interactive_preview_page:
+  file: "/preview-lesson-12.html"
+  hero_widget: "Interactive 8-station VM-deployment journey."
+  toc_at_top: "Sticky sub-nav listing all 8 subtopics."
+  subtopic_section_header: "Subtopic N of 8: <title>"
+  hover_to_define_terms:
+    - "vCPU"
+    - "vRAM"
+    - "vDisk"
+    - "vNIC"
+    - "virtual hardware version"
+    - "template"
+    - "clone"
+    - "content library"
+    - "OVF"
+    - "OVA"
+    - "snapshot"
+    - "VMware Tools"
+    - "hot-add"
+
+estimated_scope:
+  subtopics: 8
+  total_flashcards: 24
+  total_quiz_questions: 16
+  total_quick_checks: 8

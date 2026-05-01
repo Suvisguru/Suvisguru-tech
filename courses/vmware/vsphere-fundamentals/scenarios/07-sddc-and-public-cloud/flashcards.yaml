@@ -1,0 +1,56 @@
+# Flashcards — Lesson 07: SDDC and public cloud
+
+cards:
+  - front: "What does SDDC stand for, and what's the core idea?"
+    back: >
+      Software-Defined Datacenter. The core idea: every infrastructure layer
+      (compute, storage, network, management) is delivered as software running on
+      commodity hardware. The hardware is generic; the intelligence is software.
+  - front: "Name the four layers of an SDDC."
+    back: >
+      Compute virtualization, storage virtualization, network virtualization,
+      management/automation. Each was originally a separate hardware appliance;
+      SDDC pulls them all into software.
+  - front: "What's the VMware product for each SDDC layer?"
+    back: >
+      Compute: vSphere (ESXi + vCenter). Storage: vSAN. Network: NSX. Management
+      and automation: vCenter for compute, vRealize for broader automation. Other
+      vendors have equivalents.
+  - front: "What is vSAN?"
+    back: >
+      vSAN is VMware's software-defined storage product. It pools the local disks
+      across many ESXi hosts into a single logical datastore that all VMs can use.
+      No separate SAN appliance needed.
+  - front: "What is NSX?"
+    back: >
+      NSX is VMware's network virtualization product. It runs virtual switches,
+      routers, firewalls, and load balancers in software on top of the physical
+      network — letting each application have the network topology it needs without
+      reconfiguring physical hardware.
+  - front: "How is public cloud (AWS, Azure, GCP) related to SDDC?"
+    back: >
+      Public cloud is an SDDC at hyperscale, rented by the hour, plus a layer of
+      managed services on top. EC2 = compute virtualization. EBS = storage. VPC =
+      network. AWS console = management plane. Same four layers, just much bigger.
+  - front: "What's the difference between private cloud and public cloud?"
+    back: >
+      Both are SDDCs. Private cloud runs in your own datacenter; you own and
+      operate the hardware. Public cloud runs in someone else's datacenter (AWS,
+      Azure, GCP); you rent capacity. Hybrid cloud is running both at once.
+  - front: "Why does software-defined networking matter?"
+    back: >
+      Because in a traditional datacenter, network changes mean reconfiguring
+      physical switches and firewalls — slow, error-prone, gated by a Network team.
+      In an SDDC, the network is software; new topologies are provisioned in
+      seconds, alongside the workloads they belong to.
+  - front: "What did public cloud collapse from a customer perspective?"
+    back: >
+      Three separate teams, three procurement cycles, three rack-and-stack
+      projects. With public cloud, all four SDDC layers are operated by the
+      provider and exposed as a single API. The customer just consumes services.
+  - front: "Is SDDC a VMware-specific term?"
+    back: >
+      VMware coined and popularized the term, but the architectural pattern is
+      industry-wide. AWS, Azure, GCP, OpenStack, Nutanix — every modern
+      infrastructure platform is built on the same four-layer SDDC pattern, even
+      if they don't always use the term.

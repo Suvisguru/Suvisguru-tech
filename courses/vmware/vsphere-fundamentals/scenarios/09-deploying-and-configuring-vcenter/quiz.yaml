@@ -1,0 +1,290 @@
+# Quiz — Lesson 09: Deploying and Configuring vCenter Server
+# Per-subtopic format. 16 questions, 2 per subtopic.
+
+questions:
+
+  # =====================================================
+  # Subtopic 1 — Overview
+  # =====================================================
+
+  - id: s1q1
+    subtopic: vcenter-overview
+    pause_at_mode: overview
+    prompt: >
+      Pause the animation in 'overview' mode. The diagram shows 12
+      ESXi hosts and a single vCenter appliance, with arrows from
+      vCenter to each host. Predict: what does the diagram look like
+      WITHOUT vCenter, and what feature loss does that imply?
+    answer: >
+      Without vCenter, the picture is 12 isolated hosts each managed
+      via its own Host Client — no central arrows. You lose vMotion
+      (live migration), DRS (auto load-balance), vSphere HA (auto
+      restart), templates and content libraries, distributed switches,
+      central audit log, central permissions. Workloads still run on
+      individual hosts but you can't manage them as a fleet.
+    reasoning: >
+      Naming the lost capabilities is the most concrete way to convey
+      what vCenter actually buys you. It's not a "nice to have for big
+      environments"; it's the gateway to nearly every vSphere feature
+      learners will use later.
+
+  - id: s1q2
+    subtopic: vcenter-overview
+    prompt: >
+      A team runs 12 ESXi hosts but never deployed vCenter, managing
+      each host through the Host Client. They want to "move a running
+      VM from host-3 to host-7 without downtime." Can they?
+    answer: >
+      No. Live migration (vMotion) is a vCenter feature; the Host
+      Client alone can't do it. They can shut the VM down, copy its
+      files, register on host-7, and start it — but that involves
+      downtime. They need vCenter.
+
+  # =====================================================
+  # Subtopic 2 — Prerequisites
+  # =====================================================
+
+  - id: s2q1
+    subtopic: prerequisites
+    pause_at_mode: prereqs
+    prompt: >
+      Pause the animation in 'prereqs' mode. The installer's first
+      screen rejects your FQDN with "name does not resolve." You open
+      a terminal and `ping vc-01.lab.local` works. Predict: what's
+      the most likely cause and the fix?
+    answer: >
+      Missing reverse DNS (PTR record) for the vCenter IP. The
+      installer checks both forward AND reverse and won't let you
+      continue without both. Add the PTR record (10.20.30.50 →
+      vc-01.lab.local) on your DNS server, then retry. `ping` only
+      uses forward DNS, which is why ping worked but the installer
+      rejected the FQDN.
+    reasoning: >
+      The 'PTR-record-missing' failure is one of the most common
+      first-time-installer experiences. Naming it as "ping works but
+      installer rejects" is exactly how learners will see it in the
+      wild.
+
+  - id: s2q2
+    subtopic: prerequisites
+    prompt: >
+      You're sizing vCenter for an environment with 80 hosts today,
+      forecast to grow to 250 hosts in 18 months. Which deployment
+      size do you pick?
+    answer: >
+      Medium. Small caps at 100 hosts / 1,000 VMs — fine for today
+      but you'll outgrow it well within the forecast. Medium handles
+      400 hosts / 4,000 VMs and gives headroom. You can scale up
+      later, but it's a maintenance window, so size for the future
+      now.
+
+  # =====================================================
+  # Subtopic 3 — Stage 1
+  # =====================================================
+
+  - id: s3q1
+    subtopic: stage-1-deploy
+    pause_at_mode: stage1
+    prompt: >
+      Pause the animation in 'stage1' mode. Stage 1 finishes
+      successfully. You browse to https://vc-01.lab.local/ to log in
+      and the page returns 503. Predict: are you in trouble?
+    answer: >
+      No. Stage 1 only deploys the appliance — vCenter services
+      inside it haven't started yet. The 503 is expected until Stage
+      2 runs and starts the services. Click "Continue to Stage 2"
+      in the installer, or relaunch in resume mode, and you'll get
+      a working login after Stage 2 completes.
+    reasoning: >
+      First-time installers panic at this 503. It's normal. Knowing
+      it's normal saves the panic.
+
+  - id: s3q2
+    subtopic: stage-1-deploy
+    prompt: >
+      You're running the VCSA installer from your laptop. It connects
+      to the target ESXi host as root and starts pushing the OVA. Where
+      does the OVA actually end up?
+    answer: >
+      As a new VM on the target ESXi host, on the datastore you chose
+      during Stage 1. The installer does not run on the host; your
+      laptop coordinates the upload to the host's management API.
+      When Stage 1 completes, the host has a new powered-on VM named
+      whatever you typed in (typically the FQDN: vc-01.lab.local).
+
+  # =====================================================
+  # Subtopic 4 — Stage 2
+  # =====================================================
+
+  - id: s4q1
+    subtopic: stage-2-setup
+    pause_at_mode: stage2
+    prompt: >
+      Pause the animation in 'stage2' mode. Stage 2 hangs at "Starting
+      services" for 25 minutes. Your laptop's screen went black; you
+      may have lost the installer window. Predict: what do you do?
+    answer: >
+      Don't reboot the appliance. Reopen the VCSA installer and choose
+      the resume option, OR browse to https://vc-01.lab.local:5480/
+      (the appliance VAMI), log in as appliance root, and check the
+      install status. The OVA from Stage 1 is persisted on disk; Stage
+      2 can pick up where it left off.
+    reasoning: >
+      Losing the installer window is common (laptops sleep, sessions
+      die). The right reflex is "resume," not "redeploy." Stage 1's
+      OVA is durable.
+
+  - id: s4q2
+    subtopic: stage-2-setup
+    prompt: >
+      Stage 2 asks you to choose an SSO domain name and offers
+      vsphere.local as the default. You're tempted to set it to
+      corp.local to match your AD domain. Should you?
+    answer: >
+      No. The SSO domain is INTERNAL to vCenter and should not match
+      your AD domain — that creates name collisions and authentication
+      ambiguity. Keep vsphere.local (or pick a clearly separate name
+      like vsphere.corp.local). AD remains the AD identity source you
+      add later; SSO is a separate domain alongside it.
+
+  # =====================================================
+  # Subtopic 5 — SSO
+  # =====================================================
+
+  - id: s5q1
+    subtopic: sso-and-identity-sources
+    pause_at_mode: sso
+    prompt: >
+      Pause the animation in 'sso' mode. A new admin needs to log in
+      to vCenter. Their corporate identity exists in AD. Predict: the
+      cleanest way to give them access.
+    answer: >
+      (1) Make sure AD is added as an identity source on vCenter SSO.
+      (2) Add their AD account (or, better, an AD group they're in)
+      to a vCenter permission with the appropriate role. They log in
+      to vSphere Client with their-name@corp.local; AD authenticates
+      via SSO; they see exactly the inventory their role allows. Don't
+      create a local SSO account for them.
+    reasoning: >
+      Federated identity is the standard pattern. Local SSO accounts
+      should be the rare exception (service accounts, break-glass).
+
+  - id: s5q2
+    subtopic: sso-and-identity-sources
+    prompt: >
+      Why is administrator@vsphere.local NOT a good day-to-day
+      account?
+    answer: >
+      Because it's the SSO god-mode account — it can change SSO
+      itself, including removing all your other admins and identity
+      sources. Treat it like ESXi root: long random password in the
+      vault, used only when nothing else works. Daily admin happens
+      through named AD accounts via SSO.
+
+  # =====================================================
+  # Subtopic 6 — RBAC
+  # =====================================================
+
+  - id: s6q1
+    subtopic: roles-and-permissions
+    pause_at_mode: rbac
+    prompt: >
+      Pause the animation in 'rbac' mode. You assign Alice "Read-Only"
+      on the Production folder, propagating. Inside Production there's
+      a VM "vm-payments" where you also assign Alice "Virtual Machine
+      Power User," non-propagating. Predict: what can Alice do to
+      vm-payments and the rest of Production?
+    answer: >
+      On vm-payments specifically, Alice can do Power User actions
+      (power on/off, snapshot, console). Object-level permissions
+      override inherited permissions on the same object. Outside of
+      vm-payments — across the rest of the Production folder —
+      Alice still only has Read-Only.
+    reasoning: >
+      Permission inheritance and override is the most error-prone
+      part of RBAC. Walking through a concrete example builds the
+      intuition the privilege/role/permission concepts alone won't.
+
+  - id: s6q2
+    subtopic: roles-and-permissions
+    prompt: >
+      A junior engineer needs to view a single resource pool —
+      nothing more. What's the most precise way to grant this?
+    answer: >
+      Add a single permission on that resource pool: user = the
+      engineer (or an AD group containing them), role = Read-Only,
+      propagate to children = yes. They can now view that resource
+      pool and its descendants and nothing else in vCenter. No
+      global permissions, no broader scope — least privilege.
+
+  # =====================================================
+  # Subtopic 7 — Inventory & backup
+  # =====================================================
+
+  - id: s7q1
+    subtopic: inventory-hierarchy-and-backup
+    pause_at_mode: inventory
+    prompt: >
+      Pause the animation in 'inventory' mode. Your vCenter appliance
+      has just experienced a catastrophic disk failure. Your VMs are
+      still running fine on their hosts (vCenter going down doesn't
+      take VMs down). Predict: your best path back to a working vCenter.
+    answer: >
+      Deploy a fresh VCSA OVA (Stage 1), then in Stage 2 choose
+      "Restore" instead of "Install" and point at your most recent
+      file-based backup. The restored vCenter comes back with all
+      inventory, permissions, certs, AD binding, and configuration —
+      at the time of the last backup. Total time: ~30-45 minutes.
+      Hosts rejoin automatically.
+    reasoning: >
+      "Lose vCenter, restore from backup" is the most important
+      disaster-recovery story for a vSphere environment without
+      vCenter HA. Knowing the path back removes a lot of fear.
+
+  - id: s7q2
+    subtopic: inventory-hierarchy-and-backup
+    prompt: >
+      You're about to do a major vCenter version upgrade. What's the
+      one operational step you should take first?
+    answer: >
+      Take a fresh file-based backup of vCenter. Verify it completed
+      successfully (a backup that errored is worse than none — false
+      sense of safety). If the upgrade goes wrong, your rollback is
+      "redeploy + restore," not "argue with logs for two days."
+
+  # =====================================================
+  # Subtopic 8 — vCenter HA
+  # =====================================================
+
+  - id: s8q1
+    subtopic: vcenter-ha
+    pause_at_mode: ha
+    prompt: >
+      Pause the animation in 'ha' mode. Someone says "we have vSphere
+      HA on every cluster, so we're protected against vCenter going
+      down — vSphere HA will restart it." Predict: are they right?
+    answer: >
+      Partially. vSphere HA WILL restart the vCenter VM on another host
+      if its host dies — that's worth something (5-10 minutes of
+      unreachable management plane). But for full protection from a
+      vCenter outage, vCenter HA (active / passive / witness) fails
+      over in 1-3 minutes and doesn't depend on vSphere HA's restart
+      cycle. They're complementary, not substitutes.
+    reasoning: >
+      Confusing vSphere HA and vCenter HA is the most common rookie
+      mistake. Drawing the distinction crisply saves a lot of "but I
+      thought we were protected" conversations later.
+
+  - id: s8q2
+    subtopic: vcenter-ha
+    prompt: >
+      Your environment has 6 hosts and a single vCenter appliance,
+      backup configured nightly. The CTO asks: "do we need vCenter HA?"
+      What's a reasonable answer?
+    answer: >
+      Probably not, for that size. vCenter HA costs three appliance
+      VMs (Active + Passive + Witness) and adds operational complexity.
+      For 6 hosts with a working backup and a 30-minute restore window
+      that the business can tolerate, file-based backup-and-restore is
+      a reasonable choice. Revisit when the environment grows or when
+      management-plane downtime becomes business-critical.

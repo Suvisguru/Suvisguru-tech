@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Lesson 06 — Types of hypervisors
+  Side-by-side stack diagram. Type 1 and Type 2.
+  ViewBox 1100 × 600. Alignment math verified pre-ship.
+
+  Both stacks share hardware bottom y=480, hardware height 50 (y=430-480).
+  Type 1 layers: hardware → hypervisor (y=380-430, abuts) → VMs (y=240-380, abuts).
+  Type 2 layers: hardware → host OS (y=380-430, abuts) → hypervisor app (y=320-380, abuts) → VMs (y=200-320, abuts).
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 600" width="1100" height="600"
+     font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+
+  <!-- Title -->
+  <text x="550" y="32" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" letter-spacing="2.5">TWO KINDS OF HYPERVISORS</text>
+  <line x1="380" y1="48" x2="720" y2="48" stroke="#E8E5DD" stroke-width="1"/>
+
+  <!-- Vertical divider between the two halves -->
+  <line x1="550" y1="80" x2="550" y2="540" stroke="#E8E5DD" stroke-width="1" stroke-dasharray="4 3"/>
+
+  <!-- Subtitles -->
+  <text x="290" y="100" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">TYPE 1 — BARE-METAL</text>
+  <text x="290" y="120" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">Hypervisor IS the operating system</text>
+  <text x="810" y="100" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">TYPE 2 — HOSTED</text>
+  <text x="810" y="120" text-anchor="middle" font-size="11" fill="#9D9C95" font-style="italic">Hypervisor runs as an app on a host OS</text>
+
+  <!-- ============================== TYPE 1 STACK ============================== -->
+  <!-- VMs: y=240 to y=380 (height 140). 3 VM tiles in a row, centered in 380-wide stack. -->
+  <g transform="translate(100, 240)">
+    <!-- 3 VMs -->
+    <g transform="translate(20, 0)">
+      <rect width="100" height="140" rx="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 22 L 0 6 Q 0 0 6 0 L 94 0 Q 100 0 100 6 L 100 22 Z" fill="#5F5E5A"/>
+      <text x="9" y="14" font-size="11" font-weight="500" fill="#FFFFFF">vm-01</text>
+      <rect x="10" y="32" width="34" height="16" rx="2" fill="#A8A8AC"/>
+      <text x="27" y="44" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="50" y="44" font-size="11" fill="#3A3A3A">app</text>
+      <rect x="10" y="60" width="80" height="6" rx="2" fill="#E0E0DE"/>
+      <rect x="10" y="60" width="44" height="6" rx="2" fill="#5A6B81"/>
+      <text x="50" y="100" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+      <circle cx="92" cy="11" r="3" fill="#5DCAA5"/>
+    </g>
+    <g transform="translate(140, 0)">
+      <rect width="100" height="140" rx="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 22 L 0 6 Q 0 0 6 0 L 94 0 Q 100 0 100 6 L 100 22 Z" fill="#5F5E5A"/>
+      <text x="9" y="14" font-size="11" font-weight="500" fill="#FFFFFF">vm-02</text>
+      <rect x="10" y="32" width="34" height="16" rx="2" fill="#A8A8AC"/>
+      <text x="27" y="44" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="50" y="44" font-size="11" fill="#3A3A3A">db</text>
+      <rect x="10" y="60" width="80" height="6" rx="2" fill="#E0E0DE"/>
+      <rect x="10" y="60" width="58" height="6" rx="2" fill="#5A6B81"/>
+      <text x="50" y="100" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+      <circle cx="92" cy="11" r="3" fill="#5DCAA5"/>
+    </g>
+    <g transform="translate(260, 0)">
+      <rect width="100" height="140" rx="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 22 L 0 6 Q 0 0 6 0 L 94 0 Q 100 0 100 6 L 100 22 Z" fill="#5F5E5A"/>
+      <text x="9" y="14" font-size="11" font-weight="500" fill="#FFFFFF">vm-03</text>
+      <rect x="10" y="32" width="34" height="16" rx="2" fill="#A8A8AC"/>
+      <text x="27" y="44" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="50" y="44" font-size="11" fill="#3A3A3A">web</text>
+      <rect x="10" y="60" width="80" height="6" rx="2" fill="#E0E0DE"/>
+      <rect x="10" y="60" width="50" height="6" rx="2" fill="#5A6B81"/>
+      <text x="50" y="100" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+      <circle cx="92" cy="11" r="3" fill="#5DCAA5"/>
+    </g>
+  </g>
+
+  <!-- Hypervisor: y=380 to y=430 (height 50, abuts VMs above and hardware below) -->
+  <rect x="100" y="380" width="380" height="50" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.5"/>
+  <text x="290" y="402" text-anchor="middle" font-size="14" font-weight="600" fill="#E8E8E0" letter-spacing="2">HYPERVISOR (Type 1)</text>
+  <text x="290" y="420" text-anchor="middle" font-size="11" fill="#B5C0D0" font-style="italic">ESXi · KVM · Hyper-V · Xen</text>
+
+  <!-- Hardware: y=430 to y=480 (height 50, abuts hypervisor) -->
+  <rect x="100" y="430" width="380" height="50" rx="0" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+  <text x="290" y="452" text-anchor="middle" font-size="14" font-weight="600" fill="#1A1A1A" letter-spacing="1">PHYSICAL HARDWARE</text>
+  <text x="290" y="470" text-anchor="middle" font-size="11" fill="#5F5E5A">CPU · RAM · disks · NICs</text>
+
+  <!-- Type 1 caption -->
+  <text x="290" y="510" text-anchor="middle" font-size="12" font-weight="600" fill="#1F8A60" letter-spacing="1">⚡ NEAR-NATIVE PERFORMANCE</text>
+  <text x="290" y="528" text-anchor="middle" font-size="11" fill="#5F5E5A" font-style="italic">Production servers · public cloud · datacenters</text>
+
+  <!-- ============================== TYPE 2 STACK ============================== -->
+  <!-- VMs: y=200 to y=320 (height 120). 3 VM tiles, abuts hypervisor below. -->
+  <g transform="translate(620, 200)">
+    <g transform="translate(20, 0)">
+      <rect width="100" height="120" rx="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 22 L 0 6 Q 0 0 6 0 L 94 0 Q 100 0 100 6 L 100 22 Z" fill="#5F5E5A"/>
+      <text x="9" y="14" font-size="11" font-weight="500" fill="#FFFFFF">vm-01</text>
+      <rect x="10" y="32" width="34" height="16" rx="2" fill="#A8A8AC"/>
+      <text x="27" y="44" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="50" y="44" font-size="11" fill="#3A3A3A">test</text>
+      <rect x="10" y="60" width="80" height="6" rx="2" fill="#E0E0DE"/>
+      <rect x="10" y="60" width="36" height="6" rx="2" fill="#5A6B81"/>
+      <text x="50" y="90" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+      <circle cx="92" cy="11" r="3" fill="#5DCAA5"/>
+    </g>
+    <g transform="translate(140, 0)">
+      <rect width="100" height="120" rx="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 22 L 0 6 Q 0 0 6 0 L 94 0 Q 100 0 100 6 L 100 22 Z" fill="#5F5E5A"/>
+      <text x="9" y="14" font-size="11" font-weight="500" fill="#FFFFFF">vm-02</text>
+      <rect x="10" y="32" width="34" height="16" rx="2" fill="#A8A8AC"/>
+      <text x="27" y="44" font-size="11" fill="#FFFFFF" text-anchor="middle">linux</text>
+      <text x="50" y="44" font-size="11" fill="#3A3A3A">dev</text>
+      <rect x="10" y="60" width="80" height="6" rx="2" fill="#E0E0DE"/>
+      <rect x="10" y="60" width="42" height="6" rx="2" fill="#5A6B81"/>
+      <text x="50" y="90" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+      <circle cx="92" cy="11" r="3" fill="#5DCAA5"/>
+    </g>
+    <g transform="translate(260, 0)">
+      <rect width="100" height="120" rx="6" fill="#F4F4F0" stroke="#5F5E5A" stroke-width="1.2"/>
+      <path d="M 0 22 L 0 6 Q 0 0 6 0 L 94 0 Q 100 0 100 6 L 100 22 Z" fill="#5F5E5A"/>
+      <text x="9" y="14" font-size="11" font-weight="500" fill="#FFFFFF">vm-03</text>
+      <rect x="10" y="32" width="34" height="16" rx="2" fill="#A8A8AC"/>
+      <text x="27" y="44" font-size="11" fill="#FFFFFF" text-anchor="middle">windows</text>
+      <text x="50" y="44" font-size="11" fill="#3A3A3A">qa</text>
+      <rect x="10" y="60" width="80" height="6" rx="2" fill="#E0E0DE"/>
+      <rect x="10" y="60" width="30" height="6" rx="2" fill="#5A6B81"/>
+      <text x="50" y="90" text-anchor="middle" font-size="11" fill="#1F8A60" font-weight="600">running</text>
+      <circle cx="92" cy="11" r="3" fill="#5DCAA5"/>
+    </g>
+  </g>
+
+  <!-- Hypervisor (app): y=320 to y=380 (height 60, abuts VMs and host OS) -->
+  <rect x="620" y="320" width="380" height="60" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.5"/>
+  <text x="810" y="346" text-anchor="middle" font-size="14" font-weight="600" fill="#E8E8E0" letter-spacing="2">HYPERVISOR (Type 2)</text>
+  <text x="810" y="365" text-anchor="middle" font-size="11" fill="#B5C0D0" font-style="italic">VMware Workstation · Fusion · VirtualBox · Parallels</text>
+
+  <!-- Host OS: y=380 to y=430 (height 50, abuts hypervisor and hardware) -->
+  <rect x="620" y="380" width="380" height="50" fill="#536179" stroke="#3F4A5E" stroke-width="1.5"/>
+  <text x="810" y="402" text-anchor="middle" font-size="14" font-weight="600" fill="#FFFFFF" letter-spacing="2">HOST OPERATING SYSTEM</text>
+  <text x="810" y="420" text-anchor="middle" font-size="11" fill="#E8EAEF" font-style="italic">Windows · macOS · Linux</text>
+
+  <!-- Hardware: y=430 to y=480 (height 50) -->
+  <rect x="620" y="430" width="380" height="50" rx="0" fill="#A8A8AC" stroke="#5F5E5A" stroke-width="1.5"/>
+  <text x="810" y="452" text-anchor="middle" font-size="14" font-weight="600" fill="#1A1A1A" letter-spacing="1">PHYSICAL HARDWARE</text>
+  <text x="810" y="470" text-anchor="middle" font-size="11" fill="#5F5E5A">your laptop or desktop</text>
+
+  <!-- Type 2 caption -->
+  <text x="810" y="510" text-anchor="middle" font-size="12" font-weight="600" fill="#B85829" letter-spacing="1">○ ~15-30% PERFORMANCE OVERHEAD</text>
+  <text x="810" y="528" text-anchor="middle" font-size="11" fill="#5F5E5A" font-style="italic">Developer laptops · learning · classroom demos</text>
+
+  <!-- Bottom caption -->
+  <text x="550" y="572" text-anchor="middle" font-size="13" fill="#3F4A5E" font-style="italic">Type 1 wins on performance. Type 2 wins on convenience. Both have their place.</text>
+
+</svg>

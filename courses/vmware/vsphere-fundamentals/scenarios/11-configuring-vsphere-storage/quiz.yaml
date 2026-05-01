@@ -1,0 +1,178 @@
+# Quiz — Lesson 11: Configuring vSphere Storage
+
+questions:
+
+  # Subtopic 1
+  - id: s1q1
+    subtopic: storage-overview
+    pause_at_mode: overview
+    prompt: >
+      Pause the animation in 'overview' mode. The diagram shows four
+      datastore icons labeled VMFS, NFS, vSAN, vVols. Predict: which
+      one is the natural choice when a team has servers with local
+      disks but no external array, and wants shared storage all hosts
+      can use?
+    answer: >
+      vSAN. It pools the local disks across cluster hosts into one
+      software-defined datastore visible to all hosts. No external
+      array required. Other options exist (VMFS over iSCSI to local
+      LUNs, NFS to a separate VM-as-NAS) but they're workarounds, not
+      the intended design.
+
+  - id: s1q2
+    subtopic: storage-overview
+    prompt: >
+      A datastore is the unit of storage vSphere consumes. Name three
+      kinds of files that live on a datastore.
+    answer: >
+      .vmdk (virtual disk files), .vmx (VM configuration), snapshots
+      (-delta files), ISOs, log files. Anything VM-related lives on
+      a datastore — the hypervisor stores VMs as collections of
+      files there.
+
+  # Subtopic 2
+  - id: s2q1
+    subtopic: vmfs-block-storage
+    pause_at_mode: vmfs
+    prompt: >
+      Pause the animation in 'vmfs' mode. A new VMFS datastore is
+      mounted on host-1 only. host-2 doesn't see it even though both
+      hosts are connected to the same SAN. Predict: most likely cause
+      and fix.
+    answer: >
+      The LUN isn't presented to host-2 at the array level (zoning or
+      LUN masking). The storage team needs to add host-2's WWN (FC) or
+      IQN (iSCSI) to the LUN's access list. Once host-2 can see the
+      LUN, mount the VMFS datastore on it from vSphere Client and both
+      hosts will share it.
+
+  - id: s2q2
+    subtopic: vmfs-block-storage
+    prompt: >
+      A vSphere admin sets multipathing on a LUN to "Round Robin"
+      instead of the default. Why might they do this and when would
+      they not?
+    answer: >
+      Round Robin distributes I/O across all available paths instead
+      of sticking to one. They'd choose it for better aggregate
+      throughput on active/active arrays (most modern arrays). When
+      not to: active/passive arrays where the secondary path can't
+      serve I/O — those want MRU. Some vendors ship their own
+      multipathing module (NMP/PSP from the array vendor) and you
+      should follow their guidance over generic Round Robin.
+
+  # Subtopic 3
+  - id: s3q1
+    subtopic: nfs-storage
+    pause_at_mode: nfs
+    prompt: >
+      Pause the animation in 'nfs' mode. Your team is choosing between
+      NFS and VMFS for a new VM datastore. 10 GbE network, NAS
+      supports NFS 4.1, moderate-traffic web app. Predict: which is
+      fine and what tilts the decision?
+    answer: >
+      Either is fine for a moderate-traffic web app. The tilt: if the
+      team values operational simplicity (faster provisioning, easier
+      to grow, file-level visibility on the NAS), pick NFS. If the
+      team values FC-style latency or has existing block storage
+      investment, pick VMFS. Neither is wrong; they optimize for
+      different things.
+
+  - id: s3q2
+    subtopic: nfs-storage
+    prompt: >
+      What four things do you actually configure on the host to mount
+      an NFS datastore?
+    answer: >
+      Server address (NAS IP or hostname), share path (e.g.,
+      /vol/vsphere-prod), datastore name (vSphere's local label), NFS
+      version (3 or 4.1) plus Kerberos credentials if using NFS 4.1
+      with Kerberos. You can mount on all relevant hosts in one
+      operation from vSphere Client.
+
+  # Subtopic 4
+  - id: s4q1
+    subtopic: vsan
+    pause_at_mode: vsan
+    prompt: >
+      Pause the animation in 'vsan' mode. 4-host vSAN cluster. A VM
+      has storage policy "FTT=1 mirroring." One host dies. Predict:
+      what happens to the VM's data?
+    answer: >
+      Nothing visible to the VM. FTT=1 mirroring means every piece of
+      the VM's data has two copies on two different hosts. When one
+      host dies, the other copy is still available. vSAN may rebuild
+      the missing copy on a third host in the background. The VM keeps
+      running. (A second simultaneous host failure that took out the
+      second copy would be a problem.)
+
+  - id: s4q2
+    subtopic: vsan
+    prompt: >
+      Distinguish vSAN OSA from vSAN ESA.
+    answer: >
+      OSA (Original Storage Architecture) — disk groups with one cache
+      disk + capacity disks; classic vSAN. ESA (Express Storage
+      Architecture) — newer, all-NVMe, single-tier (no cache); higher
+      performance, simpler hardware story; rolling out as the future
+      direction. New deployments on vSAN-ready hardware increasingly
+      pick ESA.
+
+  # Subtopic 5
+  - id: s5q1
+    subtopic: vvols
+    pause_at_mode: vvols
+    prompt: >
+      Pause the animation in 'vvols' mode. Your array is vVol-capable
+      but the team is using classic VMFS. Predict: what would
+      switching to vVols buy you, and what's the cost?
+    answer: >
+      Win: per-VM array-native operations. Snapshots, clones,
+      replication, encryption become VM-granular instead of LUN-
+      granular. Storage policies (SPBM) get honored natively by the
+      array. Storage admins see real VM names and per-disk usage.
+      Cost: requires a working VASA provider setup integrated with
+      vCenter, and the operational complexity is higher than classic
+      VMFS or NFS.
+
+  - id: s5q2
+    subtopic: vvols
+    prompt: >
+      Name the four pieces of a vVols setup.
+    answer: >
+      Storage Container (array-side replacement for a LUN; pool of
+      capacity for vVols). VASA Provider (array's API endpoint that
+      vCenter talks to). Protocol Endpoint (data-path connection
+      host ↔ array; FC, iSCSI, or NFS). vVol (single storage object
+      representing one piece of one VM — config, disk, swap,
+      snapshot).
+
+  # Subtopic 6
+  - id: s6q1
+    subtopic: spbm-and-provisioning
+    pause_at_mode: spbm
+    prompt: >
+      Pause the animation in 'spbm' mode. You provision a 500 GB VMDK
+      as thin. The VM uses 80 GB. The datastore is 1 TB and has 20
+      other VMs on it. Total *configured* size sums to 1.4 TB — over
+      the datastore. Predict: what's wrong, what's right, what should
+      you watch?
+    answer: >
+      Nothing is broken yet; this is normal over-provisioning with
+      thin. What's right: storage isn't wasted on data that doesn't
+      exist; you're getting more out of the datastore. What to watch:
+      total *used* space. If VMs collectively grow toward 1 TB, you'll
+      run out and VMs will pause or fail. Configure datastore alerts
+      at 75/85/95% and have a plan to add capacity or move VMs off.
+
+  - id: s6q2
+    subtopic: spbm-and-provisioning
+    prompt: >
+      You're going to enable Fault Tolerance on a critical VM. What
+      provisioning mode does its disk need to be?
+    answer: >
+      Thick provisioned, eager-zeroed. FT requires the disk to be
+      fully reserved and pre-zeroed at creation so the secondary VM
+      can keep deterministic state with the primary. Thin or
+      thick-lazy-zeroed disks aren't compatible with FT. Convert with
+      Storage vMotion or recreate the disk if needed.
