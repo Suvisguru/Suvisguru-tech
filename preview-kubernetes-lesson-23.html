@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 23 — Scheduling Part 2: Priority, DRA, NUMA · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the K-COM course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L01 What is Kubernetes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L02 containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L03 reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L04 12-factor + monoliths</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L05 K8s fit / overkill</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L06 GitOps + SRE</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L07 history + KEPs</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>L7.5 Linux primer</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L08 namespaces &amp; cgroups</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L09 runtimes &amp; OCI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L10 image building</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L11 container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L12 PID 1 &amp; lifecycle</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L13 cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L14 K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L15 Pods deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L16 workload controllers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L17 services &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L18 storage Pt 1 — PV/PVC/SC</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L19 storage Pt 2 — CSI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L20 config &amp; secrets</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L21 service accounts &amp; certs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L22 scheduling Pt 1</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>L23 scheduling Pt 2</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L24 net foundations &amp; CNI</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L25 Gateway API</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L26 AdminNetworkPolicy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L27 RBAC &amp; Auth</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L28 admission control</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L29 policy engines</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L30 supply chain</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L31 multi-tenancy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L32 obs Pt 1 — logs/metrics</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L33 obs Pt 2 — traces/eBPF</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L34 autoscaling</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L35 reliability &amp; HA</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L36 Kustomize</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L37 Helm 3</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L38 Argo CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L39 Flux CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L40 progressive delivery</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L41 CRDs deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L42 Operators</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L43 service mesh</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L44 troubleshooting</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 23</span></a>
+    <span class="progress-pill">23 · scheduling Pt 2</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Dispatch Office — VIP & Specialty Routing</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: lesson 23">
+    <title>K-Town district map · lesson 23</title>
+    <desc>Stylised map of K-Town. Dispatch Office — VIP & Specialty Routing highlighted.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin active" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+    <g class="pin" id="kt-pin27" transform="translate(740,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">27</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">security</text></g>
+    <g class="pin" id="kt-pin32" transform="translate(230,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">32</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">observability</text></g>
+    <g class="pin" id="kt-pin34" transform="translate(230,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">34</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Station</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scale & resilience</text></g>
+    <g class="pin" id="kt-pin36" transform="translate(410,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">36</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Print Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">delivery</text></g>
+    <g class="pin" id="kt-pin42" transform="translate(700,305)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">42</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Workshop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">operators</text></g>
+    <g class="pin" id="kt-pin44" transform="translate(770,245)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">44</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Detective's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshooting</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Dispatch Office — VIP & Specialty Routing</strong> <span>· lesson 23</span><span class="visually-hidden">Lesson 23, Dispatch Office — VIP & Specialty Routing.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 11 · Lesson 23 · the advanced scheduler controls</span>
+    <h1>Scheduling Part 2 · Priority, DRA, NUMA, Profiles</h1>
+    <p class="hero-sub">When the cluster is full, who gets evicted? When a Pod needs a GPU with specific memory, how does the scheduler match it? When microsecond CPU latency matters, how do you keep code on the same NUMA node as its memory? Three advanced primitives: <strong>PriorityClass</strong>, <strong>Dynamic Resource Allocation (DRA, GA in 1.34)</strong>, and <strong>topology managers</strong>.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dispatch Office VIP wing: a priority-class queue with high-priority trucks bumping low-priority ones, a resource-claim window where GPU drivers hand out specialized tools, and a NUMA-aware diagram showing CPU/memory pairs.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">DISPATCH OFFICE · VIP &amp; SPECIALTY ROUTING</text>
+  <!-- Priority queue -->
+  <g transform="translate(40,55)">
+    <text x="55" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">PRIORITY LANE</text>
+    <rect x="0" y="22" width="110" height="22" rx="3" fill="#A04832"/>
+    <text x="6" y="36" font-size="8" font-weight="700" fill="#FFFFFF">P=1000 critical</text>
+    <rect x="0" y="48" width="110" height="22" rx="3" fill="#E8B547"/>
+    <text x="6" y="62" font-size="8" font-weight="700" fill="#5A4F45">P=500 prod</text>
+    <rect x="0" y="74" width="110" height="22" rx="3" fill="#9D9389"/>
+    <text x="6" y="88" font-size="8" font-weight="700" fill="#FFFFFF">P=10 batch</text>
+    <text x="55" y="115" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">high preempts low</text>
+    <text x="55" y="128" text-anchor="middle" font-size="7" fill="#6B6058" font-style="italic">low evicted to free room</text>
+  </g>
+  <!-- DRA / Resource Claims -->
+  <g transform="translate(180,40)">
+    <rect width="160" height="120" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+    <text x="80" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#3F4A5E">RESOURCE WINDOW · DRA</text>
+    <rect x="14" y="24" width="60" height="32" rx="3" fill="#5A9F7A"/>
+    <text x="44" y="38" text-anchor="middle" font-size="7" font-weight="700" fill="#FFFFFF">GPU H100</text>
+    <text x="44" y="48" text-anchor="middle" font-size="6" fill="#FFFFFF">+ MIG slice</text>
+    <rect x="86" y="24" width="60" height="32" rx="3" fill="#4A8FA8"/>
+    <text x="116" y="38" text-anchor="middle" font-size="7" font-weight="700" fill="#FFFFFF">FPGA tile</text>
+    <rect x="14" y="62" width="60" height="32" rx="3" fill="#D97757"/>
+    <text x="44" y="76" text-anchor="middle" font-size="7" font-weight="700" fill="#FFFFFF">RDMA NIC</text>
+    <rect x="86" y="62" width="60" height="32" rx="3" fill="#8B5A00"/>
+    <text x="116" y="76" text-anchor="middle" font-size="7" font-weight="700" fill="#FFFFFF">SR-IOV VF</text>
+    <text x="80" y="110" text-anchor="middle" font-size="8" fill="#3F4A5E" font-style="italic">ResourceClaim: "I need 1 H100 with 80GB"</text>
+  </g>
+  <!-- NUMA -->
+  <g transform="translate(370,40)">
+    <text x="80" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">NUMA · CPU + MEMORY pinning</text>
+    <rect x="0" y="20" width="76" height="100" rx="4" fill="#E0EEF3" stroke="#4A8FA8" stroke-width="1.2"/>
+    <text x="38" y="34" text-anchor="middle" font-size="9" font-weight="700" fill="#3F4A5E">node 0</text>
+    <rect x="6" y="42" width="64" height="22" rx="2" fill="#3F4A5E"/>
+    <text x="38" y="56" text-anchor="middle" font-size="7" fill="#FBF7F0">CPU 0-7</text>
+    <rect x="6" y="68" width="64" height="22" rx="2" fill="#5A4F45"/>
+    <text x="38" y="82" text-anchor="middle" font-size="7" fill="#FBF7F0">RAM 64GB</text>
+    <text x="38" y="105" text-anchor="middle" font-size="7" fill="#3F4A5E" font-style="italic">co-located</text>
+    <rect x="84" y="20" width="76" height="100" rx="4" fill="#FBE8DC" stroke="#A04832" stroke-width="1.2"/>
+    <text x="122" y="34" text-anchor="middle" font-size="9" font-weight="700" fill="#3F4A5E">node 1</text>
+    <rect x="90" y="42" width="64" height="22" rx="2" fill="#3F4A5E"/>
+    <text x="122" y="56" text-anchor="middle" font-size="7" fill="#FBF7F0">CPU 8-15</text>
+    <rect x="90" y="68" width="64" height="22" rx="2" fill="#5A4F45"/>
+    <text x="122" y="82" text-anchor="middle" font-size="7" fill="#FBF7F0">RAM 64GB</text>
+    <text x="122" y="105" text-anchor="middle" font-size="7" fill="#3F4A5E" font-style="italic">co-located</text>
+  </g>
+  <!-- Sched profile -->
+  <g transform="translate(560,55)">
+    <text x="0" y="14" font-size="9" font-weight="700" fill="#5A4F45">profiles</text>
+    <rect x="0" y="22" width="80" height="20" rx="2" fill="#3F4A5E"/>
+    <text x="6" y="35" font-size="7" fill="#FBF7F0">default</text>
+    <rect x="0" y="46" width="80" height="20" rx="2" fill="#A04832"/>
+    <text x="6" y="59" font-size="7" fill="#FBF7F0">batch-bin</text>
+    <rect x="0" y="70" width="80" height="20" rx="2" fill="#5A9F7A"/>
+    <text x="6" y="83" font-size="7" fill="#FBF7F0">latency-min</text>
+    <text x="0" y="105" font-size="7" fill="#5A4F45" font-style="italic">multi-scheduler</text>
+  </g>
+  <text x="340" y="200" text-anchor="middle" font-size="11" fill="#3F4A5E" font-style="italic">Priority decides who waits in line. DRA decides who gets the specialty tools. NUMA decides whether your CPU and your RAM are even introduced.</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Black-Friday traffic peaks. The autoscaler is racing to spin up nodes but the cluster's saturated. The team's critical payment service is Pending — there's no room. Meanwhile, a 4-hour batch ML training job is happily eating four nodes' worth of GPU. <em>The training job is not Black-Friday-critical, but the scheduler doesn't know that.</em> Result: payments degrade for 12 minutes while ops humans manually kill the training. The fix is <strong>PriorityClass + preemption</strong>: critical Pods get a priority of 1000, batch jobs get 10, and when the critical Pod can't fit, the scheduler evicts the batch automatically. Today's lesson.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>PriorityClass + preemption</strong> decides who runs when the cluster is full. <strong>Dynamic Resource Allocation (DRA)</strong> — GA in K8s 1.34 — replaces ad-hoc device plugins with a structured CRD model for GPUs, FPGAs, NICs. <strong>Topology Manager</strong> + <strong>CPU Manager</strong> keep latency-sensitive workloads on the same NUMA node as their memory.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>When the cluster is full, who wins?</h2>
+    <p>The basic scheduler (Lesson 22) places Pods on nodes that fit them. But when nothing fits, by default the Pod just stays Pending. That's fine for batch work; it's terrible for production traffic-serving workloads. <strong>Pod priority + preemption</strong> tells the scheduler: "if this Pod can't fit, evict lower-priority Pods to make room."</p>
+    <p>You define a <code>PriorityClass</code> object cluster-wide (<code>system-cluster-critical</code> = 2000000000, <code>system-node-critical</code> = 2000001000 are reserved; user-defined classes typically range from 0 to 1 billion). Pods reference a <code>priorityClassName</code>. When a high-priority Pod can't be scheduled, the scheduler picks the lowest-priority Pod(s) it can evict to free up the resources, evicts them (gracefully, with a configurable termination grace period), and places the high-priority Pod.</p>
+    <p>The classic three-tier setup: <code>critical</code> (=1000) for traffic-serving workloads, <code>standard</code> (=500) for the rest of production, <code>batch</code> (=10) for non-urgent work. Add an <code>opportunistic</code> (=-100) for spot-instance throwaway work that gets nuked first. Most clusters need exactly this hierarchy.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · Dynamic Resource Allocation (DRA)</span>
+    <h2>GPUs (and friends) get a structured API — GA in 1.34</h2>
+    <p>For years, "give my Pod a GPU" was implemented via the device-plugin API: a privileged DaemonSet on the node, an ad-hoc <code>resources.limits: nvidia.com/gpu: 1</code> field, no support for sharing, no support for "I want a GPU with at least 80GB," no support for FPGAs / RDMA NICs / SR-IOV VFs as first-class objects. It was a hack that lasted a decade.</p>
+    <p><strong>Dynamic Resource Allocation (DRA)</strong> — GA in Kubernetes 1.34 — replaces device plugins with a proper API:</p>
+    <ul>
+      <li><strong>DeviceClass</strong> — cluster-scoped: "this is a class of devices, here's what attributes they have, here's the driver."</li>
+      <li><strong>ResourceClaim</strong> — namespace-scoped: a Pod's request for a device — "I need an H100 with at least 80 GiB and CUDA 12.4."</li>
+      <li><strong>ResourceClaimTemplate</strong> — like a PVC template: a Pod can ask for a one-shot claim that gets created and torn down with the Pod.</li>
+      <li><strong>ResourceSlice</strong> — the kubelet publishes one per node, listing the actual devices available with their attributes.</li>
+    </ul>
+    <p>DRA solves what device plugins couldn't: structured attributes (CEL expressions in claims), partitioned devices (MIG slices), inter-Pod sharing of a device (one ResourceClaim → multiple Pods), and the basic dignity of being a real K8s object.</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>If you're starting a fresh cluster on K8s 1.34+, use DRA from day 1. If you're on an older cluster, the device plugin API still works — and the major vendors (NVIDIA, Intel, AMD) ship both DRA drivers and legacy device plugins for the transition. The migration is being driven by NVIDIA's MIG (Multi-Instance GPU) story; sharing a single H100 across multiple Pods isn't really expressible without DRA.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A K8s 1.34 cluster has a critical payment Pod stuck Pending. There are six batch jobs running with priority 10; the payment Pod has priority 1000. Cluster is full. What does the scheduler do?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Wait — it can't move running Pods</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Identify the smallest set of priority-10 Pods whose eviction would free enough room for the priority-1000 Pod, evict them gracefully, then schedule the payment Pod</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Force the payment Pod onto an existing node, killing whichever Pod it lands on</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Preemption is graceful: scheduler picks victims with the goal of minimising disruption, sends them through normal Pod termination (preStop hooks, grace period), and places the high-priority Pod once room is free. Time-to-place is typically the grace period (default 30s).</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · NUMA, CPU pinning, Topology Manager</span>
+    <h2>When microseconds matter</h2>
+    <p>Modern servers have multiple <strong>NUMA nodes</strong> — physically separate CPU sockets each with attached RAM. Accessing memory on the local NUMA node is fast (~80ns); going across the inter-socket link to memory on another NUMA node is 2-3× slower. For latency-sensitive workloads (HFT, real-time inference, NFV), this matters.</p>
+    <p>K8s exposes three coordinated managers:</p>
+    <ul>
+      <li><strong>CPU Manager</strong> (kubelet feature) — with <code>policy: static</code>, dedicates whole CPU cores to Guaranteed-QoS Pods that ask for integer CPU. Other Pods stay off those cores. Removes context-switching jitter.</li>
+      <li><strong>Memory Manager</strong> — pins memory allocation to specific NUMA nodes.</li>
+      <li><strong>Topology Manager</strong> — coordinates the above plus device assignments (GPUs, NICs) so they all land on the same NUMA node. <code>policy: single-numa-node</code> = enforce same-NUMA; <code>restricted</code> = allow cross-NUMA but flag; <code>best-effort</code> = try, don't enforce.</li>
+    </ul>
+    <p>Combined effect: a latency-sensitive Pod gets dedicated CPU cores, RAM allocated on the same NUMA node, and (if it asked for one) a GPU/NIC also on that NUMA node. Nothing crosses the inter-socket link. Tail latency drops by 20-50% in extreme cases.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · Scheduler profiles + multiple schedulers</span>
+    <h2>When one scheduler isn't enough</h2>
+    <p>A <strong>scheduler profile</strong> is a named configuration of the kube-scheduler's plugins, scores, and weights. The default profile (<code>default-scheduler</code>) handles every Pod that doesn't specify <code>spec.schedulerName</code>. You can run multiple profiles in the same kube-scheduler process for different workload types — or run a separate scheduler binary entirely.</p>
+    <p>Common patterns:</p>
+    <ul>
+      <li><strong>Bin-packing for batch:</strong> a profile with <code>NodeResourcesFit: scoring=MostAllocated</code> packs Pods tightly to maximise spot-eviction efficiency. Default profile uses <code>LeastAllocated</code> for spread.</li>
+      <li><strong>Latency-optimised profile:</strong> heavy weight on <code>InterPodAffinity</code> + <code>NodeAffinity</code> + <code>TopologyManager</code> hint, lighter on resource utilisation.</li>
+      <li><strong>Volcano / Yunikorn:</strong> entirely separate batch schedulers for ML training (gang scheduling, queues, fair-share).</li>
+    </ul>
+    <p>The custom-plugin SDK lets you write Go plugins for filter/score/permit/reserve/postBind phases. Most users don't need this — they need to combine existing plugins differently. But for the cases that do need it, the SDK is mature.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-priority: cluster full → critical Pod sits Pending. Engineer wakes up, manually kills batch jobs, prays they didn't lose state. GPU requests by string match (<code>nvidia.com/gpu</code>) — no way to ask for "H100 with 80 GiB" or "MIG slice." Latency-sensitive Pods scheduled wherever; tail latency wobbles for unexplained reasons.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>PriorityClass + preemption → cluster full + critical incoming → batch evicted automatically, critical placed in seconds. DRA → declarative ResourceClaim with attributes; scheduler matches structurally. Topology Manager → CPU + memory + GPU all on same NUMA node; tail latency stable.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">DRA is the most consequential scheduler change since the original K8s API. By 2027, device plugins will look quaint.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this district</h2>
+<p>Back to Dispatch Office, but now we're past the routing board into the VIP wing. Three new desks. The <strong>priority desk</strong> hands out lane stickers — VIP, premium, regular, walk-in. When the road is jammed and a VIP truck can't move, the dispatcher pulls a regular truck to the side (gracefully — the regular driver's called, given time to finish loading) and lets the VIP through. The <strong>specialty equipment desk</strong> (DRA) is where trucks request specific tools — "I need a refrigerated trailer with 80 cubic feet" — and the desk matches against the actual truck inventory by attribute, not by name. The <strong>route engineering desk</strong> (Topology Manager) handles trucks that need to stay on one specific highway loop because their cargo is sensitive to inter-zone transit.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>VIP / premium / regular lane stickers</td><td><code>PriorityClass</code> objects</td></tr>
+          <tr><td>Pulling the regular truck aside for the VIP</td><td>Preemption + graceful eviction</td></tr>
+          <tr><td>"I need a refrigerated trailer with 80 cubic feet"</td><td><code>ResourceClaim</code> with attribute selectors</td></tr>
+          <tr><td>The truck inventory at each depot</td><td><code>ResourceSlice</code> published by kubelet</td></tr>
+          <tr><td>"This is a refrigerated trailer" classification</td><td><code>DeviceClass</code></td></tr>
+          <tr><td>Trucks that must stay on one highway loop</td><td>Topology Manager <code>single-numa-node</code> policy</td></tr>
+          <tr><td>Different routing manuals for different cargo types</td><td>Scheduler profiles</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real DRA is a structured API with CEL expressions, not a paper request. And NUMA is a hardware reality of how RAM is wired to CPU sockets — there's no "highway loop" actually moving anything; it's electrons over a memory bus.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Some toys are special — they go first. If the toy box is full, regular toys move out so the special toy can fit. Some toys need a specific kind of plug (a GPU plug). Some toys break if their batteries are too far away — they need batteries right next to them.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Three advanced scheduling primitives. <strong>PriorityClass</strong> + preemption: critical Pods evict lower-priority Pods when the cluster is full. <strong>DRA</strong> (Dynamic Resource Allocation, GA in 1.34): structured request/match for GPUs/FPGAs/NICs with attributes ("H100 with 80 GiB"); replaces the legacy device-plugin API. <strong>Topology Manager</strong> + CPU Manager + Memory Manager: keep latency-sensitive workloads' CPU, RAM, and devices co-located on the same NUMA node. Plus scheduler profiles for using different bin-packing strategies for different workload types.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams use this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS during traffic spikes</p><p><code>critical</code> = 1000 (payment), <code>standard</code> = 500 (everything user-facing), <code>batch</code> = 10 (analytics, ML), <code>opportunistic</code> = -100 (spot-eligible). When traffic spikes preempt batch and opportunistic. The autoscaler then catches up. SREs sleep through what would have been a paging incident.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank running ML training on shared H100s</p><p>DRA + NVIDIA's DRA driver. Each Pod's <code>ResourceClaim</code> requests one MIG slice of an H100 — say 1g.10gb (1/7 of an H100). Scheduler matches by attribute. Eight Pods can share one H100. Pre-DRA: each Pod requested a whole H100 — 8× the cost.</p></div>
+      <div class="scenario"><p class="scenario-name">A trading firm running latency-sensitive Pods</p><p>Topology Manager <code>policy: single-numa-node</code>. CPU Manager <code>policy: static</code>. Pods request integer CPU, Guaranteed QoS. Memory Manager pins RAM. Tail latency P99 dropped from 2.1ms to 0.7ms with no application change.</p></div>
+      <div class="scenario"><p class="scenario-name">An ML lab running Volcano alongside default scheduler</p><p>Default scheduler handles user-facing workloads. Volcano (in <code>kube-system</code>) handles ML training jobs with gang scheduling — all 16 workers must start at once or none start (no half-started training). Different <code>schedulerName</code> per job. Both schedulers coexist because they don't fight over the same Pods.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> Preemption kicks in instantly.</div><div class="misc-row misc-truth"><strong>Truth:</strong> Evicted Pods get their normal grace period (default 30s, configurable per-Pod). The high-priority Pod waits for the eviction. Total time-to-place ≈ grace period + scheduler latency. Plan for ~1 minute, not instant.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> DRA replaces resource requests/limits.</div><div class="misc-row misc-truth"><strong>Truth:</strong> No. CPU and memory are still <code>resources.requests/limits</code> as before. DRA is for <em>devices</em> — GPUs, FPGAs, RDMA NICs, SR-IOV VFs. The two systems coexist.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> Topology Manager <code>single-numa-node</code> always speeds things up.</div><div class="misc-row misc-truth"><strong>Truth:</strong> Only for workloads that pin CPU, memory, and devices. For workloads that don't request integer CPU or specific devices, the policy has no effect. Worse: in resource-constrained clusters it can cause Pending Pods that would have placed cross-NUMA happily.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's a PriorityClass?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Cluster-scoped object mapping a name to an integer priority value. Pods reference it via <code>priorityClassName</code>. Higher values = higher priority. Two reserved system classes: <code>system-cluster-critical</code> + <code>system-node-critical</code>.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When does preemption happen?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">When a Pod can't be scheduled because no node fits and a lower-priority Pod's eviction would create room. Scheduler picks victims (smallest set, lowest priority), evicts gracefully, places the high-priority Pod.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does DRA stand for?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Dynamic Resource Allocation. GA in K8s 1.34. Modern API for declaring and matching specialized devices (GPUs, FPGAs, NICs). Replaces device plugins.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Four DRA objects?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>DeviceClass</code> (cluster-scoped, like StorageClass for devices), <code>ResourceClaim</code> (namespace-scoped, the request), <code>ResourceClaimTemplate</code> (like volumeClaimTemplates), <code>ResourceSlice</code> (kubelet-published inventory).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does CPU Manager <code>static</code> policy do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Dedicates whole CPU cores to Pods with Guaranteed QoS that request integer CPU. Other Pods are kept off those cores. Removes context-switching jitter for the dedicated Pod.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Topology Manager <code>single-numa-node</code> policy?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Refuses to schedule a Pod unless its CPU, memory, and (DRA) devices can all be allocated on the same NUMA node. Hard same-NUMA enforcement; can cause Pending.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Scheduler profile vs separate scheduler?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Profile = named config in the same kube-scheduler process; Pods opt in via <code>schedulerName</code>. Separate scheduler = different binary (e.g., Volcano) with its own kube-scheduler process. Both coexist because they only handle Pods naming them.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Bin-packing vs spreading scoring?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>NodeResourcesFit: MostAllocated</code> = pack Pods tightly (good for batch + spot eviction). <code>LeastAllocated</code> = spread (default; good for traffic-serving). Configured per scheduler profile.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A team accidentally creates a PriorityClass with priority 2,000,000,001 — higher than even <code>system-node-critical</code>. What's the risk?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Their Pod can preempt <em>cluster-critical</em> components — kube-proxy, CNI Pods, even kubelet's static Pods. If the high-priority Pod misbehaves and OOMs the node, the very system Pods that would recover the node have already been evicted. <strong>Mitigation:</strong> use ValidatingAdmissionPolicy or Kyverno to cap user-defined priority at, say, 1,000,000,000. Reserved values (≥2,000,000,000) should be off-limits to non-system creators.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">Pre-DRA, the team's Pod-spec for GPU was <code>resources.limits: nvidia.com/gpu: 1</code>. They migrate to DRA on K8s 1.34. What's the new shape?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Three steps: (1) Define a <code>DeviceClass</code> for NVIDIA GPUs (typically pre-installed by the NVIDIA DRA driver). (2) Per Pod, declare a <code>ResourceClaimTemplate</code> referencing that DeviceClass with attribute selectors (e.g., MIG profile). (3) In the Pod spec, list the claim under <code>spec.resourceClaims</code> and reference it from the container. The old <code>nvidia.com/gpu: 1</code> still works for the legacy device plugin path during transition; both can coexist on a node. Most teams migrate workload-by-workload over a quarter.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">Black Friday 2026. Traffic spikes 4×. Critical payment Pods are Pending; the autoscaler is mid-flight. <strong>Click for the priority playbook in action. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the priority playbook in action</span>The setup: <code>critical=1000</code> (payment), <code>standard=500</code>, <code>batch=10</code>, <code>opportunistic=-100</code>. Sequence of events at minute 0:00 — traffic spike begins; payment HPA wants 8 more replicas; cluster has no fit. <strong>0:01</strong> — scheduler identifies preemption candidates: 12 opportunistic spot Pods running ML inference experiments. Issues evictions with 30s grace. <strong>0:31</strong> — eviction complete; payment Pods place. <strong>0:45</strong> — Cluster Autoscaler / Karpenter (Lesson 34) finishes provisioning new nodes; opportunistic Pods reschedule there. <strong>2:00</strong> — system stable, batch / opportunistic catch up on the new capacity. <strong>Total user impact:</strong> 30 seconds of slightly elevated payment latency. <strong>Without priority + preemption:</strong> 12 minutes of degraded payments while ops humans manually killed batch jobs. <strong>The lesson:</strong> priority hierarchy isn't a feature you bolt on during incidents — it's a posture you bake in before the incident.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">PriorityClass</div><div class="gloss-def">Cluster-scoped object: name → integer priority. Pods reference it via <code>priorityClassName</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Preemption</div><div class="gloss-def">Scheduler-driven eviction of lower-priority Pods to make room for a higher-priority Pod that can't fit.</div></div>
+      <div class="gloss-item"><div class="gloss-name">DRA (Dynamic Resource Allocation)</div><div class="gloss-def">K8s 1.34 GA. Structured API for specialized devices. Replaces device plugins.</div></div>
+      <div class="gloss-item"><div class="gloss-name">DeviceClass</div><div class="gloss-def">DRA cluster-scoped object: defines a class of devices and their attributes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ResourceClaim</div><div class="gloss-def">DRA namespace-scoped object: a Pod's request for a device.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ResourceClaimTemplate</div><div class="gloss-def">DRA template referenced from a Pod, generates a per-Pod claim like volumeClaimTemplates.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ResourceSlice</div><div class="gloss-def">DRA kubelet-published object: per-node inventory of available devices and attributes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">CPU Manager</div><div class="gloss-def">kubelet feature. <code>static</code> policy dedicates cores to Guaranteed-QoS Pods with integer CPU requests.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Memory Manager</div><div class="gloss-def">kubelet feature pinning memory allocation to specific NUMA nodes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Topology Manager</div><div class="gloss-def">kubelet coordinator for CPU + memory + device locality. Policies: best-effort, restricted, single-numa-node.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Scheduler profile</div><div class="gloss-def">Named plugin/scoring configuration. Multiple profiles per kube-scheduler process. Pods opt in via <code>schedulerName</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Volcano / Yunikorn</div><div class="gloss-def">Alternative schedulers for batch / ML workloads with gang scheduling and fair-share.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>PriorityClass + preemption</strong> decides who runs when the cluster is full. <strong>Dynamic Resource Allocation (DRA)</strong> — GA in K8s 1.34 — replaces ad-hoc device plugins with a structured CRD model for GPUs, FPGAs, NICs. <strong>Topology Manager</strong> + <strong>CPU Manager</strong> keep latency-sensitive workloads on the same NUMA node as their memory.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 23 complete</span>
+    <p>PriorityClass + preemption decides who runs when full. DRA is the modern device API (GPUs, FPGAs, NICs) — GA in 1.34. Topology Manager keeps CPU, memory, and devices on the same NUMA node for latency-sensitive workloads. Scheduler profiles let you mix bin-packing strategies.</p>
+    <p class="recap-next"><strong>Next — Lesson 24: Networking Foundations & CNI.</strong> The Module 12 networking deep dive begins. Linux network primitives, the CNI specification, MTU debugging, and the major plugin landscape (Cilium, Calico, Flannel). Switchboard, behind the wires.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 23 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+</script>
+
+</body>
+</html>
