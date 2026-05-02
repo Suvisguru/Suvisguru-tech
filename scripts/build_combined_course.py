@@ -49,6 +49,8 @@ LESSONS = [
     ("13", "preview-kubernetes-lesson-13.html", "Cluster Architecture"),
     ("14", "preview-kubernetes-lesson-14.html", "The K8s API & YAML"),
     ("15", "preview-kubernetes-lesson-15.html", "Pods Deep Dive"),
+    ("16", "preview-kubernetes-lesson-16.html", "Workload Controllers · Deployment, StatefulSet, DaemonSet, Job, CronJob"),
+    ("17", "preview-kubernetes-lesson-17.html", "Services & Networking · ClusterIP, NodePort, LoadBalancer, Ingress, NetworkPolicy"),
 ]
 
 
