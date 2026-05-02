@@ -694,3 +694,28 @@ False-positive notes: grep for "the spec" caught "the specific machine" (L04) an
 - **§9.5 Reading spot-check:** read L08 (Module 2 entry) end-to-end as a layman, paying attention to whether the L7.5 cross-link banner lands clearly. Read L12 (PID 1) for the CYOA harbour-clock ASCII reveal — confirm the visual lands the failure moment.
 
 **Revisit when:** A future user testing pass surfaces a different class of canon hit the grep didn't catch (e.g., conjugated forms like "agentless" or "speccing"). At that point, expand the canon-grep regex set rather than re-do the sweep.
+
+---
+
+## 2026-05-02 — K-Town revision Phase 6 follow-up — dot-strip list-style fix
+
+**Context:** Browser visual review at viewport widths below 720px revealed that the K-Town mobile dot-strip rendered as unreadable mush — default browser `list-style-type: decimal` was painting "1. 2. 3. …" numerals on top of the 16 dot pins. The original scaffolding CSS block (built in Phase 2, propagated verbatim across all 16 lesson files in Phase 5) didn't reset list-style on `.ktown-strip`. Bug visible on every lesson at narrow viewport widths.
+
+**Decision:** Add a base-level CSS rule to the scaffolding block:
+
+```css
+.ktown-strip{list-style:none;padding:0;margin:0}
+.ktown-strip,.ktown-strip-label{display:none}
+```
+
+The reset rule sits *outside* the `@media (max-width:720px)` block so it applies whether the strip is hidden (>720px desktop) or shown (≤720px mobile). The existing `margin:0;padding:0` inside the `@media` block become redundant but harmless — left untouched to keep the diff minimal.
+
+Applied via `scripts/fix_ktown_strip_liststyle.py` to all 16 K-COM lesson files (L01–L15 + L7.5 primer) in one pass. Idempotent — a second run finds no remaining instances of the original combined-only rule and exits cleanly. Verified all 16 files now contain the new base rule and still contain the original combined display:none rule.
+
+`notes/k8s-component-templates.md` updated to document the `list-style:none` requirement so future scaffolding propagation doesn't reintroduce the bug.
+
+**Reasoning:** Single-line CSS fix to a 16-file scaffolding block — script is the right tool for reliability and idempotency, same rationale as the per-batch propagation scripts. Keeping the original combined `display:none` rule intact (rather than refactoring it) minimises the diff and preserves every other CSS rule's specificity exactly. Putting the reset on a base rule (rather than inside the `@media` block) is forward-proof: if STYLE.md or a future scaffolding refactor extends the strip to other contexts (a sticky-header micro-strip, an in-flow tracker), the list-style reset already applies.
+
+**Alternatives considered:** Suppress markers via `.ktown-strip::marker { content: '' }` — rejected. `::marker` works for `display:list-item` items and is well-supported in modern Chrome / Safari / Firefox, but its handling of the bullet/number gap reservation differs across browsers (some leave the gutter visible even when the marker content is empty). `list-style: none` collapses the gutter completely and is the standard idiomatic reset, supported in every browser since the 1990s. Use `<ul>` instead of `<ol>` and rely on the smaller default bullet — rejected, the dot-strip is a *position-in-sequence* indicator (lesson 1 of 16, lesson 2 of 16, etc.), so the underlying semantic *is* an ordered list; switching to `<ul>` would be semantically wrong even if the visual is identical with the reset applied. Add the reset only inside the `@media` block — rejected, even though the strip is `display:none` above 720px and the bullets aren't visible there, putting the reset on the base rule is one source of truth that survives any future change to the strip's visibility breakpoint.
+
+**Revisit when:** Future scaffolding work refactors the dot-strip from `<ol>` to a non-list element (e.g., `<div role="list">` with `<div role="listitem">` children — semantically equivalent, ARIA-explicit, and avoids the implicit list-style problem at the root). At that point, the `list-style:none` rule becomes unnecessary and can be removed from the scaffolding CSS block. The `<ol>` choice was historical (the strip was originally drafted with `<ol>` because "ordered" matched the pedagogical intent of the lesson sequence); migrating to `role="list"` would be cleaner long-term but is not worth the one-time refactor cost on its own.

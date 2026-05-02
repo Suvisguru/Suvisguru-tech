@@ -80,6 +80,15 @@ For each lesson, the `active` class moves to that lesson's pin in the strip
 `<span class="visually-hidden">…</span>` accessibility line both update with
 the lesson's district name and "lesson N of 16" position.
 
+**Important — the `.ktown-strip` CSS must include `list-style: none; padding: 0; margin: 0;`** as a base rule (outside the `@media (max-width:720px)` block). The strip is an `<ol>`; without the list-style reset, browsers paint default decimal numerals on top of the dot pins below 720px and the strip is unreadable. The current scaffolding block in L01 carries:
+
+```css
+.ktown-strip{list-style:none;padding:0;margin:0}
+.ktown-strip,.ktown-strip-label{display:none}
+```
+
+Putting the reset on a base rule (rather than inside the `@media` block) means it applies whether the strip is hidden (>720px) or shown (≤720px). If a future scaffolding refactor uses `<div role="list">` instead of `<ol>`, this rule becomes unnecessary — see DECISIONS 2026-05-02 "K-Town revision Phase 6 follow-up — dot-strip list-style fix."
+
 ### 4. Nightmare opener (`<div class="nightmare">`) — after hero `</section>`, before Section 1
 
 ```html
