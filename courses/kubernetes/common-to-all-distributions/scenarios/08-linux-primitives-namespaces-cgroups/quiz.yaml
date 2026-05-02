@@ -1,0 +1,47 @@
+# Quiz — Lesson 08, How Containers Actually Work
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A container running as non-root user keeps failing with "permission
+      denied" when binding to port 80. What's happening, and what are two
+      fixes?
+    answer: |
+      Ports below 1024 require CAP_NET_BIND_SERVICE on Linux. Modern
+      container runtimes drop this capability by default for security.
+      Two fixes: (1) bind to port 8080+ and let your load balancer/Service
+      map external port 80 to internal 8080 (preferred — keeps the
+      container low-privilege). (2) Explicitly add NET_BIND_SERVICE to the
+      container's capability set in the pod spec under
+      securityContext.capabilities.add. The first is the cleaner pattern.
+
+  - id: 2
+    prompt: |
+      A pod has memory limit 256Mi and the container keeps getting
+      OOMKilled. The app reports it only uses ~200MB. Why might it still
+      be OOMKilled?
+    answer: |
+      The cgroup memory accounting includes more than the app's heap:
+      page cache, anonymous mappings, kernel memory, etc. The 256Mi limit
+      is enforced on the cgroup's total memory.usage_in_bytes, which
+      includes everything the container has caused the kernel to
+      allocate. Common causes of "I only use 200MB but it's OOMKilled at
+      256MB": JVM/Node off-heap, large file caches, memory-mapped files.
+      Fix: bump the limit or set memory.high (cgroup v2) for soft
+      pressure before the hard kill.
+
+  - id: 3
+    prompt: |
+      A DevOps engineer wants to "just test something" in a container and
+      adds hostNetwork: true to the pod spec. What did they just give up?
+    answer: |
+      The NET namespace. The container now shares the host's network
+      stack — same IP addresses, same interfaces, same firewall rules.
+      It can bind to any host port (and conflict with anything else on
+      the host using that port). It can sniff traffic on host interfaces.
+      Service discovery via Kubernetes Services often breaks because the
+      pod has the host's IP, not a pod IP. Powerful for specific use
+      cases (CNI plugins, host-level monitoring) — but a security and
+      operational footgun for normal apps. Audit hostNetwork usage
+      regularly.

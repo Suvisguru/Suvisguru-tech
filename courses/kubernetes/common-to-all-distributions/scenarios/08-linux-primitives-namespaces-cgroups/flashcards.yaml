@@ -1,0 +1,35 @@
+# Flashcards — Lesson 08, How Containers Actually Work
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "What is a container, technically?"
+    back: "A regular Linux process placed in fresh namespaces (private views), constrained by cgroups (resource budgets), and restricted by capabilities + seccomp + LSM (security policies). All kernel features."
+
+  - id: 2
+    front: "Name the 8 namespace types"
+    back: "PID, NET, MNT, UTS, IPC, USER, cgroup, time. Each gives a private view of one specific kind of resource."
+
+  - id: 3
+    front: "cgroups v1 vs v2?"
+    back: "v1: separate hierarchies per resource (CPU hierarchy, memory hierarchy, etc.). v2: unified single hierarchy. v2 is the modern default since ~2022 (Kubernetes 1.25+ requires it on certain features)."
+
+  - id: 4
+    front: "What are Linux capabilities?"
+    back: "~40 fine-grained permissions chopping the old 'root vs not-root' model. Examples: NET_BIND_SERVICE (bind to port < 1024), SYS_TIME (change clock), SYS_ADMIN (most-dangerous, do not grant). Drop everything you don't need."
+
+  - id: 5
+    front: "What is seccomp?"
+    back: "Linux feature filtering which system calls a process can make. Modern container runtimes apply a default profile blocking ~70 dangerous syscalls. Custom profiles allow tighter restriction for sensitive workloads."
+
+  - id: 6
+    front: "AppArmor vs SELinux?"
+    back: "Both are Linux Security Modules (LSM) providing mandatory access control. AppArmor is path-based, simpler. SELinux is label-based, more powerful but harder. Ubuntu/Debian default to AppArmor; RHEL/Fedora default to SELinux."
+
+  - id: 7
+    front: "What does hostPID: true do?"
+    back: "Disables the PID namespace for the container, sharing the host's PID namespace instead. Container can see all host processes via ps. Useful for debugging, dangerous for security. Same pattern: hostNetwork, hostIPC."
+
+  - id: 8
+    front: "Why is the kernel shared?"
+    back: "Containers are processes on the host kernel — that's the whole point of containers vs VMs. It makes them lightweight (no boot time, no OS overhead per container). The trade-off: a kernel exploit can break out of any container. For untrusted multi-tenancy, use VMs or sandboxed runtimes (gVisor, Kata)."

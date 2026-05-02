@@ -1,0 +1,84 @@
+# Intake brief — Lesson 08, K-COM
+# Topic: How Containers Actually Work — Linux Namespaces, cgroups, Capabilities, seccomp, LSM
+# Module 2 (Containers Comprehensive) · Lesson 1 of 5
+# Format: Standard 7-section PROJECT.md structure (mirrors Lessons 01-07).
+
+lesson:
+  title: "Linux Namespaces · cgroups · Capabilities (How Containers Actually Work)"
+  slug: "08-linux-primitives-namespaces-cgroups"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 8
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "office building — private offices (namespaces) + utility meters per office (cgroups) + doormen (capabilities/seccomp/LSM)"
+  module: "Module 2 · Containers (Comprehensive) · Lesson 1 of 5"
+
+learner_profile:
+  prerequisites:
+    - "Module 1 (Lessons 01-07): Kubernetes foundations"
+    - "Comfort with the idea that containers are 'lighter than VMs'"
+  assumed_zero_knowledge_of:
+    - "Linux kernel namespaces (PID, NET, MNT, UTS, IPC, USER, cgroup, time)."
+    - "cgroups v1 vs v2 (resource budget enforcement)."
+    - "Linux capabilities (fine-grained permissions)."
+    - "seccomp (system call filtering)."
+    - "AppArmor / SELinux (mandatory access control)."
+
+learning_outcomes:
+  - "Learner can name all 8 Linux namespace types and what each isolates."
+  - "Learner can explain the difference between cgroup v1 and v2."
+  - "Learner can describe what happens when a container hits its memory cgroup limit (OOMKilled with exit code 137)."
+  - "Learner understands why dropping capabilities is good practice."
+  - "Learner can explain hostNetwork/hostPID/hostIPC and why they're security concerns."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Hero: office building cross-section with 4 stacked offices, each with own meter + doorman, sharing building utilities (kernel)"
+    word_target: 320
+  section_1_5_primitives:
+    illustration: "5 tile cards: Namespaces (rooms), cgroups (meter), capabilities (keys), seccomp (checkpoint), AppArmor/SELinux (shield)"
+    description: "Five Linux primitives that together make a container"
+  section_1_7_namespaces:
+    illustration: "8-tile mini-grid showing each namespace type with one-line description"
+    description: "PID · NET · MNT · UTS · IPC · USER · cgroup · time"
+  section_2_before_after:
+    illustration: "Without namespaces (chaotic shared system, tangled processes) vs with namespaces+cgroups (4 isolated containers each with budgets)"
+    word_target_each_side: 80
+  section_3_analogy:
+    primary: "Office building with private offices and utility meters"
+    illustration: "Already shown in hero"
+  section_4_eli_pair:
+    eli5: "Playroom with curtains, snack bowls with limits, teacher checking. Under 100 words."
+    eli10: "namespaces + cgroups + caps + seccomp + LSM, kernel-level. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "Container OOM-killed at 256Mi (cgroup memory limit enforcement)"
+      - "Container can't bind to port 80 (CAP_NET_BIND_SERVICE dropped)"
+      - "Container A sees container B's processes (hostPID: true mistake)"
+      - "Custom seccomp profile for sandboxed code execution"
+  section_6_animated_svg:
+    modes: ["Build a container (4 steps)", "Memory limit hit (OOMKilled)", "hostPID: true escape"]
+    description: "Mode 1: kernel adds namespaces → cgroups → capabilities → seccomp/LSM. Mode 2: memory usage rises → OOMKilled. Mode 3: container sees host processes."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-08.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can name 5+ namespace types after reading."
+  - "First-timer understands why hostPID: true is a security concern."
+  - "First-timer can explain OOMKilled in plain language."
+
+fact_check_anchors:
+  - "https://www.kernel.org/doc/html/latest/admin-guide/namespaces/"
+  - "https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html"
+  - "https://man7.org/linux/man-pages/man7/capabilities.7.html"
+  - "https://docs.kernel.org/userspace-api/seccomp_filter.html"
+  - "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/"
