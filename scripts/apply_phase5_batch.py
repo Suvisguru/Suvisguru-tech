@@ -972,9 +972,62 @@ LESSONS["L14"] = dict(
 )
 
 
+LESSONS["L15"] = dict(
+    file="preview-kubernetes-lesson-15.html",
+    rail_key="L15", active_pin="kt-pin15", strip_key="L15",
+    district_name="Co-Living Quarter",
+    strip_label_district="Co-Living Quarter",
+    strip_label_pos="lesson 15 of 16",
+    a11y_phrase="Lesson 15 of 16, Co-Living Quarter.",
+    aria_label_today="K-Town district map: today we are at Co-Living Quarter, Lesson 15",
+    map_title_today="K-Town district map · today: Co-Living Quarter",
+    nightmare_text="Your team's web app needs Postgres ready before it starts. The Dockerfile has <code>sleep 5</code> in the entrypoint as a \"wait for DB\" hack. Tonight, Postgres takes 7 seconds to be ready. Your app crashes on its first query. The Pod restarts. Crashes again. Restarts. Hits <code>CrashLoopBackOff</code>. This lesson is about the Pod patterns — init containers, sidecars, ephemeral debug — that turn this whole class of pain into one-line YAML.",
+    stamp_takeaway="A Pod is the atomic unit of scheduling — one address, multiple containers sharing network and IPC. Init runs first, sidecars run alongside, ephemeral containers visit to debug.",
+    pc1_q="What's the atomic unit of scheduling in Kubernetes?",
+    pc1_opts=[("a) A container", False), ("b) A Pod", True), ("c) A node", False)],
+    pc1_feedback="<strong>Answer: b.</strong> The container is the <em>packaging</em> unit. The Pod is what Kubernetes places on a node. Most Pods have one container — but the rule \"one or more containers, scheduled together\" enables sidecars, init containers, and ephemeral debug.",
+    pc2_q="Your distroless container has no shell. It just started returning 500s. How do you debug it?",
+    pc2_opts=[("a) <code>kubectl exec -it ... bash</code> (won't work — no shell)", False), ("b) <code>kubectl debug -it broken-pod --image=busybox --target=app -- sh</code>", True), ("c) Restart the Pod and hope the bug goes away", False)],
+    pc2_feedback="<strong>Answer: b.</strong> <code>kubectl debug</code> adds an <em>ephemeral container</em> to the running Pod. Sibling to the broken container, sharing its PID namespace. You get a shell without modifying the production image.",
+    tl_rows=[("The co-living unit (one address, shared kitchen)", "A Pod (the atomic unit of scheduling)"), ("The roommates", "Containers inside the Pod"), ("The shared kitchen", "The network namespace (containers talk via <code>localhost</code>)"), ("The shared bathroom", "The IPC namespace"), ("Each roommate's bedroom", "Filesystem &amp; PID namespaces (per container)"), ("The doorbell at the front", "The Pod IP"), ("The handyman who came first", "An init container"), ("A helpful housemate alongside", "A sidecar container"), ("A visiting plumber", "An ephemeral debug container"), ("The superintendent + rent-control class", "The kubelet + QoS class (Guaranteed / Burstable / BestEffort)")],
+    analogy_stops_text="The analogy stops here: real co-living units have one front door but many bedrooms. Pods <em>can</em> share a PID namespace too (<code>shareProcessNamespace: true</code>), and any container can hold the Pod's IP — there's no \"main bedroom\" that's special.",
+    misconceptions=[("\"QoS class Guaranteed\" means the Pod always gets the memory it asks for.", "Guaranteed only affects <em>eviction priority</em> under node pressure. Within the Pod, the limit is still a hard cap — exceeding it = OOM, regardless of class."), ("Sidecars are just \"two containers in a Pod.\"", "Native sidecars (K8s 1.28+) are init containers with <code>restartPolicy: Always</code>. Start before main, stay running, properly handled at shutdown. Old-style \"just two containers\" had lifecycle gotchas."), ("The <code>pause</code> container is something you write.", "It's invisible infrastructure. Every Pod has one; you never see it in YAML. It holds the Pod's network/IPC namespaces open so app containers can come and go without losing the IP.")],
+    cyoa_setup="Your team sets <code>requests.memory: 1Gi</code> and <code>limits.memory: 1Gi</code> (QoS class: Guaranteed). The app spikes to 1.2Gi during bursts. <strong>Click to see what happens. ▼</strong>",
+    cyoa_button="Show what happened",
+    cyoa_tag_text="every burst",
+    cyoa_reveal="OOMKilled. Every burst. The team thought \"Guaranteed\" meant \"always gets the memory\" — it doesn't. It means \"request == limit, last to be evicted under <em>node</em> pressure.\" Within the Pod, the limit is a hard cap. <strong>Fix:</strong> raise the limit (becomes Burstable but survives spikes), or right-size the app. QoS is about node-level eviction priority, not Pod-level memory grants.",
+    old_mapping_block='''    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>Apartment</strong> = Pod (atomic unit, shares an address)</li>
+      <li><strong>Roommates</strong> = containers in the pod</li>
+      <li><strong>Shared kitchen</strong> = network namespace (talk via localhost)</li>
+      <li><strong>Shared bathroom</strong> = IPC namespace</li>
+      <li><strong>Separate bedrooms</strong> = filesystem &amp; PID namespaces (per container)</li>
+      <li><strong>Doorbell at the front</strong> = Pod IP</li>
+      <li><strong>Handyman who came first</strong> = init container</li>
+      <li><strong>Helpful housemate</strong> = sidecar</li>
+      <li><strong>Doorman</strong> = ambassador container</li>
+      <li><strong>Translator</strong> = adapter container</li>
+      <li><strong>Visiting plumber</strong> = ephemeral debug container</li>
+      <li><strong>Building superintendent</strong> = kubelet</li>
+      <li><strong>Reserved utilities</strong> = resource requests</li>
+      <li><strong>Maximum utilities allowed</strong> = resource limits</li>
+      <li><strong>Rent-control class</strong> = QoS class</li>
+    </ul>
+  </section>''',
+    old_third_quiz='''      <div class="quiz-card">
+        <p class="quiz-prompt">Team set <code>requests.memory: 1Gi</code> and <code>limits.memory: 1Gi</code> (QoS class: Guaranteed). App spikes to 1.2Gi during bursts and gets OOM-killed every time. They thought Guaranteed meant "always gets memory." Actual behavior?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Guaranteed QoS does NOT mean "this pod always gets the memory it asks for." It means "request == limit, AND this pod is the LAST to be evicted when the NODE is under memory pressure." Within the pod, the limit is still a hard cap — exceeding it = OOM kill, no exceptions. Class is irrelevant to your own limit. Two fixes: (1) Raise the limit. e.g., <code>request: 1Gi, limit: 2Gi</code>. Now the pod is Burstable but it can use up to 2Gi when needed. Cost: it can be evicted before Guaranteed pods if the node is under pressure (rare for healthy clusters). (2) Right-size the app. Profile peak memory and set both request and limit above the observed P99. Stay Guaranteed, but make the limit reflect reality. Lesson: QoS is about NODE-level eviction priority, not POD-level memory grants.</div>
+      </div>
+    </div>
+  </section>''',
+)
+
+
 # ----------- which lessons to process this run -----------
 
-ENABLED = ["L12", "L13", "L14"]
+ENABLED = ["L15"]
 
 
 def main() -> None:

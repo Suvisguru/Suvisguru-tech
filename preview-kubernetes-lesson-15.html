@@ -221,9 +221,160 @@
   .rst.on .rst-name{color:#8B5A00}
   .rst.nv .rst-name{color:#3F4A5E}
   .rst-when{font-size:12.5px;color:var(--ink);line-height:1.5;margin:0}
+  /* ============ LAYMAN-FIRST SCAFFOLDING (K-Town revision Phase 2) ============ */
+
+  /* Inline code inside section paragraphs (parity with L13) */
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+  /* Visually-hidden utility for screen-reader-only content */
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* District line — single-line K-Town pin under topbar */
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+
+  /* K-Town map */
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease)}
+  .ktown-map .pin .pin-circle{fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+
+  /* Nightmare opener */
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+
+  /* One-sentence stamp */
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:19px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box{background:var(--accent-soft)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+
+  /* Translation Legend (table inside §3) */
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'…in Kubernetes · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+
+  /* Pause-and-check */
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+
+  /* Common Misconceptions panel (start of §7) */
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+
+  /* Analogy-stops-here callout */
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+
+  /* Skip-if-new pill (defined for future lessons; unused in L01) */
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+
+  /* Persistent concept rail (desktop only, ≥1240px) */
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){
+    .concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50}
+  }
+
+  /* CYOA quiz reveal */
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  .cyoa-quiz .quiz-answer pre{font-family:'ui-monospace',monospace;font-size:12px;line-height:1.45;background:var(--bg-soft);padding:10px 12px;border-radius:var(--r-soft);overflow-x:auto;margin:10px 0;color:var(--ink-soft)}
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .ktown-map .pin .pin-circle,.pause-check-opt,.ktown-strip-pin{transition:none}
+    .quiz-reveal{animation:none}
+  }
 </style>
 </head>
 <body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the Kubernetes course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>what Kubernetes is</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>the reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how apps should be designed</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>when K8s makes sense</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how mature teams operate it</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how the project evolves</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>Linux foundations <small>(primer)</small></span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how containers actually work</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>runtimes &amp; the OCI standard</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how images are built</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how containers shut down</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>Pods deep dive</span><span class="concept-rail-here">← you are here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>workload controllers</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>services &amp; networking</span></div>
+</aside>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -233,16 +384,79 @@
   </div>
 </header>
 
+<p class="district-line">📍 Today's stop in K-Town: <strong>Co-Living Quarter</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: today we are at Co-Living Quarter, Lesson 15">
+    <title>K-Town district map · today: Co-Living Quarter</title>
+    <desc>Stylised map of K-Town. Each Kubernetes lesson maps to one named district. Mayor's Office is the city anchor and is highlighted as the current district.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/>
+      </linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/>
+      </linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#3F4A5E">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin active" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+  </svg>
+
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Co-Living Quarter</strong> <span>· lesson 15 of 16</span><span class="visually-hidden">Lesson 15 of 16, Co-Living Quarter.</span></p>
+</div>
+
 <main>
 
   <!-- ============================== HERO ============================== -->
   <section class="hero">
     <span class="eyebrow">Module 3 · Lesson 15 · the atom of K8s</span>
     <h1>Pods Deep Dive · Init · Sidecars · Ephemeral · QoS</h1>
-    <p class="hero-sub">A Pod is a <strong>shared apartment</strong>. The containers inside are <strong>roommates</strong> sharing the kitchen and bathroom (network + IPC), with handymen who finished setup before move-in (init) and helpful housemates running alongside (sidecars).</p>
+    <p class="hero-sub">A Pod is a <strong>co-living unit</strong>. The containers inside are <strong>roommates</strong> sharing the kitchen and bathroom (network + IPC), with handymen who finished setup before move-in (init) and helpful housemates running alongside (sidecars).</p>
 
     <div class="hero-illu">
-      <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A studio apartment cross-section: roof on top, two rooms inside (main bedroom on left, sidecar bedroom on right) flanking a shared kitchen and bathroom in the middle. A door on the left labeled with the Pod IP. Outside the door, an init container has just left. An ephemeral debug visitor stands inside the kitchen. The whole apartment is the Pod.">
+      <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A co-living unit cross-section: roof on top, two rooms inside (main bedroom on left, sidecar bedroom on right) flanking a shared kitchen and bathroom in the middle. A door on the left labeled with the Pod IP. Outside the door, an init container has just left. An ephemeral debug visitor stands inside the kitchen. The whole co-living unit is the Pod.">
         <defs>
           <linearGradient id="sky-grad-15" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#D6E6F0"/>
@@ -262,9 +476,9 @@
         <rect x="0" y="210" width="680" height="20" fill="#A0B070"/>
 
         <!-- Title -->
-        <text x="340" y="22" font-size="13" font-weight="700" fill="#3F4A5E" text-anchor="middle" letter-spacing="1.5">POD = ONE APARTMENT · ROOMMATES SHARE KITCHEN</text>
+        <text x="340" y="22" font-size="13" font-weight="700" fill="#3F4A5E" text-anchor="middle" letter-spacing="1.5">POD = ONE CO-LIVING UNIT · ROOMMATES SHARE KITCHEN</text>
 
-        <!-- ============ Apartment outer ============ -->
+        <!-- ============ Co-living unit outer ============ -->
         <!-- Roof -->
         <path d="M 60 70 L 340 32 L 620 70 Z" fill="#A04832" stroke="#5A2520" stroke-width="1.8"/>
         <!-- Chimney -->
@@ -278,7 +492,7 @@
         <line x1="260" y1="70" x2="260" y2="208" stroke="#5A4F45" stroke-width="1.5"/>
         <line x1="460" y1="70" x2="460" y2="208" stroke="#5A4F45" stroke-width="1.5"/>
 
-        <!-- Apartment number on roof -->
+        <!-- Co-living unit number on roof -->
         <text x="340" y="58" font-size="9" font-weight="700" fill="#FBF1D6" text-anchor="middle" letter-spacing="1">APT #10</text>
 
         <!-- Pod IP plaque on outer wall -->
@@ -384,28 +598,41 @@
         <text x="80" y="240" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">INIT</text>
         <text x="80" y="254" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">ran before move-in</text>
 
-        <text x="340" y="240" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">POD · APARTMENT</text>
+        <text x="340" y="240" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">POD · CO-LIVING UNIT</text>
         <text x="340" y="254" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">main + sidecar share kitchen + IPC</text>
 
         <text x="580" y="240" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">ONE POD IP</text>
         <text x="580" y="254" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">all roommates · same address</text>
 
         <!-- Bottom tagline -->
-        <text x="340" y="284" font-size="11" font-weight="700" fill="#3F4A5E" text-anchor="middle">One apartment · shared kitchen + IPC · handyman left · ephemeral visits in tile 4.</text>
+        <text x="340" y="284" font-size="11" font-weight="700" fill="#3F4A5E" text-anchor="middle">One co-living unit · shared kitchen + IPC · handyman left · ephemeral visits in tile 4.</text>
       </svg>
     </div>
   </section>
+
+  <!-- 3 AM Nightmare opener -->
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Your team's web app needs Postgres ready before it starts. The Dockerfile has <code>sleep 5</code> in the entrypoint as a "wait for DB" hack. Tonight, Postgres takes 7 seconds to be ready. Your app crashes on its first query. The Pod restarts. Crashes again. Restarts. Hits <code>CrashLoopBackOff</code>. This lesson is about the Pod patterns — init containers, sidecars, ephemeral debug — that turn this whole class of pain into one-line YAML.</p>
+    </div>
+  </div>
+
+  <!-- One-sentence stamp · top placement -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> A Pod is the atomic unit of scheduling — one address, multiple containers sharing network and IPC. Init runs first, sidecars run alongside, ephemeral containers visit to debug.</p>
+  </div>
 
   <!-- ============================== SECTION 1 — CONCEPT ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 1 · Concept</span>
     <h2>The Pod is the atom of scheduling</h2>
-    <p>A <strong>Pod</strong> is the atomic unit of scheduling in Kubernetes. Not a container — a Pod. The container is the unit of packaging; the Pod is what K8s actually places on a node and reasons about. 90% of pods have exactly one container, but the rule that says "one or more containers, scheduled together, sharing some namespaces" enables the rest of K8s.</p>
-    <p><strong>What's shared inside a Pod.</strong> Network namespace (same Pod IP, same port space — containers talk via <code>localhost:port</code>), IPC namespace (POSIX shared memory, semaphores), optionally PID namespace (<code>shareProcessNamespace: true</code>), and any pod-level Volumes.</p>
+    <p>A <strong>Pod</strong> is the atomic unit of scheduling in Kubernetes. Not a container — a Pod. The container is the unit of packaging; the Pod is what K8s actually places on a node and reasons about. 90% of Pods have exactly one container, but the rule that says "one or more containers, scheduled together, sharing some namespaces" enables the rest of K8s.</p>
+    <p><strong>What's shared inside a Pod.</strong> Network namespace (same Pod IP, same port space — containers talk via <code>localhost:port</code>), IPC namespace (POSIX shared memory, semaphores), optionally PID namespace (<code>shareProcessNamespace: true</code>), and any Pod-level Volumes.</p>
     <p><strong>What's NOT shared by default.</strong> Each container has its own filesystem (mount) namespace and its own PID namespace. Each container is independently restartable.</p>
-    <p><strong>The pause container.</strong> Under the hood, every pod has an invisible <code>pause</code> container that's PID 1 in the pod's network/IPC namespaces. Its only job: hold those namespaces open so individual app containers can come and go without losing the pod's IP. You'll see it on a node with <code>crictl ps</code>; you don't write YAML for it.</p>
+    <p><strong>The pause container.</strong> Under the hood, every Pod has an invisible <code>pause</code> container that's PID 1 in the Pod's network/IPC namespaces. Its only job: hold those namespaces open so individual app containers can come and go without losing the Pod's IP. You'll see it on a node with <code>crictl ps</code>; you don't write YAML for it.</p>
     <p><strong>Init containers</strong> run sequentially to completion BEFORE any main containers start. <strong>Sidecar containers</strong> run alongside the main one (log shipping, mesh proxy). <strong>Native sidecars (K8s 1.28+)</strong>: declare in <code>initContainers</code> with <code>restartPolicy: Always</code> — starts before main, stays running, properly handled at shutdown. <strong>Ephemeral containers</strong> are added at runtime via <code>kubectl debug</code>, critical for debugging distroless containers.</p>
-    <p><strong>Resources.</strong> <code>requests</code> = scheduler-reserved floor; <code>limits</code> = hard ceiling (CPU throttled, memory OOM-killed). The combination determines the pod's <strong>QoS class</strong> (Guaranteed / Burstable / BestEffort), which controls eviction priority when the node is under pressure.</p>
+    <p><strong>Resources.</strong> <code>requests</code> = scheduler-reserved floor; <code>limits</code> = hard ceiling (CPU throttled, memory OOM-killed). The combination determines the Pod's <strong>QoS class</strong> (Guaranteed / Burstable / BestEffort), which controls eviction priority when the node is under pressure.</p>
   </section>
 
   <!-- ============================== SECTION 1.5 — 5 TILES ============================== -->
@@ -420,7 +647,7 @@
         <h3 class="build-name">1 · Pod basics</h3>
         <p class="build-tag">atomic unit of scheduling</p>
         <div class="build-illu">
-          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A pod containing two containers sharing a network">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A Pod containing two containers sharing a network">
             <rect x="14" y="12" width="112" height="56" rx="4" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.6"/>
             <text x="70" y="24" font-size="7" font-weight="700" fill="#3F4A5E" text-anchor="middle" font-family="ui-monospace,monospace">Pod · 10.0.0.5</text>
             <rect x="22" y="32" width="42" height="28" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.2"/>
@@ -472,7 +699,7 @@
             <text x="70" y="74" font-size="6" fill="#5A4F45" text-anchor="middle" font-style="italic">native (1.28+): initContainer + restartPolicy: Always</text>
           </svg>
         </div>
-        <p class="build-desc">Log shipper, mesh proxy, metrics scraper. Same pod, same lifecycle, independently restartable.</p>
+        <p class="build-desc">Log shipper, mesh proxy, metrics scraper. Same Pod, same lifecycle, independently restartable.</p>
       </div>
 
       <div class="build b4">
@@ -492,7 +719,7 @@
             <defs><marker id="t15-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#A04832"/></marker></defs>
           </svg>
         </div>
-        <p class="build-desc">Add at runtime · doesn't restart pod · debug distroless containers · ephemeral, leaves no trace.</p>
+        <p class="build-desc">Add at runtime · doesn't restart Pod · debug distroless containers · ephemeral, leaves no trace.</p>
       </div>
 
       <div class="build b5">
@@ -512,19 +739,19 @@
             <text x="70" y="72" font-size="6" font-style="italic" fill="#5A4F45" text-anchor="middle">pause holds the IP open</text>
           </svg>
         </div>
-        <p class="build-desc">Invisible PID 1 holding the pod's net/IPC namespaces open. App containers come &amp; go; the IP stays.</p>
+        <p class="build-desc">Invisible PID 1 holding the Pod's net/IPC namespaces open. App containers come &amp; go; the IP stays.</p>
       </div>
 
     </div>
 
-    <p style="margin-top:24px;font-size:15px;color:var(--ink-soft);font-style:italic;text-align:center">All five compound: <strong style="color:var(--ink)">pause + init + main + sidecar + ephemeral = the full container vocabulary inside one pod.</strong></p>
+    <p style="margin-top:24px;font-size:15px;color:var(--ink-soft);font-style:italic;text-align:center">All five compound: <strong style="color:var(--ink)">pause + init + main + sidecar + ephemeral = the full container vocabulary inside one Pod.</strong></p>
   </section>
 
   <!-- ============================== SECTION 1.7 — MULTI-CONTAINER PATTERNS ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 1.7 · Multi-container patterns</span>
     <h2>Three flavors of co-tenant container</h2>
-    <p>Brendan Burns's classic taxonomy. Most production multi-container pods are sidecars; ambassador and adapter show up less often but explain a lot of common architecture.</p>
+    <p>Brendan Burns's classic taxonomy. Most production multi-container Pods are sidecars; ambassador and adapter show up less often but explain a lot of common architecture.</p>
 
     <div class="pat-grid">
       <div class="pat s">
@@ -626,7 +853,7 @@
       <div class="qos b">
         <span class="qos-tier">Mid eviction</span>
         <h3 class="qos-name">Burstable</h3>
-        <p class="qos-desc">At least one container has a request, and <code>request &lt; limit</code> (or limit unset). Most production pods. Can spike above request when capacity is free.</p>
+        <p class="qos-desc">At least one container has a request, and <code>request &lt; limit</code> (or limit unset). Most production Pods. Can spike above request when capacity is free.</p>
       </div>
       <div class="qos e">
         <span class="qos-tier">First evicted</span>
@@ -635,7 +862,7 @@
       </div>
     </div>
 
-    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Important: QoS doesn't grant extra memory. Even Guaranteed pods get OOM-killed when they exceed their <em>own</em> limit. Class only affects eviction order when the <em>node</em> runs short.</p>
+    <p class="skip-block" style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic"><span class="skip-pill">[ deep dive — skip if new ]</span>Important: QoS doesn't grant extra memory. Even Guaranteed Pods get OOM-killed when they exceed their <em>own</em> limit. Class only affects eviction order when the <em>node</em> runs short. The eviction algorithm walks BestEffort first, then Burstable, then Guaranteed; ties break by oldest creation time.</p>
   </section>
 
   <!-- ============================== SECTION 1.10 — RESTART POLICY ============================== -->
@@ -658,8 +885,22 @@
       </div>
     </div>
 
-    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">restartPolicy is pod-level — applies to all containers. Note: it controls <em>kubelet's local</em> restarts. Pod-level controllers (Deployments) have their own logic on top — they create new pods if a pod dies entirely.</p>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">restartPolicy is Pod-level — applies to all containers. Note: it controls <em>kubelet's local</em> restarts. Pod-level controllers (Deployments) have their own logic on top — they create new Pods if a Pod dies entirely.</p>
   </section>
+
+  <!-- Pause-and-check #1 · after Section 1 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">What's the atomic unit of scheduling in Kubernetes?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) A container</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) A Pod</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) A node</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> The container is the <em>packaging</em> unit. The Pod is what Kubernetes places on a node. Most Pods have one container — but the rule "one or more containers, scheduled together" enables sidecars, init containers, and ephemeral debug.</p>
+    </div>
+  </div>
 
   <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
   <section class="s">
@@ -668,7 +909,7 @@
     <p>The classic mistake first-time K8s users make: cramming app + log shipper into one Docker image with a shell wrapper.</p>
 
     <div class="illu">
-      <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Before: single image with shell starting two processes. After: pod with main and sidecar containers, each independently lifecycled.">
+      <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Before: single image with shell starting two processes. After: Pod with main and sidecar containers, each independently lifecycled.">
         <!-- LEFT: naive -->
         <g transform="translate(0,0)">
           <rect width="320" height="220" rx="14" fill="#FBE8DC"/>
@@ -687,7 +928,7 @@
           <text x="160" y="176" font-size="10" font-weight="700" fill="#FFF" text-anchor="middle">one crash · both die · no diff</text>
         </g>
 
-        <!-- RIGHT: pod -->
+        <!-- RIGHT: Pod -->
         <g transform="translate(360,0)">
           <rect width="320" height="220" rx="14" fill="#E0EFE6"/>
           <text x="160" y="22" font-size="11" font-weight="700" fill="#3D7857" text-anchor="middle" letter-spacing="1.5">POD · TWO CONTAINERS</text>
@@ -725,31 +966,34 @@
   <!-- ============================== SECTION 3 — ANALOGY ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 3 · Analogy</span>
-    <h2>The shared studio apartment</h2>
-    <p>A Pod is a <strong>shared studio apartment</strong>. The containers are <strong>roommates</strong>. They share the <strong>kitchen</strong> (network namespace — they can chat from across the room via <code>localhost</code>) and the <strong>bathroom</strong> (IPC), but each has their own <strong>bedroom</strong> (separate filesystem, often separate PID namespace). The apartment has one <strong>doorbell</strong> (the Pod IP) that any roommate can answer.</p>
+    <h2>The co-living unit</h2>
+    <p>A Pod is a <strong>co-living unit</strong>. The containers are <strong>roommates</strong>. They share the <strong>kitchen</strong> (network namespace — they can chat from across the room via <code>localhost</code>) and the <strong>bathroom</strong> (IPC), but each has their own <strong>bedroom</strong> (separate filesystem, often separate PID namespace). The co-living unit has one <strong>doorbell</strong> (the Pod IP) that any roommate can answer.</p>
     <p>Before anyone moves in, the <strong>handyman</strong> (init container) shows up, finishes the wifi setup, hangs the curtains, and leaves. Only then do the roommates move in.</p>
     <p>The <strong>main roommate</strong> does the actual work. The <strong>sidecar housemate</strong> does laundry quietly in the background, or answers the door (ambassador), or translates when guests speak a different language (adapter).</p>
-    <p>When something breaks and the main roommate doesn't have a screwdriver (distroless image, no shell), a <strong>plumber</strong> can drop in temporarily (ephemeral debug container). They don't move in — they visit, fix, and leave. The apartment doesn't get evicted to bring the plumber in.</p>
-    <p>The building's superintendent (the kubelet) decides whether to give your apartment <strong>guaranteed rent control</strong> (QoS Guaranteed, last to evict), <strong>flexible rent</strong> (Burstable), or <strong>first to be asked to leave</strong> (BestEffort) based on how much electricity and water you reserved.</p>
+    <p>When something breaks and the main roommate doesn't have a screwdriver (distroless image, no shell), a <strong>plumber</strong> can drop in temporarily (ephemeral debug container). They don't move in — they visit, fix, and leave. The co-living unit doesn't get evicted to bring the plumber in.</p>
+    <p>The building's superintendent (the kubelet) decides whether to give your co-living unit <strong>guaranteed rent control</strong> (QoS Guaranteed, last to evict), <strong>flexible rent</strong> (Burstable), or <strong>first to be asked to leave</strong> (BestEffort) based on how much electricity and water you reserved.</p>
 
-    <p style="margin-top:18px"><strong>The mapping:</strong></p>
-    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
-      <li><strong>Apartment</strong> = Pod (atomic unit, shares an address)</li>
-      <li><strong>Roommates</strong> = containers in the pod</li>
-      <li><strong>Shared kitchen</strong> = network namespace (talk via localhost)</li>
-      <li><strong>Shared bathroom</strong> = IPC namespace</li>
-      <li><strong>Separate bedrooms</strong> = filesystem &amp; PID namespaces (per container)</li>
-      <li><strong>Doorbell at the front</strong> = Pod IP</li>
-      <li><strong>Handyman who came first</strong> = init container</li>
-      <li><strong>Helpful housemate</strong> = sidecar</li>
-      <li><strong>Doorman</strong> = ambassador container</li>
-      <li><strong>Translator</strong> = adapter container</li>
-      <li><strong>Visiting plumber</strong> = ephemeral debug container</li>
-      <li><strong>Building superintendent</strong> = kubelet</li>
-      <li><strong>Reserved utilities</strong> = resource requests</li>
-      <li><strong>Maximum utilities allowed</strong> = resource limits</li>
-      <li><strong>Rent-control class</strong> = QoS class</li>
-    </ul>
+    <div class="translation-legend">
+      <table>
+        <thead>
+          <tr><th>In the story…</th><th>…in Kubernetes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>The co-living unit (one address, shared kitchen)</td><td>A Pod (the atomic unit of scheduling)</td></tr>
+          <tr><td>The roommates</td><td>Containers inside the Pod</td></tr>
+          <tr><td>The shared kitchen</td><td>The network namespace (containers talk via <code>localhost</code>)</td></tr>
+          <tr><td>The shared bathroom</td><td>The IPC namespace</td></tr>
+          <tr><td>Each roommate's bedroom</td><td>Filesystem &amp; PID namespaces (per container)</td></tr>
+          <tr><td>The doorbell at the front</td><td>The Pod IP</td></tr>
+          <tr><td>The handyman who came first</td><td>An init container</td></tr>
+          <tr><td>A helpful housemate alongside</td><td>A sidecar container</td></tr>
+          <tr><td>A visiting plumber</td><td>An ephemeral debug container</td></tr>
+          <tr><td>The superintendent + rent-control class</td><td>The kubelet + QoS class (Guaranteed / Burstable / BestEffort)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real co-living units have one front door but many bedrooms. Pods <em>can</em> share a PID namespace too (<code>shareProcessNamespace: true</code>), and any container can hold the Pod's IP — there's no "main bedroom" that's special.</em></p>
   </section>
 
   <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
@@ -760,19 +1004,33 @@
     <div class="eli">
       <div class="eli-card">
         <span class="eli-tag five">ELI5 · explain like I'm 5</span>
-        <p>A pod is an apartment. The containers inside are roommates who share the kitchen and bathroom. A handyman comes first to fix things up; then the roommates move in. One roommate works; the others help. If something breaks and you don't have tools, a plumber visits just to fix it. The building manager decides who has to leave first if the building gets crowded.</p>
+        <p>A Pod is a co-living unit. The containers inside are roommates who share the kitchen and bathroom. A handyman comes first to fix things up; then the roommates move in. One roommate works; the others help. If something breaks and you don't have tools, a plumber visits just to fix it. The building manager decides who has to leave first if the building gets crowded.</p>
       </div>
       <div class="eli-card">
         <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
-        <p>A Pod is the atomic unit of scheduling in K8s — not a container. Containers in a pod share network and IPC namespaces (they can talk via <code>localhost</code>) but have separate filesystems and PIDs by default. Init containers run sequentially to completion before main containers start. <strong>Sidecars</strong> support the main container; since K8s 1.28, native sidecars are init containers with <code>restartPolicy: Always</code>. <strong>Ephemeral containers</strong> are added at runtime via <code>kubectl debug</code> — critical for distroless containers. Each container has resource <code>requests</code> (scheduler-reserved floor) and <code>limits</code> (kill ceiling); the combination determines the pod's <strong>QoS class</strong>. The pause container holds the pod's network namespace open so app containers can come and go without losing the IP.</p>
+        <p>A Pod is the atomic unit of scheduling in K8s — not a container. Containers in a Pod share network and IPC namespaces (they can talk via <code>localhost</code>) but have separate filesystems and PIDs by default. Init containers run sequentially to completion before main containers start. <strong>Sidecars</strong> support the main container; since K8s 1.28, native sidecars are init containers with <code>restartPolicy: Always</code>. <strong>Ephemeral containers</strong> are added at runtime via <code>kubectl debug</code> — critical for distroless containers. Each container has resource <code>requests</code> (scheduler-reserved floor) and <code>limits</code> (kill ceiling); the combination determines the Pod's <strong>QoS class</strong>. The pause container holds the Pod's network namespace open so app containers can come and go without losing the IP.</p>
       </div>
     </div>
   </section>
 
+  <!-- Pause-and-check #2 · after Section 4 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Your distroless container has no shell. It just started returning 500s. How do you debug it?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) <code>kubectl exec -it ... bash</code> (won't work — no shell)</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) <code>kubectl debug -it broken-Pod --image=busybox --target=app -- sh</code></button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Restart the Pod and hope the bug goes away</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> <code>kubectl debug</code> adds an <em>ephemeral container</em> to the running Pod. Sibling to the broken container, sharing its PID namespace. You get a shell without modifying the production image.</p>
+    </div>
+  </div>
+
   <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
-    <h2>Where pod patterns pay off</h2>
+    <h2>Where Pod patterns pay off</h2>
 
     <div class="scenarios">
       <div class="scenario">
@@ -781,14 +1039,14 @@
       </div>
       <div class="scenario">
         <p class="scenario-name">Log-shipping sidecar replaced 12 different agents on each VM</p>
-        <p>Pre-K8s, every team installed their own log agent on each VM (different versions, different configs). Audit nightmare. After K8s: one standardized fluent-bit sidecar in every pod template (or DaemonSet — Lesson 16). Logs flow to one collector. Independent images, independent versioning, one mechanism.</p>
+        <p>Pre-K8s, every team installed their own log agent on each VM (different versions, different configs). Audit nightmare. After K8s: one standardized fluent-bit sidecar in every Pod template (or DaemonSet — Lesson 16). Logs flow to one collector. Independent images, independent versioning, one mechanism.</p>
       </div>
       <div class="scenario">
         <p class="scenario-name">kubectl debug saved an outage when the main container had no shell</p>
-        <p>Production app started returning 500s. Image was <code>gcr.io/distroless/python3</code> — no <code>/bin/sh</code> to exec into. <code>kubectl exec ... bash</code> failed. Engineer ran <code>kubectl debug -it broken-pod --image=busybox --target=app -- sh</code>. Got a shell in a sibling container sharing the broken container's PID namespace. Found the bad file descriptor in seconds. Distroless safety + ephemeral debug = best of both.</p>
+        <p>Production app started returning 500s. Image was <code>gcr.io/distroless/python3</code> — no <code>/bin/sh</code> to exec into. <code>kubectl exec ... bash</code> failed. Engineer ran <code>kubectl debug -it broken-Pod --image=busybox --target=app -- sh</code>. Got a shell in a sibling container sharing the broken container's PID namespace. Found the bad file descriptor in seconds. Distroless safety + ephemeral debug = best of both.</p>
       </div>
       <div class="scenario">
-        <p class="scenario-name">QoS confusion: Guaranteed pods kept getting OOM-killed</p>
+        <p class="scenario-name">QoS confusion: Guaranteed Pods kept getting OOM-killed</p>
         <p>Team set <code>requests.memory: 1Gi</code>, <code>limits.memory: 1Gi</code> (Guaranteed). App spiked to 1.2Gi during bursts. OOM-kills every burst. They thought Guaranteed meant "always gets memory." It doesn't — exceeding limit = kill, regardless of class. Fix: raise limit (becomes Burstable) or right-size the app so peak fits under limit. QoS only affects eviction priority when the <em>node</em> is under pressure.</p>
       </div>
     </div>
@@ -797,12 +1055,12 @@
   <!-- ============================== SECTION 6 — ANIMATED SVG ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 6 · Animation</span>
-    <h2>Watch the pod come up · ship logs · debug at runtime</h2>
-    <p>Three modes. Pod startup with init containers, a sidecar shipping logs, and adding an ephemeral debug container to a running pod.</p>
+    <h2>Watch the Pod come up · ship logs · debug at runtime</h2>
+    <p>Three modes. Pod startup with init containers, a sidecar shipping logs, and adding an ephemeral debug container to a running Pod.</p>
 
     <div class="anim-wrap">
-      <svg viewBox="0 0 760 460" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animation of pod startup with init containers, sidecar log shipping, and kubectl debug">
-        <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: pod startup with init containers</text>
+      <svg viewBox="0 0 760 460" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animation of Pod startup with init containers, sidecar log shipping, and kubectl debug">
+        <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: Pod startup with init containers</text>
 
         <g transform="translate(580,14)">
           <rect width="160" height="34" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.4"/>
@@ -829,16 +1087,36 @@
 
   <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
   <section class="s">
-    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
     <h2>Lock it in</h2>
+    <p>Three common misconceptions to clear up first, then the flashcards and quiz.</p>
+
+    <!-- Common Misconceptions panel -->
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> "QoS class Guaranteed" means the Pod always gets the memory it asks for.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Guaranteed only affects <em>eviction priority</em> under node pressure. Within the Pod, the limit is still a hard cap — exceeding it = OOM, regardless of class.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Sidecars are just "two containers in a Pod."</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Native sidecars (K8s 1.28+) are init containers with <code>restartPolicy: Always</code>. Start before main, stay running, properly handled at shutdown. Old-style "just two containers" had lifecycle gotchas.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> The <code>pause</code> container is something you write.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> It's invisible infrastructure. Every Pod has one; you never see it in YAML. It holds the Pod's network/IPC namespaces open so app containers can come and go without losing the IP.</div>
+        </div>
+      </div>
+    </div>
 
     <div class="flashcard-grid">
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a Pod?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">The atomic unit of scheduling in K8s. One or more containers placed together on a node, sharing network and IPC namespaces. Each container has its own filesystem and PID namespace by default.</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is the pause container?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">An invisible infrastructure container in every pod. Holds the pod's network/IPC namespaces open so app containers can come and go without losing the pod's IP.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is the pause container?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">An invisible infrastructure container in every Pod. Holds the Pod's network/IPC namespaces open so app containers can come and go without losing the Pod's IP.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is an init container?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Container that runs to completion BEFORE any main container starts. Sequential. Uses: wait for a dependency, copy config, run a migration. Pod stays Pending until inits exit 0.</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a sidecar?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Second container in a pod that supports the main one (log shipping, mesh proxy). K8s 1.28+ native sidecars: initContainer with restartPolicy: Always — starts before main, stays running, properly handled at shutdown.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a sidecar?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Second container in a Pod that supports the main one (log shipping, mesh proxy). K8s 1.28+ native sidecars: initContainer with restartPolicy: Always — starts before main, stays running, properly handled at shutdown.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Multi-container patterns?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Sidecar = augments main (log shipper). Ambassador = proxies external service for main (DB pool). Adapter = transforms main's output (JSON → Prometheus).</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is an ephemeral container?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A container added to a running pod via kubectl debug. Doesn't restart the pod. Critical for debugging distroless containers (no shell). Can share PID namespace with target.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is an ephemeral container?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A container added to a running Pod via kubectl debug. Doesn't restart the Pod. Critical for debugging distroless containers (no shell). Can share PID namespace with target.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">requests vs limits?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">request = scheduler-reserved floor (won't pack node past 100% of requests). limit = hard ceiling (CPU throttled, memory OOM-killed above limit).</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three QoS classes?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Guaranteed (request==limit, last evicted), Burstable (request<limit, mid), BestEffort (no requests/limits, first evicted). Class affects eviction order, not memory grant.</div></div></div>
     </div>
@@ -847,17 +1125,18 @@
       <div class="quiz-card">
         <p class="quiz-prompt">Your web app needs PostgreSQL ready before it starts, otherwise it crashes on its first query. Current setup: single container with sleep loops in the entrypoint, sometimes races and crashes anyway. K8s-native fix?</p>
         <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Use an init container. Add to the pod spec: <code>initContainers: [{name: wait-db, image: busybox, command: ["sh","-c","until nc -z db.svc 5432; do sleep 1; done"]}]</code>. The kubelet runs init containers sequentially before any main containers start. The pod stays in Pending phase until every init exits 0. This guarantees the DB is reachable before your app's first byte runs — no sleep races, no entrypoint hacks. If you have multiple ordered prerequisites (wait-db, run-migration, seed-data), each is its own init container in order. Bonus: the app container's image stays clean — no netcat, no init logic.</div>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Use an init container. Add to the Pod spec: <code>initContainers: [{name: wait-db, image: busybox, command: ["sh","-c","until nc -z db.svc 5432; do sleep 1; done"]}]</code>. The kubelet runs init containers sequentially before any main containers start. The Pod stays in Pending phase until every init exits 0. This guarantees the DB is reachable before your app's first byte runs — no sleep races, no entrypoint hacks. If you have multiple ordered prerequisites (wait-db, run-migration, seed-data), each is its own init container in order. Bonus: the app container's image stays clean — no netcat, no init logic.</div>
       </div>
       <div class="quiz-card">
         <p class="quiz-prompt">Your production app uses a distroless base (<code>gcr.io/distroless/python3</code>) for security. It just started returning 500s. <code>kubectl exec -it ... bash</code> fails with "executable file not found in $PATH". What do you do?</p>
         <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span><code>kubectl debug</code>. Run: <code>kubectl debug -it broken-pod --image=busybox --target=app -- sh</code>. This adds an ephemeral container to the running pod. The ephemeral container is a sibling to your main "app" container, sharing the pod's network namespace AND (because of <code>--target</code>) the main container's PID namespace. You get a busybox shell that can <code>ps</code>, <code>ls /proc/&lt;main-pid&gt;/</code>, and <code>tcpdump</code> as if you were inside the broken container. The pod doesn't restart. Once you exit, the ephemeral container is gone but the rest of the pod is unchanged. This is the right answer for distroless: keep the production attack surface tiny and use ephemeral debug containers when you need to investigate.</div>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span><code>kubectl debug</code>. Run: <code>kubectl debug -it broken-Pod --image=busybox --target=app -- sh</code>. This adds an ephemeral container to the running Pod. The ephemeral container is a sibling to your main "app" container, sharing the Pod's network namespace AND (because of <code>--target</code>) the main container's PID namespace. You get a busybox shell that can <code>ps</code>, <code>ls /proc/&lt;main-pid&gt;/</code>, and <code>tcpdump</code> as if you were inside the broken container. The Pod doesn't restart. Once you exit, the ephemeral container is gone but the rest of the Pod is unchanged. This is the right answer for distroless: keep the production attack surface tiny and use ephemeral debug containers when you need to investigate.</div>
       </div>
-      <div class="quiz-card">
-        <p class="quiz-prompt">Team set <code>requests.memory: 1Gi</code> and <code>limits.memory: 1Gi</code> (QoS class: Guaranteed). App spikes to 1.2Gi during bursts and gets OOM-killed every time. They thought Guaranteed meant "always gets memory." Actual behavior?</p>
-        <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Guaranteed QoS does NOT mean "this pod always gets the memory it asks for." It means "request == limit, AND this pod is the LAST to be evicted when the NODE is under memory pressure." Within the pod, the limit is still a hard cap — exceeding it = OOM kill, no exceptions. Class is irrelevant to your own limit. Two fixes: (1) Raise the limit. e.g., <code>request: 1Gi, limit: 2Gi</code>. Now the pod is Burstable but it can use up to 2Gi when needed. Cost: it can be evicted before Guaranteed pods if the node is under pressure (rare for healthy clusters). (2) Right-size the app. Profile peak memory and set both request and limit above the observed P99. Stay Guaranteed, but make the limit reflect reality. Lesson: QoS is about NODE-level eviction priority, not POD-level memory grants.</div>
+      <div class="quiz-card cyoa-quiz">
+        <span class="cyoa-tag">🎬 Choose Your Own Adventure</span>
+        <p class="quiz-prompt">Your team sets <code>requests.memory: 1Gi</code> and <code>limits.memory: 1Gi</code> (QoS class: Guaranteed). The app spikes to 1.2Gi during bursts. <strong>Click to see what happens. ▼</strong></p>
+        <button class="quiz-reveal" type="button">Show what happened</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">every burst</span>OOMKilled. Every burst. The team thought "Guaranteed" meant "always gets the memory" — it doesn't. It means "request == limit, last to be evicted under <em>node</em> pressure." Within the Pod, the limit is a hard cap. <strong>Fix:</strong> raise the limit (becomes Burstable but survives spikes), or right-size the app. QoS is about node-level eviction priority, not Pod-level memory grants.</div>
       </div>
     </div>
   </section>
@@ -867,30 +1146,35 @@
     <summary>Words from this lesson · open if you want a quick reference</summary>
     <div class="glossary-grid">
       <div class="gloss-item"><div class="gloss-name">Pod</div><div class="gloss-def">Atomic unit of scheduling. 1+ containers, shared network &amp; IPC, separate filesystems by default. One Pod IP.</div></div>
-      <div class="gloss-item"><div class="gloss-name">pause container</div><div class="gloss-def">Invisible infra container in every pod. Holds the pod's net/IPC namespaces open so app containers can come and go without losing the IP.</div></div>
+      <div class="gloss-item"><div class="gloss-name">pause container</div><div class="gloss-def">Invisible infra container in every Pod. Holds the Pod's net/IPC namespaces open so app containers can come and go without losing the IP.</div></div>
       <div class="gloss-item"><div class="gloss-name">init container</div><div class="gloss-def">Run-to-completion container that executes BEFORE any main containers start. Sequential. Pod stays Pending until all inits exit 0.</div></div>
-      <div class="gloss-item"><div class="gloss-name">sidecar</div><div class="gloss-def">Second container in a pod supporting the main one (log shipper, mesh proxy). 1.28+ native sidecars: initContainer with restartPolicy: Always.</div></div>
+      <div class="gloss-item"><div class="gloss-name">sidecar</div><div class="gloss-def">Second container in a Pod supporting the main one (log shipper, mesh proxy). 1.28+ native sidecars: initContainer with restartPolicy: Always.</div></div>
       <div class="gloss-item"><div class="gloss-name">ambassador</div><div class="gloss-def">Pattern: a container that proxies an external service for the main container (DB connection pool, OAuth proxy).</div></div>
       <div class="gloss-item"><div class="gloss-name">adapter</div><div class="gloss-def">Pattern: a container that transforms the main's output (e.g., translates app metrics into Prometheus format).</div></div>
-      <div class="gloss-item"><div class="gloss-name">ephemeral container</div><div class="gloss-def">Container added to a running pod via <code>kubectl debug</code>. Doesn't restart the pod. Used to debug distroless containers.</div></div>
-      <div class="gloss-item"><div class="gloss-name">requests</div><div class="gloss-def">Resources the scheduler reserves for the container. The "floor." Total requests across pods on a node ≤ node's allocatable.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ephemeral container</div><div class="gloss-def">Container added to a running Pod via <code>kubectl debug</code>. Doesn't restart the Pod. Used to debug distroless containers.</div></div>
+      <div class="gloss-item"><div class="gloss-name">requests</div><div class="gloss-def">Resources the scheduler reserves for the container. The "floor." Total requests across Pods on a node ≤ node's allocatable.</div></div>
       <div class="gloss-item"><div class="gloss-name">limits</div><div class="gloss-def">Hard ceiling. CPU above limit is throttled; memory above limit is OOM-killed.</div></div>
       <div class="gloss-item"><div class="gloss-name">QoS class</div><div class="gloss-def">Computed from requests/limits. Guaranteed (req==lim), Burstable (req&lt;lim), BestEffort (none). Affects eviction order under node pressure.</div></div>
       <div class="gloss-item"><div class="gloss-name">restartPolicy</div><div class="gloss-def">Pod-level: Always (default — Deployments), OnFailure (Jobs that retry), Never (Jobs that fail loudly).</div></div>
-      <div class="gloss-item"><div class="gloss-name">shareProcessNamespace</div><div class="gloss-def">Pod field. When true, all containers in the pod share a PID namespace and can see each other's processes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">shareProcessNamespace</div><div class="gloss-def">Pod field. When true, all containers in the Pod share a PID namespace and can see each other's processes.</div></div>
     </div>
   </details>
+
+  <!-- One-sentence stamp · bottom placement (identical to top) -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> A Pod is the atomic unit of scheduling — one address, multiple containers sharing network and IPC. Init runs first, sidecars run alongside, ephemeral containers visit to debug.</p>
+  </div>
 
   <!-- ============================== RECAP + COMPLETION ============================== -->
   <section class="recap">
     <span class="recap-badge">✓ Lesson 15 complete</span>
-    <p>One apartment, multiple roommates, shared kitchen. Init does setup; sidecars help; ephemeral visits to debug; pause holds it all together. Tune requests/limits to size the apartment.</p>
-    <p class="recap-next"><strong>Next — Lesson 16: Workload Controllers.</strong> Deployments, StatefulSets, DaemonSets, Jobs, CronJobs — the controllers that build pods on top of pods.</p>
+    <p>One co-living unit, multiple roommates, shared kitchen. Init does setup; sidecars help; ephemeral visits to debug; pause holds it all together. Tune requests/limits to size the co-living unit.</p>
+    <p class="recap-next"><strong>Next — Lesson 16: Workload Controllers.</strong> Deployments, StatefulSets, DaemonSets, Jobs, CronJobs — the controllers that build Pods on top of Pods.</p>
   </section>
 
 </main>
 
-<footer>Suvis Guru · K-COM · Lesson 15 of 17 · grounded in kubernetes.io/docs/concepts/workloads/pods · sidecar-containers · pod-qos</footer>
+<footer>Suvis Guru · K-COM · Lesson 15 of 17 · grounded in kubernetes.io/docs/concepts/workloads/Pods · sidecar-containers · Pod-qos</footer>
 
 <script>
   // theme
@@ -913,12 +1197,27 @@
     card.addEventListener('click', () => card.classList.toggle('flipped'));
   });
 
-  // quiz reveals
+  // quiz reveals (handles both "Show answer" and CYOA "Show what happened")
   document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
     btn.addEventListener('click', () => {
       const ans = btn.parentElement.querySelector('.quiz-answer');
       const open = ans.classList.toggle('show');
-      btn.textContent = open ? 'Hide answer' : 'Show answer';
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+
+  // pause-and-check
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      });
     });
   });
 
@@ -983,10 +1282,10 @@
 
   function runStartup() {
     clearTimeouts(); clearStage();
-    animModeLabel.textContent = 'Mode: pod startup with init containers';
+    animModeLabel.textContent = 'Mode: Pod startup with init containers';
     animStep.textContent = '0 / 4';
     setStatus('Pod scheduled. pause container starts first.');
-    setReadout('<strong>Step 0.</strong> The kubelet creates the pod\'s namespaces and starts the pause container.');
+    setReadout('<strong>Step 0.</strong> The kubelet creates the Pod\'s namespaces and starts the pause container.');
 
     later(0, () => {
       // Pod outline with pause inside
@@ -1019,8 +1318,8 @@
     });
     later(6500, () => {
       animStep.textContent = '4 / 4';
-      setStatus('Step 4: pod is Running. status.phase = Running.');
-      setReadout('<strong>Step 4.</strong> kubectl get pod sees STATUS=Running. The init containers stay listed (Completed) for audit.');
+      setStatus('Step 4: Pod is Running. status.phase = Running.');
+      setReadout('<strong>Step 4.</strong> kubectl get Pod sees STATUS=Running. The init containers stay listed (Completed) for audit.');
       svgRect(40, 200, 660, 40, '#5A9F7A', '#3D7857', '✓ Pod Running · 1 main + 1 sidecar · pause holds the IP', { fontSize: 12, textFill: '#FFFFFF' });
     });
     later(11000, runStartup);
@@ -1078,20 +1377,20 @@
       svgRect(20, 20, 690, 80, '#FBF7F0', '#3F4A5E', '', { rx: 10 });
       svgText(360, 38, 'POD · main (distroless · returning 500s)', { fontSize: 11, fill: '#3F4A5E' });
       svgRect(40, 50, 200, 40, '#FBE8DC', '#A04832', 'main · distroless', { fontSize: 11, textFill: '#A04832', font: 'ui-monospace,monospace' });
-      svgRect(40, 110, 690, 30, '#FBE8DC', '#A04832', '$ kubectl exec broken-pod -- bash → "executable file not found"', { fontSize: 10.5, textFill: '#A04832', font: 'ui-monospace,monospace' });
+      svgRect(40, 110, 690, 30, '#FBE8DC', '#A04832', '$ kubectl exec broken-Pod -- bash → "executable file not found"', { fontSize: 10.5, textFill: '#A04832', font: 'ui-monospace,monospace' });
     });
     later(2000, () => {
       animStep.textContent = '1 / 4';
       setStatus('Step 1: kubectl debug adds an ephemeral busybox container.');
-      setReadout('<strong>Step 1.</strong> $ kubectl debug -it broken-pod --image=busybox --target=app -- sh');
-      svgRect(40, 150, 690, 30, '#EDE6F8', '#5E4A8E', '$ kubectl debug -it broken-pod --image=busybox --target=app -- sh', { fontSize: 10.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
+      setReadout('<strong>Step 1.</strong> $ kubectl debug -it broken-Pod --image=busybox --target=app -- sh');
+      svgRect(40, 150, 690, 30, '#EDE6F8', '#5E4A8E', '$ kubectl debug -it broken-Pod --image=busybox --target=app -- sh', { fontSize: 10.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
     });
     later(3800, () => {
       animStep.textContent = '2 / 4';
-      setStatus('Step 2: ephemeral container joins pod, shares main\'s PID namespace.');
-      setReadout('<strong>Step 2.</strong> Pod doesn\'t restart. Ephemeral container is a new sibling, shares the pod IP and (via --target) the main container\'s PID namespace.');
+      setStatus('Step 2: ephemeral container joins Pod, shares main\'s PID namespace.');
+      setReadout('<strong>Step 2.</strong> Pod doesn\'t restart. Ephemeral container is a new sibling, shares the Pod IP and (via --target) the main container\'s PID namespace.');
       svgRect(260, 50, 200, 40, '#EDE6F8', '#5E4A8E', 'ephemeral · busybox', { fontSize: 11, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
-      svgRect(40, 190, 690, 30, '#EDE6F8', '#5E4A8E', '✓ ephemeral added · shares PID ns with main · pod did NOT restart', { fontSize: 10.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
+      svgRect(40, 190, 690, 30, '#EDE6F8', '#5E4A8E', '✓ ephemeral added · shares PID ns with main · Pod did NOT restart', { fontSize: 10.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
     });
     later(5600, () => {
       animStep.textContent = '3 / 4';
@@ -1102,8 +1401,8 @@
     later(7400, () => {
       animStep.textContent = '4 / 4';
       setStatus('Step 4: exit. Ephemeral container removed. Pod unchanged.');
-      setReadout('<strong>Step 4.</strong> The ephemeral container is gone. Main + pod are exactly as they were. Distroless safety preserved.');
-      svgRect(40, 270, 690, 36, '#5A9F7A', '#3D7857', '✓ bug found · ephemeral cleaned up · pod still running distroless', { fontSize: 12, textFill: '#FFFFFF' });
+      setReadout('<strong>Step 4.</strong> The ephemeral container is gone. Main + Pod are exactly as they were. Distroless safety preserved.');
+      svgRect(40, 270, 690, 36, '#5A9F7A', '#3D7857', '✓ bug found · ephemeral cleaned up · Pod still running distroless', { fontSize: 12, textFill: '#FFFFFF' });
     });
     later(11000, runDebug);
   }
