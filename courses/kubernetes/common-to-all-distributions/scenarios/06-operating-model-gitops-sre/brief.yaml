@@ -1,0 +1,77 @@
+# Intake brief — Lesson 06, K-COM
+# Topic: GitOps + Platform Engineering + SRE + Service Ownership + Multi-Tenancy
+# Format: Standard 7-section PROJECT.md structure (mirrors approved Lessons 01-05).
+
+lesson:
+  title: "GitOps · Platform Engineering · SRE · Multi-Tenancy"
+  slug: "06-operating-model-gitops-sre"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 6
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "a well-run library (catalog = Git, librarian = controller, sections = teams)"
+
+learner_profile:
+  prerequisites:
+    - "Lessons 01-05 (Kubernetes basics, containers, cloud-native, app design, fit decision)"
+  assumed_zero_knowledge_of:
+    - "GitOps, Argo CD, Flux."
+    - "Platform engineering as a discipline."
+    - "SRE practices (SLI/SLO/error budgets)."
+    - "Service ownership."
+    - "Multi-tenancy (soft vs hard)."
+
+learning_outcomes:
+  - "Learner can explain GitOps and the four GitOps principles."
+  - "Learner can describe what platform engineering teams build (paved roads)."
+  - "Learner can name SLI/SLO/error budget and how SRE uses them."
+  - "Learner understands service ownership ('you build it, you run it') and why it works."
+  - "Learner can name soft vs hard multi-tenancy and pick the right model."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Hero: library scene with card catalog, librarian, multiple bookshelves owned by different sections"
+    word_target: 280
+  section_1_5_practices:
+    illustration: "5 tile cards (one per practice) with icon + name + tagline + small SVG + description"
+    description: "GitOps · Platform engineering · SRE · Service ownership · Multi-tenancy"
+  section_2_before_after:
+    illustration: "Ops as ticket queue (single overwhelmed ops engineer with stack of tickets) vs platform team enabling many product teams"
+    word_target_each_side: 80
+  section_3_analogy:
+    primary: "The well-run library (Git catalog → librarian → bookshelves owned by teams)"
+    illustration: "Already shown in hero"
+  section_4_eli_pair:
+    eli5: "A well-run library with catalog, librarian, sections. Under 100 words."
+    eli10: "All five practices defined; none is a K8s feature, all are practices K8s enables. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "Retail company adopts Argo CD across 20 product teams"
+      - "SaaS company introduces error budgets — finally shipped less"
+      - "Fintech moves to 'you build it, you run it'"
+      - "University cluster shared across 12 research labs (mixed soft/hard tenancy)"
+  section_6_animated_svg:
+    modes: ["GitOps normal flow", "Drift correction", "New service onboarded"]
+    description: "Mode 1: Git change → controller pulls → cluster updates. Mode 2: hand-edit creates drift → controller reverts. Mode 3: new team's PR creates a new service from paved-road template."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-06.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can name all 5 practices and the relationship between them."
+  - "First-timer understands GitOps prevents drift automatically."
+  - "First-timer can choose soft vs hard tenancy for a given trust scenario."
+
+fact_check_anchors:
+  - "https://opengitops.dev — the four formal GitOps principles"
+  - "Google SRE Book (sre.google) — SLI/SLO/error budget definitions"
+  - "argo-cd.readthedocs.io · fluxcd.io — tooling docs"
+  - "Team Topologies book — platform engineering origin"

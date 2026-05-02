@@ -1,0 +1,38 @@
+# Quiz — Lesson 06, GitOps + Platform Engineering + SRE + Multi-Tenancy
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    pause_animation: true
+    prompt: |
+      A developer SSHes into a production node and changes a ConfigMap by
+      hand. The cluster is GitOps-managed by Argo CD. Within minutes, the
+      change disappears. Why?
+    answer: |
+      Argo CD continuously reconciles the live cluster state to the Git
+      source of truth. The hand-edited ConfigMap is drift; Argo CD detects
+      it and reverts the resource to whatever Git says. The right path is
+      to commit the change to Git (and let Argo CD apply it), or to mark
+      the resource as ignored if it's intentionally externally managed.
+
+  - id: 2
+    prompt: "Why does 'you build it, you run it' make services more reliable over time?"
+    answer: |
+      Incentive alignment. The team that wrote the code feels the on-call
+      pages. They can't externalize the cost of bugs onto a separate ops
+      team. Over weeks, they invest in better tests, better observability,
+      better deploy patterns — because they will be paged otherwise.
+      Reliability emerges from incentive, not from process.
+
+  - id: 3
+    prompt: |
+      A research computing platform serves 12 labs. Some labs are trusted;
+      others run code from external collaborators (untrusted). What's the
+      right multi-tenancy strategy?
+    answer: |
+      Mixed. Use soft tenancy (namespaces + RBAC + ResourceQuotas +
+      NetworkPolicies) for trusted labs — cheap, easy, perfectly fine
+      when teams trust each other. Use hard tenancy (vCluster or separate
+      clusters) for untrusted labs — each lab gets its own API server,
+      isolated control plane, no risk of breaking out. Both share the same
+      physical nodes underneath, so you don't pay 12× cluster costs.

@@ -1,0 +1,35 @@
+# Flashcards — Lesson 06, GitOps + Platform Engineering + SRE + Multi-Tenancy
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "What is GitOps?"
+    back: "An operating model where Git is the source of truth and an agent in the cluster continuously reconciles. Tools: Argo CD, Flux. Coined by Weaveworks (Alexis Richardson, 2017)."
+
+  - id: 2
+    front: "What are the 4 GitOps principles?"
+    back: "Declarative; versioned and immutable in Git; pulled automatically by an agent; continuously reconciled. Per opengitops.dev (CNCF GitOps Working Group)."
+
+  - id: 3
+    front: "What is platform engineering?"
+    back: "The discipline of building an internal platform — a paved road — that product teams consume. The platform team owns the cluster, observability, secrets, CI/CD; product teams ship apps onto it."
+
+  - id: 4
+    front: "SRE in one sentence?"
+    back: "Site Reliability Engineering. Google's operating model. Defines reliability with SLIs/SLOs/error budgets, treats infrastructure as a software problem, automates ops as code."
+
+  - id: 5
+    front: "SLI · SLO · error budget?"
+    back: "SLI = a measured indicator (request success rate). SLO = the target (99.9%). Error budget = how much unreliability you can spend (0.1% = 43 min/month). When budget runs out, slow down and fix."
+
+  - id: 6
+    front: "What is service ownership?"
+    back: "'You build it, you run it.' The team that wrote the service is on its on-call rotation. Aligns incentives toward reliability without bureaucratic enforcement."
+
+  - id: 7
+    front: "Soft vs hard multi-tenancy?"
+    back: "Soft: trusted tenants share one cluster, isolation via namespaces + RBAC + ResourceQuotas + NetworkPolicy. Hard: untrusted tenants need separate clusters or virtual clusters (vCluster), strict admission policy, dedicated nodes."
+
+  - id: 8
+    front: "What is drift in GitOps?"
+    back: "When the live cluster diverges from the Git source of truth (someone hand-edited a resource, expired cert, manual hot-fix). The GitOps controller detects drift and either alerts or reverts to Git."
