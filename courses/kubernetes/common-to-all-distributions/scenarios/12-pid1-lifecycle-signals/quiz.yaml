@@ -1,0 +1,61 @@
+# Quiz — Lesson 12, PID 1 & Lifecycle
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      Your team's deploys consistently take exactly 30 seconds and end
+      with logs showing "Killed". The Dockerfile has CMD ["bash",
+      "/app/start.sh"] and start.sh launches "node server.js &" in the
+      background. Why are deploys slow and lossy, and what's the fix?
+    answer: |
+      bash is PID 1 inside your container. SIGTERM arrives from the
+      kubelet, bash receives it, but bash does NOT forward signals to
+      its background children. Node never learns the pod is shutting
+      down. The kubelet waits the full 30s grace period (the default),
+      then sends SIGKILL — uncatchable, drops in-flight requests, no
+      clean shutdown. Two fixes: (1) Use tini as PID 1: ENTRYPOINT
+      ["tini", "--"], CMD ["node", "server.js"]. tini forwards SIGTERM
+      to Node and reaps zombies. (2) Or skip the wrapper script
+      entirely and use ENTRYPOINT ["node", "server.js"] — Node becomes
+      PID 1 and gets SIGTERM directly. Make sure Node has a SIGTERM
+      handler that closes the HTTP server gracefully.
+
+  - id: 2
+    prompt: |
+      During rolling updates, a small fraction of requests return 502
+      errors for a few seconds. Pods are healthy. The app handles
+      SIGTERM correctly and shuts down in under a second. What's
+      causing the 502s and what's the fix?
+    answer: |
+      Race condition between pod termination and load-balancer endpoint
+      removal. When K8s marks a pod for deletion, two things start in
+      parallel: the kubelet sends SIGTERM (and your app shuts down
+      cleanly), AND the endpoints controller updates the Service to
+      remove the pod from the LB rotation. The endpoints update is
+      slower than your shutdown. So for a brief window the LB is still
+      sending traffic to a pod whose port has already closed → 502.
+      Fix: add a preStop hook that sleeps for ~10 seconds before the
+      app receives SIGTERM. lifecycle: { preStop: { exec: { command:
+      ["sh", "-c", "sleep 10"] } } }. The sleep blocks SIGTERM from
+      being sent until the LB has had time to drain the pod from
+      rotation. Trade-off: pod deletion takes 10s longer.
+
+  - id: 3
+    prompt: |
+      A Java app spawns subprocesses for thumbnail generation. Under
+      sustained load, after ~2 hours, the pod starts returning errors
+      like "Resource temporarily unavailable." Restarting the pod
+      clears it. What's happening and how do you fix it permanently?
+    answer: |
+      Zombie process accumulation. The Java app forks subprocess for
+      each thumbnail. Each subprocess exits quickly, but the JVM does
+      not call waitpid() to collect them. Each becomes a zombie — a
+      defunct process consuming a PID slot. After thousands of
+      thumbnails, the process table is full and the kernel can't fork
+      new processes → "Resource temporarily unavailable." Pod restart
+      clears the table temporarily but the leak resumes. Real fix: use
+      tini as PID 1. ENTRYPOINT ["tini", "--", "java", "-jar",
+      "app.jar"]. tini reaps any zombie re-parented to it (including
+      the JVM's abandoned children). Crashes stop. Bonus: tini also
+      gives you proper signal forwarding for graceful shutdown.

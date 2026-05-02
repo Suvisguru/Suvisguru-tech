@@ -1,0 +1,88 @@
+# Intake brief — Lesson 12, K-COM
+# Topic: PID 1 & Container Lifecycle — signals, graceful shutdown,
+#        zombies/orphans, init wrappers (tini/dumb-init), preStop hooks,
+#        terminationGracePeriodSeconds, pod phases
+# Module 2 (Containers Comprehensive) · Lesson 5 of 5 (final container lesson)
+
+lesson:
+  title: "PID 1 · Signals · Graceful Shutdown · Init Wrappers"
+  slug: "12-pid1-lifecycle-signals"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 12
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "ship's captain — captain (PID 1) coordinates crew (child processes), receives lighthouse signal (SIGTERM), gives crew grace period to wrap up (graceful shutdown), logs every crew member's exit (zombie reaping), then lights-out (SIGKILL)"
+  module: "Module 2 · Containers (Comprehensive) · Lesson 5 of 5"
+
+learner_profile:
+  prerequisites:
+    - "Lesson 08: Linux Primitives (so they know what processes and signals are)"
+    - "Lesson 09: Runtimes & OCI (so they know what 'starting a container' means)"
+  assumed_zero_knowledge_of:
+    - "Why PID 1 is special inside a container."
+    - "SIGTERM vs SIGKILL vs SIGINT — which K8s sends and when."
+    - "Zombie processes — what they are, why PID 1 must reap them."
+    - "Init wrappers (tini, dumb-init) and when they're needed."
+    - "preStop and postStart lifecycle hooks."
+    - "terminationGracePeriodSeconds — how to tune."
+    - "Pod phases (Pending, Running, Succeeded, Failed, Unknown) and container states."
+
+learning_outcomes:
+  - "Learner can explain what PID 1 must do (forward signals, reap zombies)."
+  - "Learner can write a Dockerfile ENTRYPOINT that uses an init wrapper."
+  - "Learner can use preStop to drain connections before shutdown."
+  - "Learner can tune terminationGracePeriodSeconds for slow shutdowns."
+  - "Learner can name the difference between SIGTERM and SIGKILL."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Hero: a ship at sea. Captain (PID 1) on bridge with megaphone. Crew at stations (engine room, cargo hold, navigation). Lighthouse on shore flashing SIGTERM signal. Manifest log book on deck. Stopwatch showing terminationGracePeriodSeconds (30s)"
+    word_target: 320
+  section_1_5_blocks:
+    illustration: "5 tile cards: PID 1 problem · Signals (TERM/KILL/INT) · Graceful shutdown · Zombies & orphans · Init wrappers (tini/dumb-init)"
+  section_1_7_pod_phases:
+    illustration: "Pod lifecycle phases — 5 phase chips with arrows (Pending → Running → Succeeded/Failed/Unknown) plus container restart states (Waiting/Running/Terminated)"
+  section_1_8_hooks:
+    illustration: "postStart and preStop hook timing — vertical timeline showing when each fires relative to container start/stop"
+  section_1_9_grace_period:
+    illustration: "Stopwatch showing the shutdown clock: t=0 SIGTERM sent, t=0 preStop fires, t=N grace period ends, SIGKILL forced. Side-by-side: 30s default vs 120s tuned for DB"
+  section_2_before_after:
+    illustration: "Naive Dockerfile (CMD bash startup.sh, no init, no preStop, default grace) vs hardened (ENTRYPOINT tini, preStop drain, grace=60s). Show what happens when SIGTERM arrives: bad version drops connections, good version drains and exits cleanly"
+  section_3_analogy:
+    primary: "Ship's captain — PID 1 coordinates crew, receives lighthouse signal, gives grace period, logs every exit"
+    illustration: "Already in hero"
+  section_4_eli_pair:
+    eli5: "Captain on a ship. Lighthouse signals 'time to leave'. Captain tells crew. Crew finishes tasks. Captain logs everyone safely off. Then lights out. Under 100 words."
+    eli10: "PID 1 + signal handling + graceful shutdown + zombie reaping + init wrappers + preStop hooks + grace period. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "Bash-as-PID-1 dropped SIGTERM — pods always died with SIGKILL"
+      - "30-second grace was too short — DB shutdown got truncated → corruption"
+      - "preStop sleep saved zero-downtime rolling updates from a load-balancer race"
+      - "Zombie process accumulation crashed a Java app under sustained load"
+  section_6_animated_svg:
+    modes: ["Graceful shutdown timeline (4 steps)", "Bad PID 1 vs good PID 1 (signal forwarding)", "Zombie reaping (parent waitpid loop)"]
+    description: "Mode 1: clock ticks t=0 SIGTERM → preStop hook fires → app drains → exits → pod marked Terminated. Mode 2: bash entrypoint receives SIGTERM, doesn't forward → child processes never see it → grace period elapses → SIGKILL kills everything. Then with tini: same SIGTERM → tini forwards → app exits cleanly. Mode 3: child process exits, parent calls waitpid() → zombie cleared. Without parent doing this: zombies pile up."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-12.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can explain why PID 1 is special inside a container."
+  - "First-timer knows the difference between SIGTERM and SIGKILL."
+  - "First-timer understands what tini/dumb-init solve."
+  - "First-timer knows what preStop is for and when terminationGracePeriodSeconds matters."
+
+fact_check_anchors:
+  - "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/"
+  - "https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/"
+  - "https://github.com/krallin/tini"
+  - "https://github.com/Yelp/dumb-init"

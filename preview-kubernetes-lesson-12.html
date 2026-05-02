@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 12 — PID 1 &amp; Container Lifecycle · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:40px;font-weight:700;line-height:1.15;letter-spacing:-0.8px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:30px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:28px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+  .illu{margin:24px 0;background:var(--bg-soft);border-radius:var(--r-soft);padding:20px;text-align:center}
+  .illu svg{display:block;width:100%;height:auto;max-width:680px;margin:0 auto}
+  .illu-caption{font-size:14px;color:var(--ink-soft);margin-top:12px;font-style:italic;line-height:1.5}
+
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'📚';font-size:18px}
+  .glossary summary::after{content:'›';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+
+  /* 5 topic tiles */
+  .build-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .build{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent);transition:transform .15s var(--ease),box-shadow .15s var(--ease)}
+  .build:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  .build.b1{border-top-color:#3F4A5E}
+  .build.b2{border-top-color:#5A9F7A}
+  .build.b3{border-top-color:#D97757}
+  .build.b4{border-top-color:#5E4A8E}
+  .build.b5{border-top-color:#8E2A2A}
+  .build-icon{font-size:34px;line-height:1}
+  .build-name{font-weight:700;font-size:15px;color:var(--ink);margin:0;line-height:1.3}
+  .build.b1 .build-name{color:#3F4A5E}
+  [data-theme="dark"] .build.b1 .build-name{color:var(--accent)}
+  .build.b2 .build-name{color:#3D7857}
+  [data-theme="dark"] .build.b2 .build-name{color:var(--good)}
+  .build.b3 .build-name{color:#A04832}
+  [data-theme="dark"] .build.b3 .build-name{color:var(--warm)}
+  .build.b4 .build-name{color:#5E4A8E}
+  [data-theme="dark"] .build.b4 .build-name{color:#9D8FCC}
+  .build.b5 .build-name{color:#8E2A2A}
+  [data-theme="dark"] .build.b5 .build-name{color:#E07474}
+  .build-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .build-illu{display:flex;align-items:center;justify-content:center;height:80px;background:var(--bg-soft);border-radius:var(--r-soft);margin:6px 0;overflow:hidden}
+  .build-illu svg{display:block;width:100%;height:100%;max-width:140px}
+  .build-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+
+  /* Pod phase chips */
+  .phase-row{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;flex-wrap:wrap}
+  .phase{padding:8px 14px;border-radius:var(--r-pill);font-weight:700;font-size:13px;border:2px solid;font-family:'ui-monospace',monospace}
+  .phase.pending{border-color:#8B5A00;color:#8B5A00;background:#FBF1D6}
+  .phase.running{border-color:#3D7857;color:#3D7857;background:#E0EFE6}
+  .phase.success{border-color:#3F4A5E;color:#3F4A5E;background:#ECEFF5}
+  .phase.failed{border-color:#A04832;color:#A04832;background:#FBE8DC}
+  .phase.unknown{border-color:#5E4A8E;color:#5E4A8E;background:#EDE6F8}
+  .phase-arrow{font-size:18px;color:var(--ink-faint)}
+  .phase-note{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  .phase-note .pn{background:var(--bg-soft);border-left:3px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:8px 12px;font-size:12.5px;line-height:1.5;color:var(--ink-soft)}
+  .phase-note .pn strong{color:var(--accent);font-family:'ui-monospace',monospace;font-size:12px}
+
+  /* Lifecycle hook timeline */
+  .hooks-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+  @media (max-width:600px){.hooks-grid{grid-template-columns:1fr}}
+  .hook{padding:18px;border-radius:var(--r-soft);border:2px solid var(--line);background:var(--bg-card)}
+  .hook.start{border-color:#5A9F7A;background:#E0EFE6}
+  .hook.stop{border-color:#A04832;background:#FBE8DC}
+  .hook-name{font-family:'ui-monospace',monospace;font-weight:700;font-size:15px;margin:0 0 6px}
+  .hook.start .hook-name{color:#3D7857}
+  .hook.stop .hook-name{color:#A04832}
+  .hook-when{font-size:13px;color:var(--ink);margin:0 0 6px;line-height:1.5}
+  .hook-use{font-size:12.5px;color:var(--ink-soft);font-style:italic;line-height:1.5;margin:0}
+
+  /* Grace period side-by-side */
+  .grace-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+  @media (max-width:600px){.grace-grid{grid-template-columns:1fr}}
+  .grace{padding:16px;border-radius:var(--r-soft);border:2px solid;background:var(--bg-card)}
+  .grace.short{border-color:#3D7857;background:#E0EFE6}
+  .grace.long{border-color:#5E4A8E;background:#EDE6F8}
+  .grace-num{font-family:'ui-monospace',monospace;font-weight:700;font-size:24px;line-height:1;margin:0 0 6px}
+  .grace.short .grace-num{color:#3D7857}
+  .grace.long .grace-num{color:#5E4A8E}
+  .grace-desc{font-size:13px;color:var(--ink);line-height:1.5;margin:6px 0 0}
+</style>
+</head>
+<body data-theme="light">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 12</span></a>
+    <span class="progress-pill">12 of 17</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================== HERO ============================== -->
+  <section class="hero">
+    <span class="eyebrow">Module 2 · Lesson 12 · how containers shut down</span>
+    <h1>PID 1 · Signals · Graceful Shutdown · Init Wrappers</h1>
+    <p class="hero-sub">A pod doesn't just die — it follows a four-step shutdown protocol. The captain (<strong>PID 1</strong>) hears the lighthouse (<strong>SIGTERM</strong>), tells the crew (<strong>child processes</strong>), waits the grace period, then lights out.</p>
+
+    <div class="hero-illu">
+      <svg viewBox="0 0 680 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A ship at sea: a lighthouse on the left flashes a SIGTERM beam toward the ship; the ship has a captain on the bridge with a megaphone (PID 1) and three crew portholes (engine, cargo, nav); a stopwatch and crew log sit on the right showing grace period and zombie reaping">
+        <defs>
+          <linearGradient id="sky-grad-12" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#D6E6F0"/>
+            <stop offset="100%" stop-color="#FBF7F0"/>
+          </linearGradient>
+          <linearGradient id="sea-grad-12" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4A8FA8"/>
+            <stop offset="100%" stop-color="#2D6F8C"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Sky -->
+        <rect x="0" y="30" width="680" height="170" fill="url(#sky-grad-12)"/>
+        <!-- Sun -->
+        <circle cx="610" cy="50" r="18" fill="#E8B547" opacity="0.7"/>
+        <!-- Cloud puffs -->
+        <ellipse cx="200" cy="60" rx="22" ry="7" fill="#FFFFFF" opacity="0.7"/>
+        <ellipse cx="220" cy="56" rx="16" ry="6" fill="#FFFFFF" opacity="0.7"/>
+        <ellipse cx="450" cy="50" rx="18" ry="6" fill="#FFFFFF" opacity="0.6"/>
+
+        <!-- Sea -->
+        <rect x="0" y="200" width="680" height="20" fill="url(#sea-grad-12)"/>
+        <!-- Wave ripple -->
+        <path d="M 0 200 Q 30 196 60 200 T 120 200 T 180 200 T 240 200 T 300 200 T 360 200 T 420 200 T 480 200 T 540 200 T 600 200 T 660 200 T 680 200" fill="none" stroke="#FBF7F0" stroke-width="1" opacity="0.6"/>
+
+        <!-- Title -->
+        <text x="340" y="22" font-size="13" font-weight="700" fill="#3F4A5E" text-anchor="middle" letter-spacing="1.5">SIGTERM · CAPTAIN (PID 1) · CREW · GRACE CLOCK</text>
+
+        <!-- ============ LIGHTHOUSE (left, x=20-150) ============ -->
+        <!-- Rocky base on shoreline -->
+        <path d="M 25 200 L 45 188 L 65 196 L 85 188 L 105 196 L 125 200 L 125 214 L 25 214 Z" fill="#5A6878" stroke="#2E3640" stroke-width="1.4"/>
+        <!-- Tower (trapezoid: narrower at top) -->
+        <path d="M 60 188 L 67 78 L 88 78 L 95 188 Z" fill="#FFFFFF" stroke="#2E3640" stroke-width="1.5"/>
+        <!-- Red horizontal stripes -->
+        <rect x="62" y="100" width="31" height="10" fill="#A04832"/>
+        <rect x="63" y="125" width="29" height="10" fill="#A04832"/>
+        <rect x="64" y="150" width="27" height="10" fill="#A04832"/>
+        <rect x="65" y="175" width="25" height="10" fill="#A04832"/>
+        <!-- Glass room (lantern) -->
+        <rect x="60" y="64" width="35" height="14" rx="2" fill="#ECEFF5" stroke="#2E3640" stroke-width="1.4"/>
+        <!-- Light bulb inside glass -->
+        <circle cx="77" cy="71" r="5" fill="#E8B547" stroke="#8B5A00" stroke-width="0.8"/>
+        <!-- Roof (small dome/triangle) -->
+        <path d="M 56 64 L 99 64 L 77 50 Z" fill="#2E3640" stroke="#1F2433" stroke-width="1"/>
+
+        <!-- Light beam (dashed yellow lines fanning right toward ship) -->
+        <line x1="98" y1="71" x2="200" y2="58" stroke="#E8B547" stroke-width="2.5" stroke-dasharray="6,4" opacity="0.7"/>
+        <line x1="98" y1="71" x2="210" y2="71" stroke="#E8B547" stroke-width="2.5" stroke-dasharray="6,4" opacity="0.7"/>
+        <line x1="98" y1="71" x2="200" y2="84" stroke="#E8B547" stroke-width="2.5" stroke-dasharray="6,4" opacity="0.7"/>
+
+        <!-- SIGTERM label on beam -->
+        <rect x="148" y="58" width="62" height="22" rx="4" fill="#FBE8DC" stroke="#A04832" stroke-width="1.4"/>
+        <text x="179" y="73" font-size="11" font-weight="700" fill="#A04832" text-anchor="middle" font-family="ui-monospace,monospace">SIGTERM</text>
+
+        <!-- ============ SHIP (center, x=230-510) ============ -->
+        <!-- Hull (trapezoid) -->
+        <path d="M 230 200 L 250 175 L 490 175 L 510 200 Z" fill="#A04832" stroke="#5A2520" stroke-width="1.5"/>
+        <!-- Waterline accent stripe -->
+        <line x1="234" y1="192" x2="506" y2="192" stroke="#FBF7F0" stroke-width="1.5"/>
+        <!-- Deck floor -->
+        <rect x="248" y="170" width="244" height="6" fill="#5A4F45" stroke="#2E1810" stroke-width="0.8"/>
+
+        <!-- 3 portholes with crew heads -->
+        <g>
+          <circle cx="270" cy="186" r="8" fill="#ECEFF5" stroke="#2E3640" stroke-width="1.4"/>
+          <ellipse cx="270" cy="186" rx="4" ry="5" fill="#FBF1D6" stroke="#5A4F45" stroke-width="0.8"/>
+          <text x="270" y="210" font-size="7" font-weight="700" fill="#FBF7F0" text-anchor="middle">engine</text>
+        </g>
+        <g>
+          <circle cx="370" cy="186" r="8" fill="#ECEFF5" stroke="#2E3640" stroke-width="1.4"/>
+          <ellipse cx="370" cy="186" rx="4" ry="5" fill="#FBF1D6" stroke="#5A4F45" stroke-width="0.8"/>
+          <text x="370" y="210" font-size="7" font-weight="700" fill="#FBF7F0" text-anchor="middle">cargo</text>
+        </g>
+        <g>
+          <circle cx="470" cy="186" r="8" fill="#ECEFF5" stroke="#2E3640" stroke-width="1.4"/>
+          <ellipse cx="470" cy="186" rx="4" ry="5" fill="#FBF1D6" stroke="#5A4F45" stroke-width="0.8"/>
+          <text x="470" y="210" font-size="7" font-weight="700" fill="#FBF7F0" text-anchor="middle">nav</text>
+        </g>
+
+        <!-- Smokestack (left of bridge) -->
+        <rect x="296" y="125" width="22" height="45" rx="2" fill="#5A6878" stroke="#2E3640" stroke-width="1.2"/>
+        <ellipse cx="307" cy="125" rx="11" ry="3" fill="#5A6878" stroke="#2E3640" stroke-width="1"/>
+        <!-- Smoke puffs above smokestack -->
+        <circle cx="304" cy="110" r="6" fill="#FBF7F0" opacity="0.7"/>
+        <circle cx="316" cy="100" r="7" fill="#FBF7F0" opacity="0.6"/>
+        <circle cx="304" cy="86" r="9" fill="#FBF7F0" opacity="0.5"/>
+
+        <!-- Bridge cabin (right of smokestack) -->
+        <rect x="335" y="138" width="90" height="32" fill="#ECEFF5" stroke="#2E3640" stroke-width="1.4"/>
+        <!-- Bridge windows -->
+        <rect x="343" y="146" width="14" height="10" fill="#4A8FA8" stroke="#2E3640" stroke-width="0.8"/>
+        <rect x="361" y="146" width="14" height="10" fill="#4A8FA8" stroke="#2E3640" stroke-width="0.8"/>
+        <rect x="379" y="146" width="14" height="10" fill="#4A8FA8" stroke="#2E3640" stroke-width="0.8"/>
+        <rect x="397" y="146" width="14" height="10" fill="#4A8FA8" stroke="#2E3640" stroke-width="0.8"/>
+
+        <!-- Captain on top of bridge (head + hat) -->
+        <g transform="translate(380,124)">
+          <!-- Hat brim -->
+          <ellipse cx="0" cy="-1" rx="11" ry="2" fill="#1F2433"/>
+          <!-- Hat top -->
+          <rect x="-8" y="-7" width="16" height="6" rx="1" fill="#1F2433"/>
+          <!-- Hat star -->
+          <text x="0" y="-2" font-size="5" fill="#E8B547" text-anchor="middle" font-weight="700">★</text>
+          <!-- Head -->
+          <ellipse cx="0" cy="6" rx="6" ry="7" fill="#FBF1D6" stroke="#2A2520" stroke-width="1"/>
+          <circle cx="-2" cy="5" r="0.6" fill="#2A2520"/>
+          <circle cx="2" cy="5" r="0.6" fill="#2A2520"/>
+          <path d="M -2 9 Q 0 11 2 9" stroke="#2A2520" stroke-width="0.6" fill="none"/>
+        </g>
+
+        <!-- Megaphone in captain's hand (to the right of captain) -->
+        <g transform="translate(394,128)">
+          <path d="M 0 -3 L 14 -7 L 14 7 L 0 3 Z" fill="#E8B547" stroke="#8B5A00" stroke-width="1"/>
+          <line x1="14" y1="-7" x2="14" y2="7" stroke="#8B5A00" stroke-width="0.8"/>
+        </g>
+
+        <!-- "PID 1" callout above captain -->
+        <rect x="362" y="98" width="40" height="16" rx="3" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+        <text x="382" y="110" font-size="9.5" font-weight="700" fill="#5A4F45" text-anchor="middle">PID 1</text>
+        <!-- Pointer line down to captain hat -->
+        <line x1="382" y1="114" x2="382" y2="118" stroke="#8B5A00" stroke-width="1"/>
+
+        <!-- ============ STOPWATCH + LOG (right, x=550-660) ============ -->
+        <!-- Stopwatch -->
+        <circle cx="600" cy="115" r="32" fill="#FBF7F0" stroke="#3F4A5E" stroke-width="2"/>
+        <!-- Stem -->
+        <rect x="595" y="78" width="10" height="7" rx="2" fill="#5A6878" stroke="#2E3640" stroke-width="1"/>
+        <!-- Tick marks at 12/3/6/9 -->
+        <line x1="600" y1="89" x2="600" y2="95" stroke="#3F4A5E" stroke-width="1.5"/>
+        <line x1="626" y1="115" x2="620" y2="115" stroke="#3F4A5E" stroke-width="1.5"/>
+        <line x1="600" y1="141" x2="600" y2="135" stroke="#3F4A5E" stroke-width="1.5"/>
+        <line x1="574" y1="115" x2="580" y2="115" stroke="#3F4A5E" stroke-width="1.5"/>
+        <!-- Center dot -->
+        <circle cx="600" cy="115" r="2" fill="#3F4A5E"/>
+        <!-- Hand pointing up-right (about 1 o'clock = SIGTERM moment) -->
+        <line x1="600" y1="115" x2="617" y2="100" stroke="#A04832" stroke-width="2"/>
+        <!-- 30s label below center -->
+        <text x="600" y="135" font-size="11" font-weight="700" fill="#A04832" text-anchor="middle" font-family="ui-monospace,monospace">30s</text>
+
+        <!-- Crew log (below stopwatch) -->
+        <g transform="translate(560,158)">
+          <rect width="80" height="62" rx="3" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.4"/>
+          <text x="40" y="13" font-size="8" font-weight="700" fill="#5A4F45" text-anchor="middle">CREW LOG</text>
+          <line x1="6" y1="17" x2="74" y2="17" stroke="#5A4F45" stroke-width="0.5"/>
+          <text x="8" y="28" font-size="7" fill="#3D7857" font-weight="700">✓ engine</text>
+          <text x="8" y="38" font-size="7" fill="#3D7857" font-weight="700">✓ cargo</text>
+          <text x="8" y="48" font-size="7" fill="#3D7857" font-weight="700">✓ nav</text>
+          <text x="40" y="58" font-size="6" fill="#5A4F45" font-style="italic" text-anchor="middle">no zombies</text>
+        </g>
+
+        <!-- ============ Section labels (below all content) ============ -->
+        <text x="80" y="240" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">LIGHTHOUSE</text>
+        <text x="80" y="254" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">kubelet sends SIGTERM</text>
+
+        <text x="370" y="240" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">CAPTAIN (PID 1) &amp; CREW</text>
+        <text x="370" y="254" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">ENTRYPOINT forwards signals to children</text>
+
+        <text x="600" y="240" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">GRACE CLOCK + LOG</text>
+        <text x="600" y="254" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">grace period + zombie reaping</text>
+
+        <!-- Bottom tagline -->
+        <text x="340" y="278" font-size="11" font-weight="700" fill="#3F4A5E" text-anchor="middle">Lighthouse signals → captain forwards → crew finishes → log ticks → lights out.</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 1 — CONCEPT ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>The shutdown protocol nobody told you about</h2>
+    <p>When a pod terminates, the kubelet doesn't just yank the plug. It runs a four-step protocol that depends on <strong>whoever is running as process 1 inside your container</strong> doing the right thing. Most "my pod takes 30 seconds to die" mysteries trace back to PID 1.</p>
+    <p><strong>Why PID 1 is special.</strong> Linux gives PID 1 (the first process started in a namespace) two responsibilities the kernel won't take care of for anyone else: (1) <strong>forward signals</strong> to its descendants when it gets them, and (2) <strong>reap zombies</strong> — call <code>waitpid()</code> on every child that exits, so the kernel can free the process table entry. On a normal Linux host, systemd does this. Inside a container, your <code>ENTRYPOINT</code> process is PID 1 — and most apps don't know they're supposed to do those jobs.</p>
+    <p><strong>Signals K8s sends.</strong> When a pod is deleted, the kubelet sends <strong>SIGTERM</strong> to PID 1 — the polite "please wrap up." If PID 1 hasn't exited within <code>terminationGracePeriodSeconds</code> (default 30s), the kubelet sends <strong>SIGKILL</strong> — the kernel-level "die now," uncatchable.</p>
+    <p><strong>Graceful shutdown.</strong> A well-behaved app catches SIGTERM, stops accepting new work, finishes in-flight requests, flushes buffers, closes connections, exits 0. Pod status moves <code>Running → Terminating → Terminated</code>.</p>
+    <p><strong>Init wrappers.</strong> <strong>tini</strong> and <strong>dumb-init</strong> are tiny binaries that solve both PID-1 problems. <code>ENTRYPOINT ["tini", "--", "your-app"]</code>: tini becomes PID 1, your app is PID 2. tini forwards every signal to PID 2 and reaps any orphan zombie that gets re-parented to it. One line, two big problems gone.</p>
+    <p><strong>preStop hook.</strong> A pod-level escape hatch that runs <em>before</em> SIGTERM is sent. Common pattern: <code>preStop: sleep 10</code> — gives the load-balancer time to notice the pod is being removed before connections stop. Critical for zero-downtime rolling updates.</p>
+  </section>
+
+  <!-- ============================== SECTION 1.5 — 5 TILES ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · The 5 building blocks, broken down</span>
+    <h2>Each topic, one tile</h2>
+
+    <div class="build-grid">
+
+      <div class="build b1">
+        <div class="build-icon">👑</div>
+        <h3 class="build-name">1 · PID 1 problem</h3>
+        <p class="build-tag">first process gets two jobs</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Process tree showing PID 1 at top with two child processes PID 2 and PID 3">
+            <!-- PID 1 box -->
+            <rect x="50" y="10" width="40" height="20" rx="3" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.4"/>
+            <text x="70" y="24" font-size="10" font-weight="700" fill="#5A4F45" text-anchor="middle">PID 1</text>
+            <!-- Lines down -->
+            <line x1="60" y1="30" x2="35" y2="48" stroke="#8B5A00" stroke-width="1.2"/>
+            <line x1="80" y1="30" x2="105" y2="48" stroke="#8B5A00" stroke-width="1.2"/>
+            <!-- Child PID 2 -->
+            <rect x="14" y="50" width="42" height="20" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.2"/>
+            <text x="35" y="64" font-size="9" font-weight="700" fill="#3D7857" text-anchor="middle">PID 2</text>
+            <!-- Child PID 3 -->
+            <rect x="84" y="50" width="42" height="20" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.2"/>
+            <text x="105" y="64" font-size="9" font-weight="700" fill="#3D7857" text-anchor="middle">PID 3</text>
+          </svg>
+        </div>
+        <p class="build-desc">PID 1 must forward signals to children and reap zombies. The kernel won't do those for anyone else.</p>
+      </div>
+
+      <div class="build b2">
+        <div class="build-icon">📨</div>
+        <h3 class="build-name">2 · Signals</h3>
+        <p class="build-tag">SIGTERM → SIGKILL</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three signal envelopes labeled SIGTERM, SIGKILL, SIGINT">
+            <g transform="translate(8,28)">
+              <rect width="38" height="24" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1.4"/>
+              <text x="19" y="16" font-size="8" font-weight="700" fill="#A04832" text-anchor="middle" font-family="ui-monospace,monospace">SIGTERM</text>
+              <text x="19" y="36" font-size="6.5" fill="#A04832" text-anchor="middle">15 · polite</text>
+            </g>
+            <g transform="translate(52,28)">
+              <rect width="38" height="24" rx="3" fill="#5A2520" stroke="#1F0808" stroke-width="1.4"/>
+              <text x="19" y="16" font-size="8" font-weight="700" fill="#FFF" text-anchor="middle" font-family="ui-monospace,monospace">SIGKILL</text>
+              <text x="19" y="36" font-size="6.5" fill="#5A2520" text-anchor="middle">9 · forced</text>
+            </g>
+            <g transform="translate(96,28)">
+              <rect width="38" height="24" rx="3" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.4"/>
+              <text x="19" y="16" font-size="8" font-weight="700" fill="#3F4A5E" text-anchor="middle" font-family="ui-monospace,monospace">SIGINT</text>
+              <text x="19" y="36" font-size="6.5" fill="#3F4A5E" text-anchor="middle">2 · Ctrl-C</text>
+            </g>
+          </svg>
+        </div>
+        <p class="build-desc">K8s sends SIGTERM first, then SIGKILL after grace. SIGKILL is uncatchable. SIGINT is local-only.</p>
+      </div>
+
+      <div class="build b3">
+        <div class="build-icon">⏱️</div>
+        <h3 class="build-name">3 · Graceful shutdown</h3>
+        <p class="build-tag">drain, flush, exit 0</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hourglass showing time draining">
+            <!-- Hourglass -->
+            <path d="M 55 16 L 85 16 L 85 22 L 73 38 L 73 42 L 85 58 L 85 64 L 55 64 L 55 58 L 67 42 L 67 38 L 55 22 Z" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.4"/>
+            <!-- Sand top (small) -->
+            <path d="M 58 18 L 82 18 L 73 32 L 67 32 Z" fill="#E8B547"/>
+            <!-- Sand bottom (filling) -->
+            <path d="M 67 48 L 73 48 L 82 62 L 58 62 Z" fill="#E8B547"/>
+            <!-- Connecting drip -->
+            <line x1="70" y1="40" x2="70" y2="48" stroke="#E8B547" stroke-width="1.2"/>
+            <text x="22" y="44" font-size="9" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">drain</text>
+            <text x="118" y="44" font-size="9" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">exit 0</text>
+            <text x="70" y="76" font-size="7" fill="#5A4F45" text-anchor="middle">grace period 30s</text>
+          </svg>
+        </div>
+        <p class="build-desc">App catches SIGTERM, stops accepting work, finishes in-flight, flushes, exits 0. Within <code>terminationGracePeriodSeconds</code>.</p>
+      </div>
+
+      <div class="build b4">
+        <div class="build-icon">👻</div>
+        <h3 class="build-name">4 · Zombies &amp; orphans</h3>
+        <p class="build-tag">parent must reap</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A parent process with a zombie child, and an arrow showing waitpid reaping it">
+            <!-- Parent -->
+            <rect x="10" y="28" width="42" height="24" rx="3" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.4"/>
+            <text x="31" y="44" font-size="9" font-weight="700" fill="#5A4F45" text-anchor="middle">parent</text>
+            <!-- waitpid arrow -->
+            <path d="M 54 40 L 78 40" stroke="#3D7857" stroke-width="1.5" marker-end="url(#arr-b4-12)"/>
+            <text x="66" y="34" font-size="6" fill="#3D7857" text-anchor="middle" font-weight="700">waitpid()</text>
+            <!-- Zombie child (ghost) -->
+            <g transform="translate(86,28)">
+              <path d="M 0 12 Q 0 0 12 0 Q 24 0 24 12 L 24 22 L 20 18 L 16 22 L 12 18 L 8 22 L 4 18 L 0 22 Z" fill="#ECEFF5" stroke="#5E4A8E" stroke-width="1.2"/>
+              <circle cx="9" cy="10" r="1.2" fill="#5E4A8E"/>
+              <circle cx="16" cy="10" r="1.2" fill="#5E4A8E"/>
+            </g>
+            <text x="98" y="64" font-size="7" font-weight="700" fill="#5E4A8E" text-anchor="middle">zombie</text>
+            <text x="70" y="76" font-size="6.5" fill="#5A4F45" text-anchor="middle" font-style="italic">PID 1 reaps orphans</text>
+          </svg>
+        </div>
+        <p class="build-desc">Exited child stays as a zombie until parent calls <code>waitpid()</code>. Orphans get re-parented to PID 1 — which must reap them too.</p>
+      </div>
+
+      <div class="build b5">
+        <div class="build-icon">🛡️</div>
+        <h3 class="build-name">5 · Init wrappers</h3>
+        <p class="build-tag">tini · dumb-init</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A tini wrapper around the app, showing tini as PID 1 and the app as PID 2">
+            <!-- Outer tini box -->
+            <rect x="14" y="14" width="112" height="52" rx="4" fill="#EDE6F8" stroke="#5E4A8E" stroke-width="1.6"/>
+            <text x="70" y="26" font-size="8" font-weight="700" fill="#5E4A8E" text-anchor="middle" font-family="ui-monospace,monospace">tini · PID 1</text>
+            <!-- Inner app box -->
+            <rect x="30" y="32" width="80" height="28" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.4"/>
+            <text x="70" y="44" font-size="8" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">your-app</text>
+            <text x="70" y="55" font-size="7" fill="#3D7857" text-anchor="middle">PID 2</text>
+          </svg>
+        </div>
+        <p class="build-desc"><code>ENTRYPOINT ["tini", "--", "app"]</code>. tini forwards signals + reaps zombies. Two PID-1 problems gone in one line.</p>
+      </div>
+
+    </div>
+
+    <p style="margin-top:24px;font-size:15px;color:var(--ink-soft);font-style:italic;text-align:center">All five compound: <strong style="color:var(--ink)">tini PID 1 + SIGTERM handler + preStop drain + tuned grace = clean, lossless shutdown.</strong></p>
+  </section>
+
+  <!-- ============================== SECTION 1.7 — POD PHASES ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · Pod lifecycle phases</span>
+    <h2>The five phases a pod walks through</h2>
+    <p>The pod's <code>status.phase</code> is a high-level summary. Container-level state (<code>Waiting</code>, <code>Running</code>, <code>Terminated</code>) lives in <code>status.containerStatuses[]</code>.</p>
+
+    <div class="phase-row">
+      <span class="phase pending">Pending</span>
+      <span class="phase-arrow">→</span>
+      <span class="phase running">Running</span>
+      <span class="phase-arrow">→</span>
+      <span class="phase success">Succeeded</span>
+      <span class="phase-arrow">/</span>
+      <span class="phase failed">Failed</span>
+      <span class="phase-arrow">/</span>
+      <span class="phase unknown">Unknown</span>
+    </div>
+
+    <div class="phase-note">
+      <div class="pn"><strong>Pending</strong>: scheduled but not yet running (image pulling, init containers running).</div>
+      <div class="pn"><strong>Running</strong>: at least one container started; pod is bound to a node.</div>
+      <div class="pn"><strong>Succeeded</strong>: all containers exited 0; restartPolicy will not restart.</div>
+      <div class="pn"><strong>Failed</strong>: at least one container exited non-zero; restartPolicy will not restart.</div>
+      <div class="pn"><strong>Unknown</strong>: kubelet can't reach the node — usually a network partition.</div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Container <em>state</em> changes more frequently than pod <em>phase</em>: a Running pod can have a Waiting container that's restarting after a crash.</p>
+  </section>
+
+  <!-- ============================== SECTION 1.8 — HOOKS ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.8 · Lifecycle hooks</span>
+    <h2>postStart and preStop</h2>
+    <p>Two hook points. Both run inside the container. Both can be exec or HTTP. Use them sparingly — most apps shouldn't need either.</p>
+
+    <div class="hooks-grid">
+      <div class="hook start">
+        <h3 class="hook-name">postStart</h3>
+        <p class="hook-when">Fires <strong>after</strong> the container is created, asynchronously to the entrypoint. No guarantee it runs before the entrypoint.</p>
+        <p class="hook-use">Use for: registering with a service mesh, warming a cache. Avoid: anything the app actually depends on (use init containers instead).</p>
+      </div>
+      <div class="hook stop">
+        <h3 class="hook-name">preStop</h3>
+        <p class="hook-when">Fires <strong>before</strong> the kubelet sends SIGTERM. Blocks SIGTERM until preStop finishes (or grace period expires).</p>
+        <p class="hook-use">Use for: <code>sleep 10</code> to let the load-balancer drain, <code>kill -SIGUSR1</code> to trigger a graceful flush, draining Kafka consumers.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">preStop is the most underused trick in K8s. A 10-second sleep here eliminates the LB-drain race in most rolling updates.</p>
+  </section>
+
+  <!-- ============================== SECTION 1.9 — GRACE PERIOD ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · terminationGracePeriodSeconds</span>
+    <h2>How long does the kubelet wait?</h2>
+    <p>Wall-clock seconds between "preStop completes / SIGTERM sent" and SIGKILL. Default is 30. Tune it.</p>
+
+    <div class="grace-grid">
+      <div class="grace short">
+        <p class="grace-num">30s · default</p>
+        <p class="grace-desc">Right for stateless web apps that drain quickly. Too short for: databases, queue workers in the middle of a long task, big buffer flushes.</p>
+      </div>
+      <div class="grace long">
+        <p class="grace-num">120–600s · tuned</p>
+        <p class="grace-desc">For databases (let WAL flush), batch workers (let current task finish), apps with large in-memory buffers. <code>terminationGracePeriodSeconds: 300</code> is common for stateful workloads.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">If the kubelet is impatient (e.g., during node drain), you can also be SIGKILL'd before grace expires. Don't rely on grace being honored under all conditions — make shutdown idempotent.</p>
+  </section>
+
+  <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>Naive shutdown vs proper shutdown</h2>
+    <p>Same Node app. Same signal arrives. Two different shutdowns — one drops requests, one doesn't.</p>
+
+    <div class="illu">
+      <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two shutdown timelines side by side. Left: bash as PID 1 swallows SIGTERM, app keeps running, grace expires, SIGKILL kills everything. Right: tini as PID 1 forwards SIGTERM, app drains and exits in 2 seconds.">
+        <!-- LEFT: naive -->
+        <g transform="translate(0,0)">
+          <rect width="320" height="280" rx="14" fill="#FBE8DC"/>
+          <text x="160" y="22" font-size="11" font-weight="700" fill="#A04832" text-anchor="middle" letter-spacing="1.5">NAIVE · BASH AS PID 1</text>
+
+          <!-- Timeline -->
+          <line x1="50" y1="56" x2="50" y2="234" stroke="#A04832" stroke-width="2"/>
+          <!-- t=0 SIGTERM arrives -->
+          <circle cx="50" cy="70" r="6" fill="#A04832"/>
+          <text x="64" y="68" font-size="10" font-weight="700" fill="#A04832" font-family="ui-monospace,monospace">t=0s</text>
+          <text x="64" y="80" font-size="10" fill="#A04832">SIGTERM → bash (PID 1)</text>
+          <!-- t=1 bash absorbs -->
+          <circle cx="50" cy="105" r="6" fill="#A04832"/>
+          <text x="64" y="103" font-size="10" font-weight="700" fill="#A04832" font-family="ui-monospace,monospace">t=1s</text>
+          <text x="64" y="115" font-size="10" fill="#A04832">bash swallows · app unaware</text>
+          <!-- t=15 app keeps serving -->
+          <circle cx="50" cy="145" r="6" fill="#A04832"/>
+          <text x="64" y="143" font-size="10" font-weight="700" fill="#A04832" font-family="ui-monospace,monospace">t=15s</text>
+          <text x="64" y="155" font-size="10" fill="#A04832">app still serving requests</text>
+          <!-- t=30 grace expires -->
+          <circle cx="50" cy="185" r="6" fill="#5A2520"/>
+          <text x="64" y="183" font-size="10" font-weight="700" fill="#5A2520" font-family="ui-monospace,monospace">t=30s</text>
+          <text x="64" y="195" font-size="10" font-weight="700" fill="#5A2520">grace expires → SIGKILL</text>
+          <!-- t=30 dropped -->
+          <circle cx="50" cy="225" r="6" fill="#5A2520"/>
+          <text x="64" y="223" font-size="10" font-weight="700" fill="#5A2520" font-family="ui-monospace,monospace">t=30s</text>
+          <text x="64" y="235" font-size="10" font-weight="700" fill="#5A2520">in-flight requests DROPPED</text>
+
+          <text x="160" y="266" font-size="11" font-weight="700" fill="#A04832" text-anchor="middle">total: 30s · lossy</text>
+        </g>
+
+        <!-- RIGHT: proper -->
+        <g transform="translate(360,0)">
+          <rect width="320" height="280" rx="14" fill="#E0EFE6"/>
+          <text x="160" y="22" font-size="11" font-weight="700" fill="#3D7857" text-anchor="middle" letter-spacing="1.5">PROPER · TINI AS PID 1</text>
+
+          <!-- Timeline -->
+          <line x1="50" y1="56" x2="50" y2="234" stroke="#3D7857" stroke-width="2"/>
+          <!-- t=-5 preStop -->
+          <circle cx="50" cy="70" r="6" fill="#5E4A8E"/>
+          <text x="64" y="68" font-size="10" font-weight="700" fill="#5E4A8E" font-family="ui-monospace,monospace">t=-5s</text>
+          <text x="64" y="80" font-size="10" fill="#5E4A8E">preStop: sleep 5 (LB drains)</text>
+          <!-- t=0 SIGTERM -->
+          <circle cx="50" cy="105" r="6" fill="#3D7857"/>
+          <text x="64" y="103" font-size="10" font-weight="700" fill="#3D7857" font-family="ui-monospace,monospace">t=0s</text>
+          <text x="64" y="115" font-size="10" fill="#3D7857">SIGTERM → tini → app</text>
+          <!-- t=0.5 app catches -->
+          <circle cx="50" cy="145" r="6" fill="#3D7857"/>
+          <text x="64" y="143" font-size="10" font-weight="700" fill="#3D7857" font-family="ui-monospace,monospace">t=0.5s</text>
+          <text x="64" y="155" font-size="10" fill="#3D7857">app stops accepting new conns</text>
+          <!-- t=2 app drains -->
+          <circle cx="50" cy="185" r="6" fill="#3D7857"/>
+          <text x="64" y="183" font-size="10" font-weight="700" fill="#3D7857" font-family="ui-monospace,monospace">t=2s</text>
+          <text x="64" y="195" font-size="10" fill="#3D7857">in-flight requests finish</text>
+          <!-- t=2.5 exits -->
+          <circle cx="50" cy="225" r="6" fill="#3D7857"/>
+          <text x="64" y="223" font-size="10" font-weight="700" fill="#3D7857" font-family="ui-monospace,monospace">t=2.5s</text>
+          <text x="64" y="235" font-size="10" font-weight="700" fill="#3D7857">app exits 0 · pod Terminated</text>
+
+          <text x="160" y="266" font-size="11" font-weight="700" fill="#3D7857" text-anchor="middle">total: 7.5s · zero loss</text>
+        </g>
+      </svg>
+      <div class="illu-caption">Same SIGTERM arrives. The naive shutdown wastes 30 seconds and drops requests; the proper one finishes in under 8 seconds with zero loss.</div>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba before">
+        <span class="ba-label">Before · bash as PID 1</span>
+        <p>Dockerfile: <code>CMD ["bash", "/app/start.sh"]</code>. start.sh runs <code>node server.js &amp;</code> in the background. SIGTERM arrives → bash receives it but doesn't forward to Node → Node never gets the signal → 30 seconds elapse → SIGKILL → Node dies mid-request, in-flight requests drop, no flush. Logs show "Killed". Operators wonder why every deploy is "lossy."</p>
+      </div>
+      <div class="ba after">
+        <span class="ba-label">After · tini + preStop</span>
+        <p>Dockerfile: <code>ENTRYPOINT ["/usr/bin/tini", "--"]</code> + <code>CMD ["node", "server.js"]</code>. Pod adds <code>lifecycle.preStop.exec.command: ["sh","-c","sleep 5"]</code> and <code>terminationGracePeriodSeconds: 60</code>. preStop runs first, then tini forwards SIGTERM to Node, Node closes Express server gracefully, exits 0. Zero requests dropped.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">What didn't change: the app code (assuming Node already handles SIGTERM, which Express does with one line). What changed: PID 1 actually delivers the signal.</p>
+  </section>
+
+  <!-- ============================== SECTION 3 — ANALOGY ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The ship's captain</h2>
+    <p>A container shutdown is a ship docking and disembarking. The <strong>captain is PID 1</strong>. The crew (child processes) are at their stations: engine room, cargo hold, navigation. Out at sea, the <strong>lighthouse flashes a signal</strong> — that's SIGTERM from the kubelet — meaning "wrap up and head to port."</p>
+    <p>A good captain hears the signal, picks up the megaphone, and <strong>forwards the order</strong> to every crew member: "stop loading, wrap up the manifest, prepare to disembark." A bad captain hears the lighthouse and just stands there. The crew never gets the message and keeps loading cargo.</p>
+    <p>The captain also keeps a <strong>roster log</strong> — every crew member who disembarks gets ticked off (zombie reaping). Crew members whose original supervisor has already left get re-assigned to the captain (orphans), and the captain ticks them off when they leave too.</p>
+    <p>After the lighthouse signals, the harbour gives the ship a <strong>grace period</strong> (<code>terminationGracePeriodSeconds</code>, default 30s) to disembark peacefully. If the ship is still moored after grace, the harbour pulls the gangway and lights out (SIGKILL — can't be ignored). A captain who doesn't act in time loses crew mid-disembarkation.</p>
+
+    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>Captain on the bridge</strong> = PID 1 (your ENTRYPOINT process)</li>
+      <li><strong>Crew at stations</strong> = child processes</li>
+      <li><strong>Lighthouse signal</strong> = SIGTERM from kubelet</li>
+      <li><strong>Captain's megaphone</strong> = signal forwarding</li>
+      <li><strong>Roster log</strong> = zombie reaping (waitpid)</li>
+      <li><strong>Re-assigned crew</strong> = orphan processes adopted by PID 1</li>
+      <li><strong>Grace period clock</strong> = terminationGracePeriodSeconds</li>
+      <li><strong>Lights out</strong> = SIGKILL</li>
+      <li><strong>Pre-disembark announcement</strong> = preStop hook</li>
+      <li><strong>Hired professional captain</strong> = tini / dumb-init</li>
+      <li><strong>Untrained captain</strong> = naive shell entrypoint that swallows signals</li>
+    </ul>
+  </section>
+
+  <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>A captain on a ship. The lighthouse blinks "time to leave." The captain picks up the megaphone and tells everyone. The crew packs up. The captain checks every name on a list as they leave. Then lights out. If the captain ignores the lighthouse, the harbour just turns out the lights anyway and people get stuck mid-task.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Inside a container, the first process you start is <code>PID 1</code> and gets two special jobs Linux normally hands to systemd: forward signals to descendants, and reap zombie children. When K8s wants to delete a pod, it runs the optional <code>preStop</code> hook, then sends SIGTERM to PID 1. PID 1 forwards that to every child and waits for them to exit. If PID 1 doesn't exit within <code>terminationGracePeriodSeconds</code> (default 30), K8s sends SIGKILL — uncatchable. If PID 1 is <code>bash</code>, it swallows SIGTERM and your app never learns the pod is shutting down. Wrap your entrypoint in <strong>tini</strong> (<code>ENTRYPOINT ["tini", "--", "node", "server.js"]</code>) — it forwards signals + reaps zombies for free. Add a <code>preStop: sleep 5</code> if you need the load-balancer to drain.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>Where PID 1 quietly wrecks things</h2>
+
+    <div class="scenarios">
+      <div class="scenario">
+        <p class="scenario-name">Bash-as-PID-1 dropped SIGTERM — every deploy was lossy</p>
+        <p>A team's deploys consistently took the full 30 seconds and ended with logs showing "Killed". Investigation: Dockerfile used <code>CMD bash startup.sh</code> and startup.sh ran <code>node server.js &amp;</code> in the background. Bash was PID 1, caught SIGTERM, didn't forward it. Node never knew. Fix: <code>ENTRYPOINT ["tini", "--"]</code> + <code>CMD ["node", "server.js"]</code>. Deploys became instant and graceful.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">30-second grace was too short — DB shutdown got truncated</p>
+        <p>A team's PostgreSQL sidecar was getting SIGKILL'd mid-checkpoint during pod shutdowns. Result: occasional WAL corruption requiring recovery. Fix: <code>terminationGracePeriodSeconds: 300</code> for that pod, plus a preStop hook running <code>pg_ctl stop -m smart</code>. The DB gets up to 5 minutes to flush cleanly. Corruption stopped.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">preStop sleep saved zero-downtime rolling updates</p>
+        <p>During rolling updates, a fraction of requests returned 502. Cause: pod was shutting down before the Service's endpoint controller had updated the load-balancer; the LB kept sending traffic to a closed port. Fix: <code>preStop: { exec: { command: ["sh", "-c", "sleep 10"] } }</code>. Pod sits idle for 10s after being marked for deletion, giving the LB time to remove it from rotation. 502s dropped to zero.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">Zombie process accumulation crashed a Java app under load</p>
+        <p>A Java app spawned subprocesses for thumbnail generation. Each finished quickly, but the JVM didn't reap them. Zombies accumulated until the process table filled, then "Resource temporarily unavailable" errors. Pod restart cleared it temporarily. Real fix: <code>ENTRYPOINT ["tini", "--", "java", "-jar", "app.jar"]</code>. tini reaped zombies as they appeared. Crashes stopped.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 6 — ANIMATED SVG ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Watch shutdown, signal forwarding, and reaping</h2>
+    <p>Three modes. Graceful shutdown timeline, bad-vs-good PID 1 signal forwarding, and zombie reaping in action.</p>
+
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animation of shutdown, PID 1 forwarding, and zombie reaping">
+        <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: graceful shutdown timeline</text>
+
+        <g transform="translate(580,14)">
+          <rect width="160" height="34" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.4"/>
+          <text x="14" y="22" font-size="11" fill="#6B6058">step:</text>
+          <text x="148" y="22" font-size="14" font-weight="700" fill="#3F4A5E" text-anchor="end" font-family="ui-monospace,monospace" id="anim-step">0 / 4</text>
+        </g>
+
+        <g id="anim-stage" transform="translate(40,60)"></g>
+
+        <g transform="translate(40,320)">
+          <rect width="680" height="40" rx="6" fill="#FBF7F0" stroke="#3F4A5E" stroke-width="1.5"/>
+          <text x="340" y="25" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-status">Pick a mode to start.</text>
+        </g>
+      </svg>
+
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="shutdown">▶ Graceful shutdown</button>
+        <button class="anim-btn" type="button" data-mode="forward">▶ Bad PID 1 vs tini</button>
+        <button class="anim-btn" type="button" data-mode="zombie">▶ Zombie reaping</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> the four-step shutdown protocol. preStop → SIGTERM → drain → exit.</div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why is PID 1 special inside a container?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Linux gives PID 1 two jobs the kernel won't do for anyone else: forward signals to descendants, and reap zombie children (waitpid). On a host, systemd does this. In a container, your ENTRYPOINT process is PID 1.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">SIGTERM vs SIGKILL — when does K8s send each?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">On pod deletion, kubelet sends SIGTERM to PID 1 (polite "wrap up"). If PID 1 hasn't exited within terminationGracePeriodSeconds (default 30s), kubelet sends SIGKILL — uncatchable.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does tini do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Tiny init binary. ENTRYPOINT ["tini", "--", "your-app"]. tini becomes PID 1, app is PID 2. tini forwards every signal to PID 2 and reaps any zombie re-parented to it. Solves both PID-1 problems.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a zombie process?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A process that has exited but whose entry remains in the process table because the parent hasn't called waitpid(). Zombies don't use CPU or RAM but consume PID slots. Accumulating zombies fill the table.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is preStop and what's it for?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Pod hook that runs BEFORE SIGTERM is sent. Common pattern: preStop sleep 10 — gives the load-balancer time to notice the pod is being removed before connections stop. Saves rolling updates from 502s.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">terminationGracePeriodSeconds — what is it?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Seconds the kubelet waits between sending SIGTERM and SIGKILL. Default 30. Tune higher (120-600+) for slow shutdowns: databases, queue workers, big flushes.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why is CMD ["bash", "start.sh"] dangerous as entrypoint?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">bash becomes PID 1, catches SIGTERM but doesn't forward it to spawned children. App never learns the pod is shutting down → SIGKILL → dropped requests. Use tini or exec the app directly.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Five pod phases?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Pending (scheduled, not running yet), Running (at least one container started), Succeeded (all containers exited 0), Failed (at least one container exited non-zero), Unknown (kubelet can't reach node).</div></div></div>
+    </div>
+
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card">
+        <p class="quiz-prompt">Your team's deploys consistently take exactly 30 seconds and end with "Killed" in logs. Dockerfile has <code>CMD ["bash", "/app/start.sh"]</code> and start.sh runs <code>node server.js &amp;</code>. Why slow and lossy, and what's the fix?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span><code>bash</code> is PID 1 inside the container. SIGTERM arrives, bash receives it, but bash does NOT forward signals to its background children. Node never learns the pod is shutting down. Kubelet waits the full 30s grace, then SIGKILL — uncatchable, drops in-flight requests. Two fixes: (1) Use tini as PID 1: <code>ENTRYPOINT ["tini", "--"]</code>, <code>CMD ["node", "server.js"]</code>. tini forwards SIGTERM to Node and reaps zombies. (2) Or skip the wrapper: <code>ENTRYPOINT ["node", "server.js"]</code> — Node becomes PID 1 and gets SIGTERM directly. Make sure Node has a SIGTERM handler that closes the HTTP server gracefully.</div>
+      </div>
+      <div class="quiz-card">
+        <p class="quiz-prompt">During rolling updates, a small fraction of requests return 502s for a few seconds. Pods are healthy. The app handles SIGTERM correctly and shuts down in under a second. Cause and fix?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Race condition between pod termination and load-balancer endpoint removal. When K8s marks a pod for deletion, two things start in parallel: kubelet sends SIGTERM (and your app shuts down), AND the endpoints controller updates the Service to remove the pod from the LB. The endpoints update is slower than your shutdown. So briefly the LB is still sending traffic to a pod whose port has already closed → 502. Fix: add a preStop hook that sleeps for ~10 seconds before the app receives SIGTERM. <code>lifecycle: { preStop: { exec: { command: ["sh", "-c", "sleep 10"] } } }</code>. The sleep blocks SIGTERM until the LB has had time to drain the pod from rotation.</div>
+      </div>
+      <div class="quiz-card">
+        <p class="quiz-prompt">A Java app spawns subprocesses for thumbnail generation. Under sustained load, after ~2 hours, the pod returns "Resource temporarily unavailable" errors. Restarting clears it. What's happening and what's the permanent fix?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Zombie process accumulation. The Java app forks a subprocess for each thumbnail. Each subprocess exits quickly, but the JVM does not call <code>waitpid()</code> to collect them. Each becomes a zombie — a defunct process consuming a PID slot. After thousands of thumbnails, the process table is full and the kernel can't fork new processes → "Resource temporarily unavailable." Pod restart clears the table temporarily but the leak resumes. Real fix: use tini as PID 1. <code>ENTRYPOINT ["tini", "--", "java", "-jar", "app.jar"]</code>. tini reaps any zombie re-parented to it, including the JVM's abandoned children. Bonus: tini also gives you proper signal forwarding for graceful shutdown.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== GLOSSARY ============================== -->
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">PID 1</div><div class="gloss-def">First process in a Linux namespace. Must forward signals to descendants and reap zombie children. In a container, your ENTRYPOINT process.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SIGTERM</div><div class="gloss-def">Polite "please exit" signal (number 15). What K8s sends first when terminating a pod. Catchable, ignorable.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SIGKILL</div><div class="gloss-def">Forced "die now" signal (number 9). Sent after grace period expires. Kernel-level — cannot be caught or ignored.</div></div>
+      <div class="gloss-item"><div class="gloss-name">terminationGracePeriodSeconds</div><div class="gloss-def">Pod field. Wall-clock seconds the kubelet waits between SIGTERM and SIGKILL. Default 30. Tune higher for slow shutdowns.</div></div>
+      <div class="gloss-item"><div class="gloss-name">preStop hook</div><div class="gloss-def">Pod lifecycle hook that runs BEFORE SIGTERM. Common pattern: <code>sleep 10</code> to let the LB drain.</div></div>
+      <div class="gloss-item"><div class="gloss-name">postStart hook</div><div class="gloss-def">Pod hook that runs after the container is created, asynchronously to the entrypoint. Use sparingly.</div></div>
+      <div class="gloss-item"><div class="gloss-name">tini · dumb-init</div><div class="gloss-def">Tiny init binaries that run as PID 1 inside containers. Forward signals to your app and reap zombies. Often pre-installed in language images.</div></div>
+      <div class="gloss-item"><div class="gloss-name">zombie process</div><div class="gloss-def">Exited process whose entry remains in the process table until parent calls <code>waitpid()</code>. Doesn't use CPU/RAM but consumes a PID slot.</div></div>
+      <div class="gloss-item"><div class="gloss-name">orphan process</div><div class="gloss-def">Child process whose parent has exited. Re-parented to PID 1, which becomes responsible for reaping it on exit.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Pod phase</div><div class="gloss-def">High-level pod state: Pending, Running, Succeeded, Failed, Unknown. Container states (Waiting, Running, Terminated) are tracked separately.</div></div>
+    </div>
+  </details>
+
+  <!-- ============================== RECAP + COMPLETION ============================== -->
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 12 complete · Module 2 done</span>
+    <p>PID 1 forwards signals and reaps zombies. Wrap your entrypoint in tini, handle SIGTERM, add preStop for LB drain, tune the grace period. Container Module 2 wraps here.</p>
+    <p class="recap-next"><strong>Next — Module 3: Kubernetes Architecture &amp; API.</strong> Lesson 13 — Cluster Architecture: control plane, nodes, etcd, the API server, controller manager, scheduler.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 12 of 17 · grounded in kubernetes.io/docs · github.com/krallin/tini · github.com/Yelp/dumb-init</footer>
+
+<script>
+  // theme
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '☀ Light' : '🌙 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '☀ Light' : '🌙 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+
+  // flashcards
+  document.querySelectorAll('.flashcard').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('flipped'));
+  });
+
+  // quiz reveals
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? 'Hide answer' : 'Show answer';
+    });
+  });
+
+  // ====== Animation ======
+  const animStage = document.getElementById('anim-stage');
+  const animModeLabel = document.getElementById('anim-mode-label');
+  const animReadout = document.getElementById('anim-readout');
+  const animStep = document.getElementById('anim-step');
+  const animStatus = document.getElementById('anim-status');
+  const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+
+  let timeouts = [];
+  function clearTimeouts() { timeouts.forEach(t => clearTimeout(t)); timeouts = []; }
+  function later(ms, fn) { const t = setTimeout(fn, ms); timeouts.push(t); return t; }
+  function clearStage() { animStage.innerHTML = ''; }
+  function setReadout(html) { animReadout.innerHTML = html; }
+  function setStatus(text) { animStatus.textContent = text; }
+
+  const NS = 'http://www.w3.org/2000/svg';
+  function svgRect(x, y, w, h, fill, stroke, label, opts = {}) {
+    const g = document.createElementNS(NS, 'g');
+    const rect = document.createElementNS(NS, 'rect');
+    rect.setAttribute('x', x); rect.setAttribute('y', y);
+    rect.setAttribute('width', w); rect.setAttribute('height', h);
+    rect.setAttribute('rx', opts.rx || 5);
+    rect.setAttribute('fill', fill);
+    rect.setAttribute('stroke', stroke);
+    rect.setAttribute('stroke-width', 1.4);
+    g.appendChild(rect);
+    if (label) {
+      const txt = document.createElementNS(NS, 'text');
+      txt.setAttribute('x', x + w / 2); txt.setAttribute('y', y + h / 2 + 4);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('font-family', opts.font || 'sans-serif');
+      txt.setAttribute('font-size', opts.fontSize || 11);
+      txt.setAttribute('font-weight', '700');
+      txt.setAttribute('fill', opts.textFill || '#FFFFFF');
+      txt.textContent = label;
+      g.appendChild(txt);
+    }
+    g.style.opacity = 0;
+    g.style.transition = 'opacity 0.3s';
+    animStage.appendChild(g);
+    requestAnimationFrame(() => g.style.opacity = 1);
+    return g;
+  }
+  function svgText(x, y, text, opts = {}) {
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', x); t.setAttribute('y', y);
+    t.setAttribute('text-anchor', opts.anchor || 'middle');
+    t.setAttribute('font-size', opts.fontSize || 11);
+    t.setAttribute('font-weight', opts.weight || '700');
+    t.setAttribute('fill', opts.fill || '#3F4A5E');
+    if (opts.font) t.setAttribute('font-family', opts.font);
+    t.textContent = text;
+    t.style.opacity = 0;
+    t.style.transition = 'opacity 0.3s';
+    animStage.appendChild(t);
+    requestAnimationFrame(() => t.style.opacity = 1);
+    return t;
+  }
+
+  function runShutdown() {
+    clearTimeouts(); clearStage();
+    animModeLabel.textContent = 'Mode: graceful shutdown timeline';
+    animStep.textContent = '0 / 4';
+    setStatus('Pod marked for deletion. Four-step protocol begins.');
+    setReadout('<strong>Step 0.</strong> kubelet decides this pod must terminate. preStop will fire first, then SIGTERM.');
+
+    later(0, () => {
+      // Pod card on top
+      svgRect(20, 10, 680, 36, '#FBF1D6', '#8B5A00', 'POD · marked for deletion · grace=30s', { fontSize: 12, textFill: '#5A4F45' });
+    });
+    later(1200, () => {
+      animStep.textContent = '1 / 4';
+      setStatus('Step 1: preStop hook fires (sleep 5s for LB drain).');
+      setReadout('<strong>Step 1.</strong> kubelet runs preStop: sleep 5. SIGTERM is held back. The Service endpoint is being removed in parallel.');
+      svgRect(20, 60, 680, 36, '#EDE6F8', '#5E4A8E', 'preStop: sleep 5s (LB drain window)', { fontSize: 12, textFill: '#5E4A8E' });
+    });
+    later(3200, () => {
+      animStep.textContent = '2 / 4';
+      setStatus('Step 2: kubelet sends SIGTERM to PID 1. tini forwards to app.');
+      setReadout('<strong>Step 2.</strong> SIGTERM → tini (PID 1) → app (PID 2). App stops accepting new connections.');
+      svgRect(20, 110, 680, 36, '#FBE8DC', '#A04832', 'SIGTERM → tini → app · stop accepting new conns', { fontSize: 12, textFill: '#A04832' });
+    });
+    later(5000, () => {
+      animStep.textContent = '3 / 4';
+      setStatus('Step 3: in-flight requests complete. Buffers flush.');
+      setReadout('<strong>Step 3.</strong> The 8 in-flight requests finish. App flushes log buffers. Connections close cleanly.');
+      svgRect(20, 160, 680, 36, '#FBE8DC', '#A04832', 'app drains: 8 in-flight reqs finish · buffers flush', { fontSize: 12, textFill: '#A04832' });
+    });
+    later(7000, () => {
+      animStep.textContent = '4 / 4';
+      setStatus('Step 4: app exits 0. Pod transitions to Terminated.');
+      setReadout('<strong>Step 4.</strong> App exits 0. tini exits. kubelet records pod Terminated. Total: ~7.5s, well under 30s grace.');
+      svgRect(20, 210, 680, 36, '#5A9F7A', '#3D7857', '✓ exit 0 · pod Terminated · zero requests dropped', { fontSize: 12, textFill: '#FFFFFF' });
+    });
+    later(11000, runShutdown);
+  }
+
+  function runForward() {
+    clearTimeouts(); clearStage();
+    animModeLabel.textContent = 'Mode: bad PID 1 vs tini';
+    animStep.textContent = '0 / 4';
+    setStatus('Two containers, same SIGTERM, different outcomes.');
+    setReadout('<strong>Step 0.</strong> Left: bash as PID 1. Right: tini as PID 1. Same SIGTERM arrives in 1 second.');
+
+    later(0, () => {
+      // LEFT container (bad)
+      svgRect(20, 10, 330, 60, '#FBE8DC', '#A04832', '', { rx: 6 });
+      svgText(185, 30, 'BAD · bash entrypoint', { fontSize: 11, fill: '#A04832' });
+      svgRect(40, 38, 80, 26, '#FFFFFF', '#A04832', 'bash · PID 1', { fontSize: 9.5, textFill: '#A04832', font: 'ui-monospace,monospace' });
+      svgRect(150, 38, 80, 26, '#FFFFFF', '#3D7857', 'node · PID 2', { fontSize: 9.5, textFill: '#3D7857', font: 'ui-monospace,monospace' });
+
+      // RIGHT container (good)
+      svgRect(380, 10, 330, 60, '#E0EFE6', '#3D7857', '', { rx: 6 });
+      svgText(545, 30, 'GOOD · tini entrypoint', { fontSize: 11, fill: '#3D7857' });
+      svgRect(400, 38, 80, 26, '#FFFFFF', '#5E4A8E', 'tini · PID 1', { fontSize: 9.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
+      svgRect(510, 38, 80, 26, '#FFFFFF', '#3D7857', 'node · PID 2', { fontSize: 9.5, textFill: '#3D7857', font: 'ui-monospace,monospace' });
+    });
+    later(1500, () => {
+      animStep.textContent = '1 / 4';
+      setStatus('Step 1: SIGTERM arrives at both PID 1s.');
+      setReadout('<strong>Step 1.</strong> kubelet sends SIGTERM to PID 1 in both containers (t=0).');
+      svgRect(40, 90, 80, 24, '#A04832', '#5A2520', 'SIGTERM ↓', { fontSize: 10, textFill: '#FFFFFF' });
+      svgRect(400, 90, 80, 24, '#A04832', '#5A2520', 'SIGTERM ↓', { fontSize: 10, textFill: '#FFFFFF' });
+    });
+    later(3000, () => {
+      animStep.textContent = '2 / 4';
+      setStatus('Step 2: bash swallows it · tini forwards it.');
+      setReadout('<strong>Step 2.</strong> bash receives the signal but does not forward to PID 2. tini forwards SIGTERM straight through to node.');
+      svgRect(20, 130, 330, 28, '#FBE8DC', '#A04832', 'bash absorbs · node never sees SIGTERM', { fontSize: 10, textFill: '#A04832' });
+      svgRect(380, 130, 330, 28, '#E0EFE6', '#3D7857', 'tini → SIGTERM → node (t=0.1s)', { fontSize: 10, textFill: '#3D7857' });
+    });
+    later(4800, () => {
+      animStep.textContent = '3 / 4';
+      setStatus('Step 3: bad app keeps running · good app starts shutting down.');
+      setReadout('<strong>Step 3.</strong> Left: node has no idea, keeps serving. Right: node catches SIGTERM, drains, prepares to exit.');
+      svgRect(20, 168, 330, 28, '#FBE8DC', '#A04832', 'node still serving · clock ticks 5, 10, 15, 25...', { fontSize: 10, textFill: '#A04832' });
+      svgRect(380, 168, 330, 28, '#E0EFE6', '#3D7857', '✓ node draining · about to exit at t=2s', { fontSize: 10, textFill: '#3D7857' });
+    });
+    later(6800, () => {
+      animStep.textContent = '4 / 4';
+      setStatus('Step 4: bad → SIGKILL at t=30 · good → exit 0 at t=2.');
+      setReadout('<strong>Step 4.</strong> Bad: 30s elapsed, kubelet sends SIGKILL — uncatchable, requests dropped. Good: clean exit 0 at t=2.');
+      svgRect(20, 206, 330, 36, '#5A2520', '#1F0808', '✗ SIGKILL at t=30s · requests dropped', { fontSize: 11, textFill: '#FFFFFF' });
+      svgRect(380, 206, 330, 36, '#5A9F7A', '#3D7857', '✓ exit 0 at t=2s · zero loss', { fontSize: 11, textFill: '#FFFFFF' });
+    });
+    later(11000, runForward);
+  }
+
+  function runZombie() {
+    clearTimeouts(); clearStage();
+    animModeLabel.textContent = 'Mode: zombie reaping';
+    animStep.textContent = '0 / 4';
+    setStatus('A parent process forks a child to do work.');
+    setReadout('<strong>Step 0.</strong> Parent forks a child. Child runs, exits — but its process table entry stays until parent waits.');
+
+    later(0, () => {
+      svgRect(60, 10, 200, 50, '#FBF1D6', '#8B5A00', 'parent (your app)', { fontSize: 11, textFill: '#5A4F45' });
+      svgRect(460, 10, 200, 50, '#E0EFE6', '#3D7857', 'child (subprocess)', { fontSize: 11, textFill: '#3D7857' });
+      // Fork arrow
+      const arrow = document.createElementNS(NS, 'path');
+      arrow.setAttribute('d', 'M 260 35 L 460 35');
+      arrow.setAttribute('stroke', '#3F4A5E');
+      arrow.setAttribute('stroke-width', '2');
+      arrow.setAttribute('fill', 'none');
+      arrow.setAttribute('marker-end', 'url(#anim-arr-z)');
+      animStage.appendChild(arrow);
+      // Define marker
+      const defs = document.createElementNS(NS, 'defs');
+      defs.innerHTML = '<marker id="anim-arr-z" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3F4A5E"/></marker>';
+      animStage.appendChild(defs);
+      svgText(360, 28, 'fork()', { fontSize: 10, fill: '#3F4A5E' });
+    });
+    later(1500, () => {
+      animStep.textContent = '1 / 4';
+      setStatus('Step 1: child finishes its work and exits.');
+      setReadout('<strong>Step 1.</strong> Child completes (e.g., generates a thumbnail) and exits. Kernel marks it as a zombie.');
+      svgRect(460, 80, 200, 36, '#ECEFF5', '#5E4A8E', '👻 ZOMBIE · exit code captured', { fontSize: 11, textFill: '#5E4A8E' });
+    });
+    later(3000, () => {
+      animStep.textContent = '2 / 4';
+      setStatus('Step 2 (good): parent calls waitpid() → zombie cleared.');
+      setReadout('<strong>Step 2.</strong> Good parent: calls waitpid() to collect the exit status. Zombie is reaped, PID slot freed.');
+      svgRect(60, 80, 380, 36, '#E0EFE6', '#3D7857', '✓ parent waitpid() → zombie reaped · PID slot freed', { fontSize: 11, textFill: '#3D7857' });
+    });
+    later(5000, () => {
+      animStep.textContent = '3 / 4';
+      setStatus('Step 3 (bad): parent never waits → zombies pile up.');
+      setReadout('<strong>Step 3.</strong> Bad parent: doesn\'t call waitpid(). After many forks, hundreds of zombies clog the process table.');
+      svgRect(60, 130, 600, 36, '#FBE8DC', '#A04832', '✗ no waitpid · 👻×N zombies pile up over hours', { fontSize: 11, textFill: '#A04832' });
+    });
+    later(7200, () => {
+      animStep.textContent = '4 / 4';
+      setStatus('Step 4: tini PID 1 reaps any zombie re-parented to it.');
+      setReadout('<strong>Step 4.</strong> If the parent dies, child is re-parented to PID 1. tini reaps it on exit. Add tini = zombie immune.');
+      svgRect(60, 170, 600, 36, '#EDE6F8', '#5E4A8E', '🛡️ tini PID 1: any orphan zombie reaped automatically', { fontSize: 11, textFill: '#5E4A8E' });
+      svgRect(60, 212, 600, 36, '#5A9F7A', '#3D7857', '✓ ENTRYPOINT ["tini", "--", "your-app"] solves both problems', { fontSize: 12, textFill: '#FFFFFF' });
+    });
+    later(11000, runZombie);
+  }
+
+  function runMode(mode) {
+    clearTimeouts();
+    if (mode === 'shutdown') runShutdown();
+    else if (mode === 'forward') runForward();
+    else if (mode === 'zombie') runZombie();
+  }
+
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      runMode(btn.dataset.mode);
+    });
+  });
+
+  runShutdown();
+</script>
+
+</body>
+</html>

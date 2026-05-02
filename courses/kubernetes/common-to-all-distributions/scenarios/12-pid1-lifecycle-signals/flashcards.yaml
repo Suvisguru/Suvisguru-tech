@@ -1,0 +1,35 @@
+# Flashcards — Lesson 12, PID 1 & Lifecycle
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "Why is PID 1 special inside a container?"
+    back: "Linux gives PID 1 two jobs the kernel won't do for anyone else: forward signals to its descendants, and reap zombie children (call waitpid). On a host, systemd does this. In a container, your ENTRYPOINT process is PID 1 and most apps don't know they need to."
+
+  - id: 2
+    front: "SIGTERM vs SIGKILL — what does K8s send and when?"
+    back: "On pod deletion, the kubelet sends SIGTERM to PID 1 (the polite 'wrap up'). If PID 1 hasn't exited within terminationGracePeriodSeconds (default 30s), the kubelet sends SIGKILL — uncatchable, kernel-level kill. SIGINT (Ctrl-C) is not used by K8s."
+
+  - id: 3
+    front: "What does tini (or dumb-init) do?"
+    back: "Tiny init binary. Set ENTRYPOINT [\"tini\", \"--\", \"your-app\"]. tini becomes PID 1; your app is PID 2. tini forwards every signal to PID 2 and reaps any zombie that gets re-parented to it. Solves the two PID-1 problems for free."
+
+  - id: 4
+    front: "What is a zombie process?"
+    back: "A process that has exited but whose entry remains in the process table because the parent hasn't called waitpid() to collect its exit status. Zombies don't use CPU or RAM but consume PID slots. Accumulating zombies eventually fill the process table."
+
+  - id: 5
+    front: "What is preStop and what's a common use?"
+    back: "Pod lifecycle hook that runs BEFORE the kubelet sends SIGTERM. Common pattern: preStop: exec: command: [\"sh\", \"-c\", \"sleep 10\"]. The sleep gives the load-balancer time to notice the pod is being removed before connections stop. Saves rolling updates from 502s."
+
+  - id: 6
+    front: "What is terminationGracePeriodSeconds?"
+    back: "The wall-clock seconds the kubelet waits between sending SIGTERM and falling back to SIGKILL. Default 30. Tune higher (120-300+) for slow shutdowns: databases, queue workers finishing tasks, long flushes. Tune lower for stateless apps that can shut down instantly."
+
+  - id: 7
+    front: "What's wrong with CMD bash startup.sh as an entrypoint?"
+    back: "bash becomes PID 1, catches SIGTERM, but does NOT forward it to the app it spawned. Your app never learns the pod is shutting down. After grace period, kubelet SIGKILLs everything → in-flight requests dropped, no clean shutdown. Use tini or rewrite to exec the app directly."
+
+  - id: 8
+    front: "Pod phases — name the five."
+    back: "Pending (scheduled but not running yet), Running (at least one container started), Succeeded (all containers exited 0, no restart), Failed (at least one container exited non-zero, no restart), Unknown (kubelet can't reach the node). Plus container states: Waiting, Running, Terminated."
