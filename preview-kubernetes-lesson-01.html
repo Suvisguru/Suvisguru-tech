@@ -168,6 +168,37 @@
 
   /* spinning K8s wheel keyframe */
   @keyframes k8s-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+  /* analogy mapping cards (replaces bulleted list) */
+  .map-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:24px}
+  .map-card{display:flex;align-items:center;gap:12px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .map-icon{font-size:28px;line-height:1;flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--bg-card);border-radius:50%;border:1px solid var(--line)}
+  .map-text{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .map-text strong{font-weight:700;color:var(--ink);font-size:14px}
+  .map-text span{font-size:12.5px;color:var(--ink-soft)}
+
+  /* visual scenario cards */
+  .scenario-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:18px}
+  .scn{background:var(--bg-card);border:2px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm)}
+  .scn.streaming{border-color:#5E4A8E}
+  .scn.health{border-color:#A04832}
+  .scn.fintech{border-color:#E8B547}
+  .scn.gov{border-color:#3F4A5E}
+  .scn-illu{width:64px;height:64px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+  .scn.streaming .scn-illu{background:#EDE6F8}
+  .scn.health .scn-illu{background:#FBE8DC}
+  .scn.fintech .scn-illu{background:#FBF1D6}
+  .scn.gov .scn-illu{background:#ECEFF5}
+  .scn-illu svg{width:44px;height:44px;display:block}
+  .scn-name{font-weight:700;font-size:14px;color:var(--ink);margin:4px 0 0;line-height:1.3}
+  .scn-stat{font-size:32px;font-weight:700;line-height:1;color:var(--accent);font-family:'ui-monospace','SF Mono',Menlo,monospace;margin-top:4px}
+  .scn.streaming .scn-stat{color:#5E4A8E}
+  .scn.health .scn-stat{color:#A04832}
+  .scn.fintech .scn-stat{color:#A07A2A}
+  [data-theme="dark"] .scn.fintech .scn-stat{color:#E8B547}
+  .scn.gov .scn-stat{color:#3F4A5E}
+  [data-theme="dark"] .scn.gov .scn-stat{color:var(--accent)}
+  .scn-line{font-size:13px;color:var(--ink-soft);line-height:1.5;margin-top:auto}
 </style>
 </head>
 <body data-theme="light">
@@ -186,7 +217,7 @@
   <section class="hero">
     <span class="eyebrow">Lesson 01 · the start</span>
     <h1>What is Kubernetes?</h1>
-    <p class="hero-sub">It's the software that runs your apps across many computers — and keeps them running, automatically. Let's see what that means.</p>
+    <p class="hero-sub">Software that runs your apps across many computers and keeps them running. Picture below shows the whole idea.</p>
     <div class="hero-illu">
       <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A friendly illustration of Kubernetes orchestrating apps onto many servers">
         <defs>
@@ -278,9 +309,7 @@
   <section class="s">
     <span class="s-eyebrow">Section 1 · Concept</span>
     <h2>What Kubernetes actually is</h2>
-    <p><strong>Kubernetes</strong> (often shortened to <strong>K8s</strong> — the "8" is for the eight letters between K and s) is software that runs and manages your applications across many computers at the same time. You give it a description of what you want — for example, "I want three copies of my web app running" — and Kubernetes figures out which computers to run them on, watches them, restarts them if they crash, and adds more copies when you ask for them.</p>
-    <p>It runs on top of a group of computers called a <strong>cluster</strong>. A cluster can be three computers in a closet, or thousands of machines spread across data centres. Kubernetes treats them as one big pool of resources and decides where each piece of your app should live.</p>
-    <p>It exists because modern apps stopped fitting on a single computer. Companies need to run hundreds of services across many machines, with traffic that goes up and down through the day, with hardware that occasionally breaks. Doing all that by hand is impossible. Kubernetes does it automatically.</p>
+    <p>You hand Kubernetes a description of what you want. It picks the computers, runs your apps on them, and keeps them running. The picture below is the whole idea.</p>
 
     <div class="illu">
       <svg viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A simple diagram showing how you give Kubernetes a description and it places your apps on the right computers">
@@ -360,7 +389,7 @@
   <section class="s">
     <span class="s-eyebrow">Section 2 · Before &amp; After</span>
     <h2>Life before Kubernetes vs life with it</h2>
-    <p>Before Kubernetes, running an app at any real scale was a long list of manual steps. After Kubernetes, most of those steps disappeared — and the ones that remain are written down once, in a file.</p>
+    <p>Same time of night. Same problem. Different outcome.</p>
 
     <div class="illu">
       <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Side-by-side picture: stressed engineer with a broken server on the left, calm engineer with healthy servers on the right">
@@ -457,37 +486,20 @@
           <text x="160" y="200" font-family="sans-serif" font-size="11" fill="#3D7857" text-anchor="middle" font-weight="600">Kubernetes auto-fixed · sleep</text>
         </g>
       </svg>
-      <div class="illu-caption">Same time of night. Same problem. Different outcome.</div>
+      <div class="illu-caption">Left: lose your weekend fixing it by hand. Right: Kubernetes auto-fixes; you keep sleeping.</div>
     </div>
-
-    <div class="ba-grid">
-      <div class="ba before">
-        <span class="ba-label">Before</span>
-        <p>You SSH into the broken server. Read the logs by candlelight. Restart things by hand. Hope you didn't break something else. Document what you did so the next person can find it. Lose your Saturday.</p>
-        <p>Scaling means buying a bigger server, copying files, configuring it again, writing a runbook. Adding a new app means picking a server, hoping it has capacity, and praying.</p>
-      </div>
-      <div class="ba after">
-        <span class="ba-label">After</span>
-        <p>You wrote down — once, in a file — what you want running. When something breaks, Kubernetes notices in seconds and starts a replacement on a healthy machine. You get a "self-healed" message. You stay asleep.</p>
-        <p>Scaling is changing one number in that file. Adding a new app is one more file. Kubernetes places it for you, watches it, and tells you when something needs your attention.</p>
-      </div>
-    </div>
-
-    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">What didn't get easier: the app itself. Kubernetes won't fix bugs in your code. It just makes the operations <em>around</em> your code automatic.</p>
   </section>
 
   <!-- ============================== SECTION 3 — ANALOGY ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 3 · Analogy</span>
     <h2>Kubernetes is like a property manager</h2>
-    <p>You own a few apartment buildings and you don't want to manage them yourself. So you hire a <strong>property manager</strong>. You tell the manager what you want — "keep all the apartments rented to good tenants, fix anything that breaks, hire a plumber if there's a leak, find a new tenant if one moves out." And then you go live your life. You check in once in a while.</p>
-    <p>The manager handles the day-to-day: showing apartments, signing leases, calling repair people, replacing broken appliances, balancing tenants across buildings, keeping the lights on at night. You don't think about which plumber to call at 3 AM. You don't even know there was a leak.</p>
-    <p>Kubernetes is the property manager for your apps and computers. You tell it what you want. It handles the day-to-day.</p>
+    <p>You hire one. You tell them what you want for your buildings. They handle the rest — even the leaks at 3 AM.</p>
 
     <div class="illu">
-      <svg viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A friendly building manager with a clipboard standing next to three apartment buildings with happy tenants visible in some windows">
+      <svg viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A friendly building manager with a clipboard standing next to three apartment buildings with happy tenants visible in some windows">
         <!-- Background -->
-        <rect width="680" height="240" rx="12" fill="#FBF7F0"/>
+        <rect width="680" height="260" rx="12" fill="#FBF7F0"/>
         <!-- Manager figure -->
         <g transform="translate(60,80)">
           <!-- Head -->
@@ -590,57 +602,136 @@
       <div class="illu-caption">You hire the manager. The manager handles the apartments. You sleep better.</div>
     </div>
 
-    <p style="margin-top:18px"><strong>The mapping:</strong></p>
-    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
-      <li><strong>You</strong> = the engineering team that owns an app</li>
-      <li><strong>The property manager</strong> = Kubernetes</li>
-      <li><strong>Apartment buildings</strong> = computers (servers / VMs / cloud machines)</li>
-      <li><strong>Tenants</strong> = your apps (each one needs an apartment)</li>
-      <li><strong>The instructions you gave the manager</strong> = your YAML files</li>
-      <li><strong>The plumber the manager calls at 3 AM</strong> = Kubernetes restarting a crashed app</li>
-    </ul>
+    <!-- Visual mapping cards (replaces text bullet list) -->
+    <div class="map-grid">
+      <div class="map-card"><div class="map-icon">🧑</div><div class="map-text"><strong>You</strong><span>your team</span></div></div>
+      <div class="map-card"><div class="map-icon">📋</div><div class="map-text"><strong>Manager</strong><span>= Kubernetes</span></div></div>
+      <div class="map-card"><div class="map-icon">🏢</div><div class="map-text"><strong>Buildings</strong><span>= computers</span></div></div>
+      <div class="map-card"><div class="map-icon">😊</div><div class="map-text"><strong>Tenants</strong><span>= your apps</span></div></div>
+      <div class="map-card"><div class="map-icon">📄</div><div class="map-text"><strong>Instructions</strong><span>= YAML files</span></div></div>
+      <div class="map-card"><div class="map-icon">🔧</div><div class="map-text"><strong>3 AM plumber</strong><span>= auto-restart</span></div></div>
+    </div>
   </section>
 
   <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 4 · Two-level explanation</span>
     <h2>Two ways to hear it</h2>
-    <p>Pick the level that fits where you are right now. They both say the same thing — one is just a little richer.</p>
-
     <div class="eli">
       <div class="eli-card">
-        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
-        <p>Imagine you have a lot of toys, and a lot of toy boxes. A friend (Kubernetes) puts each toy in the right box, makes sure they all stay there, and brings out a new toy if one breaks. You don't have to remember which toy is in which box, or check on them. The friend just does it.</p>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+          <svg width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+            <!-- Toy box -->
+            <rect x="8" y="20" width="48" height="36" rx="4" fill="#FBF1D6" stroke="#8B5A00" stroke-width="2"/>
+            <rect x="8" y="20" width="48" height="10" rx="4 4 0 0" fill="#E8B547"/>
+            <!-- Toys peeking out -->
+            <circle cx="20" cy="22" r="6" fill="#D97757" stroke="#A04832" stroke-width="1.4"/>
+            <rect x="28" y="14" width="10" height="10" rx="2" fill="#5A9F7A" stroke="#3D7857" stroke-width="1.4"/>
+            <path d="M 42 22 L 48 14 L 54 22" fill="#5E4A8E" stroke="#3D2868" stroke-width="1.4" stroke-linejoin="round"/>
+            <!-- Smile face -->
+            <circle cx="32" cy="42" r="6" fill="#FFFFFF" stroke="#8B5A00" stroke-width="1.2"/>
+            <circle cx="30" cy="41" r="0.8" fill="#2A2520"/>
+            <circle cx="34" cy="41" r="0.8" fill="#2A2520"/>
+            <path d="M 29 44 Q 32 46 35 44" stroke="#2A2520" stroke-width="1" fill="none"/>
+          </svg>
+          <span class="eli-tag five">ELI5</span>
+        </div>
+        <p>You have a lot of toys and a lot of toy boxes. A friend puts each toy in the right box, keeps them there, and brings out a new toy if one breaks. The friend is Kubernetes.</p>
       </div>
       <div class="eli-card">
-        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
-        <p>Kubernetes is like a delivery dispatcher for a fleet of trucks. You tell it what packages need to go where; it picks which truck takes each one. If a truck breaks down, it sends another truck to finish the job. If demand goes up, it brings in more trucks. The dispatcher never sleeps. In Kubernetes, "trucks" are computers, "packages" are your apps, and "the dispatcher" is Kubernetes itself.</p>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+          <svg width="56" height="56" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+            <!-- Delivery truck -->
+            <rect x="2" y="28" width="38" height="22" rx="3" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+            <rect x="40" y="34" width="14" height="16" rx="2" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+            <rect x="42" y="36" width="10" height="6" fill="#B8DCE8"/>
+            <!-- Packages on truck -->
+            <rect x="6" y="32" width="10" height="10" rx="1" fill="#D97757"/>
+            <rect x="18" y="32" width="10" height="10" rx="1" fill="#5A9F7A"/>
+            <rect x="6" y="44" width="22" height="4" rx="1" fill="#3F4A5E"/>
+            <!-- Wheels -->
+            <circle cx="14" cy="52" r="5" fill="#2A2520"/>
+            <circle cx="14" cy="52" r="2" fill="#9D9389"/>
+            <circle cx="46" cy="52" r="5" fill="#2A2520"/>
+            <circle cx="46" cy="52" r="2" fill="#9D9389"/>
+          </svg>
+          <span class="eli-tag ten">ELI10</span>
+        </div>
+        <p>Kubernetes is a delivery dispatcher for a fleet of trucks. You say what to deliver; it picks which truck takes which package, sends another if one breaks down, adds more in busy seasons. Trucks = computers, packages = apps, dispatcher = Kubernetes.</p>
       </div>
     </div>
   </section>
 
   <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
   <section class="s">
-    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
-    <h2>Where Kubernetes shows up in real companies</h2>
-    <p>Some concrete examples of teams running Kubernetes today, and what problem it solved for them.</p>
+    <span class="s-eyebrow">Section 5 · Real-world</span>
+    <h2>Four real teams · what changed for them</h2>
 
-    <div class="scenarios">
-      <div class="scenario">
-        <p class="scenario-name">A streaming media company (~200 engineers)</p>
-        <p>Runs hundreds of small services that together stream video to millions of viewers. Before Kubernetes, deploying a new version of any one service required a coordinated change across dozens of servers. Now each team writes a small YAML file and merges it; Kubernetes rolls the change out, watches for problems, and rolls back if the new version misbehaves. Average deploy time went from "an afternoon" to "twelve minutes."</p>
+    <div class="scenario-grid">
+      <!-- Streaming media -->
+      <div class="scn streaming">
+        <div class="scn-illu">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <!-- Film reel: outer ring + inner circles -->
+            <circle cx="32" cy="32" r="26" fill="none" stroke="#5E4A8E" stroke-width="3"/>
+            <circle cx="32" cy="32" r="6" fill="#5E4A8E"/>
+            <circle cx="32" cy="14" r="5" fill="none" stroke="#5E4A8E" stroke-width="2.5"/>
+            <circle cx="32" cy="50" r="5" fill="none" stroke="#5E4A8E" stroke-width="2.5"/>
+            <circle cx="14" cy="32" r="5" fill="none" stroke="#5E4A8E" stroke-width="2.5"/>
+            <circle cx="50" cy="32" r="5" fill="none" stroke="#5E4A8E" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <p class="scn-name">Streaming media · 200 engineers</p>
+        <div class="scn-stat">12 min</div>
+        <p class="scn-line">deploy time, down from "an afternoon"</p>
       </div>
-      <div class="scenario">
-        <p class="scenario-name">A regional hospital system (~30 engineers)</p>
-        <p>Runs the patient records system, the pharmacy app, and a dozen integrations with lab equipment. The trade-off: they get the auto-recovery and consistent deploys they need, but they had to invest in a small platform team to keep the cluster healthy. After 18 months, downtime is down ~70% and adding a new app takes a day instead of a sprint.</p>
+
+      <!-- Hospital -->
+      <div class="scn health">
+        <div class="scn-illu">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <!-- Medical cross -->
+            <rect x="8" y="8" width="48" height="48" rx="10" fill="#FFFFFF" stroke="#A04832" stroke-width="3"/>
+            <rect x="26" y="14" width="12" height="36" rx="2" fill="#A04832"/>
+            <rect x="14" y="26" width="36" height="12" rx="2" fill="#A04832"/>
+          </svg>
+        </div>
+        <p class="scn-name">Hospital system · 30 engineers</p>
+        <div class="scn-stat">−70%</div>
+        <p class="scn-line">downtime · 18 months in</p>
       </div>
-      <div class="scenario">
-        <p class="scenario-name">A fintech startup (12 engineers)</p>
-        <p>Initially tried to run everything in Kubernetes from day one, "because it's the modern way." They spent more time fixing the cluster than shipping features. After a year they moved most workloads to a managed app platform (Render, Fly) and kept Kubernetes only for the one large service that justified it. Lesson: Kubernetes pays back when you have many services and many teams. With three engineers and one app, it's overkill.</p>
+
+      <!-- Fintech overkill -->
+      <div class="scn fintech">
+        <div class="scn-illu">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <!-- Warning sign / "too much" symbol -->
+            <path d="M 32 8 L 56 52 L 8 52 Z" fill="#FBF1D6" stroke="#E8B547" stroke-width="3" stroke-linejoin="round"/>
+            <text x="32" y="44" font-family="sans-serif" font-size="22" font-weight="700" fill="#A07A2A" text-anchor="middle">!</text>
+          </svg>
+        </div>
+        <p class="scn-name">Fintech startup · 12 engineers</p>
+        <div class="scn-stat">1 yr</div>
+        <p class="scn-line">then moved off K8s · overkill for one app</p>
       </div>
-      <div class="scenario">
-        <p class="scenario-name">A government agency running a citizen portal</p>
-        <p>Needed strict isolation between environments (dev, staging, production) and an audit trail of every change. Kubernetes gave them per-environment clusters, RBAC for who can touch what, and Git-tracked deploys. Compliance audits went from a one-week scramble to "send the auditors a link to the Git repo."</p>
+
+      <!-- Government -->
+      <div class="scn gov">
+        <div class="scn-illu">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <!-- Capitol-style building: triangle pediment + columns -->
+            <path d="M 8 20 L 32 6 L 56 20 Z" fill="#3F4A5E"/>
+            <rect x="6" y="20" width="52" height="6" fill="#3F4A5E"/>
+            <rect x="10" y="26" width="6" height="26" fill="#3F4A5E"/>
+            <rect x="22" y="26" width="6" height="26" fill="#3F4A5E"/>
+            <rect x="34" y="26" width="6" height="26" fill="#3F4A5E"/>
+            <rect x="46" y="26" width="6" height="26" fill="#3F4A5E"/>
+            <rect x="6" y="52" width="52" height="6" fill="#3F4A5E"/>
+          </svg>
+        </div>
+        <p class="scn-name">Government · citizen portal</p>
+        <div class="scn-stat">1 link</div>
+        <p class="scn-line">audit prep · was a 1-week scramble</p>
       </div>
     </div>
   </section>
@@ -649,7 +740,7 @@
   <section class="s">
     <span class="s-eyebrow">Section 6 · Animation</span>
     <h2>Watch Kubernetes place an app — and recover from a failure</h2>
-    <p>Three short modes. Each one is a complete loop. The wheel in the middle is Kubernetes; the boxes on the right are your servers. Watch what happens to the app.</p>
+    <p>Three modes. Pick one and watch.</p>
 
     <div class="anim-wrap">
       <svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animated illustration of Kubernetes scheduling an app onto a server, then recovering from a server failure">
@@ -737,8 +828,7 @@
   <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
-    <h2>Lock it in</h2>
-    <p>Eight flashcards to remember the key terms, then three quick check questions.</p>
+    <h2>Lock it in · 8 cards, 3 questions</h2>
 
     <div class="flashcard-grid">
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is Kubernetes in one sentence?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Software that runs your apps across many computers and keeps them running automatically. You describe what you want; it figures out how.</div></div></div>
