@@ -822,9 +822,159 @@ LESSONS["L11"] = dict(
 )
 
 
+LESSONS["L12"] = dict(
+    file="preview-kubernetes-lesson-12.html",
+    rail_key="L12", active_pin="kt-pin12", strip_key="L12",
+    district_name="K-Town Harbour",
+    strip_label_district="K-Town Harbour",
+    strip_label_pos="lesson 12 of 16",
+    a11y_phrase="Lesson 12 of 16, K-Town Harbour.",
+    aria_label_today="K-Town district map: today we are at K-Town Harbour, Lesson 12",
+    map_title_today="K-Town district map · today: K-Town Harbour",
+    nightmare_text="It's 3 AM. Your deploy went out clean. But somehow 4% of customer orders vanished mid-checkout, and your logs just say <code>Killed</code>. By morning you have 47 angry support tickets and no idea which Pods got hit. This lesson is about why that happens — and the one line of YAML (<code>ENTRYPOINT [\"tini\", \"--\", ...]</code>) that prevents it.",
+    stamp_takeaway="PID 1 inside your container has two jobs Linux normally hands to systemd — forward signals and reap zombies. Wrap your entrypoint in <code>tini</code>. Handle SIGTERM. Add a <code>preStop</code> sleep. Tune the grace period.",
+    pc1_q="Your container's Dockerfile has <code>CMD [\"bash\", \"start.sh\"]</code> and <code>start.sh</code> runs <code>node server.js &amp;</code>. K8s sends SIGTERM. What happens?",
+    pc1_opts=[("a) Node receives SIGTERM and shuts down gracefully", False), ("b) Bash (PID 1) receives it but doesn't forward it; Node never knows", True), ("c) Both processes get the signal", False)],
+    pc1_feedback="<strong>Answer: b.</strong> Bash is PID 1 and doesn't forward signals to background children. Node never learns the Pod is shutting down. After 30s grace, SIGKILL. In-flight requests dropped.",
+    pc2_q="During rolling updates, a small fraction of requests return 502 for a few seconds. Pods are healthy. The app handles SIGTERM correctly. What's the cause?",
+    pc2_opts=[("a) The app is broken", False), ("b) Race condition: load balancer is still sending traffic to a Pod whose port has already closed", True), ("c) The cluster is overloaded", False)],
+    pc2_feedback="<strong>Answer: b.</strong> The endpoints update is slower than the app's shutdown. Fix: add a <code>preStop</code> hook that sleeps 10s before SIGTERM is sent — gives the LB time to drain the Pod from rotation.",
+    tl_rows=[("The captain on the bridge", "PID 1 (your <code>ENTRYPOINT</code> process)"), ("The crew at stations", "Child processes"), ("The lighthouse signal", "SIGTERM (the polite shutdown signal)"), ("The captain's megaphone", "Signal forwarding (PID 1 re-shouting SIGTERM to children)"), ("The roster log", "Zombie reaping (<code>waitpid</code> on each finished child)"), ("Crew re-assigned to PID 1", "Orphan processes adopted by PID 1"), ("The grace-period clock", "<code>terminationGracePeriodSeconds</code>"), ("Lights out", "SIGKILL (uncatchable, kernel-level)"), ("The pre-disembark announcement", "The <code>preStop</code> hook"), ("Hiring a professional captain", "Wrapping the entrypoint in <code>tini</code> / <code>dumb-init</code>")],
+    analogy_stops_text="The analogy stops here: a real captain can refuse to leave port. PID 1 cannot refuse SIGKILL — it's uncatchable. The only way to leave on your own terms is to leave during the grace period.",
+    misconceptions=[("SIGKILL is \"just a stronger SIGTERM.\"", "SIGKILL is uncatchable, kernel-level. Your app <em>cannot</em> clean up under SIGKILL — it just dies. That's why graceful shutdown matters."), ("<code>terminationGracePeriodSeconds</code> is a hint.", "It's a hard wall-clock timer. SIGKILL fires at the end. Tune it (60s, 300s) for slow shutdowns — databases, queue workers, big flushes."), ("Zombies are theoretical.", "A Java app spawning subprocesses without <code>waitpid()</code> will fill the PID table over hours. Real outage. <code>tini</code> solves it for free.")],
+    cyoa_setup="You hire a rookie captain (<code>bash</code>) for your container ship. The lighthouse blinks SIGTERM. The captain… does nothing. He didn't think it applied to him. <strong>Click to see what happens to the crew. ▼</strong>",
+    cyoa_button="Show what happened",
+    cyoa_tag_text="30 seconds later",
+    cyoa_reveal="<pre>  harbour clock:  0s ───────────── 30s ───── 💀\n  crew status:    [loading]    [still loading]   [SIGKILL]\n  passengers:     ████████████████████ 47% lost</pre>The harbour waited the full 30-second grace, then pulled the gangway with SIGKILL. The crew never got the message and were still loading cargo when the lights went out. <strong>Fix:</strong> hire <code>tini</code> as your captain — he forwards every signal he receives, on time, every time. <code>ENTRYPOINT [\"tini\", \"--\", \"node\", \"server.js\"]</code>. One line.",
+    old_mapping_block='''    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>Captain on the bridge</strong> = PID 1 (your ENTRYPOINT process)</li>
+      <li><strong>Crew at stations</strong> = child processes</li>
+      <li><strong>Lighthouse signal</strong> = SIGTERM from kubelet</li>
+      <li><strong>Captain's megaphone</strong> = signal forwarding</li>
+      <li><strong>Roster log</strong> = zombie reaping (waitpid)</li>
+      <li><strong>Re-assigned crew</strong> = orphan processes adopted by PID 1</li>
+      <li><strong>Grace period clock</strong> = terminationGracePeriodSeconds</li>
+      <li><strong>Lights out</strong> = SIGKILL</li>
+      <li><strong>Pre-disembark announcement</strong> = preStop hook</li>
+      <li><strong>Hired professional captain</strong> = tini / dumb-init</li>
+      <li><strong>Untrained captain</strong> = naive shell entrypoint that swallows signals</li>
+    </ul>
+  </section>''',
+    old_third_quiz='''      <div class="quiz-card">
+        <p class="quiz-prompt">A Java app spawns subprocesses for thumbnail generation. Under sustained load, after ~2 hours, the pod returns "Resource temporarily unavailable" errors. Restarting clears it. What's happening and what's the permanent fix?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Zombie process accumulation. The Java app forks a subprocess for each thumbnail. Each subprocess exits quickly, but the JVM does not call <code>waitpid()</code> to collect them. Each becomes a zombie — a defunct process consuming a PID slot. After thousands of thumbnails, the process table is full and the kernel can't fork new processes → "Resource temporarily unavailable." Pod restart clears the table temporarily but the leak resumes. Real fix: use tini as PID 1. <code>ENTRYPOINT ["tini", "--", "java", "-jar", "app.jar"]</code>. tini reaps any zombie re-parented to it, including the JVM's abandoned children. Bonus: tini also gives you proper signal forwarding for graceful shutdown.</div>
+      </div>
+    </div>
+  </section>''',
+)
+
+LESSONS["L13"] = dict(
+    file="preview-kubernetes-lesson-13.html",
+    rail_key="L13", active_pin="kt-pin13", strip_key="L13",
+    district_name="K-Town International Airport",
+    strip_label_district="K-Town International Airport",
+    strip_label_pos="lesson 13 of 16",
+    a11y_phrase="Lesson 13 of 16, K-Town International Airport.",
+    aria_label_today="K-Town district map: today we are at K-Town International Airport, Lesson 13",
+    map_title_today="K-Town district map · today: K-Town International Airport",
+    nightmare_text="A network partition isolates 2 of your 3 etcd nodes from each other. Quorum is lost. The cluster goes read-only — no new Pods scheduled, no failover, no Deployments updated. Anything currently running keeps running, but the cluster is frozen in amber. You can't even apply the fix. This lesson is about the brain–muscle split that makes Kubernetes work, and where it breaks if you're not careful.",
+    stamp_takeaway="Control plane decides; nodes execute. Five control-plane components, three node components, one API door between them. Memorise the 6-hop Pod-creation flow.",
+    pc1_q="Which component is the <em>only door</em> into a Kubernetes cluster?",
+    pc1_opts=[("a) etcd", False), ("b) The API server", True), ("c) The kubelet", False)],
+    pc1_feedback="<strong>Answer: b.</strong> Every read, every write, every watch goes through the API server. Nothing talks to etcd directly. That's the design.",
+    pc2_q="Your 3-member etcd cluster loses 2 nodes. What happens?",
+    pc2_opts=[("a) The cluster keeps running normally", False), ("b) The cluster goes read-only — quorum lost", True), ("c) Kubernetes schedules new etcd Pods automatically", False)],
+    pc2_feedback="<strong>Answer: b.</strong> 3 members tolerate 1 failure. Lose 2, you're below quorum. 5-member etcd tolerates 2 failures.",
+    tl_rows=[("The control tower", "The control plane (the brain)"), ("Radio dispatch", "The API server (the only door)"), ("The flight-plan archive", "etcd (source of truth)"), ("The specialist controllers", "<code>kube-controller-manager</code> (reconciliation loops)"), ("The runway-assignment desk", "<code>kube-scheduler</code>"), ("The cloud liaison", "<code>cloud-controller-manager</code>"), ("A terminal building", "A worker node"), ("The gate manager", "The kubelet"), ("The ground-crew router", "<code>kube-proxy</code>"), ("The aircraft at the gate", "A Pod")],
+    analogy_stops_text="The analogy stops here: an airport tower has one radio operator. The Kubernetes API server is replicated 3+ ways behind a load balancer — multiple operators, all serving the same view, any can fail.",
+    misconceptions=[("The control plane runs your apps.", "Control plane decides; worker nodes run. In production they're usually different machines, often with taints to keep workloads off the CP."), ("Components talk directly to each other.", "Everything goes through the API server. The scheduler doesn't tell the kubelet anything — it writes a Binding; the kubelet's watch picks it up."), ("Self-managed Kubernetes is \"more flexible.\"", "For most teams under 50 engineers, managed (EKS / GKE / AKS) is a no-brainer. Self-managed wins for specific cases: bare metal, regulated environments, or 100+ clusters.")],
+    cyoa_setup="You run <code>kubectl apply -f pod.yaml</code>. <strong>Click to trace exactly what happens. ▼</strong>",
+    cyoa_button="Show what happened",
+    cyoa_tag_text="trace",
+    cyoa_reveal="<pre>  1. kubectl  → API server     (POST /api/v1/.../pods)\n  2. API srvr → etcd           (validate, persist)\n  3. scheduler watches API     (picks node-3, POSTs Binding)\n  4. kubelet on node-3 watches (sees its Pod)\n  5. kubelet  → runtime        (pull image, start)\n  6. kubelet  → API server     (PATCH status: Running)</pre>Notice every hop routes through the API server. The scheduler never tells the kubelet anything directly. <strong>That single-door discipline is the architectural constraint that makes K8s scale.</strong>",
+    old_mapping_block='''    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>Control tower</strong> = control plane (the brain)</li>
+      <li><strong>Radio dispatch</strong> = API server (the only door)</li>
+      <li><strong>Flight plan archive</strong> = etcd (source of truth)</li>
+      <li><strong>Specialist controllers</strong> = controller manager (reconcile loops)</li>
+      <li><strong>Runway assignment desk</strong> = scheduler</li>
+      <li><strong>Cloud liaison</strong> = cloud-controller-manager</li>
+      <li><strong>Terminal building</strong> = worker node</li>
+      <li><strong>Gate manager</strong> = kubelet</li>
+      <li><strong>Ground crew router</strong> = kube-proxy</li>
+      <li><strong>Tug operator</strong> = container runtime</li>
+      <li><strong>Aircraft at the gate</strong> = pod</li>
+    </ul>
+  </section>''',
+    old_third_quiz='''      <div class="quiz-card">
+        <p class="quiz-prompt">A 12-engineer startup is debating between keeping their kubeadm-managed K8s on EC2 or migrating to GKE. They spend ~30 hours/month on cluster ops. Make the case.</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Managed (GKE/EKS/AKS) wins almost every time at this scale. Cost math: 30 eng-hours/month × ~$87/hr fully-loaded = $2,610/month in eng time on cluster ops. GKE control plane is ~$73/cluster/month. Net savings: ~$2,500/month, plus better security patching, faster CP version upgrades, and etcd backups handled by SREs who do this all day. Self-managed wins when: you need a CP version not yet supported by the managed offering, you need physical control of etcd (regulatory), you're on bare metal where no managed option exists, you have hundreds of clusters and per-cluster cost adds up, or cluster ops is genuinely a core competency. For 12 engineers shipping product, managed is a no-brainer.</div>
+      </div>
+    </div>
+  </section>''',
+)
+
+LESSONS["L14"] = dict(
+    file="preview-kubernetes-lesson-14.html",
+    rail_key="L14", active_pin="kt-pin14", strip_key="L14",
+    district_name="City Hall — Permit Office",
+    strip_label_district="Permit Office",
+    strip_label_pos="lesson 14 of 16",
+    a11y_phrase="Lesson 14 of 16, City Hall Permit Office.",
+    aria_label_today="K-Town district map: today we are at City Hall — Permit Office, Lesson 14",
+    map_title_today="K-Town district map · today: City Hall — Permit Office",
+    nightmare_text="An engineer ran <code>kubectl scale deployment api --replicas=10</code> to handle a slow service. It worked. Three days later, a CI deploy from the git-tracked YAML (which still says <code>replicas: 3</code>) ran. <code>apply</code> diffed, scaled DOWN to 3 mid-traffic-spike. 5xx surge. This lesson is about why imperative kubectl is dangerous, and why every K8s object has the same 4-section permit form.",
+    stamp_takeaway="Every K8s object is the same 4-block form (<code>apiVersion + kind + metadata + spec</code>). <code>kubectl explain</code> is the manual. Never use imperative kubectl in production. CRDs make custom types first-class.",
+    pc1_q="Which of these is <em>not</em> a mandatory block in every Kubernetes YAML?",
+    pc1_opts=[("a) <code>apiVersion</code>", False), ("b) <code>status</code>", True), ("c) <code>metadata</code>", False)],
+    pc1_feedback="<strong>Answer: b.</strong> <code>status</code> is filled in by controllers, not by you. The four mandatory blocks are <code>apiVersion</code>, <code>kind</code>, <code>metadata</code>, <code>spec</code>.",
+    pc2_q="You don't know if <code>replicaCount</code> or <code>replicas</code> is the right field name. What's the fastest way to find out?",
+    pc2_opts=[("a) Google it", False), ("b) <code>kubectl explain deployment.spec</code> — the cluster's own schema", True), ("c) Read the source code", False)],
+    pc2_feedback="<strong>Answer: b.</strong> Your cluster ships with the manual built in. Reflects the <em>exact</em> version you're running, including any CRDs.",
+    tl_rows=[("The permit office", "The Kubernetes API server"), ("The standard 4-section permit form", "Every K8s object's structure"), ("The type declaration at the top", "<code>apiVersion</code> + <code>kind</code>"), ("The identity section", "<code>metadata</code>"), ("The \"what-you-want\" section", "<code>spec</code>"), ("The inspector's stamp", "<code>status</code> (filled in by controllers, not by you)"), ("The handbook on the desk", "<code>kubectl explain</code>"), ("The filing cabinet", "etcd"), ("Bringing in a filled-out form", "<code>kubectl apply -f</code>"), ("A custom permit template plus its own inspector", "A CRD plus a controller (the operator pattern)")],
+    analogy_stops_text="The analogy stops here: a permit office has business hours. The Kubernetes API server is always open and serves thousands of requests per second.",
+    misconceptions=[("CRDs are second-class objects.", "Once registered, they get the same RBAC, audit, validation, and storage as built-ins. cert-manager's <code>Certificate</code> and a Pod are equivalent in the API server's eyes."), ("<code>kubectl run</code> and <code>kubectl create</code> are the right way to deploy.", "Those are imperative — direct mutations with no audit trail. Production should always use <code>kubectl apply -f</code> (and ideally GitOps on top)."), ("Labels and annotations are interchangeable.", "Labels are <em>indexed</em> and used for selection (<code>-l app=foo</code>). Annotations are free-form metadata, not selectable. If you'd ever filter by it, it's a label.")],
+    cyoa_setup="Your YAML has <code>replicaCount: 3</code> (the right field is <code>replicas</code>). You run <code>kubectl apply --dry-run=client</code>. It passes. You commit. <strong>Click to see what happens at deploy. ▼</strong>",
+    cyoa_button="Show what happened",
+    cyoa_tag_text="at deploy",
+    cyoa_reveal="<code>--dry-run=client</code> only does shallow client-side validation — it doesn't know your cluster's actual schema. The deploy goes to prod. The API server rejects: <code>unknown field \"spec.replicaCount\"</code>. CI fails. Incident. <strong>Fix:</strong> always use <code>kubectl apply --server-side --dry-run=server</code> in CI. That talks to the actual API server and catches typos like this — including CRD-specific fields client-side validation misses.",
+    old_mapping_block='''    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>Permit office</strong> = the Kubernetes API server</li>
+      <li><strong>Standard 4-section form</strong> = the structure of every K8s object</li>
+      <li><strong>Type declaration at top</strong> = <code>apiVersion</code> + <code>kind</code></li>
+      <li><strong>Identity section</strong> = <code>metadata</code></li>
+      <li><strong>What-you-want section</strong> = <code>spec</code></li>
+      <li><strong>Inspector's stamp</strong> = <code>status</code></li>
+      <li><strong>Different counters</strong> = API groups</li>
+      <li><strong>Clerk validating</strong> = server-side OpenAPI validation</li>
+      <li><strong>Filing cabinet</strong> = etcd</li>
+      <li><strong>Handbook on the desk</strong> = <code>kubectl explain</code></li>
+      <li><strong>Custom permit template</strong> = CRD</li>
+      <li><strong>Custom inspector</strong> = your operator</li>
+      <li><strong>Bringing in a filled form</strong> = <code>kubectl apply</code></li>
+      <li><strong>Asking the clerk to fill it for you</strong> = <code>kubectl create</code> (imperative)</li>
+      <li><strong>Colored sticker on the form</strong> = labels (used to file &amp; find)</li>
+      <li><strong>Sticky notes</strong> = annotations (humans read, system ignores for selection)</li>
+    </ul>
+  </section>''',
+    old_third_quiz='''      <div class="quiz-card">
+        <p class="quiz-prompt">Your team uses cert-manager. You can run <code>kubectl apply -f certificate.yaml</code>, <code>kubectl get certificates</code>, even <code>kubectl describe certificate my-cert</code>. But Certificate isn't a built-in K8s type. How does this work?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>cert-manager ships two things. (1) A <strong>CRD</strong> registers <code>Certificate</code> as a new type with your cluster's API server. The CRD YAML defines the schema (fields, types, validation rules). Once applied, the API server starts serving <code>/apis/cert-manager.io/v1/certificates</code> with full RBAC, audit, kubectl support — identical to built-in types. (2) A <strong>controller</strong> (the cert-manager pod) watches Certificate objects and reconciles: talks to Let's Encrypt, completes ACME challenges, fetches certs, writes a Secret, schedules renewals. CRD + controller = the operator pattern. Argo CD (Application), Crossplane, Istio (VirtualService), Prometheus Operator — all the same shape. Roll your own with kubebuilder or operator-sdk.</div>
+      </div>
+    </div>
+  </section>''',
+)
+
+
 # ----------- which lessons to process this run -----------
 
-ENABLED = ["L10", "L11"]
+ENABLED = ["L12", "L13", "L14"]
 
 
 def main() -> None:

@@ -218,9 +218,160 @@
   .own.self .own-name{color:#8B5A00}
   .own-desc{font-size:13px;color:var(--ink);line-height:1.55}
   .own-desc code{font-family:'ui-monospace',monospace;font-size:12px;background:rgba(255,255,255,0.5);padding:1px 4px;border-radius:3px;color:var(--ink)}
+  /* ============ LAYMAN-FIRST SCAFFOLDING (K-Town revision Phase 2) ============ */
+
+  /* Inline code inside section paragraphs (parity with L13) */
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+  /* Visually-hidden utility for screen-reader-only content */
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* District line — single-line K-Town pin under topbar */
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+
+  /* K-Town map */
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease)}
+  .ktown-map .pin .pin-circle{fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+
+  /* Nightmare opener */
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+
+  /* One-sentence stamp */
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:19px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box{background:var(--accent-soft)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+
+  /* Translation Legend (table inside §3) */
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'…in Kubernetes · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+
+  /* Pause-and-check */
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+
+  /* Common Misconceptions panel (start of §7) */
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+
+  /* Analogy-stops-here callout */
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+
+  /* Skip-if-new pill (defined for future lessons; unused in L01) */
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+
+  /* Persistent concept rail (desktop only, ≥1240px) */
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){
+    .concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50}
+  }
+
+  /* CYOA quiz reveal */
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  .cyoa-quiz .quiz-answer pre{font-family:'ui-monospace',monospace;font-size:12px;line-height:1.45;background:var(--bg-soft);padding:10px 12px;border-radius:var(--r-soft);overflow-x:auto;margin:10px 0;color:var(--ink-soft)}
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .ktown-map .pin .pin-circle,.pause-check-opt,.ktown-strip-pin{transition:none}
+    .quiz-reveal{animation:none}
+  }
 </style>
 </head>
 <body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the Kubernetes course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>what Kubernetes is</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>the reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how apps should be designed</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>when K8s makes sense</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how mature teams operate it</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how the project evolves</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>Linux foundations <small>(primer)</small></span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how containers actually work</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>runtimes &amp; the OCI standard</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how images are built</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how containers shut down</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>cluster architecture</span><span class="concept-rail-here">← you are here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>Pods deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>workload controllers</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>services &amp; networking</span></div>
+</aside>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -229,6 +380,69 @@
     <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
   </div>
 </header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>K-Town International Airport</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: today we are at K-Town International Airport, Lesson 13">
+    <title>K-Town district map · today: K-Town International Airport</title>
+    <desc>Stylised map of K-Town. Each Kubernetes lesson maps to one named district. Mayor's Office is the city anchor and is highlighted as the current district.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/>
+      </linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/>
+      </linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin active" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#3F4A5E">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+  </svg>
+
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>K-Town International Airport</strong> <span>· lesson 13 of 16</span><span class="visually-hidden">Lesson 13 of 16, K-Town International Airport.</span></p>
+</div>
 
 <main>
 
@@ -239,7 +453,7 @@
     <p class="hero-sub">A cluster is two halves: a <strong>control tower</strong> (control plane — decides) and several <strong>terminals</strong> (worker nodes — execute). One radio between them: the API server.</p>
 
     <div class="hero-illu">
-      <svg viewBox="0 0 680 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An air traffic control tower on the left labeled with K8s control-plane components, radio waves emanating right to three terminal buildings each housing planes (pods) and a kubelet operator">
+      <svg viewBox="0 0 680 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An air traffic control tower on the left labeled with K8s control-plane components, radio waves emanating right to three terminal buildings each housing planes (Pods) and a kubelet operator">
         <defs>
           <linearGradient id="sky-grad-13" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#D6E6F0"/>
@@ -324,9 +538,9 @@
           <text x="20" y="48" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle">kubelet</text>
           <!-- Pods (boxes/planes) at gates -->
           <rect x="36" y="30" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
-          <text x="54" y="41" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-a</text>
+          <text x="54" y="41" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">Pod-a</text>
           <rect x="36" y="50" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
-          <text x="54" y="61" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-b</text>
+          <text x="54" y="61" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">Pod-b</text>
           <!-- kube-proxy stripe at bottom -->
           <rect x="6" y="72" width="68" height="12" rx="2" fill="#EDE6F8" stroke="#5E4A8E" stroke-width="1"/>
           <text x="40" y="81" font-size="6.5" font-weight="700" fill="#5E4A8E" text-anchor="middle" font-family="ui-monospace,monospace">kube-proxy</text>
@@ -341,9 +555,9 @@
           <ellipse cx="20" cy="34" rx="4" ry="5" fill="#FBF1D6" stroke="#2A2520" stroke-width="0.8"/>
           <text x="20" y="48" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle">kubelet</text>
           <rect x="36" y="30" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
-          <text x="54" y="41" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-c</text>
+          <text x="54" y="41" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">Pod-c</text>
           <rect x="36" y="50" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
-          <text x="54" y="61" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-d</text>
+          <text x="54" y="61" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">Pod-d</text>
           <rect x="6" y="72" width="68" height="12" rx="2" fill="#EDE6F8" stroke="#5E4A8E" stroke-width="1"/>
           <text x="40" y="81" font-size="6.5" font-weight="700" fill="#5E4A8E" text-anchor="middle" font-family="ui-monospace,monospace">kube-proxy</text>
         </g>
@@ -357,9 +571,9 @@
           <ellipse cx="20" cy="34" rx="4" ry="5" fill="#FBF1D6" stroke="#2A2520" stroke-width="0.8"/>
           <text x="20" y="48" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle">kubelet</text>
           <rect x="36" y="30" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
-          <text x="54" y="41" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-e</text>
+          <text x="54" y="41" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">Pod-e</text>
           <rect x="36" y="50" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
-          <text x="54" y="61" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-f</text>
+          <text x="54" y="61" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">Pod-f</text>
           <rect x="6" y="72" width="68" height="12" rx="2" fill="#EDE6F8" stroke="#5E4A8E" stroke-width="1"/>
           <text x="40" y="81" font-size="6.5" font-weight="700" fill="#5E4A8E" text-anchor="middle" font-family="ui-monospace,monospace">kube-proxy</text>
         </g>
@@ -380,6 +594,19 @@
     </div>
   </section>
 
+  <!-- 3 AM Nightmare opener -->
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>A network partition isolates 2 of your 3 etcd nodes from each other. Quorum is lost. The cluster goes read-only — no new Pods scheduled, no failover, no Deployments updated. Anything currently running keeps running, but the cluster is frozen in amber. You can't even apply the fix. This lesson is about the brain–muscle split that makes Kubernetes work, and where it breaks if you're not careful.</p>
+    </div>
+  </div>
+
+  <!-- One-sentence stamp · top placement -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Control plane decides; nodes execute. Five control-plane components, three node components, one API door between them. Memorise the 6-hop Pod-creation flow.</p>
+  </div>
+
   <!-- ============================== SECTION 1 — CONCEPT ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 1 · Concept</span>
@@ -389,10 +616,10 @@
     <p>• <strong>API server</strong> (<code>kube-apiserver</code>) — the only door into the cluster. Every read, write, watch, authentication request goes here. Stateless, horizontally scalable.<br>
       • <strong>etcd</strong> — strongly-consistent key-value store holding the entire cluster state. Source of truth.<br>
       • <strong>Controller manager</strong> (<code>kube-controller-manager</code>) — runs dozens of reconcile loops (Deployment, ReplicaSet, Node, Endpoints, ServiceAccount, Job…). Each watches the API for desired state, compares to actual, takes action.<br>
-      • <strong>Scheduler</strong> (<code>kube-scheduler</code>) — picks which node runs each newly-created pod, based on resource requests, taints, affinity, topology.<br>
+      • <strong>Scheduler</strong> (<code>kube-scheduler</code>) — picks which node runs each newly-created Pod, based on resource requests, taints, affinity, topology.<br>
       • <strong>Cloud controller manager</strong> (<code>cloud-controller-manager</code>) — bridges K8s to the cloud (load balancers, persistent disks, node lifecycle). Optional on bare metal.</p>
     <p><strong>The worker nodes.</strong> Every node — control plane or worker — runs three things:</p>
-    <p>• <strong>kubelet</strong> — the node agent. Watches the API server for pods assigned to its node, tells the runtime to start/stop them, reports node status.<br>
+    <p>• <strong>kubelet</strong> — the node agent. Watches the API server for Pods assigned to its node, tells the runtime to start/stop them, reports node status.<br>
       • <strong>kube-proxy</strong> — manages the local network rules (iptables, IPVS, eBPF) that implement Services on this node.<br>
       • <strong>Container runtime</strong> — containerd, CRI-O, or runc-based — actually starts and stops the containers (Lesson 09).</p>
     <p><strong>The constraint.</strong> Nothing talks directly to etcd. Nothing talks directly between controllers. <em>All communication goes through the API server.</em> That single-door discipline is the architectural constraint that makes the rest of K8s possible: scaling, watching, RBAC, audit, admission — every mechanism is built on top of "everything is a typed object you read/write through the API server."</p>
@@ -485,7 +712,7 @@
             <text x="34" y="56" font-size="7" font-weight="700" fill="#A04832" text-anchor="middle">actual: 2</text>
             <!-- Action -->
             <text x="100" y="44" font-size="7" font-weight="700" fill="#A04832">act:</text>
-            <text x="100" y="54" font-size="7" font-weight="700" fill="#3D7857">+1 pod</text>
+            <text x="100" y="54" font-size="7" font-weight="700" fill="#3D7857">+1 Pod</text>
             <text x="70" y="74" font-size="6.5" font-style="italic" fill="#5A4F45" text-anchor="middle">watch · diff · act</text>
           </svg>
         </div>
@@ -497,10 +724,10 @@
         <h3 class="build-name">4 · Scheduler</h3>
         <p class="build-tag">picks the node</p>
         <div class="build-illu">
-          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A pod object with arrows scoring three nodes by fitness">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A Pod object with arrows scoring three nodes by fitness">
             <!-- Pod -->
             <rect x="6" y="32" width="28" height="20" rx="3" fill="#5E4A8E" stroke="#3D2868" stroke-width="1.2"/>
-            <text x="20" y="44" font-size="7" font-weight="700" fill="#FFF" text-anchor="middle" font-family="ui-monospace,monospace">pod</text>
+            <text x="20" y="44" font-size="7" font-weight="700" fill="#FFF" text-anchor="middle" font-family="ui-monospace,monospace">Pod</text>
             <!-- 3 nodes scored -->
             <rect x="56" y="14" width="38" height="16" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
             <text x="75" y="25" font-size="7" font-weight="700" fill="#3D7857" text-anchor="middle">n1 · 80</text>
@@ -516,7 +743,7 @@
             </defs>
           </svg>
         </div>
-        <p class="build-desc">For each unscheduled pod: filter feasible nodes, score them, pick highest. Resource fit · taints · affinity · topology.</p>
+        <p class="build-desc">For each unscheduled Pod: filter feasible nodes, score them, pick highest. Resource fit · taints · affinity · topology.</p>
       </div>
 
       <div class="build b5">
@@ -561,12 +788,12 @@
       <div class="node k">
         <div class="node-icon">🛠️</div>
         <p class="node-name">kubelet</p>
-        <p class="node-job">Node agent. Watches API server for pods bound to this node, asks the runtime to start them, reports status (CPU, memory, disk, conditions) back. Also runs liveness/readiness probes.</p>
+        <p class="node-job">Node agent. Watches API server for Pods bound to this node, asks the runtime to start them, reports status (CPU, memory, disk, conditions) back. Also runs liveness/readiness probes.</p>
       </div>
       <div class="node p">
         <div class="node-icon">🚦</div>
         <p class="node-name">kube-proxy</p>
-        <p class="node-job">Implements Kubernetes Services on this node — programs iptables, IPVS, or eBPF rules so traffic to a Service's virtual IP gets load-balanced across the right pod IPs.</p>
+        <p class="node-job">Implements Kubernetes Services on this node — programs iptables, IPVS, or eBPF rules so traffic to a Service's virtual IP gets load-balanced across the right Pod IPs.</p>
       </div>
       <div class="node r">
         <div class="node-icon">🐳</div>
@@ -580,12 +807,12 @@
 
   <!-- ============================== SECTION 1.8 — POD CREATION FLOW ============================== -->
   <section class="s">
-    <span class="s-eyebrow">Section 1.8 · How a pod gets created</span>
+    <span class="s-eyebrow">Section 1.8 · How a Pod gets created</span>
     <h2>The end-to-end flow, in 6 hops</h2>
     <p>This is the request path that every Kubernetes object follows. Memorize it; it explains 90% of the questions you'll have about K8s behavior.</p>
 
     <div class="flow-list">
-      <div class="flow"><span class="flow-num">1</span><span class="flow-from">kubectl</span><span class="flow-arr">→</span><span class="flow-to">API server</span><span class="flow-what">POST /api/v1/namespaces/default/pods (your YAML)</span></div>
+      <div class="flow"><span class="flow-num">1</span><span class="flow-from">kubectl</span><span class="flow-arr">→</span><span class="flow-to">API server</span><span class="flow-what">POST /api/v1/namespaces/default/Pods (your YAML)</span></div>
       <div class="flow"><span class="flow-num">2</span><span class="flow-from">API server</span><span class="flow-arr">→</span><span class="flow-to">etcd</span><span class="flow-what">Validate, authorize, run admission, persist Pod object</span></div>
       <div class="flow"><span class="flow-num">3</span><span class="flow-from">scheduler</span><span class="flow-arr">→</span><span class="flow-to">API server</span><span class="flow-what">Watches new Pods · picks node-3 · POSTs Binding</span></div>
       <div class="flow"><span class="flow-num">4</span><span class="flow-from">kubelet (n3)</span><span class="flow-arr">→</span><span class="flow-to">API server</span><span class="flow-what">Watches Pods bound to node-3 · sees the new Pod</span></div>
@@ -609,7 +836,7 @@
       </div>
       <div class="ha etc">
         <h3 class="ha-name">etcd: odd-member quorum</h3>
-        <p class="ha-desc">etcd uses Raft. Writes need a majority (quorum). 3 members tolerate 1 failure; 5 members tolerate 2. <em>Always odd</em> (4 members tolerate the same as 3 — 1 — and you've added latency). Co-locate one etcd per CP node, or run them as a separate cluster (stacked vs external topology).</p>
+        <p class="ha-desc skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>etcd uses Raft. Writes need a majority (quorum). 3 members tolerate 1 failure; 5 members tolerate 2. <em>Always odd</em> (4 members tolerate the same as 3 — 1 — and you've added latency). Co-locate one etcd per CP node, or run them as a separate cluster (stacked vs external topology). Leader-election internals (term numbers, vote requests, log replication) live in the Raft paper if you want them; for operating Kubernetes, "lose majority → read-only" is the load-bearing fact.</p>
       </div>
     </div>
 
@@ -634,6 +861,20 @@
 
     <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">For most teams under 50 engineers: managed. The control plane is undifferentiated heavy lifting and the hourly rate is silly cheap compared to engineering time spent on it.</p>
   </section>
+
+  <!-- Pause-and-check #1 · after Section 1 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Which component is the <em>only door</em> into a Kubernetes cluster?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) etcd</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) The API server</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) The kubelet</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Every read, every write, every watch goes through the API server. Nothing talks to etcd directly. That's the design.</p>
+    </div>
+  </div>
 
   <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
   <section class="s">
@@ -672,15 +913,15 @@
           <!-- Nodes -->
           <rect x="20" y="104" width="86" height="48" rx="4" fill="#FFFFFF" stroke="#3D7857" stroke-width="1.4"/>
           <text x="63" y="120" font-size="9" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">node-1</text>
-          <text x="63" y="134" font-size="7" fill="#3D7857" text-anchor="middle">2 pods</text>
+          <text x="63" y="134" font-size="7" fill="#3D7857" text-anchor="middle">2 Pods</text>
           <text x="63" y="146" font-size="6" fill="#6B6058" text-anchor="middle" font-style="italic">kubelet+proxy+rt</text>
           <rect x="116" y="104" width="86" height="48" rx="4" fill="#FFFFFF" stroke="#3D7857" stroke-width="1.4"/>
           <text x="159" y="120" font-size="9" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">node-2</text>
-          <text x="159" y="134" font-size="7" fill="#3D7857" text-anchor="middle">3 pods</text>
+          <text x="159" y="134" font-size="7" fill="#3D7857" text-anchor="middle">3 Pods</text>
           <text x="159" y="146" font-size="6" fill="#6B6058" text-anchor="middle" font-style="italic">kubelet+proxy+rt</text>
           <rect x="212" y="104" width="86" height="48" rx="4" fill="#FFFFFF" stroke="#3D7857" stroke-width="1.4"/>
           <text x="255" y="120" font-size="9" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">node-3</text>
-          <text x="255" y="134" font-size="7" fill="#3D7857" text-anchor="middle">2 pods</text>
+          <text x="255" y="134" font-size="7" fill="#3D7857" text-anchor="middle">2 Pods</text>
           <text x="255" y="146" font-size="6" fill="#6B6058" text-anchor="middle" font-style="italic">kubelet+proxy+rt</text>
           <!-- Outcome -->
           <rect x="20" y="162" width="280" height="34" rx="3" fill="#5A9F7A" stroke="#3D7857" stroke-width="1.4"/>
@@ -697,7 +938,7 @@
       </div>
       <div class="ba after">
         <span class="ba-label">After · CP + nodes</span>
-        <p>Control plane is one logical unit (HA-replicated underneath). Worker nodes are interchangeable cattle. The pod you deployed yesterday survives a node failure tonight, because the control plane noticed and recreated it elsewhere.</p>
+        <p>Control plane is one logical unit (HA-replicated underneath). Worker nodes are interchangeable cattle. The Pod you deployed yesterday survives a node failure tonight, because the control plane noticed and recreated it elsewhere.</p>
       </div>
     </div>
 
@@ -708,25 +949,32 @@
   <section class="s">
     <span class="s-eyebrow">Section 3 · Analogy</span>
     <h2>The airport: tower + terminals</h2>
-    <p>A Kubernetes cluster is an <strong>airport</strong> with one <strong>control tower</strong> and several <strong>terminal buildings</strong>. The tower (the control plane) is where all the decisions happen. The terminals (worker nodes) is where aircraft (your pods) actually park, board, and fly.</p>
+    <p>A Kubernetes cluster is an <strong>airport</strong> with one <strong>control tower</strong> and several <strong>terminal buildings</strong>. The tower (the control plane) is where all the decisions happen. The terminals (worker nodes) is where aircraft (your Pods) actually park, board, and fly.</p>
     <p>Inside the <strong>tower</strong>, five rooms: <strong>radio dispatch</strong> at the top window (API server — every plane radios here, nobody else has authority to broadcast); <strong>flight plan archive</strong> in the basement (etcd — every plane that ever existed, every assignment, written down); <strong>specialist controllers</strong> (controller manager — "always-3-planes-on-this-route", "this-plane-needs-a-gate", "node-just-went-dark"); <strong>runway assignment desk</strong> (scheduler — picks which terminal/runway each plane goes to); and a <strong>cloud liaison</strong> (cloud-controller-manager — radio link to outside power, fuel, navigation aids).</p>
     <p>Inside each <strong>terminal</strong>, three roles: <strong>gate manager</strong> (kubelet — receives assignments, executes them, reports back); <strong>ground crew router</strong> (kube-proxy — directs taxiing planes via the local taxiway map); <strong>tug operator</strong> (container runtime — actually moves the planes).</p>
     <p>The tower never directly grabs a plane. It writes the assignment to the archive; the gate manager picks it up. The gate manager never calls another terminal directly; it goes through the tower's radio. That single-door discipline is what lets the airport scale to hundreds of terminals.</p>
 
-    <p style="margin-top:18px"><strong>The mapping:</strong></p>
-    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
-      <li><strong>Control tower</strong> = control plane (the brain)</li>
-      <li><strong>Radio dispatch</strong> = API server (the only door)</li>
-      <li><strong>Flight plan archive</strong> = etcd (source of truth)</li>
-      <li><strong>Specialist controllers</strong> = controller manager (reconcile loops)</li>
-      <li><strong>Runway assignment desk</strong> = scheduler</li>
-      <li><strong>Cloud liaison</strong> = cloud-controller-manager</li>
-      <li><strong>Terminal building</strong> = worker node</li>
-      <li><strong>Gate manager</strong> = kubelet</li>
-      <li><strong>Ground crew router</strong> = kube-proxy</li>
-      <li><strong>Tug operator</strong> = container runtime</li>
-      <li><strong>Aircraft at the gate</strong> = pod</li>
-    </ul>
+    <div class="translation-legend">
+      <table>
+        <thead>
+          <tr><th>In the story…</th><th>…in Kubernetes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>The control tower</td><td>The control plane (the brain)</td></tr>
+          <tr><td>Radio dispatch</td><td>The API server (the only door)</td></tr>
+          <tr><td>The flight-plan archive</td><td>etcd (source of truth)</td></tr>
+          <tr><td>The specialist controllers</td><td><code>kube-controller-manager</code> (reconciliation loops)</td></tr>
+          <tr><td>The runway-assignment desk</td><td><code>kube-scheduler</code></td></tr>
+          <tr><td>The cloud liaison</td><td><code>cloud-controller-manager</code></td></tr>
+          <tr><td>A terminal building</td><td>A worker node</td></tr>
+          <tr><td>The gate manager</td><td>The kubelet</td></tr>
+          <tr><td>The ground-crew router</td><td><code>kube-proxy</code></td></tr>
+          <tr><td>The aircraft at the gate</td><td>A Pod</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: an airport tower has one radio operator. The Kubernetes API server is replicated 3+ ways behind a load balancer — multiple operators, all serving the same view, any can fail.</em></p>
   </section>
 
   <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
@@ -741,10 +989,24 @@
       </div>
       <div class="eli-card">
         <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
-        <p>A K8s cluster has a brain (control plane) and muscles (worker nodes). The brain has 5 parts: an <code>API server</code> (the only door in), <code>etcd</code> (where state is stored), a <code>controller manager</code> (lots of small loops keeping desired state matching reality), a <code>scheduler</code> (picks which node runs which pod), and a <code>cloud-controller-manager</code> (bridges to AWS/GCP/Azure). Each worker node runs <code>kubelet</code> (the agent that runs your pods), <code>kube-proxy</code> (network rules for Services), and a <code>container runtime</code> (containerd or CRI-O). When you <code>kubectl apply</code>, your YAML goes to the API server, which writes it to etcd; the scheduler picks a node and writes the binding back; the kubelet on that node reads its assignment and tells the runtime to start the container. <strong>Everything talks through the API server, nothing talks directly.</strong></p>
+        <p>A K8s cluster has a brain (control plane) and muscles (worker nodes). The brain has 5 parts: an <code>API server</code> (the only door in), <code>etcd</code> (where state is stored), a <code>controller manager</code> (lots of small loops keeping desired state matching reality), a <code>scheduler</code> (picks which node runs which Pod), and a <code>cloud-controller-manager</code> (bridges to AWS/GCP/Azure). Each worker node runs <code>kubelet</code> (the agent that runs your Pods), <code>kube-proxy</code> (network rules for Services), and a <code>container runtime</code> (containerd or CRI-O). When you <code>kubectl apply</code>, your YAML goes to the API server, which writes it to etcd; the scheduler picks a node and writes the binding back; the kubelet on that node reads its assignment and tells the runtime to start the container. <strong>Everything talks through the API server, nothing talks directly.</strong></p>
       </div>
     </div>
   </section>
+
+  <!-- Pause-and-check #2 · after Section 4 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Your 3-member etcd cluster loses 2 nodes. What happens?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) The cluster keeps running normally</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) The cluster goes read-only — quorum lost</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Kubernetes schedules new etcd Pods automatically</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> 3 members tolerate 1 failure. Lose 2, you're below quorum. 5-member etcd tolerates 2 failures.</p>
+    </div>
+  </div>
 
   <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
   <section class="s">
@@ -754,20 +1016,20 @@
     <div class="scenarios">
       <div class="scenario">
         <p class="scenario-name">etcd lost quorum during a network partition — cluster went read-only</p>
-        <p>A 3-member etcd cluster across three AZs hit a network partition that isolated 2 of 3 nodes from each other. Quorum couldn't be achieved → etcd switched to read-only → API server could serve gets but not writes → no new pods scheduled, no failover, no Deployments updated. Lesson: 5-member etcd survives 2 failures; 3-member only survives 1. Cross-AZ etcd needs careful quorum-zone planning.</p>
+        <p>A 3-member etcd cluster across three AZs hit a network partition that isolated 2 of 3 nodes from each other. Quorum couldn't be achieved → etcd switched to read-only → API server could serve gets but not writes → no new Pods scheduled, no failover, no Deployments updated. Lesson: 5-member etcd survives 2 failures; 3-member only survives 1. Cross-AZ etcd needs careful quorum-zone planning.</p>
       </div>
       <div class="scenario">
         <p class="scenario-name">API server overloaded by an aggressive controller</p>
-        <p>A custom controller was watching all pods and re-LISTing every second. At 8000 pods, that hammered the API server with hundreds of MB/s of JSON. API server fell behind on writes, kubectl timed out cluster-wide. Fix: use proper <code>informers</code> (LIST once + WATCH for diffs) and respect server-side rate limits. Standard <code>controller-runtime</code> libraries do this for you.</p>
+        <p>A custom controller was watching all Pods and re-LISTing every second. At 8000 Pods, that hammered the API server with hundreds of MB/s of JSON. API server fell behind on writes, kubectl timed out cluster-wide. Fix: use proper <code>informers</code> (LIST once + WATCH for diffs) and respect server-side rate limits. Standard <code>controller-runtime</code> libraries do this for you.</p>
       </div>
       <div class="scenario">
         <p class="scenario-name">Managed CP (GKE) saved a startup from etcd backup nightmares</p>
         <p>A 12-engineer startup ran self-managed K8s on EC2 with kubeadm. They spent ~30 hours/month on etcd backups, version upgrades, and CP patching. Migrated to GKE. Engineering time on cluster ops dropped to zero. They paid $73/month per cluster; they paid one engineer ~$14k/month before. Math is what it is.</p>
-        <p style="margin-top:10px;color:var(--ink-soft);font-size:13px;font-style:italic">Pricing as of 2024: GKE Standard ~$73/cluster/mo; AKS free; EKS $73/mo; GKE Autopilot bills per-pod. Check your provider's current pricing — the conclusion (managed beats self-managed at this team size) doesn't change.</p>
+        <p style="margin-top:10px;color:var(--ink-soft);font-size:13px;font-style:italic">Pricing as of 2024: GKE Standard ~$73/cluster/mo; AKS free; EKS $73/mo; GKE Autopilot bills per-Pod. Check your provider's current pricing — the conclusion (managed beats self-managed at this team size) doesn't change.</p>
       </div>
       <div class="scenario">
-        <p class="scenario-name">kube-scheduler bug pinned all pods to one node</p>
-        <p>A scheduler bug in a specific minor version assigned all newly-created pods to the same node, ignoring resource constraints. That node OOM'd and got cordoned. Subsequent pods went to the next node, also OOM'd. Cascading failure. Workaround: deploy a second scheduler (multi-scheduler is supported via <code>schedulerName</code> on the pod spec) until the upstream fix landed. Real fix: upgrade.</p>
+        <p class="scenario-name">kube-scheduler bug pinned all Pods to one node</p>
+        <p>A scheduler bug in a specific minor version assigned all newly-created Pods to the same node, ignoring resource constraints. That node OOM'd and got cordoned. Subsequent Pods went to the next node, also OOM'd. Cascading failure. Workaround: deploy a second scheduler (multi-scheduler is supported via <code>schedulerName</code> on the Pod spec) until the upstream fix landed. Real fix: upgrade.</p>
       </div>
     </div>
   </section>
@@ -779,8 +1041,8 @@
     <p>Three modes. Pod creation end-to-end, a controller reconcile loop in action, and an HA control plane surviving a node failure.</p>
 
     <div class="anim-wrap">
-      <svg viewBox="0 0 760 410" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animation of pod creation flow, reconcile loop, and HA control plane">
-        <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: pod creation flow</text>
+      <svg viewBox="0 0 760 410" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animation of Pod creation flow, reconcile loop, and HA control plane">
+        <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: Pod creation flow</text>
 
         <g transform="translate(580,14)">
           <rect width="160" height="34" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.4"/>
@@ -797,7 +1059,7 @@
       </svg>
 
       <div class="anim-controls">
-        <button class="anim-btn active" type="button" data-mode="podflow">▶ Pod creation flow</button>
+        <button class="anim-btn active" type="button" data-mode="Podflow">▶ Pod creation flow</button>
         <button class="anim-btn" type="button" data-mode="reconcile">▶ Reconcile loop</button>
         <button class="anim-btn" type="button" data-mode="ha">▶ HA + node failure</button>
       </div>
@@ -807,35 +1069,61 @@
 
   <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
   <section class="s">
-    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
     <h2>Lock it in</h2>
+    <p>Three common misconceptions to clear up first, then the flashcards and quiz.</p>
+
+    <!-- Common Misconceptions panel -->
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> The control plane runs your apps.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Control plane decides; worker nodes run. In production they're usually different machines, often with taints to keep workloads off the CP.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Components talk directly to each other.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Everything goes through the API server. The scheduler doesn't tell the kubelet anything — it writes a Binding; the kubelet's watch picks it up.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Self-managed Kubernetes is "more flexible."</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> For most teams under 50 engineers, managed (EKS / GKE / AKS) is a no-brainer. Self-managed wins for specific cases: bare metal, regulated environments, or 100+ clusters.</div>
+        </div>
+      </div>
+    </div>
 
     <div class="flashcard-grid">
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Five control-plane components?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">API server (only door in), etcd (state store), controller manager (reconcile loops), scheduler (picks nodes), cloud-controller-manager (bridges to cloud APIs).</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does the API server do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">The only door into the cluster. Validates, authenticates, persists to etcd, fans out watches. Stateless and horizontally scalable. Every other component talks to it.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why is etcd special?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Strongly-consistent KV store holding the entire cluster state. Source of truth. Uses Raft consensus; needs odd-member quorum (3 or 5). Lose majority → cluster goes read-only.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does the controller manager do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Runs dozens of reconcile loops as a single binary: Deployment, ReplicaSet, Node, Endpoints, Job, ServiceAccount, etc. Each watches API for desired state, compares to actual, takes action.</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does the scheduler do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Picks which node runs each newly-created pod. Considers resource requests, taints/tolerations, affinity, topology spread. Writes the binding back to the API server.</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three components on every worker node?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">kubelet (node agent — runs assigned pods, reports status), kube-proxy (programs iptables/IPVS/eBPF for Services), container runtime (containerd/CRI-O — actually starts containers).</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Trace 'kubectl apply pod.yaml'.<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">kubectl → API server (validates) → etcd (persisted) → scheduler (picks node) → API server (writes binding) → kubelet on that node (sees its pod) → runtime (pulls image, starts) → Pod Running. Status flows back via the API server.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does the scheduler do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Picks which node runs each newly-created Pod. Considers resource requests, taints/tolerations, affinity, topology spread. Writes the binding back to the API server.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three components on every worker node?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">kubelet (node agent — runs assigned Pods, reports status), kube-proxy (programs iptables/IPVS/eBPF for Services), container runtime (containerd/CRI-O — actually starts containers).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Trace 'kubectl apply Pod.yaml'.<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">kubectl → API server (validates) → etcd (persisted) → scheduler (picks node) → API server (writes binding) → kubelet on that node (sees its Pod) → runtime (pulls image, starts) → Pod Running. Status flows back via the API server.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Managed vs self-managed control plane?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Managed (EKS/GKE/AKS): cloud runs the CP, you manage worker nodes. ~$75/mo per cluster. Self-managed (kubeadm/kops/k3s/RKE): you run all of it. Most teams under 50 engineers choose managed.</div></div></div>
     </div>
 
     <div class="quiz-grid" style="margin-top:24px">
       <div class="quiz-card">
-        <p class="quiz-prompt">You run <code>kubectl apply -f pod.yaml</code>. Trace the request end-to-end: which components touch it, in what order, and what does each do?</p>
+        <p class="quiz-prompt">You run <code>kubectl apply -f Pod.yaml</code>. Trace the request end-to-end: which components touch it, in what order, and what does each do?</p>
         <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) kubectl POSTs the YAML to the API server, authenticated with your kubeconfig. (2) The API server runs admission, validates, applies defaults, and writes the Pod object to etcd. (3) etcd persists across its quorum. The API server returns 201 Created. (4) The scheduler is watching the API server for unscheduled pods. It evaluates fit, picks node-3, POSTs a Binding to the API server. (5) The kubelet on node-3 is watching the API server for pods bound to itself. It sees the new pod, reads the spec, and asks the container runtime (containerd) to pull the image and start the container. (6) The kubelet PATCHes Pod status (Running) back to the API server, which writes it to etcd. <code>kubectl get pod</code> sees Running. Notice: nothing talks directly to etcd; nothing talks between scheduler and kubelet directly. The API server is the only door.</div>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) kubectl POSTs the YAML to the API server, authenticated with your kubeconfig. (2) The API server runs admission, validates, applies defaults, and writes the Pod object to etcd. (3) etcd persists across its quorum. The API server returns 201 Created. (4) The scheduler is watching the API server for unscheduled Pods. It evaluates fit, picks node-3, POSTs a Binding to the API server. (5) The kubelet on node-3 is watching the API server for Pods bound to itself. It sees the new Pod, reads the spec, and asks the container runtime (containerd) to pull the image and start the container. (6) The kubelet PATCHes Pod status (Running) back to the API server, which writes it to etcd. <code>kubectl get Pod</code> sees Running. Notice: nothing talks directly to etcd; nothing talks between scheduler and kubelet directly. The API server is the only door.</div>
       </div>
       <div class="quiz-card">
         <p class="quiz-prompt">Your 3-member etcd is split across three AZs. A network partition isolates AZ-1 from AZ-2 and AZ-3 (but AZ-2 and AZ-3 still talk). What happens? How would 5 members have changed it?</p>
         <button class="quiz-reveal" type="button">Show answer</button>
         <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>AZ-2 and AZ-3 still have 2 of 3 etcd members → quorum (majority) is achieved → those 2 form the active etcd group, accept writes, cluster keeps running. AZ-1's etcd is isolated and goes read-only. So a 3-member etcd survives this partition fine, as long as 2 members remain together. But: if the partition isolated EACH AZ separately, no group has 2 members and the whole cluster goes read-only. With 5 members spread 1-2-2 across 3 AZs, two AZs together have quorum. Bottom line: 3-member tolerates 1 failure, 5-member tolerates 2, but topology of the partition matters as much as the count.</div>
       </div>
-      <div class="quiz-card">
-        <p class="quiz-prompt">A 12-engineer startup is debating between keeping their kubeadm-managed K8s on EC2 or migrating to GKE. They spend ~30 hours/month on cluster ops. Make the case.</p>
-        <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Managed (GKE/EKS/AKS) wins almost every time at this scale. Cost math: 30 eng-hours/month × ~$87/hr fully-loaded = $2,610/month in eng time on cluster ops. GKE control plane is ~$73/cluster/month. Net savings: ~$2,500/month, plus better security patching, faster CP version upgrades, and etcd backups handled by SREs who do this all day. Self-managed wins when: you need a CP version not yet supported by the managed offering, you need physical control of etcd (regulatory), you're on bare metal where no managed option exists, you have hundreds of clusters and per-cluster cost adds up, or cluster ops is genuinely a core competency. For 12 engineers shipping product, managed is a no-brainer.</div>
+      <div class="quiz-card cyoa-quiz">
+        <span class="cyoa-tag">🎬 Choose Your Own Adventure</span>
+        <p class="quiz-prompt">You run <code>kubectl apply -f Pod.yaml</code>. <strong>Click to trace exactly what happens. ▼</strong></p>
+        <button class="quiz-reveal" type="button">Show what happened</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">trace</span><pre>  1. kubectl  → API server     (POST /api/v1/.../Pods)
+  2. API srvr → etcd           (validate, persist)
+  3. scheduler watches API     (picks node-3, POSTs Binding)
+  4. kubelet on node-3 watches (sees its Pod)
+  5. kubelet  → runtime        (pull image, start)
+  6. kubelet  → API server     (PATCH status: Running)</pre>Notice every hop routes through the API server. The scheduler never tells the kubelet anything directly. <strong>That single-door discipline is the architectural constraint that makes K8s scale.</strong></div>
       </div>
     </div>
   </section>
@@ -848,9 +1136,9 @@
       <div class="gloss-item"><div class="gloss-name">API server</div><div class="gloss-def">The only door into the cluster. REST + watch endpoints over HTTPS. Stateless; horizontally scalable. Every other component talks to it.</div></div>
       <div class="gloss-item"><div class="gloss-name">etcd</div><div class="gloss-def">Strongly-consistent KV store holding all cluster state. Uses Raft. Odd-member quorum (3 or 5). Source of truth.</div></div>
       <div class="gloss-item"><div class="gloss-name">controller manager</div><div class="gloss-def">Bundle of reconcile loops as a single process: Deployment, ReplicaSet, Node, Endpoints, Job, etc.</div></div>
-      <div class="gloss-item"><div class="gloss-name">scheduler</div><div class="gloss-def">Picks which node runs each new pod. Considers resource fit, taints, affinity, topology spread.</div></div>
+      <div class="gloss-item"><div class="gloss-name">scheduler</div><div class="gloss-def">Picks which node runs each new Pod. Considers resource fit, taints, affinity, topology spread.</div></div>
       <div class="gloss-item"><div class="gloss-name">cloud-controller-manager</div><div class="gloss-def">Bridges K8s to cloud APIs (load balancers, persistent disks, node lifecycle). Optional on bare metal.</div></div>
-      <div class="gloss-item"><div class="gloss-name">kubelet</div><div class="gloss-def">Node agent. Watches API for assigned pods, runs them via the runtime, reports status. Also runs probes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubelet</div><div class="gloss-def">Node agent. Watches API for assigned Pods, runs them via the runtime, reports status. Also runs probes.</div></div>
       <div class="gloss-item"><div class="gloss-name">kube-proxy</div><div class="gloss-def">Programs local iptables/IPVS/eBPF rules to implement Services on each node.</div></div>
       <div class="gloss-item"><div class="gloss-name">container runtime</div><div class="gloss-def">containerd, CRI-O, or runc-based. Starts containers. Speaks the CRI to the kubelet.</div></div>
       <div class="gloss-item"><div class="gloss-name">Quorum</div><div class="gloss-def">Majority of etcd members agreeing on a write. 3 members → quorum is 2; 5 members → quorum is 3. Lose quorum → read-only.</div></div>
@@ -859,10 +1147,15 @@
     </div>
   </details>
 
+  <!-- One-sentence stamp · bottom placement (identical to top) -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Control plane decides; nodes execute. Five control-plane components, three node components, one API door between them. Memorise the 6-hop Pod-creation flow.</p>
+  </div>
+
   <!-- ============================== RECAP + COMPLETION ============================== -->
   <section class="recap">
     <span class="recap-badge">✓ Lesson 13 complete</span>
-    <p>Control plane decides; nodes execute. Five CP components, three node components, one API door between them. Memorize the 6-hop pod-creation flow — it explains 90% of K8s behavior.</p>
+    <p>Control plane decides; nodes execute. Five CP components, three node components, one API door between them. Memorize the 6-hop Pod-creation flow — it explains 90% of K8s behavior.</p>
     <p class="recap-next"><strong>Next — Lesson 14: The K8s API &amp; YAML.</strong> apiVersion · kind · metadata · spec · status. How `kubectl explain` is the manual you didn't know you had. CRDs as first-class citizens.</p>
   </section>
 
@@ -891,12 +1184,27 @@
     card.addEventListener('click', () => card.classList.toggle('flipped'));
   });
 
-  // quiz reveals
+  // quiz reveals (handles both "Show answer" and CYOA "Show what happened")
   document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
     btn.addEventListener('click', () => {
       const ans = btn.parentElement.querySelector('.quiz-answer');
       const open = ans.classList.toggle('show');
-      btn.textContent = open ? 'Hide answer' : 'Show answer';
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+
+  // pause-and-check
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      });
     });
   });
 
@@ -978,9 +1286,9 @@
 
   function runPodflow() {
     clearTimeouts(); clearStage();
-    animModeLabel.textContent = 'Mode: pod creation flow';
+    animModeLabel.textContent = 'Mode: Pod creation flow';
     animStep.textContent = '0 / 5';
-    setStatus('A user runs kubectl apply -f pod.yaml.');
+    setStatus('A user runs kubectl apply -f Pod.yaml.');
     setReadout('<strong>Step 0.</strong> Watch the request walk through control-plane and node components.');
 
     // Lay out 5 component boxes across a row
@@ -994,9 +1302,9 @@
     later(1300, () => {
       animStep.textContent = '1 / 5';
       setStatus('Step 1: kubectl POSTs YAML to API server.');
-      setReadout('<strong>Step 1.</strong> kubectl → API server. POST /api/v1/namespaces/default/pods.');
+      setReadout('<strong>Step 1.</strong> kubectl → API server. POST /api/v1/namespaces/default/Pods.');
       svgArrow(130, 55, 150, 55, '#A04832');
-      svgRect(20, 95, 240, 26, '#FBE8DC', '#A04832', 'POST pod.yaml (kubectl)', { fontSize: 10.5, textFill: '#A04832', font: 'ui-monospace,monospace' });
+      svgRect(20, 95, 240, 26, '#FBE8DC', '#A04832', 'POST Pod.yaml (kubectl)', { fontSize: 10.5, textFill: '#A04832', font: 'ui-monospace,monospace' });
     });
     later(2700, () => {
       animStep.textContent = '2 / 5';
@@ -1015,8 +1323,8 @@
     });
     later(5800, () => {
       animStep.textContent = '4 / 5';
-      setStatus('Step 4: kubelet on node-3 sees its pod, asks runtime to start it.');
-      setReadout('<strong>Step 4.</strong> kubelet watches API for pods on node-3. Sees the new pod. CRI: pull image, create + start container.');
+      setStatus('Step 4: kubelet on node-3 sees its Pod, asks runtime to start it.');
+      setReadout('<strong>Step 4.</strong> kubelet watches API for Pods on node-3. Sees the new Pod. CRI: pull image, create + start container.');
       svgArrow(520, 75, 540, 75, '#3D7857');
       svgArrow(595, 80, 595, 100, '#3D7857');
       svgRect(410, 200, 240, 26, '#E0EFE6', '#3D7857', '✓ pull image · start container', { fontSize: 10.5, textFill: '#3D7857', font: 'ui-monospace,monospace' });
@@ -1024,7 +1332,7 @@
     later(7500, () => {
       animStep.textContent = '5 / 5';
       setStatus('Step 5: kubelet PATCHes status. Pod is Running.');
-      setReadout('<strong>Step 5.</strong> kubelet reports status (Running) back to API server → etcd. kubectl get pod sees Running.');
+      setReadout('<strong>Step 5.</strong> kubelet reports status (Running) back to API server → etcd. kubectl get Pod sees Running.');
       svgRect(20, 240, 660, 36, '#5A9F7A', '#3D7857', '✓ Pod Running · status flowed back through API server', { fontSize: 12, textFill: '#FFFFFF' });
     });
     later(11000, runPodflow);
@@ -1034,7 +1342,7 @@
     clearTimeouts(); clearStage();
     animModeLabel.textContent = 'Mode: reconcile loop';
     animStep.textContent = '0 / 4';
-    setStatus('A Deployment wants 3 replicas. One pod just crashed.');
+    setStatus('A Deployment wants 3 replicas. One Pod just crashed.');
     setReadout('<strong>Step 0.</strong> Watch the Deployment controller notice and act.');
 
     later(0, () => {
@@ -1044,9 +1352,9 @@
       // Deployment controller
       svgRect(490, 20, 200, 40, '#EDE6F8', '#5E4A8E', 'Deployment controller', { fontSize: 11, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
       // The 3 desired, 2 actual visualization below
-      svgRect(20, 80, 60, 40, '#E0EFE6', '#3D7857', 'pod-1', { fontSize: 9, textFill: '#3D7857', font: 'ui-monospace,monospace' });
-      svgRect(90, 80, 60, 40, '#E0EFE6', '#3D7857', 'pod-2', { fontSize: 9, textFill: '#3D7857', font: 'ui-monospace,monospace' });
-      svgRect(160, 80, 60, 40, '#FBE8DC', '#A04832', '✗ pod-3', { fontSize: 9, textFill: '#A04832', font: 'ui-monospace,monospace' });
+      svgRect(20, 80, 60, 40, '#E0EFE6', '#3D7857', 'Pod-1', { fontSize: 9, textFill: '#3D7857', font: 'ui-monospace,monospace' });
+      svgRect(90, 80, 60, 40, '#E0EFE6', '#3D7857', 'Pod-2', { fontSize: 9, textFill: '#3D7857', font: 'ui-monospace,monospace' });
+      svgRect(160, 80, 60, 40, '#FBE8DC', '#A04832', '✗ Pod-3', { fontSize: 9, textFill: '#A04832', font: 'ui-monospace,monospace' });
     });
     later(1500, () => {
       animStep.textContent = '1 / 4';
@@ -1058,20 +1366,20 @@
     later(3000, () => {
       animStep.textContent = '2 / 4';
       setStatus('Step 2: controller compares: desired 3, actual 2 → diff = +1.');
-      setReadout('<strong>Step 2.</strong> Comparison: 1 pod is missing. Controller decides to create one new pod.');
-      svgRect(490, 120, 200, 30, '#FBF1D6', '#8B5A00', 'diff: need +1 pod', { fontSize: 10, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
+      setReadout('<strong>Step 2.</strong> Comparison: 1 Pod is missing. Controller decides to create one new Pod.');
+      svgRect(490, 120, 200, 30, '#FBF1D6', '#8B5A00', 'diff: need +1 Pod', { fontSize: 10, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
     });
     later(4500, () => {
       animStep.textContent = '3 / 4';
-      setStatus('Step 3: controller POSTs new ReplicaSet pod template.');
+      setStatus('Step 3: controller POSTs new ReplicaSet Pod template.');
       setReadout('<strong>Step 3.</strong> ReplicaSet controller (sub-controller) POSTs a fresh Pod object to the API server.');
-      svgRect(490, 160, 200, 30, '#EDE6F8', '#5E4A8E', 'POST /pods (template)', { fontSize: 9.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
-      svgRect(230, 80, 60, 40, '#FBF1D6', '#8B5A00', 'pod-3\'', { fontSize: 9, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
+      svgRect(490, 160, 200, 30, '#EDE6F8', '#5E4A8E', 'POST /Pods (template)', { fontSize: 9.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
+      svgRect(230, 80, 60, 40, '#FBF1D6', '#8B5A00', 'Pod-3\'', { fontSize: 9, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
     });
     later(6500, () => {
       animStep.textContent = '4 / 4';
       setStatus('Step 4: scheduler binds → kubelet starts. desired = actual.');
-      setReadout('<strong>Step 4.</strong> The new pod gets scheduled and started. Loop continues, will fire again on next change.');
+      setReadout('<strong>Step 4.</strong> The new Pod gets scheduled and started. Loop continues, will fire again on next change.');
       svgRect(20, 200, 670, 36, '#5A9F7A', '#3D7857', '✓ desired = actual = 3 · controller idle until next event', { fontSize: 12, textFill: '#FFFFFF' });
       svgRect(20, 244, 670, 26, '#FBF1D6', '#8B5A00', 'this is the controller pattern (Lesson 06) — applied to every K8s primitive', { fontSize: 10, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
     });
@@ -1130,7 +1438,7 @@
 
   function runMode(mode) {
     clearTimeouts();
-    if (mode === 'podflow') runPodflow();
+    if (mode === 'Podflow') runPodflow();
     else if (mode === 'reconcile') runReconcile();
     else if (mode === 'ha') runHa();
   }

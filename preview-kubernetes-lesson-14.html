@@ -227,9 +227,160 @@
   .explain-box .ex-key{color:#9DCBE8}
   .explain-box .ex-type{color:#A4D49B}
   .explain-box .ex-cmt{color:#9D9389;font-style:italic}
+  /* ============ LAYMAN-FIRST SCAFFOLDING (K-Town revision Phase 2) ============ */
+
+  /* Inline code inside section paragraphs (parity with L13) */
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+  /* Visually-hidden utility for screen-reader-only content */
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* District line — single-line K-Town pin under topbar */
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+
+  /* K-Town map */
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease)}
+  .ktown-map .pin .pin-circle{fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+
+  /* Nightmare opener */
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+
+  /* One-sentence stamp */
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:19px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box{background:var(--accent-soft)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+
+  /* Translation Legend (table inside §3) */
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'…in Kubernetes · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+
+  /* Pause-and-check */
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+
+  /* Common Misconceptions panel (start of §7) */
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+
+  /* Analogy-stops-here callout */
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+
+  /* Skip-if-new pill (defined for future lessons; unused in L01) */
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+
+  /* Persistent concept rail (desktop only, ≥1240px) */
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){
+    .concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50}
+  }
+
+  /* CYOA quiz reveal */
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  .cyoa-quiz .quiz-answer pre{font-family:'ui-monospace',monospace;font-size:12px;line-height:1.45;background:var(--bg-soft);padding:10px 12px;border-radius:var(--r-soft);overflow-x:auto;margin:10px 0;color:var(--ink-soft)}
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .ktown-map .pin .pin-circle,.pause-check-opt,.ktown-strip-pin{transition:none}
+    .quiz-reveal{animation:none}
+  }
 </style>
 </head>
 <body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the Kubernetes course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>what Kubernetes is</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>the reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how apps should be designed</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>when K8s makes sense</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how mature teams operate it</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how the project evolves</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>Linux foundations <small>(primer)</small></span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how containers actually work</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>runtimes &amp; the OCI standard</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how images are built</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how containers shut down</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>cluster architecture</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>K8s API &amp; YAML</span><span class="concept-rail-here">← you are here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>Pods deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>workload controllers</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>services &amp; networking</span></div>
+</aside>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -238,6 +389,69 @@
     <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
   </div>
 </header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>City Hall — Permit Office</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: today we are at City Hall — Permit Office, Lesson 14">
+    <title>K-Town district map · today: City Hall — Permit Office</title>
+    <desc>Stylised map of K-Town. Each Kubernetes lesson maps to one named district. Mayor's Office is the city anchor and is highlighted as the current district.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/>
+      </linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/>
+      </linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#3F4A5E">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin active" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+  </svg>
+
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Permit Office</strong> <span>· lesson 14 of 16</span><span class="visually-hidden">Lesson 14 of 16, City Hall Permit Office.</span></p>
+</div>
 
 <main>
 
@@ -389,6 +603,19 @@
     </div>
   </section>
 
+  <!-- 3 AM Nightmare opener -->
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>An engineer ran <code>kubectl scale deployment api --replicas=10</code> to handle a slow service. It worked. Three days later, a CI deploy from the git-tracked YAML (which still says <code>replicas: 3</code>) ran. <code>apply</code> diffed, scaled DOWN to 3 mid-traffic-spike. 5xx surge. This lesson is about why imperative kubectl is dangerous, and why every K8s object has the same 4-section permit form.</p>
+    </div>
+  </div>
+
+  <!-- One-sentence stamp · top placement -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Every K8s object is the same 4-block form (<code>apiVersion + kind + metadata + spec</code>). <code>kubectl explain</code> is the manual. Never use imperative kubectl in production. CRDs make custom types first-class.</p>
+  </div>
+
   <!-- ============================== SECTION 1 — CONCEPT ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 1 · Concept</span>
@@ -409,7 +636,7 @@
 
     <p><code>apiVersion</code> + <code>kind</code> = "which API endpoint, which schema." <code>metadata</code> identifies the object. <code>spec</code> is what you declared. <code>status</code> is what controllers later wrote back — don't put it in your YAML, you don't own it.</p>
     <p><strong>API groups.</strong> The API is partitioned into groups so it can evolve independently. <em>core</em> (<code>v1</code>): Pods, Services, ConfigMaps. <em>apps</em>: Deployments, StatefulSets. <em>batch</em>: Jobs. <em>networking.k8s.io</em>: Ingress, NetworkPolicy. <em>rbac.authorization.k8s.io</em>: Roles, ClusterRoles. Each has its own version lifecycle (<code>v1alpha1</code> → <code>v1beta1</code> → <code>v1</code>).</p>
-    <p><strong>kubectl explain</strong> is the manual. <code>kubectl explain pod.spec.containers</code> shows the documented schema for any field. It reflects exactly what your cluster's API server accepts (including CRDs), not the docs site for some other version. Treat it as the source of truth.</p>
+    <p><strong>kubectl explain</strong> is the manual. <code>kubectl explain Pod.spec.containers</code> shows the documented schema for any field. It reflects exactly what your cluster's API server accepts (including CRDs), not the docs site for some other version. Treat it as the source of truth.</p>
     <p><strong>Server-side validation.</strong> The API server validates every submission against its OpenAPI schema. Typos like <code>replicaCount: 3</code> (should be <code>replicas</code>) are rejected before persistence. In CI, always <code>kubectl apply --server-side --dry-run=server</code> — that's the cluster's actual schema, not a client-side guess.</p>
     <p><strong>CRDs (Custom Resource Definitions)</strong> are the most powerful K8s feature. Define your own object type, apply the CRD, and the API server immediately serves it with the same RBAC, audit, validation, and storage as built-ins. Pair with a controller and you've extended K8s with a first-class new abstraction. cert-manager, Argo CD, Crossplane, Istio, Prometheus Operator — all CRDs + controllers.</p>
   </section>
@@ -558,13 +785,13 @@
     <p>Your cluster ships with the manual built in. <code>kubectl explain &lt;kind&gt;.&lt;path&gt;</code> shows the documented schema of any field, with types and descriptions. Reflects your cluster exactly — including CRDs.</p>
 
     <div class="explain-box">
-<span class="ex-cmd">$ kubectl explain pod.spec.containers</span>
+<span class="ex-cmd">$ kubectl explain Pod.spec.containers</span>
 KIND:     Pod
 VERSION:  v1
 RESOURCE: containers &lt;[]Object&gt;
 
 DESCRIPTION:
-     List of containers belonging to the pod. Containers cannot
+     List of containers belonging to the Pod. Containers cannot
      currently be added or removed. There must be at least one
      container in a Pod.
 
@@ -629,6 +856,20 @@ FIELDS:
 
     <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Rule of thumb: if you'd ever write <code>-l key=value</code> to find it, it's a label. Otherwise it's an annotation.</p>
   </section>
+
+  <!-- Pause-and-check #1 · after Section 1 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Which of these is <em>not</em> a mandatory block in every Kubernetes YAML?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) <code>apiVersion</code></button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) <code>status</code></button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) <code>metadata</code></button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> <code>status</code> is filled in by controllers, not by you. The four mandatory blocks are <code>apiVersion</code>, <code>kind</code>, <code>metadata</code>, <code>spec</code>.</p>
+    </div>
+  </div>
 
   <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
   <section class="s">
@@ -717,25 +958,27 @@ FIELDS:
     <p>Different permit types are filed at <strong>different counters</strong> (API groups). <code>core/v1</code> for Pods and Services, <code>apps/v1</code> for Deployments, <code>batch/v1</code> for Jobs. The <strong>handbook on the desk</strong> that lists every field of every form is <code>kubectl explain</code>.</p>
     <p>If the office doesn't have a form for what you need, you can <strong>register your own form template</strong> (a CRD). Once registered, the office accepts your custom permits with the same validation and storage as the built-in ones. Pair it with your own inspector (controller / operator) and you've extended the office without forking the codebase.</p>
 
-    <p style="margin-top:18px"><strong>The mapping:</strong></p>
-    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
-      <li><strong>Permit office</strong> = the Kubernetes API server</li>
-      <li><strong>Standard 4-section form</strong> = the structure of every K8s object</li>
-      <li><strong>Type declaration at top</strong> = <code>apiVersion</code> + <code>kind</code></li>
-      <li><strong>Identity section</strong> = <code>metadata</code></li>
-      <li><strong>What-you-want section</strong> = <code>spec</code></li>
-      <li><strong>Inspector's stamp</strong> = <code>status</code></li>
-      <li><strong>Different counters</strong> = API groups</li>
-      <li><strong>Clerk validating</strong> = server-side OpenAPI validation</li>
-      <li><strong>Filing cabinet</strong> = etcd</li>
-      <li><strong>Handbook on the desk</strong> = <code>kubectl explain</code></li>
-      <li><strong>Custom permit template</strong> = CRD</li>
-      <li><strong>Custom inspector</strong> = your operator</li>
-      <li><strong>Bringing in a filled form</strong> = <code>kubectl apply</code></li>
-      <li><strong>Asking the clerk to fill it for you</strong> = <code>kubectl create</code> (imperative)</li>
-      <li><strong>Colored sticker on the form</strong> = labels (used to file &amp; find)</li>
-      <li><strong>Sticky notes</strong> = annotations (humans read, system ignores for selection)</li>
-    </ul>
+    <div class="translation-legend">
+      <table>
+        <thead>
+          <tr><th>In the story…</th><th>…in Kubernetes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>The permit office</td><td>The Kubernetes API server</td></tr>
+          <tr><td>The standard 4-section permit form</td><td>Every K8s object's structure</td></tr>
+          <tr><td>The type declaration at the top</td><td><code>apiVersion</code> + <code>kind</code></td></tr>
+          <tr><td>The identity section</td><td><code>metadata</code></td></tr>
+          <tr><td>The "what-you-want" section</td><td><code>spec</code></td></tr>
+          <tr><td>The inspector's stamp</td><td><code>status</code> (filled in by controllers, not by you)</td></tr>
+          <tr><td>The handbook on the desk</td><td><code>kubectl explain</code></td></tr>
+          <tr><td>The filing cabinet</td><td>etcd</td></tr>
+          <tr><td>Bringing in a filled-out form</td><td><code>kubectl apply -f</code></td></tr>
+          <tr><td>A custom permit template plus its own inspector</td><td>A CRD plus a controller (the operator pattern)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: a permit office has business hours. The Kubernetes API server is always open and serves thousands of requests per second.</em></p>
   </section>
 
   <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
@@ -750,10 +993,24 @@ FIELDS:
       </div>
       <div class="eli-card">
         <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
-        <p>Every Kubernetes object is YAML with four blocks: <code>apiVersion</code> (which group/version), <code>kind</code> (which type), <code>metadata</code> (name, namespace, labels, annotations), and <code>spec</code> (what you want). A fifth block, <code>status</code>, is filled in by controllers. Resources are partitioned into API groups (<code>core</code>, <code>apps</code>, <code>batch</code>, <code>networking.k8s.io</code>...) each with versions (<code>v1alpha1</code> / <code>v1beta1</code> / <code>v1</code>). The API server validates against an OpenAPI schema — <code>kubectl explain pod.spec.containers</code> shows that schema. Use <code>kubectl apply -f</code> (declarative, GitOps-friendly) instead of <code>kubectl create</code> / <code>run</code> (imperative, no audit). When K8s doesn't ship a type you need, write a <strong>CRD</strong>. The API server immediately serves it with the same RBAC, audit, and validation as built-ins. cert-manager, Argo CD, every operator — all CRDs.</p>
+        <p>Every Kubernetes object is YAML with four blocks: <code>apiVersion</code> (which group/version), <code>kind</code> (which type), <code>metadata</code> (name, namespace, labels, annotations), and <code>spec</code> (what you want). A fifth block, <code>status</code>, is filled in by controllers. Resources are partitioned into API groups (<code>core</code>, <code>apps</code>, <code>batch</code>, <code>networking.k8s.io</code>...) each with versions (<code>v1alpha1</code> / <code>v1beta1</code> / <code>v1</code>). The API server validates against an OpenAPI schema — <code>kubectl explain Pod.spec.containers</code> shows that schema. Use <code>kubectl apply -f</code> (declarative, GitOps-friendly) instead of <code>kubectl create</code> / <code>run</code> (imperative, no audit). When K8s doesn't ship a type you need, write a <strong>CRD</strong>. The API server immediately serves it with the same RBAC, audit, and validation as built-ins. cert-manager, Argo CD, every operator — all CRDs.</p>
       </div>
     </div>
   </section>
+
+  <!-- Pause-and-check #2 · after Section 4 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">You don't know if <code>replicaCount</code> or <code>replicas</code> is the right field name. What's the fastest way to find out?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Google it</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) <code>kubectl explain deployment.spec</code> — the cluster's own schema</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Read the source code</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Your cluster ships with the manual built in. Reflects the <em>exact</em> version you're running, including any CRDs.</p>
+    </div>
+  </div>
 
   <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
   <section class="s">
@@ -815,14 +1072,34 @@ FIELDS:
 
   <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
   <section class="s">
-    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
     <h2>Lock it in</h2>
+    <p>Three common misconceptions to clear up first, then the flashcards and quiz.</p>
+
+    <!-- Common Misconceptions panel -->
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> CRDs are second-class objects.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Once registered, they get the same RBAC, audit, validation, and storage as built-ins. cert-manager's <code>Certificate</code> and a Pod are equivalent in the API server's eyes.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> <code>kubectl run</code> and <code>kubectl create</code> are the right way to deploy.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Those are imperative — direct mutations with no audit trail. Production should always use <code>kubectl apply -f</code> (and ideally GitOps on top).</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Labels and annotations are interchangeable.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Labels are <em>indexed</em> and used for selection (<code>-l app=foo</code>). Annotations are free-form metadata, not selectable. If you'd ever filter by it, it's a label.</div>
+        </div>
+      </div>
+    </div>
 
     <div class="flashcard-grid">
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Four mandatory blocks of every K8s object?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">apiVersion, kind, metadata, spec. A fifth block (status) is filled by controllers, not by you.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does apiVersion tell the API server?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Which API group + version. Format: group/version (e.g., apps/v1) or just v1 for core. Each group has its own version lifecycle.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Name 4 API groups + a resource each.<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">core/v1 (Pod), apps/v1 (Deployment), batch/v1 (CronJob), networking.k8s.io/v1 (Ingress), rbac.authorization.k8s.io/v1 (Role).</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is kubectl explain?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">The cluster's built-in schema browser. kubectl explain pod.spec.containers drills into a field. --recursive shows the whole tree. Reflects your cluster including CRDs.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is kubectl explain?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">The cluster's built-in schema browser. kubectl explain Pod.spec.containers drills into a field. --recursive shows the whole tree. Reflects your cluster including CRDs.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Declarative vs imperative kubectl?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Declarative: kubectl apply -f file.yaml — diffs against state, GitOps-friendly. Imperative: kubectl create/run/scale — direct mutation, no audit. Always declarative in production.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Labels vs annotations?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Both in metadata. Labels are indexed and used for selection (-l app=foo). Annotations are free-form metadata (build SHA, on-call). If you'd ever -l search for it, it's a label.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a CRD?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Custom Resource Definition. A YAML object that registers a new type with the API server. Same RBAC, audit, validation, storage as built-ins. Combine with a controller for the operator pattern.</div></div></div>
@@ -847,10 +1124,11 @@ spec:
         <button class="quiz-reveal" type="button">Show answer</button>
         <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The CI deploy ran <code>kubectl apply -f deployment.yaml</code>. <code>apply</code> diffed desired (<code>replicas: 3</code>) against actual (<code>replicas: 10</code>) and scaled DOWN to 3 mid-spike. 5xx surge. Root cause: imperative commands mutate state without updating any YAML in git, so "truth" diverges silently. Right pattern: (1) Always edit YAML, commit, <code>kubectl apply</code> from CI. (2) Better: use Argo CD or Flux to auto-sync git → cluster. With GitOps, git is the single source of truth and out-of-band <code>kubectl</code> changes get reverted (or flagged as drift) automatically.</div>
       </div>
-      <div class="quiz-card">
-        <p class="quiz-prompt">Your team uses cert-manager. You can run <code>kubectl apply -f certificate.yaml</code>, <code>kubectl get certificates</code>, even <code>kubectl describe certificate my-cert</code>. But Certificate isn't a built-in K8s type. How does this work?</p>
-        <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>cert-manager ships two things. (1) A <strong>CRD</strong> registers <code>Certificate</code> as a new type with your cluster's API server. The CRD YAML defines the schema (fields, types, validation rules). Once applied, the API server starts serving <code>/apis/cert-manager.io/v1/certificates</code> with full RBAC, audit, kubectl support — identical to built-in types. (2) A <strong>controller</strong> (the cert-manager pod) watches Certificate objects and reconciles: talks to Let's Encrypt, completes ACME challenges, fetches certs, writes a Secret, schedules renewals. CRD + controller = the operator pattern. Argo CD (Application), Crossplane, Istio (VirtualService), Prometheus Operator — all the same shape. Roll your own with kubebuilder or operator-sdk.</div>
+      <div class="quiz-card cyoa-quiz">
+        <span class="cyoa-tag">🎬 Choose Your Own Adventure</span>
+        <p class="quiz-prompt">Your YAML has <code>replicaCount: 3</code> (the right field is <code>replicas</code>). You run <code>kubectl apply --dry-run=client</code>. It passes. You commit. <strong>Click to see what happens at deploy. ▼</strong></p>
+        <button class="quiz-reveal" type="button">Show what happened</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">at deploy</span><code>--dry-run=client</code> only does shallow client-side validation — it doesn't know your cluster's actual schema. The deploy goes to prod. The API server rejects: <code>unknown field "spec.replicaCount"</code>. CI fails. Incident. <strong>Fix:</strong> always use <code>kubectl apply --server-side --dry-run=server</code> in CI. That talks to the actual API server and catches typos like this — including CRD-specific fields client-side validation misses.</div>
       </div>
     </div>
   </section>
@@ -874,11 +1152,16 @@ spec:
     </div>
   </details>
 
+  <!-- One-sentence stamp · bottom placement (identical to top) -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Every K8s object is the same 4-block form (<code>apiVersion + kind + metadata + spec</code>). <code>kubectl explain</code> is the manual. Never use imperative kubectl in production. CRDs make custom types first-class.</p>
+  </div>
+
   <!-- ============================== RECAP + COMPLETION ============================== -->
   <section class="recap">
     <span class="recap-badge">✓ Lesson 14 complete</span>
     <p>One form, four sections, one office. Memorize <code>apiVersion + kind + metadata + spec + status</code>, learn <code>kubectl explain</code>, never use imperative kubectl in production, and know that CRDs let you add first-class types.</p>
-    <p class="recap-next"><strong>Next — Lesson 15: Pods Deep Dive.</strong> The fundamental unit. Multi-container pods, init containers, sidecars, ephemeral containers, lifecycle states, and the patterns built on top.</p>
+    <p class="recap-next"><strong>Next — Lesson 15: Pods Deep Dive.</strong> The fundamental unit. Multi-container Pods, init containers, sidecars, ephemeral containers, lifecycle states, and the patterns built on top.</p>
   </section>
 
 </main>
@@ -906,12 +1189,27 @@ spec:
     card.addEventListener('click', () => card.classList.toggle('flipped'));
   });
 
-  // quiz reveals
+  // quiz reveals (handles both "Show answer" and CYOA "Show what happened")
   document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
     btn.addEventListener('click', () => {
       const ans = btn.parentElement.querySelector('.quiz-answer');
       const open = ans.classList.toggle('show');
-      btn.textContent = open ? 'Hide answer' : 'Show answer';
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+
+  // pause-and-check
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      });
     });
   });
 
@@ -1027,15 +1325,15 @@ spec:
     animModeLabel.textContent = 'Mode: kubectl explain drill-down';
     animStep.textContent = '0 / 4';
     setStatus('Use kubectl explain to discover any field.');
-    setReadout('<strong>Step 0.</strong> Watch the schema tree drill from pod → spec → containers → resources.');
+    setReadout('<strong>Step 0.</strong> Watch the schema tree drill from Pod → spec → containers → resources.');
 
     later(0, () => {
-      svgRect(20, 20, 690, 30, '#0F1419', '#0F1419', '$ kubectl explain pod', { fontSize: 12, textFill: '#E8B547', font: 'ui-monospace,monospace' });
+      svgRect(20, 20, 690, 30, '#0F1419', '#0F1419', '$ kubectl explain Pod', { fontSize: 12, textFill: '#E8B547', font: 'ui-monospace,monospace' });
     });
     later(1500, () => {
       animStep.textContent = '1 / 4';
       setStatus('Step 1: top-level Pod fields.');
-      setReadout('<strong>Step 1.</strong> kubectl explain pod returns: apiVersion, kind, metadata, spec, status.');
+      setReadout('<strong>Step 1.</strong> kubectl explain Pod returns: apiVersion, kind, metadata, spec, status.');
       svgRect(20, 60, 690, 80, '#0F1419', '#0F1419', '', { rx: 6 });
       svgText(40, 80, 'KIND: Pod   VERSION: v1', { fill: '#E8DDC8', anchor: 'start', fontSize: 11, weight: '400', font: 'ui-monospace,monospace' });
       svgText(40, 100, 'FIELDS:', { fill: '#9DCBE8', anchor: 'start', fontSize: 11, font: 'ui-monospace,monospace' });
@@ -1044,27 +1342,27 @@ spec:
     });
     later(3500, () => {
       animStep.textContent = '2 / 4';
-      setStatus('Step 2: drill into pod.spec.');
-      setReadout('<strong>Step 2.</strong> kubectl explain pod.spec lists all spec fields with types.');
+      setStatus('Step 2: drill into Pod.spec.');
+      setReadout('<strong>Step 2.</strong> kubectl explain Pod.spec lists all spec fields with types.');
       svgRect(20, 150, 690, 80, '#0F1419', '#0F1419', '', { rx: 6 });
-      svgText(40, 168, '$ kubectl explain pod.spec', { fill: '#E8B547', anchor: 'start', fontSize: 11, font: 'ui-monospace,monospace' });
+      svgText(40, 168, '$ kubectl explain Pod.spec', { fill: '#E8B547', anchor: 'start', fontSize: 11, font: 'ui-monospace,monospace' });
       svgText(40, 188, 'FIELDS:', { fill: '#9DCBE8', anchor: 'start', fontSize: 11, font: 'ui-monospace,monospace' });
       svgText(60, 204, 'containers <[]Object> -required-', { fill: '#A4D49B', anchor: 'start', fontSize: 11, font: 'ui-monospace,monospace' });
       svgText(60, 218, 'volumes <[]Object>   nodeSelector <map>   serviceAccountName <string>   ...', { fill: '#A4D49B', anchor: 'start', fontSize: 11, font: 'ui-monospace,monospace' });
     });
     later(5500, () => {
       animStep.textContent = '3 / 4';
-      setStatus('Step 3: drill into pod.spec.containers.');
+      setStatus('Step 3: drill into Pod.spec.containers.');
       setReadout('<strong>Step 3.</strong> Now we see name, image, ports, resources, securityContext, volumeMounts, etc.');
       svgRect(20, 240, 690, 60, '#0F1419', '#0F1419', '', { rx: 6 });
-      svgText(40, 258, '$ kubectl explain pod.spec.containers', { fill: '#E8B547', anchor: 'start', fontSize: 11, font: 'ui-monospace,monospace' });
+      svgText(40, 258, '$ kubectl explain Pod.spec.containers', { fill: '#E8B547', anchor: 'start', fontSize: 11, font: 'ui-monospace,monospace' });
       svgText(60, 276, 'name <string> -required-   image <string>', { fill: '#A4D49B', anchor: 'start', fontSize: 11, font: 'ui-monospace,monospace' });
       svgText(60, 290, 'ports <[]Object>   resources <Object>   securityContext <Object>', { fill: '#A4D49B', anchor: 'start', fontSize: 11, font: 'ui-monospace,monospace' });
     });
     later(7500, () => {
       animStep.textContent = '4 / 4';
       setStatus('Step 4: --recursive shows the full tree.');
-      setReadout('<strong>Step 4.</strong> kubectl explain pod.spec --recursive prints the entire schema in one pass. The whole API is queryable.');
+      setReadout('<strong>Step 4.</strong> kubectl explain Pod.spec --recursive prints the entire schema in one pass. The whole API is queryable.');
       svgRect(20, 310, 690, 30, '#5A9F7A', '#3D7857', '✓ kubectl explain --recursive · the full API surface', { fontSize: 11, textFill: '#FFFFFF', font: 'ui-monospace,monospace' });
     });
     later(11000, runExplain);
@@ -1112,7 +1410,7 @@ spec:
     later(7000, () => {
       animStep.textContent = '4 / 4';
       setStatus('Step 4: operator (controller) reconciles. Status updated.');
-      setReadout('<strong>Step 4.</strong> The Foo operator pod sees the watch event, does its thing, PATCHes status. Same flow as built-ins.');
+      setReadout('<strong>Step 4.</strong> The Foo operator Pod sees the watch event, does its thing, PATCHes status. Same flow as built-ins.');
       svgRect(20, 250, 690, 36, '#5A9F7A', '#3D7857', '✓ operator reconciled · status: { ready: true } · CRD lifecycle complete', { fontSize: 11, textFill: '#FFFFFF', font: 'ui-monospace,monospace' });
     });
     later(11000, runCrd);
