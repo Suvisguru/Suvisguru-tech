@@ -1,0 +1,41 @@
+# Quiz — Lesson 05, When Kubernetes Fits and When It's Overkill
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A 6-engineer team has 1 Django app, 1 Postgres, 2 background workers,
+      1 Redis. They're debating Kubernetes. What questions should drive the
+      decision?
+    answer: |
+      How many services in 12 months? How many independent teams own
+      deploys? Workload portability needed? Time for cluster ops? If
+      answers are mostly "stays small," "one team," "no portability," "no
+      platform time" — they should not adopt yet. If at least three answers
+      point toward growth, adopt. Generally for this size: stick with
+      managed app platforms or a small ECS/Cloud Run setup.
+
+  - id: 2
+    prompt: |
+      "We want Kubernetes because it's the modern way." Why is this a poor
+      reason to adopt it?
+    answer: |
+      Adoption isn't free — the cluster itself becomes ongoing work. K8s
+      pays back in proportion to operational scale (many services, many
+      teams). For workloads without that scale, the operational cost
+      exceeds the value delivered. Adopt because the workload shape demands
+      it, not because the technology is in vogue. Otherwise you're building
+      an industrial kitchen for your toast.
+
+  - id: 3
+    prompt: |
+      A high-frequency trading firm has 3 services. Two are dashboards
+      (HTTP, normal latency). One is the trading engine (sub-100µs
+      end-to-end). What's the right architecture?
+    answer: |
+      Mixed. Run the dashboards on Kubernetes (managed, cheap, normal HTTP
+      latency is fine). Run the trading engine on bare metal with
+      kernel-bypass networking (DPDK). K8s adds 50-200µs per network hop
+      via CNI/kube-proxy — negligible for HTTP, lethal for HFT. The trick:
+      don't force one tool to handle every workload. Different workloads,
+      different platforms.

@@ -1,0 +1,35 @@
+# Flashcards — Lesson 05, When Kubernetes Fits and When It's Overkill
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "Three signals that Kubernetes is the right fit?"
+    back: "Many services to operate, multiple teams sharing infrastructure, dynamic workloads that scale and reschedule, need for workload portability across environments, existing operational maturity to run a cluster."
+
+  - id: 2
+    front: "Three signals Kubernetes is overkill?"
+    back: "Single application that rarely changes, no platform engineering capacity, latency-sensitive sub-millisecond workloads, the team's current pain is application architecture rather than orchestration."
+
+  - id: 3
+    front: "What is the platform tax?"
+    back: "The ongoing cost of running the cluster itself: upgrades, observability stack, security patches, on-call. Real number — for tiny workloads can exceed the value delivered; for big ones it amortises across many services."
+
+  - id: 4
+    front: "What's a paved road?"
+    back: "The standard, supported way the platform team has decided things should be done. Easier than the alternative on purpose. A small team can't afford 10 ways to do everything."
+
+  - id: 5
+    front: "When are managed services a better fit?"
+    back: "For small teams with few services. Render, Fly, Heroku, Railway — push code, get an HTTPS URL. You give up some control; you save weeks of operational work. Often the right call below ~5 services and 2 teams."
+
+  - id: 6
+    front: "When does serverless win?"
+    back: "For spiky/event-driven workloads. AWS Lambda, Cloud Functions, Azure Functions. Pay per invocation; no servers to manage. Loses for steady-state long-running services where idle time is rare."
+
+  - id: 7
+    front: "What are latency-sensitive workloads?"
+    back: "Workloads where sub-millisecond per-hop latency matters — high-frequency trading, real-time bidding, certain telecom paths. K8s networking adds microseconds; negligible at 50ms but expensive at 50µs."
+
+  - id: 8
+    front: "Why doesn't moving 1 small app to K8s help?"
+    back: "K8s solves the count problem (running many things), not the per-app complexity problem. A single app on K8s pays the cluster operational cost without getting the benefit; on a single VM, you'd skip the cost entirely."

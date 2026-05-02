@@ -1,0 +1,74 @@
+# Intake brief — Lesson 05, K-COM
+# Topic: When Kubernetes Fits, When It's Overkill
+# Format: Standard 7-section PROJECT.md structure (mirrors approved Lessons 01-04).
+
+lesson:
+  title: "When Kubernetes Is Useful — and When It's Overkill"
+  slug: "05-when-k8s-fits-when-overkill"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 5
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "industrial kitchen vs home toaster"
+
+learner_profile:
+  prerequisites:
+    - "Lessons 01-04 (Kubernetes basics, containers, cloud-native, app design)"
+  assumed_zero_knowledge_of:
+    - "Operational scale, platform tax."
+    - "Managed services and serverless alternatives."
+    - "Latency-sensitive workloads."
+    - "Decision frameworks for adoption."
+
+learning_outcomes:
+  - "Learner can name 5+ signals that K8s is the right fit."
+  - "Learner can name 4+ signals that K8s is overkill."
+  - "Learner can run the 6-question fit-checker on their own situation."
+  - "Learner understands platform tax and why it scales as constant overhead."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Hero: industrial kitchen with many cooks, ovens, and chefs vs single toaster on counter — power tool vs simple tool"
+    word_target: 240
+  section_1_5_fit_checker:
+    illustration: "6 fit-checker tile cards with YES/NO branches per question (with color coding)"
+    description: "6 questions: services count, team count, dynamic workloads, portability, platform capacity, latency-sensitivity"
+  section_2_before_after:
+    illustration: "Same startup at year 1 (3 engineers, 1 service) vs year 3 (40 engineers, 8 services, 4 teams)"
+    word_target_each_side: 80
+  section_3_analogy:
+    primary: "Industrial kitchen vs the toaster on your counter"
+    illustration: "Already shown in hero (industrial kitchen + toaster scenes)"
+  section_4_eli_pair:
+    eli5: "Big restaurant kitchen for hundreds vs toast for one. Under 100 words."
+    eli10: "K8s as platform; useful test = service count + team count. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "Mid-size media company (40 services, 6 teams) — CLEAR FIT"
+      - "4-engineer fintech with 1 service — WRONG FIT (cautionary tale)"
+      - "Government agency with compliance needs — FIT"
+      - "HFT firm with sub-100µs latency — WRONG FIT (use bare metal + DPDK)"
+  section_6_animated_svg:
+    modes: ["Tiny (1 app)", "Mid (8 services)", "Big (40 services)"]
+    description: "Same Kubernetes cluster outline. Workloads added incrementally. Payback indicator (×0.2 / ×3.5 / ×9.4) shows the cost-vs-value at each scale."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-05.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can answer 'should we adopt K8s?' for their own situation."
+  - "First-timer can name at least 3 alternatives (managed services, serverless, bare metal)."
+  - "First-timer understands operational scale > traffic scale as the K8s payback driver."
+
+fact_check_anchors:
+  - "kubernetes.io/case-studies/ — adoption stories"
+  - "https://martinfowler.com/articles/microservice-trade-offs.html"
+  - "AWS, Azure, GCP managed Kubernetes pricing pages"
