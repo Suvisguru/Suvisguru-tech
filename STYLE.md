@@ -475,6 +475,8 @@ A single SVG of K-Town renders once per lesson, just under the breadcrumb header
 | 13 | **K-Town International Airport** (control tower + terminals) |
 | 14 | **City Hall — Permit Office** |
 | 15 | **Co-Living Quarter** (Pod = co-living unit, NOT apartment — apartment is reserved for Lesson 02's container metaphor) |
+| 16 | **K-Town Dispatch Office** (workforce dispatch — Deployments are rotating shifts; StatefulSets are assigned-seat employees; DaemonSets are the one-per-building watchman; Jobs are one-time work orders; CronJobs are scheduled maintenance rounds) |
+| 17 | **K-Town Switchboard** (the city's telephone exchange and street-routing system — ClusterIP is the internal directory; NodePort is the public phone booth on each block; LoadBalancer is the dispatch operator routing calls; Ingress is the main-entrance turnstile; NetworkPolicy is the traffic rules) |
 
 **Crucial collision to avoid:** Lesson 02 uses "apartment = container." Lesson 15 must NOT also use "apartment = Pod" — they collide. Lesson 15 uses "co-living unit / shared studio loft = Pod" instead.
 
