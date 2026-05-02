@@ -1,0 +1,88 @@
+# Intake brief — Lesson 14, K-COM
+# Topic: The K8s API & YAML — apiVersion, kind, metadata, spec, status;
+#        API groups; kubectl explain; declarative vs imperative;
+#        Custom Resource Definitions (CRDs)
+# Module 3 (Architecture & API) · Lesson 2 of 5
+
+lesson:
+  title: "The K8s API &amp; YAML · Objects, apiVersion, kind, spec, status, CRDs"
+  slug: "14-api-yaml-objects-crds"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 14
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "permit office — every K8s object is a standardized 4-section form (apiVersion+kind / metadata / spec / status) submitted to the right counter (API group), validated by the clerk (admission), recorded in the cabinet (etcd via API server), and later stamped by an inspector (status filled by controllers). Custom permit types = CRDs."
+  module: "Module 3 · Architecture &amp; API · Lesson 2 of 5"
+
+learner_profile:
+  prerequisites:
+    - "Lesson 13: Cluster Architecture (knows what API server and etcd are)"
+  assumed_zero_knowledge_of:
+    - "The 4 mandatory blocks of every K8s object."
+    - "API groups (core / apps / batch / networking / rbac / etc.)."
+    - "kubectl explain as the source of truth for field schemas."
+    - "Server-side validation, OpenAPI schema."
+    - "Declarative (kubectl apply) vs imperative (kubectl create / run)."
+    - "CRDs and how to extend the API with your own types."
+    - "Labels, annotations, and the difference."
+
+learning_outcomes:
+  - "Learner can read a YAML file and identify the 4 blocks (apiVersion, kind, metadata, spec)."
+  - "Learner can use kubectl explain to discover what fields an object supports."
+  - "Learner understands when to use labels vs annotations."
+  - "Learner can name 4 API groups and an example resource from each."
+  - "Learner understands what a CRD is and why teams write them."
+  - "Learner can name the difference between declarative (apply) and imperative (create/run)."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Hero: permit office. Customer (kubectl) on left holding a YAML form. Clerk at counter validating. Cabinet behind clerk for accepted permits (etcd). Inspector on right stamping STATUS on a permit. Wall of permit-type templates: POD, DEPLOYMENT, SERVICE, CONFIGMAP. A 'CUSTOM' permit template being added (CRD)."
+    word_target: 320
+  section_1_5_blocks:
+    illustration: "5 tile cards: apiVersion + kind · metadata · spec · status · CRDs (custom forms)"
+  section_1_7_api_groups:
+    illustration: "5 cards for API groups: core (v1) · apps · batch · networking.k8s.io · rbac.authorization.k8s.io with example resources"
+  section_1_8_kubectl_explain:
+    illustration: "kubectl explain output for pod.spec.containers — tree of fields with types"
+  section_1_9_declarative_vs_imperative:
+    illustration: "Two-card comparison: declarative (kubectl apply -f file.yaml) vs imperative (kubectl create deployment ...)"
+  section_2_before_after:
+    illustration: "Pre-K8s: each tool has its own config format (one YAML for nginx, one HCL for terraform, one JSON for systemd) — no common shape. Post-K8s: every config is the same 4-block form, validated by one schema, stored in one place."
+  section_3_analogy:
+    primary: "Permit office — standard 4-section form, validation clerk, filing cabinet, inspector stamps status, custom forms = CRDs"
+    illustration: "Already in hero"
+  section_4_eli_pair:
+    eli5: "Permits, all the same shape. Under 100 words."
+    eli10: "apiVersion + kind + metadata + spec + status + API groups + CRDs. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "kubectl explain saved hours of guessing the field name for a CRD"
+      - "Imperative kubectl create disasters in production (no diff, no audit)"
+      - "Cert-manager's CRDs let teams declare TLS certs as K8s objects"
+      - "OpenAPI server-side validation caught a typo in spec.replicaCount before it shipped"
+  section_6_animated_svg:
+    modes: ["YAML object lifecycle (5 steps)", "kubectl explain walkthrough (4 steps)", "CRD registration and use (4 steps)"]
+    description: "Mode 1: YAML submitted → schema validation → admission → store → controllers populate status. Mode 2: kubectl explain pod, then pod.spec, then pod.spec.containers — tree drills down. Mode 3: install CRD YAML → API server learns new type → apply custom resource → operator (controller) reconciles."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-14.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can read a YAML and name the 4 blocks."
+  - "First-timer can run 'kubectl explain pod.spec' and understand the output."
+  - "First-timer knows that CRDs let you add new types to the API."
+  - "First-timer understands why declarative is preferred over imperative."
+
+fact_check_anchors:
+  - "https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/"
+  - "https://kubernetes.io/docs/reference/using-api/api-overview/"
+  - "https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/"
+  - "https://kubernetes.io/docs/reference/kubectl/conventions/"

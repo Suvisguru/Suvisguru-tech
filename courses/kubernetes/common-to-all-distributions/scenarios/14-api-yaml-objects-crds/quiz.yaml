@@ -1,0 +1,77 @@
+# Quiz — Lesson 14, K8s API & YAML
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      You're staring at this YAML and don't know if it's valid:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: api
+        spec:
+          replicaCount: 3
+          template: ...
+      What's wrong, and what's the fastest way to discover it?
+    answer: |
+      The field is replicas, not replicaCount. To discover this in 5
+      seconds: kubectl explain deployment.spec — it lists every valid
+      top-level field of a Deployment spec, with the type and a short
+      description of each. You'll see "replicas <integer>" in the
+      output and immediately know what to use. Add --recursive to see
+      the entire schema tree.
+      Why client-side dry-run won't catch it: kubectl apply
+      --dry-run=client only checks YAML syntax and basic K8s structure;
+      it doesn't validate field names against the cluster's schema. To
+      catch this in CI, use kubectl apply --server-side
+      --dry-run=server — that talks to the actual API server and
+      validates against the OpenAPI schema for the resource. The
+      cluster will return: error: unknown field "spec.replicaCount".
+
+  - id: 2
+    prompt: |
+      An engineer ran kubectl scale deployment api --replicas=10 to
+      handle a traffic spike. Three days later a CI deploy from the
+      git-tracked YAML (which has replicas: 3) ran. What happened, and
+      what's the right pattern going forward?
+    answer: |
+      The CI deploy used kubectl apply -f deployment.yaml against the
+      git-tracked file. apply diffed the desired state (replicas: 3)
+      against the cluster's current state (replicas: 10) and scaled
+      the deployment back DOWN to 3 — mid-traffic-spike. 5xx surge.
+      Root cause: imperative commands (kubectl scale, kubectl create,
+      kubectl run) mutate cluster state without updating any YAML in
+      git. The "truth" diverges silently between git and cluster.
+      Right pattern: (1) Always edit the YAML, commit, kubectl apply
+      from CI. (2) Better: use Argo CD or Flux to auto-sync git →
+      cluster (Lesson 06 — GitOps). With GitOps, git is the single
+      source of truth and any out-of-band kubectl change is reverted
+      automatically (or flagged as drift). For ad-hoc emergency
+      scaling, edit the YAML and push to a hotfix branch — 60 seconds
+      slower but auditable.
+
+  - id: 3
+    prompt: |
+      Your team uses cert-manager for TLS. After installing it, you
+      can run kubectl apply -f certificate.yaml, kubectl get
+      certificates, and kubectl describe certificate my-cert — but
+      Certificate isn't a built-in K8s type. How does this work, and
+      what's the general pattern?
+    answer: |
+      cert-manager ships two things: (1) a CRD (Custom Resource
+      Definition) that registers Certificate as a new type with your
+      cluster's API server. The CRD YAML defines the schema (fields,
+      types, validation rules) for Certificate objects. Once applied,
+      the API server starts serving /apis/cert-manager.io/v1/certificates
+      with full RBAC, audit logging, kubectl support — identical to
+      built-in types. (2) A controller (the cert-manager pod) that
+      watches Certificate objects and reconciles them: talks to Let's
+      Encrypt, completes ACME challenges, fetches certs, writes them
+      to a Secret, schedules renewals.
+      This is the operator pattern: CRD + controller = first-class
+      K8s extension. Argo CD (Application CRD), Crossplane (cloud
+      resource CRDs), Istio (VirtualService, DestinationRule),
+      Prometheus Operator (ServiceMonitor) — all the same shape.
+      Writing your own: use kubebuilder or operator-sdk; the boilerplate
+      handles informers, work queues, leader election. You write the
+      reconcile() function that converges actual state to desired.

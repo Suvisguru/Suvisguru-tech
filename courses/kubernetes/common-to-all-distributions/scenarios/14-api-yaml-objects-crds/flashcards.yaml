@@ -1,0 +1,35 @@
+# Flashcards — Lesson 14, K8s API & YAML
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "Four mandatory blocks of every K8s object?"
+    back: "apiVersion (which API group/version), kind (which type), metadata (name, namespace, labels, annotations), spec (desired state — what you want). A fifth block, status, is filled in by controllers — not by you."
+
+  - id: 2
+    front: "What does apiVersion tell the API server?"
+    back: "Which API group + version to route this object to. Format: group/version (e.g., apps/v1) or just v1 for core resources. Each group has its own version lifecycle (v1alpha1 → v1beta1 → v1)."
+
+  - id: 3
+    front: "Name 4 API groups and a resource in each."
+    back: "core/v1 (Pod, Service, ConfigMap, Secret), apps/v1 (Deployment, StatefulSet, DaemonSet), batch/v1 (Job, CronJob), networking.k8s.io/v1 (Ingress, NetworkPolicy), rbac.authorization.k8s.io/v1 (Role, ClusterRole)."
+
+  - id: 4
+    front: "What is kubectl explain?"
+    back: "The cluster's built-in schema browser. kubectl explain pod shows top-level fields. kubectl explain pod.spec.containers drills down. --recursive shows full tree. Source of truth for what your API server accepts (including CRDs)."
+
+  - id: 5
+    front: "Declarative vs imperative kubectl?"
+    back: "Declarative: kubectl apply -f file.yaml — diffs against cluster state, GitOps-friendly, audit-trailed. Imperative: kubectl create/run/scale — direct mutation, no diff, no audit. Use declarative in production; imperative is fine for ad-hoc poking."
+
+  - id: 6
+    front: "Labels vs annotations?"
+    back: "Both go in metadata. Labels are indexed and used for selection (Services find Pods by labels). Keep short: app=foo, env=prod. Annotations are free-form metadata not used for selection: build SHA, deploy timestamp, ingress controller hints."
+
+  - id: 7
+    front: "What is a CRD?"
+    back: "Custom Resource Definition. A YAML object that registers a new type with the API server. Once installed, the API server serves your type with the same RBAC, audit, validation, and storage as built-ins. Combine with a controller for the operator pattern."
+
+  - id: 8
+    front: "Why use --server-side validation in CI?"
+    back: "kubectl apply --server-side --dry-run=server validates YAML against the actual cluster's OpenAPI schema, catching typos like 'replicaCount' (not a real field). Client-side validation is shallow and may miss CRD-specific fields. Server-side catches everything before merge."
