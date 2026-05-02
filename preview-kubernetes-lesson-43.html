@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 43 — Service Mesh · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the K-COM course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L01 What is Kubernetes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L02 containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L03 reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L04 12-factor + monoliths</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L05 K8s fit / overkill</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L06 GitOps + SRE</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L07 history + KEPs</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>L7.5 Linux primer</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L08 namespaces &amp; cgroups</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L09 runtimes &amp; OCI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L10 image building</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L11 container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L12 PID 1 &amp; lifecycle</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L13 cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L14 K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L15 Pods deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L16 workload controllers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L17 services &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L18 storage Pt 1 — PV/PVC/SC</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L19 storage Pt 2 — CSI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L20 config &amp; secrets</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L21 service accounts &amp; certs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L22 scheduling Pt 1</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L23 scheduling Pt 2</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L24 net foundations &amp; CNI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L25 Gateway API</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L26 AdminNetworkPolicy</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L27 RBAC &amp; Auth</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L28 admission control</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L29 policy engines</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L30 supply chain</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L31 multi-tenancy</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L32 obs Pt 1 — logs/metrics</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L33 obs Pt 2 — traces/eBPF</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L34 autoscaling</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L35 reliability &amp; HA</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L36 Kustomize</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L37 Helm 3</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L38 Argo CD</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L39 Flux CD</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L40 progressive delivery</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L41 CRDs deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L42 Operators</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>L43 service mesh</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L44 troubleshooting</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 43</span></a>
+    <span class="progress-pill">43 · service mesh</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Switchboard — Service Mesh Wing</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: lesson 43">
+    <title>K-Town district map · lesson 43</title>
+    <desc>Stylised map of K-Town. Switchboard — Service Mesh Wing highlighted.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin active" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+    <g class="pin" id="kt-pin27" transform="translate(740,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">27</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">security</text></g>
+    <g class="pin" id="kt-pin32" transform="translate(230,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">32</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">observability</text></g>
+    <g class="pin" id="kt-pin34" transform="translate(230,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">34</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Station</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scale & resilience</text></g>
+    <g class="pin" id="kt-pin36" transform="translate(410,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">36</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Print Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">delivery</text></g>
+    <g class="pin" id="kt-pin42" transform="translate(700,305)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">42</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Workshop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">operators</text></g>
+    <g class="pin" id="kt-pin44" transform="translate(770,245)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">44</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Detective's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshooting</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Switchboard — Service Mesh Wing</strong> <span>· lesson 43</span><span class="visually-hidden">Lesson 43, Switchboard — Service Mesh Wing.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 18 · Lesson 43 · the data-plane layer</span>
+    <h1>Service Mesh · Istio Ambient, Linkerd, Cilium Mesh</h1>
+    <p class="hero-sub">A <strong>service mesh</strong> adds mTLS, observability, traffic shaping, and policy at the network layer — without app changes. The 2026 mesh landscape is dominated by <strong>Istio Ambient</strong> (no sidecars), <strong>Linkerd</strong> (smallest, fastest), and <strong>Cilium Service Mesh</strong> (eBPF-native). Each takes a different bet on the architecture.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Switchboard mesh wing: a control plane (Istio/Linkerd/Cilium) drawing a graph of services, mTLS padlocks on every edge, sidecar/ambient mode comparison, observability stream.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">SWITCHBOARD · SERVICE MESH WING</text>
+  <g transform="translate(40,55)"><rect width="240" height="120" rx="6" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/><text x="120" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">SERVICE GRAPH</text>
+    <circle cx="60" cy="60" r="20" fill="#5A9F7A"/><text x="60" y="64" text-anchor="middle" font-size="8" fill="#FFFFFF" font-weight="700">A</text>
+    <circle cx="140" cy="50" r="20" fill="#4A8FA8"/><text x="140" y="54" text-anchor="middle" font-size="8" fill="#FFFFFF" font-weight="700">B</text>
+    <circle cx="200" cy="80" r="20" fill="#A04832"/><text x="200" y="84" text-anchor="middle" font-size="8" fill="#FFFFFF" font-weight="700">C</text>
+    <circle cx="100" cy="100" r="20" fill="#E8B547"/><text x="100" y="104" text-anchor="middle" font-size="8" fill="#5A4F45" font-weight="700">D</text>
+    <line x1="80" y1="60" x2="120" y2="55" stroke="#3D7857" stroke-width="2"/><text x="100" y="50" text-anchor="middle" font-size="6" fill="#3D7857">🔒mTLS</text>
+    <line x1="160" y1="60" x2="180" y2="75" stroke="#3D7857" stroke-width="2"/>
+    <line x1="80" y1="80" x2="100" y2="95" stroke="#3D7857" stroke-width="2"/>
+    <line x1="120" y1="100" x2="180" y2="90" stroke="#3D7857" stroke-width="2"/>
+  </g>
+  <g transform="translate(300,55)"><rect width="160" height="120" rx="6" fill="#3F4A5E"/><text x="80" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">CONTROL PLANE</text>
+    <rect x="14" y="32" width="132" height="20" rx="2" fill="#FBE8DC"/><text x="20" y="46" font-size="8" fill="#A04832" font-weight="700">Istio (ambient)</text>
+    <rect x="14" y="56" width="132" height="20" rx="2" fill="#E0EFE6"/><text x="20" y="70" font-size="8" fill="#3D7857" font-weight="700">Linkerd</text>
+    <rect x="14" y="80" width="132" height="20" rx="2" fill="#E0EEF3"/><text x="20" y="94" font-size="8" fill="#3F4A5E" font-weight="700">Cilium Mesh</text>
+    <text x="80" y="115" text-anchor="middle" font-size="7" fill="#FBF1D6" font-style="italic">policy + cert + xDS</text></g>
+  <g transform="translate(480,55)"><rect width="160" height="60" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="80" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#8B5A00">SIDECAR MODE</text><text x="80" y="36" text-anchor="middle" font-size="7" fill="#5A4F45" font-style="italic">envoy per Pod</text><text x="80" y="50" text-anchor="middle" font-size="7" fill="#5A4F45" font-style="italic">+ mem · + mgmt</text></g>
+  <g transform="translate(480,125)"><rect width="160" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="80" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#3D7857">AMBIENT MODE</text><text x="80" y="36" text-anchor="middle" font-size="7" fill="#5A4F45" font-style="italic">node-level proxy</text><text x="80" y="50" text-anchor="middle" font-size="7" fill="#5A4F45" font-style="italic">no per-Pod overhead</text></g>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Compliance asks: "is every internal service-to-service call encrypted?" Without mTLS — the answer is no. Adding TLS to every service means: writing TLS code in every language, managing certs per app, rotating per service, fighting mismatched library versions. <em>A service mesh provides mTLS as infrastructure</em>: zero app changes, automatic cert rotation, policy declared centrally. Plus observability and traffic shaping for free. The trade is operational complexity — the mesh itself is now part of your platform.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Three meshes worth knowing in 2026: <strong>Istio Ambient</strong> (node-level + waypoint proxies; supersedes the original sidecar architecture), <strong>Linkerd</strong> (purpose-built for K8s; smallest + fastest), <strong>Cilium Service Mesh</strong> (eBPF-native; integrates with the CNI). All provide: mTLS by default, observability (golden signals + traces), traffic shaping (canary, retries, timeouts), policy. <strong>Sidecar vs ambient:</strong> the trend is decisively away from per-Pod sidecars.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>What a mesh adds</h2>
+    <p>A service mesh is a <strong>data plane</strong> (proxies in your traffic path) + a <strong>control plane</strong> (policy + cert + config distribution). The mesh:</p>
+    <ul>
+      <li>Wraps every service-to-service call in <strong>mTLS</strong>. Cert per workload identity (the SPIFFE/SPIRE pattern). Automatic rotation.</li>
+      <li>Records <strong>per-call telemetry</strong>: latency, success rate, request size. Aggregated into Prometheus + traces.</li>
+      <li>Enforces <strong>traffic policy</strong>: timeouts, retries, circuit breakers, traffic splits, header-based routing.</li>
+      <li>Enforces <strong>authz policy</strong>: "service X can call service Y\'s GET endpoint but not POST."</li>
+    </ul>
+    <p>All of this without app changes. The proxy intercepts traffic; the app uses HTTP/gRPC normally. The mesh adds the security + observability layer.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · Sidecar vs ambient</span>
+    <h2>The architectural shift of 2024-26</h2>
+    <p>Original mesh design (Istio classic, Linkerd 1, all early meshes): <strong>sidecar</strong> proxy. Inject an Envoy / linkerd-proxy / similar into every Pod alongside the app container. Every Pod's traffic goes through its sidecar.</p>
+    <p>Sidecar pros: per-Pod isolation; works regardless of node configuration. Sidecar cons: 100-500MB extra memory per Pod, 0.5-1 vCPU per Pod, complex Pod startup ordering, every restart is a sidecar restart.</p>
+    <p><strong>Ambient mode</strong> (Istio 1.22+ Ambient GA, similar in Cilium): no sidecars. Instead:</p>
+    <ul>
+      <li>L4 traffic (mTLS, basic policy) handled by a <strong>node-level proxy</strong> (zone, like a CNI agent). One per node.</li>
+      <li>L7 features (HTTP/gRPC routing, retries, etc.) handled by <strong>waypoint proxies</strong> — Pods deployed selectively for namespaces/services that need them.</li>
+    </ul>
+    <p>Ambient pros: dramatically less overhead (no sidecar per Pod), simpler Pod lifecycle, opt-in L7 (don't pay for it where you don't need it). Ambient cons: less per-Pod isolation, newer, fewer integrations.</p>
+    <p>By 2026, ambient mode is the recommended default for new Istio installs. Linkerd hasn't adopted ambient (their sidecar is so small that the trade-off doesn't apply). Cilium's mesh is naturally node-level via eBPF.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · The three main meshes</span>
+    <h2>Istio Ambient, Linkerd, Cilium Service Mesh</h2>
+    <p><strong>Istio Ambient</strong>: most feature-rich. Full HTTP/2 + gRPC support. Strong VirtualService / DestinationRule / AuthorizationPolicy CRDs. Wide ecosystem. Best when you need rich traffic-shaping + policy and you have ops headcount to operate it.</p>
+    <p><strong>Linkerd</strong>: smallest + fastest mesh. Sidecars are tiny (Rust). Simplicity over flexibility. Best when you want mTLS + golden signals + simple policy with minimal operational overhead.</p>
+    <p><strong>Cilium Service Mesh</strong>: integrates with Cilium CNI (Lesson 24). eBPF data plane; no extra proxy in many cases. Best when you're already running Cilium for networking and want to add mesh capabilities.</p>
+    <p>2026 trade-off matrix:</p>
+    <table class="data-table">
+      <thead><tr><th></th><th>Istio Ambient</th><th>Linkerd</th><th>Cilium</th></tr></thead>
+      <tbody>
+        <tr><td>Setup complexity</td><td>High</td><td>Low</td><td>Low (if Cilium already deployed)</td></tr>
+        <tr><td>Per-Pod overhead</td><td>~0 (ambient)</td><td>~50MB sidecar</td><td>~0 (eBPF)</td></tr>
+        <tr><td>Traffic-shaping richness</td><td>High</td><td>Medium</td><td>Medium-High</td></tr>
+        <tr><td>mTLS</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Multi-cluster</td><td>Strong</td><td>Strong</td><td>Strong</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A team has 8 microservices. They're considering a service mesh because they want mTLS. Worth the operational cost?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Yes, definitely — meshes are always worth it</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Probably not — at 8 services, cert-manager + workload identity + OTel for observability is simpler. Wait until 30+ services or compliance pressure.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Yes, install Istio and put every Pod in mesh</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> A mesh's value scales with service count + compliance need. At 8 services, simpler primitives (cert-manager, OTel SDK, NetworkPolicy) cover most of what a mesh provides at lower operational cost. Revisit when service count grows or regulators enter the picture.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · When to (and not to) adopt a mesh</span>
+    <h2>Cost-benefit</h2>
+    <p>A mesh adds operational complexity. Worth it when:</p>
+    <ul>
+      <li><strong>Compliance demands mTLS</strong> for service-to-service traffic. Most regulated industries.</li>
+      <li><strong>You have many services</strong> (50+) where per-app TLS would mean N independent implementations.</li>
+      <li><strong>You need traffic-shaping</strong> (canary, retries, circuit-breaking) and don't want to build into apps. Lesson 40's progressive delivery often pairs with mesh.</li>
+      <li><strong>You need richer observability</strong> than what app-level instrumentation provides — per-flow telemetry without changing apps.</li>
+    </ul>
+    <p>Skip when:</p>
+    <ul>
+      <li>You have ≤10 services. Mesh overhead exceeds value.</li>
+      <li>You have one cluster, no compliance pressure, and existing observability/TLS via OTel + cert-manager + your CI signing chain.</li>
+      <li>Your team can't commit to operating an additional control plane.</li>
+    </ul>
+    <p>The 2026 trend: <strong>most mid-to-large orgs run a mesh</strong>; <strong>most small startups don't</strong>. The threshold is somewhere around 30 services + 1 platform-engineering team that can own the mesh.</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>The Gateway API + Service Mesh interface (mesh-aware gateways) is converging in 2026. Both Istio and Linkerd are increasingly using Gateway API as their north-south Gateway interface. Long term, the boundary between "ingress controller" and "mesh" is blurring; Gateway API + mesh is becoming one continuous traffic-management layer.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-mesh: TLS implementation in every app. Different libraries, different rotation patterns, plaintext between services in 30% of apps because "we'll add TLS later." Observability requires manual instrumentation per app. Traffic shaping (canary, retries) baked into application code, different per language.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Mesh: mTLS everywhere by default. Cert rotation invisible. Per-flow observability without app changes. Traffic-shaping declared in CRDs (VirtualService, AuthorizationPolicy). Adopted with sidecar costs (overhead) or ambient (no sidecars).</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">The mesh debate of 2025-26 was "is the operational cost worth it?" Ambient mode tipped many "no" votes to "yes" by removing the per-Pod overhead.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this district</h2>
+<p>The Switchboard's mesh wing handles all the calls inside a building. A central control board (control plane) issues every phone (workload) a unique ID and a sealed line (mTLS). Two architectures. The <strong>old way</strong>: each phone has its own little operator next to it (sidecar). The <strong>new way</strong>: each floor has one operator (node-level proxy) handling all the floor's phones, and certain busy departments get a dedicated line operator (waypoint proxy) for advanced features like retry-on-busy or traffic-split. The control board ensures every call is encrypted, logged, and routed by city policy.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>Phone with its own operator</td><td>Sidecar mesh (Istio classic, Linkerd)</td></tr>
+          <tr><td>Floor-level operator (one per floor)</td><td>Node-level proxy (Istio Ambient ztunnel, Cilium eBPF)</td></tr>
+          <tr><td>Dedicated department line operator</td><td>Waypoint proxy (Istio Ambient L7)</td></tr>
+          <tr><td>Sealed line (encrypted call)</td><td>mTLS</td></tr>
+          <tr><td>Central control board</td><td>Mesh control plane</td></tr>
+          <tr><td>"Department X can call Y but not Z"</td><td>AuthorizationPolicy</td></tr>
+          <tr><td>"On busy, retry up to 3 times"</td><td>VirtualService retries</td></tr>
+          <tr><td>"Send 10% to canary line"</td><td>VirtualService traffic split</td></tr>
+          <tr><td>Per-call audit log</td><td>Mesh-emitted telemetry</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real meshes do millions of decisions per second via Envoy or eBPF, not human operators. mTLS is cryptographic key exchange + certificate validation per connection, not a sealed line.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Every phone in the building has a special line that nobody else can listen to. There's a central console that knows who can call whom.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Service mesh = data plane (proxies) + control plane. mTLS by default, per-flow observability, traffic shaping, authz policy — all without app changes. Sidecar mode (proxy per Pod) is the original; ambient mode (node-level + waypoint proxies) reduces overhead. Three main meshes in 2026: Istio Ambient (richest), Linkerd (simplest), Cilium Service Mesh (eBPF-native). Skip if you have &lt;30 services and no compliance pressure.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams use this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A bank running Linkerd for mTLS-everywhere</p><p>50 microservices. mTLS required by compliance. Linkerd was chosen for simplicity + small footprint. <60MB per sidecar. Auto-rotation of certs every 24h. mTLS audit logs satisfy regulators. Operational overhead: ~0.5 platform engineer.</p></div>
+      <div class="scenario"><p class="scenario-name">A SaaS migrating from Istio sidecar to Ambient</p><p>Started on Istio classic in 2022. By 2024, sidecar overhead became painful (memory, startup time). Migrated to Ambient mode in 2025: ztunnel DaemonSet + waypoint proxies for HTTPRoute consumers. ~70% reduction in mesh-related Pod resource use. Same Istio CRDs.</p></div>
+      <div class="scenario"><p class="scenario-name">A startup using Cilium Service Mesh</p><p>Cilium was already the CNI. Enabling Cilium Service Mesh added mTLS + observability (Hubble) without adding new proxies. eBPF handles the data plane in-kernel. Lower latency than sidecar meshes. Tradeoff: mesh features evolve with Cilium's roadmap.</p></div>
+      <div class="scenario"><p class="scenario-name">A team that didn't adopt a mesh</p><p>12 microservices, single region, internal-only. Looked at Istio + Linkerd + Cilium. Decided: cert-manager for app-level TLS, OTel SDK for observability, NetworkPolicy for authz. Total mesh-equivalent cost: 0 platform-engineering hours. Re-evaluate at 30+ services.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> A service mesh replaces NetworkPolicy.</div><div class="misc-row misc-truth"><strong>Truth:</strong> They're different layers. NetworkPolicy is L3/4 (IP + port). Mesh AuthorizationPolicy is L7 (HTTP method + path + headers). Use both: NetworkPolicy as broad allow-list; AuthorizationPolicy for fine-grained service-level rules.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> Sidecar mode is always too expensive.</div><div class="misc-row misc-truth"><strong>Truth:</strong> Linkerd's sidecar is so small (~30-50MB) that the trade-off rarely matters. Istio classic's sidecar is large (~200-400MB) so ambient was a major win there. Pick the mesh based on your service count + footprint constraints.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> A service mesh is required for mTLS.</div><div class="misc-row misc-truth"><strong>Truth:</strong> Plenty of alternatives: cert-manager + Envoy in your app; SPIRE + workload identity; mTLS via mesh sidecar + native code. Mesh is the easiest path; not the only one.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a service mesh?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Data plane (proxies in traffic path) + control plane (policy + cert + config). Adds mTLS, observability, traffic shaping, policy without app changes.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Sidecar vs ambient mode?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Sidecar: proxy per Pod; per-Pod overhead but full isolation. Ambient: node-level proxy for L4 + selective waypoint proxies for L7; less overhead, newer.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Istio Ambient components?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">ztunnel (node-level DaemonSet for mTLS + L4); waypoint proxies (Pods, deployed selectively for L7 features); istiod control plane.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Linkerd architecture?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Sidecar-based (Rust proxy, very small). Control plane: identity, destination, policy. Simplest mesh by design.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Cilium Service Mesh?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">eBPF-based data plane integrated with Cilium CNI. No extra proxy for many features. Hubble for observability. Best when Cilium is already your CNI.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is mTLS in mesh context?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Mutual TLS between service-to-service calls. Each workload has a cert tied to its identity (SPIFFE-style). Auto-rotated by control plane.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">VirtualService / AuthorizationPolicy (Istio)?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">VirtualService: traffic-shaping rules (routing, retries, splits). AuthorizationPolicy: which clients (by identity) can call this service's endpoints.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When to skip a mesh?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">≤10-30 services, no compliance pressure, observability via OTel SDK works, mTLS via cert-manager works. Mesh overhead exceeds value at small scale.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A team enables Istio Ambient on a 200-Pod cluster. After enable, they see 30% of services have higher latency. What's the diagnosis?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Common causes:</strong> (1) <em>Waypoint proxy not deployed</em>. Some services need L7 features (retries, header routing); without a waypoint, the calls fall back to L4 only — features silently inactive but no perf regression there. Latency regression is more often: (2) <em>ztunnel CPU starvation</em>. Node's ztunnel pod doesn't have enough CPU; queueing builds up. Tune resource requests. (3) <em>Application-level retries on top of mesh retries</em>. Doubled retry storms. Either disable mesh retries or app retries; not both. (4) <em>mTLS handshake on every connection</em>. Long-lived connections amortise; short-lived bursts pay the handshake cost. Tune connection pool sizes. <strong>Diagnostic:</strong> Hubble / Envoy access logs; mesh-side latency vs app-side latency. The latter doesn't lie.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A team's Linkerd dashboard shows their <code>checkout</code> service has 0.5% 5xx but no clear cause in app logs. How to use mesh observability?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Linkerd's</strong> per-flow telemetry shows the call graph + per-call status. <strong>Steps:</strong> (1) <code>linkerd viz tap deploy/checkout</code> — see live request streaming with status codes. (2) Filter for 5xx; look at peer service. The 5xx might originate from a downstream call, not from <code>checkout</code> itself. (3) <code>linkerd viz top deploy/checkout</code> — top routes by error rate. Pinpoint the failing endpoint. (4) Cross-reference with traces (if OTel is wired up). <strong>Without mesh:</strong> you'd add logs in every service, cross-correlate by request ID, check timestamps. Mesh observability cuts that workflow to seconds.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The platform team is choosing between Istio Ambient and Linkerd for a 100-service cluster. <strong>Click for the decision framework. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the decision framework</span><strong>Same considerations as Argo CD vs Flux but with different criteria:</strong> <strong>Pick Linkerd when:</strong> (1) operational simplicity is the top concern. Linkerd has the smallest learning curve. (2) Per-Pod overhead is non-issue (your services are mid-to-large; Linkerd's ~50MB doesn't matter). (3) You don't need rich L7 traffic shaping; mTLS + golden signals + simple authz is enough. <strong>Pick Istio Ambient when:</strong> (1) You need rich L7 traffic shaping (header routing, complex retries, fault injection). (2) You're already in the Istio ecosystem (Kiali, etc.). (3) Multi-cluster or virtual-machine workloads. <strong>Pilot:</strong> install both side-by-side on a non-prod cluster; deploy 5-10 representative services to each; compare ops engineer feedback after 2 weeks. <strong>Migration:</strong> mesh migrations are non-trivial (cert / identity / policy reauthoring). Pick once + commit. <strong>Cilium Service Mesh:</strong> the wildcard if you're already running Cilium. Lower per-Pod overhead than either; less mature L7 features.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Service mesh</div><div class="gloss-def">Data-plane proxies + control plane providing mTLS, observability, traffic policy.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Sidecar mode</div><div class="gloss-def">Proxy per Pod. Original mesh architecture.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Ambient mode (Istio)</div><div class="gloss-def">Node-level proxy (ztunnel) + selective waypoint proxies. No per-Pod sidecar.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ztunnel</div><div class="gloss-def">Istio Ambient's node-level DaemonSet handling mTLS + L4 policy.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Waypoint proxy</div><div class="gloss-def">Istio Ambient Pod handling L7 features (HTTP routing, retries) for selected namespaces/services.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Linkerd</div><div class="gloss-def">Lightweight CNCF mesh. Rust sidecar; simpler than Istio.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Cilium Service Mesh</div><div class="gloss-def">Mesh integrated with Cilium CNI. eBPF data plane.</div></div>
+      <div class="gloss-item"><div class="gloss-name">VirtualService (Istio)</div><div class="gloss-def">Traffic routing CRD: matches + actions (route, retry, fault inject).</div></div>
+      <div class="gloss-item"><div class="gloss-name">AuthorizationPolicy (Istio)</div><div class="gloss-def">L7 authz CRD: "identity X may call service Y\'s endpoint Z."</div></div>
+      <div class="gloss-item"><div class="gloss-name">SPIFFE / SPIRE</div><div class="gloss-def">Standard for workload identity certs. Used by most meshes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Envoy</div><div class="gloss-def">High-performance L7 proxy. Underlying data plane for Istio + many gateways.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Linkerd-proxy</div><div class="gloss-def">Linkerd's Rust-based sidecar. Smaller + faster than Envoy for mesh use cases.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Three meshes worth knowing in 2026: <strong>Istio Ambient</strong> (node-level + waypoint proxies; supersedes the original sidecar architecture), <strong>Linkerd</strong> (purpose-built for K8s; smallest + fastest), <strong>Cilium Service Mesh</strong> (eBPF-native; integrates with the CNI). All provide: mTLS by default, observability (golden signals + traces), traffic shaping (canary, retries, timeouts), policy. <strong>Sidecar vs ambient:</strong> the trend is decisively away from per-Pod sidecars.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 43 complete</span>
+    <p>Service mesh adds mTLS + observability + traffic policy at the network layer with no app changes. Ambient (Istio) or eBPF (Cilium) reduces overhead vs sidecar. Skip if you have <30 services and no compliance pressure; adopt above that threshold.</p>
+    <p class="recap-next"><strong>Next — Lesson 44: Troubleshooting Methodology.</strong> The capstone — methodical investigation under pressure, drills, common failure patterns. New K-Town district: Detective's Office.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 43 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+</script>
+
+</body>
+</html>
