@@ -1,0 +1,58 @@
+# Intake brief — Lesson 28, K-COM
+# Topic: Admission Control · ValidatingAdmissionPolicy, PSA, Webhooks
+# Module 13 · Security · Lesson 2 of 5
+
+lesson:
+  title: 'Admission Control · ValidatingAdmissionPolicy, PSA, Webhooks'
+  slug: '28-admission-control'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 28
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'Watchtower — Admission Hallway — The Watchtower''s admission hallway runs after the identity desk. Three stations along the way. The **stamping desk** (mutating admission) adds default stamps to incoming envelopes — "please add return address, signature, today''s date." The '
+  module: 'Module 13 · Security · Lesson 2 of 5'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-27 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain where admission sits in the request flow.'
+  - 'Learner can explain the successor to PodSecurityPolicy.'
+  - 'Learner can explain custom rules in-cluster, no webhook needed.'
+
+sections:
+  - 'Where admission sits in the request flow'
+  - 'The successor to PodSecurityPolicy'
+  - 'Custom rules in-cluster, no webhook needed'
+  - 'When CEL isn''t enough'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'VAP requires every Deployment to have `team`, `cost-center`, `environment` labels.'
+    - 'Production namespaces have `enforce: restricted`.'
+    - 'Kyverno policy: every container image must be from `internal-registry.'
+    - 'Had a webhook enforcing "every Pod must have liveness probe.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-28.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-28.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'Admission runs *after* auth/RBAC, *before* persistence. **Mutating** admission can rewrite the object (add defaults, inject sidecars). **Validating** admission can accept or reject. Three modern tools: **Pod Security Admission (PSA)** for the standard Pod-security profiles, **ValidatingAdmissionPolicy (VAP)** for CEL-based rules in-cluster (no webhook needed, GA 1.30), and **policy webhooks** (Kyverno, OPA Gatekeeper) for richer logic.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/'

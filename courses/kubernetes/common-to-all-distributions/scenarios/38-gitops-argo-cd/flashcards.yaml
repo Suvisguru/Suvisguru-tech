@@ -1,0 +1,51 @@
+# Flashcards — Lesson 38
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      What is GitOps?
+    back: |
+      Git is source of truth; cluster reconciles to match. Four principles: declarative, versioned, pulled, continuously reconciled. Argo CD + Flux are the implementations.
+
+  - id: 2
+    front: |
+      Argo CD Application CRD?
+    back: |
+      One tracked deployment unit. Source (git repo + path or Helm chart) + destination (cluster + namespace) + sync policy. Argo CD reconciles continuously.
+
+  - id: 3
+    front: |
+      Sync states?
+    back: |
+      Synced (cluster = git), OutOfSync (cluster ≠ git), Unknown (Argo CD can't reach git or cluster).
+
+  - id: 4
+    front: |
+      Health states?
+    back: |
+      Healthy (resources happy), Degraded (something failing), Progressing (rolling out), Suspended (paused), Missing (not yet applied).
+
+  - id: 5
+    front: |
+      selfHeal?
+    back: |
+      `syncPolicy.automated.selfHeal: true` — Argo CD reverts drift. Forces "git is the only mutator" discipline.
+
+  - id: 6
+    front: |
+      prune?
+    back: |
+      `syncPolicy.automated.prune: true` — when a resource is removed from git, Argo CD deletes it from the cluster. Without prune, deletions stay in cluster forever.
+
+  - id: 7
+    front: |
+      App-of-Apps vs ApplicationSet?
+    back: |
+      App-of-Apps: one parent App points at a path of child App YAMLs. ApplicationSet: a generator-based CRD that templates Applications from inputs (list, git dirs, clusters, PRs).
+
+  - id: 8
+    front: |
+      Sync wave?
+    back: |
+      `argocd.argoproj.io/sync-wave: 0/1/2` annotation. Argo CD applies lower waves first. Used for ordering: CRDs (-1), operators (0), operator instances (1).

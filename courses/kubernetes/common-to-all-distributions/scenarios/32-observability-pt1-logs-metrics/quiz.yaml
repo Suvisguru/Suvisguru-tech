@@ -1,0 +1,22 @@
+# Quiz — Lesson 32
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A service emits 50,000 log lines per minute at INFO. Cost spikes; on-call complains the logs are noise. What's the playbook?
+    answer: |
+      **(1) Audit the noise.** Sample 100 lines; categorise ("request received," "DB query," "cache hit," etc.). 80% are routine flow. **(2) Demote routine flow.** Move "request received," cache hits, etc. from INFO to DEBUG. Default to WARN or ERROR for production. **(3) Use metrics for the routine.** If you cared about "how many requests received per minute," use a counter metric, not a log per request. **(4) Add structured logging.** Switch from text to JSON. Searches become 10× faster; can index specific fields. **(5) Set log retention.** 30 days hot, 90 days cold S3, 1 year archive. Most ops never read logs older than 14 days. **Result:** 80% volume reduction, faster searches, lower cost, better signal-to-noise.
+
+  - id: 2
+    prompt: |
+      An on-call engineer pages: "latency alert fired for service X, but I checked and latency is fine." What might be wrong?
+    answer: |
+      Several common diagnoses: **(1) Alert tuning.** Was the threshold set on absolute milliseconds or a percentile? P50 spike vs P99 spike are different beasts; "latency increased 10ms" might be normal noise. **(2) The alert query is wrong.** Maybe it's averaging across all requests including cached ones, masking the spike in the slow path. **(3) Missing labels.** The alert fires per-route but the engineer is looking at the overall dashboard. **(4) Stale alert.** Alert fires when one of N pods is slow; rolling restart resolved it; alert state didn't reset. **(5) Lack of runbook.** Alert annotation should explain: "check P99 on this dashboard, not the average." **Fix:** alerts must include a query the engineer can copy/paste; runbook should link to the exact dashboard panel; tune thresholds to actually-paging conditions, not noise.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The team ships an OTel-instrumented service. They want to verify traces are flowing end-to-end. **Click for the diagnostic checklist. ▼**
+    answer: |
+      **(1) App-side: are spans being created?** Add an OTel debug exporter to log spans locally. Make a request; check the log. If empty, the SDK isn't initialised correctly (check service-name env var, OTLP endpoint). **(2) App → Collector: is the connection succeeding?** `kubectl logs deploy/otel-collector`; look for incoming OTLP receivers logging spans. If silent, check Service / DNS / TLS. **(3) Collector → backend (Tempo / Jaeger / vendor): is the export working?** Collector logs would show export failures (auth errors, network errors, schema mismatches). **(4) Backend ingestion: do the spans appear?** Query the backend; a known trace ID should resolve. **(5) Cross-service propagation: do downstream services see the parent trace?** Use the OTel test harness or an explicit X-trace test. **(6) Sampling.** If you sample at 1%, your test request might be one of the 99% dropped. Set sampling to 100% during validation. **Tools:** the otel-collector telemetrygen tool generates synthetic spans/metrics; use to validate the pipeline without the app.

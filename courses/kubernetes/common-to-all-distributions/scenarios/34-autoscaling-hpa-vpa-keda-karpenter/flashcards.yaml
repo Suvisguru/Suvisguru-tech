@@ -1,0 +1,51 @@
+# Flashcards — Lesson 34
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Two scaling layers?
+    back: |
+      Workload (replicas: HPA, VPA, KEDA). Cluster (nodes: Cluster Autoscaler, Karpenter). Need both for end-to-end scaling.
+
+  - id: 2
+    front: |
+      HPA math?
+    back: |
+      `desired_replicas = ceil(current_replicas × current_metric / target_metric)`. Computed on average across replicas. Driven by metrics-server + (optionally) Prometheus Adapter for custom metrics.
+
+  - id: 3
+    front: |
+      HPA without resource requests?
+    back: |
+      Doesn't work. HPA computes utilisation as `current / requested`; no request = no denominator = no scaling.
+
+  - id: 4
+    front: |
+      What is VPA?
+    back: |
+      Vertical Pod Autoscaler. Adjusts per-Pod `resources.requests` based on observed usage. Three modes: Off (recommend), Initial (apply at create), Auto (evict + recreate).
+
+  - id: 5
+    front: |
+      What is KEDA?
+    back: |
+      Kubernetes Event-Driven Autoscaling. Extends HPA with 60+ event-based scalers: Kafka, RabbitMQ, queue depth, Pub/Sub, etc. Scale-to-zero supported.
+
+  - id: 6
+    front: |
+      Cluster Autoscaler vs Karpenter?
+    back: |
+      CA: ASG-based, slower (60-120s), node-group constrained. Karpenter: dynamic, fast (20-40s), picks instance type per Pod, cost-aware consolidation. Karpenter is the 2026 default.
+
+  - id: 7
+    front: |
+      Karpenter NodeClass / NodePool?
+    back: |
+      NodeClass: cloud-specific config (subnets, security groups, AMI). NodePool: general scaling parameters (instance types allowed, taints to apply, limits).
+
+  - id: 8
+    front: |
+      Spot instance scheduling?
+    back: |
+      Karpenter has first-class spot support. Mark NodePool with spot capacity, deal with eviction notices via PodDisruptionBudgets + graceful termination. Often 50-80% cost savings on tolerant workloads.

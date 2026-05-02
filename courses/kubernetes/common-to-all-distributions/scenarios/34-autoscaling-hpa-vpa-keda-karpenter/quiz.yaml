@@ -1,0 +1,22 @@
+# Quiz — Lesson 34
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team's HPA is configured with `targetCPUUtilizationPercentage: 70`. Their replicas keep flapping between 4 and 6. What's the diagnosis?
+    answer: |
+      Likely diagnoses: **(1) Stabilization windows missing.** Default scale-down stabilization is 5 min; scale-up is 0. If your traffic oscillates around the threshold, replicas oscillate. **Fix:** set `behavior.scaleDown.stabilizationWindowSeconds: 300` + slower scale-down policies. **(2) Scale up too aggressive.** Default scale-up policy is +100% per 15s. Once it scales up, CPU dips below 70%, then scales down, then traffic comes back. **Fix:** tune scale-up to +25% per 60s. **(3) Resource requests too low.** If CPU request is 100m and actual is 80m, you're at 80% utilisation; small changes flip the threshold. **Fix:** set requests at the 50th percentile of actual usage. **(4) Replicas too few.** With 4 replicas, one Pod's CPU spike moves the average significantly. With 10 replicas, the same spike is barely visible. **Fix:** raise minReplicas to a level where one Pod is < 20% of total.
+
+  - id: 2
+    prompt: |
+      A team's KEDA scaler reads from a Postgres queue (count of unprocessed rows). They scale 1 → 50. After deployment, replicas climb to 50 even when the queue is empty. What's wrong?
+    answer: |
+      **Possibilities:** (1) Their KEDA scaler query: `SELECT count(*) FROM jobs WHERE status = 'pending'`. The `'pending'` string was written as `'PENDING'` in the table. Query returns wrong count → scale incorrectly. **(2)** The KEDA poll interval is too long; queue is empty briefly between bursts but KEDA hasn't re-checked. **(3)** KEDA is configured with a `cooldownPeriod` set too high; replicas stay scaled-up for 30 minutes after queue empties. **Diagnosis:** `kubectl describe scaledobject` — look at `Conditions` + `currentMetricValue`. `kubectl logs deploy/keda-operator` — actual scaler queries + responses. **Fix:** validate the query directly against the database; tune cooldown to 1-2 min for fast-changing queues.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The platform team is migrating from Cluster Autoscaler to Karpenter on a 200-node EKS cluster. **Click for the migration playbook. ▼**
+    answer: |
+      **Phase 1 — Install Karpenter alongside CA.** Both run; CA continues to manage existing ASGs; Karpenter handles new NodePools you define. **Phase 2 — Define NodePools.** Mirror the ASG shape: a general-purpose NodePool, a memory-optimized NodePool, a GPU NodePool. Each has cloud-specific NodeClass (subnets, AMI, IAM role). **Phase 3 — Migrate workload-by-workload.** Add a node selector or affinity matching Karpenter NodePool labels. Verify Karpenter creates new nodes; verify Pod fits. Drain matching ASG nodes. **Phase 4 — Decommission ASGs.** When all workloads migrated, scale ASGs to 0; eventually delete. **Phase 5 — Decommission CA.** `helm uninstall cluster-autoscaler`. **Pitfalls:** (1) Operational tooling that SSH-d into named nodes (e.g., debug scripts referencing `ip-10-1-2-3.compute.internal`) breaks — Karpenter's nodes are ephemeral, names change. (2) PodDisruptionBudgets must be tight; Karpenter consolidates aggressively. (3) Spot eviction handling — Karpenter respects `do-not-disrupt` annotations but stateful workloads need careful PDBs. **Total time:** 2-4 weeks. **Payoff:** 30%+ cost savings on a typical cluster, faster scaling, simpler operational model.

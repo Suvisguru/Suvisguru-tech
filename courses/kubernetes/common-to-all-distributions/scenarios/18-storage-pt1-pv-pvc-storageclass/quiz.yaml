@@ -1,0 +1,21 @@
+# Quiz — Lesson 18
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team writes `storageClassName: ''` (empty string) on their PVC. What does this mean?
+    answer: |
+      It explicitly opts out of dynamic provisioning. The PVC will only bind to a *pre-existing* PV that also has empty `storageClassName`. Different from omitting the field, which uses the cluster's default StorageClass. Used when you've manually created a PV and want this PVC to claim it specifically.
+
+  - id: 2
+    prompt: |
+      You delete a PVC with `kubectl delete pvc my-data`. The underlying disk should be preserved. What's the right setup?
+    answer: |
+      Use a StorageClass with `reclaimPolicy: Retain` (or set the PV's reclaim policy to Retain after the fact with `kubectl patch pv ... --type=json -p='[{"op":"replace","path":"/spec/persistentVolumeReclaimPolicy","value":"Retain"}]'`). On PVC deletion the PV moves to `Released` state with the data intact. A human verifies before deleting it manually.
+
+  - id: 3
+    prompt: |
+      Your team uses a StorageClass with `volumeBindingMode: Immediate` (the historical default). The cluster spans three availability zones. A new PVC is created. What happens at the next Pod restart?
+    answer: |
+      The PV was provisioned the moment the PVC was created — before any Pod existed to consume it. The provisioner picked a zone at random: `us-east-1b`. Two days later the workload's Pod gets scheduled — to `us-east-1c`. The Pod tries to mount the PVC. Cloud block storage can't attach across zones. The Pod is stuck Pending forever, with a cryptic `FailedAttachVolume` event. **Fix:** set `volumeBindingMode: WaitForFirstConsumer` on every StorageClass in any multi-zone cluster. The scheduler picks the node first; the disk gets provisioned in the right zone.

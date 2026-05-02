@@ -1,0 +1,59 @@
+# Intake brief — Lesson 18, K-COM
+# Topic: Storage Part 1 · PV, PVC, StorageClass
+# Module 9 · Storage · Lesson 1 of 2
+
+lesson:
+  title: 'Storage Part 1 · PV, PVC, StorageClass'
+  slug: '18-storage-pt1-pv-pvc-storageclass'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 18
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'Customs Warehouse — locker rental front desk. The PVC is the rental form (your request). The PV is the assigned locker (the actual disk). The StorageClass is the warehouse policy book (how new lockers are made + what happens at checkout). The clerk reading the form is the provisioner / CSI driver.'
+  module: 'Module 9 · Storage · Lesson 1 of 2'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-17 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Explain why Pod storage is ephemeral by default.'
+  - 'Write a PVC referencing a StorageClass; bind it to a PV.'
+  - 'Pick the right access mode for a workload (RWO / ROX / RWX / RWOP).'
+  - 'Pick the right reclaim policy (Delete vs Retain).'
+  - 'Use WaitForFirstConsumer in any multi-zone cluster.'
+
+sections:
+  - 'See lesson.md for full section list.'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Single primary, two read replicas, all on EKS.'
+    - 'Five Fluentd Pods need to write into the same staging directory before forwarding to a SIEM.'
+    - 'Training Pods need read access to a 4 TB dataset of pre-processed images.'
+    - 'Legacy app wrote to /var/lib/myapp/sessions on the host.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-18.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-18.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'Pod storage is ephemeral. To survive a Pod restart, declare a PVC (the request). A StorageClass (the recipe) tells K8s how to provision a PV (the actual disk). The PV binds to the PVC and the Pod mounts it.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/storage/persistent-volumes/'
+  - 'https://kubernetes.io/docs/concepts/storage/storage-classes/'
+  - 'https://kubernetes.io/docs/concepts/storage/volume-attributes-classes/'

@@ -1,0 +1,22 @@
+# Quiz — Lesson 26
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A platform team writes an ANP at priority 100: `action: Deny, ports: [22]` for all namespaces. A team writes a NetworkPolicy allowing port 22 from a specific Pod to a specific node-management Pod. The team's policy is being ignored. Why?
+    answer: |
+      ANP runs first. The Deny rule at priority 100 is hit before NetworkPolicy gets evaluated, and Deny terminates evaluation. **Fix options:** (1) Use `Pass` instead of `Deny` for the specific Pod — let NetworkPolicy decide. (2) Use a higher-priority ANP `Pass` rule for that namespace + port combination. (3) Restructure: deny egress to *most* things at admin level, but allow this specific flow via a more specific ANP allow rule. The right answer depends on whether the admin policy is meant to be absolute (option 3) or delegable (options 1-2).
+
+  - id: 2
+    prompt: |
+      Compliance asks: "prove no Pod in the production cluster can egress to `pastebin.com`." The cluster runs Cilium. What's the design + the evidence?
+    answer: |
+      **Design:** a CiliumNetworkPolicy at the cluster level (or as a namespaced policy in every namespace via a Kyverno policy) with egress.toFQDNs allow-list excluding pastebin.com. Even better: a BANP `Deny all egress except DNS`, combined with CiliumNetworkPolicy allows for approved FQDNs only. **Evidence:** (1) Hubble flows showing pastebin.com queries blocked at the policy layer. (2) Kyverno policy report enforcing the FQDN-allow-list as a CRD. (3) `cilium policy get` output showing no rule allows pastebin.com. **Caveat:** a Pod that hard-codes pastebin's IPs bypasses FQDN matching. Pair with egress IP allow-listing or run an explicit egress proxy.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      A new namespace is created. The team forgets to write a NetworkPolicy. With BANP installed, what happens to traffic? **Click for the walk-through. ▼**
+    answer: |
+      The cluster has BANP `default deny ingress and egress`. (1) A Pod in the new namespace tries to call kube-apiserver — ANP at priority 5000 has `Allow` for kube-apiserver from all namespaces. Allowed. (2) Pod tries to call kube-dns — same, ANP allows. (3) Pod tries to call `github.com` — no ANP rule covers it; falls through NP (none exist); falls through to BANP "default deny egress." Dropped. (4) Pod tries to receive ingress from another namespace — same path, BANP denies. **Effect:** the namespace is locked down by default. The team must explicitly write NetworkPolicy to allow what they need. Worst case: their service doesn't work until they fix it. **Compare with no BANP:** the namespace would be wide open until someone wrote a NP. BANP turns "forgot to write a policy" into a noisy failure (service broken) instead of a silent compromise (everything allowed).

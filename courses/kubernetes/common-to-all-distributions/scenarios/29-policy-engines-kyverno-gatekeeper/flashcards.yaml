@@ -1,0 +1,51 @@
+# Flashcards — Lesson 29
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Kyverno vs OPA Gatekeeper?
+    back: |
+      Kyverno: K8s-native YAML, no DSL, four capability families. Gatekeeper: Rego-based, OPA's K8s integration. ConstraintTemplate + Constraint model. Kyverno is more popular in K8s-only shops; Gatekeeper in OPA-heavy orgs.
+
+  - id: 2
+    front: |
+      Five Kyverno capabilities?
+    back: |
+      validate, mutate, generate, cleanup, verifyImages. The single engine covers all five. Gatekeeper covers validate + mutate; cleanup/generate need other tools.
+
+  - id: 3
+    front: |
+      ConstraintTemplate vs Constraint?
+    back: |
+      ConstraintTemplate = rule type with Rego + parameter schema. Constraint = an instance with specific parameters. Gatekeeper-only model — Kyverno collapses this into a single ClusterPolicy/Policy.
+
+  - id: 4
+    front: |
+      What is PolicyReport?
+    back: |
+      CNCF standard CRD emitted by both Kyverno and Gatekeeper. Per-namespace summary of pass/fail/warn. `kubectl get policyreport -A` for the audit picture.
+
+  - id: 5
+    front: |
+      What is verifyImages in Kyverno?
+    back: |
+      Kyverno policy type that checks image signatures (cosign / Sigstore) and SBOM presence at admission. Reject unsigned images. Lesson 30 covers supply chain in depth.
+
+  - id: 6
+    front: |
+      PolicyException?
+    back: |
+      Kyverno CRD for explicit, auditable opt-outs. "Namespace X is exempt from policy Y because reason Z." Same review process as the policy itself.
+
+  - id: 7
+    front: |
+      What language is Rego?
+    back: |
+      Open Policy Agent's declarative logic language. Powerful (unification, recursion). Steeper learning curve than CEL or YAML patterns. Used outside K8s too — Terraform, microservice authz, etc.
+
+  - id: 8
+    front: |
+      Both produce PolicyReports — why does that matter?
+    back: |
+      Standard format means downstream tools (Falco, dashboards, SIEMs) consume policy results from any engine without engine-specific code.

@@ -1,0 +1,58 @@
+# Intake brief — Lesson 29, K-COM
+# Topic: Policy Engines · Kyverno and OPA Gatekeeper in Depth
+# Module 13 · Security · Lesson 3 of 5
+
+lesson:
+  title: 'Policy Engines · Kyverno and OPA Gatekeeper in Depth'
+  slug: '29-policy-engines-kyverno-gatekeeper'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 29
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'Watchtower — Policy Library — Watchtower expanded its admission hallway from Lesson 28 with a full **policy library**. Two cabinets stand side by side. The **Kyverno cabinet** holds rules in plain K-Town vernacular: "Deployment must have a team label." Anyone who can re'
+  module: 'Module 13 · Security · Lesson 3 of 5'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-28 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain what a policy engine actually does.'
+  - 'Learner can explain yAML policies, no DSL to learn.'
+  - 'Learner can explain maximum flexibility, steep learning curve.'
+
+sections:
+  - 'What a policy engine actually does'
+  - 'YAML policies, no DSL to learn'
+  - 'Maximum flexibility, steep learning curve'
+  - 'When you should pick which'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - '20 ClusterPolicies covering: required labels, NetworkPolicy generation per namespace, image-repo allow-list, cosign image verification, Job cleanup after 7 days, sidecar injection.'
+    - 'Gatekeeper enforces K8s admission.'
+    - 'Six hand-rolled validating webhooks, total 3000 LoC of Go.'
+    - 'ClusterPolicy verifies every image is signed by the org''s cosign public key.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-29.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-29.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Kyverno** uses K8s-native YAML for policies (validate / mutate / generate / cleanup / verifyImages). **OPA Gatekeeper** uses Rego (more powerful, harder to learn) via `ConstraintTemplate` + `Constraint`. Both produce **PolicyReport** CRDs (a CNCF standard). Pick Kyverno for K8s-only governance; pick Gatekeeper if you already run OPA for non-K8s policy.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/'

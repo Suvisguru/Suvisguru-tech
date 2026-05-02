@@ -1,0 +1,63 @@
+# Flashcards — Lesson 33
+# Total: 10 cards.
+
+cards:
+  - id: 1
+    front: |
+      What is a trace?
+    back: |
+      A record of one request flowing through services. Composed of nested spans sharing a trace ID. Spans have parent IDs forming a tree.
+
+  - id: 2
+    front: |
+      W3C Trace Context?
+    back: |
+      Standard for trace propagation. Header `traceparent: 00-{trace-id}-{span-id}-{flags}`. Every modern HTTP library propagates it.
+
+  - id: 3
+    front: |
+      Head sampling vs tail sampling?
+    back: |
+      Head: decide whether to trace at the entry point (fast, predictable, loses tails). Tail: collect everything, decide after seeing result (better signal, more ops). Adaptive: combine.
+
+  - id: 4
+    front: |
+      What is Tempo?
+    back: |
+      Grafana's tracing backend. Object-storage-based; cheap. Consumes OTLP. Pairs with Loki + Mimir + Grafana.
+
+  - id: 5
+    front: |
+      Hubble?
+    back: |
+      Cilium's per-flow network observability. eBPF-based. Shows source/dest/protocol/policy decision per flow.
+
+  - id: 6
+    front: |
+      Pixie?
+    back: |
+      eBPF-based DaemonSet for in-cluster observability. Auto-instruments HTTP/gRPC at the kernel. Free for small clusters.
+
+  - id: 7
+    front: |
+      What is an SLO?
+    back: |
+      Service Level Objective. "99.X% of requests succeed in <Yms over Z days." Drives alerting + reliability investment.
+
+  - id: 8
+    front: |
+      Error budget?
+    back: |
+      The complement of an SLO. 99.9% SLO = 0.1% budget = 1000 fails per million. Used as "reliability currency" — burn it on risky deploys, save it for stable periods.
+
+  - id: 9
+    front: |
+      Burn rate alert?
+    back: |
+      Alert based on "how fast you're consuming the error budget." Multi-window-multi-burn-rate (Google SRE) is the standard pattern. Pages on fast burns, not on every error.
+
+  - id: 10
+    front: |
+      Sloth vs Pyrra?
+    back: |
+      Sloth: YAML SLO → Prometheus rules; older + popular. Pyrra: K8s-native CRD; UI; newer. Both implement burn-rate alerts.

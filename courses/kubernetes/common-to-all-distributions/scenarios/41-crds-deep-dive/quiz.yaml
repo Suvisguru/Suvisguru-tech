@@ -1,0 +1,22 @@
+# Quiz — Lesson 41
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team adds a new optional field to their CRD's schema. Stored CRs don't have the field. What happens to those CRs on the next reconcile?
+    answer: |
+      **Nothing breaks.** Adding optional fields is backward-compatible: stored CRs without the field are read as having the zero value (empty string, false, missing object). Reconcilers should treat missing fields as defaults. **What's NOT backward-compatible:** (1) renaming a field (write old, read new = lost data). (2) Changing a field's type (string → int = read fails). (3) Adding a new *required* field (existing CRs become invalid on next write). For these, you need a new version + conversion webhook. **The K8s API conventions doc** has the full compatibility matrix; consult before any non-additive change.
+
+  - id: 2
+    prompt: |
+      A team's conversion webhook is timing out on every reconcile. The Pod logs show 200ms latency per call. What's wrong?
+    answer: |
+      **Diagnosis path:** (1) *Webhook implementation*. Conversion should be near-zero latency — pure data transformation. If your webhook hits a database, that's the problem. (2) *Network*. Webhook Pod scheduled on a node far from kube-apiserver. Use anti-affinity to keep replicas spread; consider DaemonSet pattern. (3) *TLS handshake overhead*. Use HTTP/2 keep-alives. (4) *Storage version mismatch*. If your storage is v1alpha1 but every read converts to v1, every reconcile pays the conversion cost. Run storage migration to flip storage to the more-used version. **Long-term fix:** minimise non-storage-version reads; eventually drop the old version. Conversion webhooks are a transitional tool, not a permanent layer.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CRD owner wants to deprecate v1alpha1 (used by 3 customers) in favor of v1. **Click for the deprecation playbook. ▼**
+    answer: |
+      **(1) Mark deprecated.** Set `deprecated: true` + `deprecationWarning: "use v1 instead; v1alpha1 will be removed in N releases"` on the v1alpha1 version. K8s emits warnings on every v1alpha1 API call; users see them in `kubectl` output. **(2) Document the migration.** Field-by-field mapping; example before/after manifests; conversion-webhook explanation. **(3) Reach out to the 3 customers.** Direct communication beats banners. Help them with the migration. **(4) Wait at least 2 minor releases.** K8s convention: at least 6 months between deprecation and removal. **(5) Storage migration.** If v1alpha1 was the storage version, change to v1; rewrite all CRs (`kubectl get crd-name -o json | kubectl apply -f -`). Verify no CR is stored at v1alpha1: `kubectl api-resources --api-group=example.com`. **(6) Remove v1alpha1.** Drop from `versions`. Old API calls return 410 Gone. **(7) Optional: chart helper.** Ship a Helm post-install hook or a CLI tool that scans for v1alpha1 usage and emits warnings. **The whole sequence is months**; deprecation is a marathon, not a sprint.

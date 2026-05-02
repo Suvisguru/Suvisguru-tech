@@ -1,0 +1,51 @@
+# Flashcards — Lesson 21
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      ServiceAccount vs User?
+    back: |
+      ServiceAccount = workload identity, namespaced API object, used by Pods. User = human (or external system) identity, not a K8s object — just a string the API server's authenticator returns from OIDC/cert/token.
+
+  - id: 2
+    front: |
+      What's in a projected SA token?
+    back: |
+      A signed JWT with claims: `iss` (cluster URL), `sub` (the SA), `aud` (target audience), `exp` (1h), and Pod / Node binding info. kubelet refreshes at 80% lifetime.
+
+  - id: 3
+    front: |
+      Why are tokens "bound"?
+    back: |
+      Bound to a specific Pod's UID. The moment the Pod is deleted, the token is invalid for API server auth. Reduces blast radius of leaked credentials.
+
+  - id: 4
+    front: |
+      What is IRSA / Workload Identity?
+    back: |
+      AWS IRSA + GCP Workload Identity + Azure Workload Identity Federation: cluster's projected JWT is verified by the cloud's STS using K8s's OIDC discovery endpoint. Pod gets cloud credentials without static keys.
+
+  - id: 5
+    front: |
+      Cluster CA vs front-proxy CA?
+    back: |
+      Cluster CA: signs API server, kubelet, controller-manager, scheduler, etcd certs (typical kubeadm setup uses one root). Front-proxy CA: separate root used by aggregated/extension API servers (metrics-server, custom AAs).
+
+  - id: 6
+    front: |
+      cert-manager: Issuer vs ClusterIssuer?
+    back: |
+      Issuer = namespace-scoped (one per team/env). ClusterIssuer = cluster-wide. Same fields. Use ClusterIssuer when one cert source serves many namespaces (e.g., Let's Encrypt prod).
+
+  - id: 7
+    front: |
+      HTTP-01 vs DNS-01 ACME?
+    back: |
+      HTTP-01: challenge served from a temporary URL on the host (cert-manager spins up a Pod + Ingress rule). DNS-01: challenge served as a TXT record (cert-manager updates DNS via a provider). DNS-01 supports wildcards; HTTP-01 doesn't.
+
+  - id: 8
+    front: |
+      When should you NOT use cert-manager?
+    back: |
+      For control-plane PKI — those are managed by kubeadm/distro/cloud control plane. cert-manager is application-layer.

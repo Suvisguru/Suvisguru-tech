@@ -1,0 +1,22 @@
+# Quiz — Lesson 30
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A vendor publishes a new image: `vendor/app:2.5`. Your cluster pulls it via Kyverno verifyImages. The vendor signed it with their key, which you've added to your policy. Should you trust the image now?
+    answer: |
+      The signature proves the image came from the vendor — but it doesn't tell you if the vendor is honest, or compromised, or shipping malicious code. Cosign verification = authenticity, not safety. **Defense in depth:** (1) verify the SBOM has expected components (no surprise binaries). (2) Verify SLSA provenance (was built by the vendor's standard CI, not a one-off run). (3) Run vulnerability scans on the SBOM. (4) Track Rekor entries for unusual patterns (signing surge after a quiet period?). Signing solves "is this from who they say it's from"; supply-chain assurance needs all four signals.
+
+  - id: 2
+    prompt: |
+      Your CI signs images with Cosign keyless. The Kyverno policy verifies `issuer: token.actions.githubusercontent.com` + `subject: github.com/myorg/.*`. An attacker steals a developer's GitHub credentials and pushes a malicious change. What still saves you?
+    answer: |
+      The malicious image gets built + signed by a legitimate workflow on the legitimate org. Verification passes. **Cosign keyless doesn't protect against authenticated insider threats — it protects against unauthenticated attackers and registry compromise.** What saves you: (1) PR review on the source code change. (2) Branch protection on main (no direct push). (3) Required code-owner approval. (4) PR-time SLSA provenance check (was the signing workflow run on main, or a fork?). (5) SBOM diff review — new dependencies flagged at PR. (6) Runtime detection (Falco rules, EDR). Supply-chain hardening is necessary; it's not sufficient against compromise of the source identity itself.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CISO mandates: "every running image in production must have a signed SBOM available." Build the playbook. **Click for the rollout. ▼**
+    answer: |
+      **Phase 1 — produce SBOMs in CI.** Add Syft (or Trivy) to every build pipeline. Output CycloneDX. Push as OCI attestation alongside the image: `cosign attest --predicate sbom.json --type cyclonedx ...`. **Phase 2 — Kyverno policy in audit mode.** Require SBOM attestation on all images in `prod` namespaces. Audit-mode = log violations, not block. Run for 2-4 weeks. **Phase 3 — clean up.** Audit reports list every image without an SBOM. Most are vendor / legacy images. For each: rebuild with SBOM, switch to a Chainguard-equivalent that ships SBOMs, or accept as a documented exception via `PolicyException`. **Phase 4 — switch to Enforce mode.** No more violations possible. **Phase 5 — wire SBOMs into vulnerability response.** Daily job pulls SBOMs from registry, runs against vulnerability DB, alerts on new CVEs affecting deployed images. **Total time:** ~6 weeks for a mature org with mature CI; longer if CI needs uplift first. **Payoff:** when the next log4j drops, you know which Pods are affected in minutes, not days.

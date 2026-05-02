@@ -1,0 +1,51 @@
+# Flashcards — Lesson 16
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Five workload controllers?
+    back: |
+      Deployment (stateless rolling updates), StatefulSet (stable identity per replica), DaemonSet (one Pod per node), Job (run-to-completion), CronJob (scheduled Job).
+
+  - id: 2
+    front: |
+      Deployment vs StatefulSet?
+    back: |
+      Deployment: interchangeable Pods; can swap names; rolling update by ReplicaSet. StatefulSet: stable Pod names (web-0, web-1), stable storage per Pod (volumeClaimTemplates), ordered startup/shutdown.
+
+  - id: 3
+    front: |
+      DaemonSet use cases?
+    back: |
+      Per-node infrastructure: log collectors (Fluent Bit), monitoring agents (node-exporter), CNI plugins, storage drivers, security tools (Falco). Anywhere you need exactly one Pod per node.
+
+  - id: 4
+    front: |
+      Job vs CronJob?
+    back: |
+      Job: run a Pod to successful completion (a one-shot batch task). CronJob: a Job on a schedule (cron expression). CronJob creates Job objects on schedule; Job creates Pods.
+
+  - id: 5
+    front: |
+      ReplicaSet — when do you use it directly?
+    back: |
+      Almost never. You use Deployment, which manages ReplicaSets for you. Direct ReplicaSet use is for very specific cases (custom controllers managing their own rollouts).
+
+  - id: 6
+    front: |
+      StatefulSet ordered startup?
+    back: |
+      Pods come up one at a time, in numeric order: web-0 starts and becomes Ready before web-1 starts. Ordered scale-down too: web-N deleted before web-(N-1). Use podManagementPolicy: Parallel to disable.
+
+  - id: 7
+    front: |
+      Where does volumeClaimTemplates live?
+    back: |
+      On the StatefulSet spec. Each replica gets its own PVC named after the Pod (data-web-0, data-web-1). PVCs are NOT deleted when the StatefulSet is — intentional, so you can recreate without data loss.
+
+  - id: 8
+    front: |
+      HPA + Deployment vs HPA + StatefulSet?
+    back: |
+      Both work. HPA targets either via scaleTargetRef. StatefulSet HPA scales 0→N: the Nth Pod waits for (N-1) to be Ready first. Plan startup time for stateful workloads accordingly.

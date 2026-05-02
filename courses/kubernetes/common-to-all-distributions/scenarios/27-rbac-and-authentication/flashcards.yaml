@@ -1,0 +1,51 @@
+# Flashcards — Lesson 27
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      The 4-tuple of every API request?
+    back: |
+      Subject (who) + verb (action) + resource (what kind) + scope (cluster or namespace). The authoriser checks if any rule grants this combination.
+
+  - id: 2
+    front: |
+      Role vs ClusterRole?
+    back: |
+      Role: namespace-scoped, applies to namespaced resources only. ClusterRole: cluster-scoped, applies to cluster resources *and* can be referenced by RoleBinding to grant scoped access without re-defining.
+
+  - id: 3
+    front: |
+      RoleBinding vs ClusterRoleBinding?
+    back: |
+      RoleBinding: grants a Role (or ClusterRole) within one namespace. ClusterRoleBinding: grants a ClusterRole cluster-wide. The Role/Binding split is the key idea.
+
+  - id: 4
+    front: |
+      Why is RBAC additive?
+    back: |
+      Simplicity: no precedence rules to reason about. "Is there a binding granting this verb?" If yes, allow. If no, deny. Removing access = removing bindings.
+
+  - id: 5
+    front: |
+      What is Structured Auth Config?
+    back: |
+      K8s 1.32 GA. YAML file replacing OIDC + token flag soup on kube-apiserver. Supports multiple JWT issuers, CEL claim mapping, hot reload.
+
+  - id: 6
+    front: |
+      `kubectl auth can-i`?
+    back: |
+      Built-in command. `kubectl auth can-i list secrets --all-namespaces` answers yes/no for the current user. With `--as` you can impersonate (if you have impersonate permission) and check anyone's access.
+
+  - id: 7
+    front: |
+      Common over-grant: `verbs: ["*"]`?
+    back: |
+      Means "every verb K8s adds in the future automatically applies." Avoid in production. Spell out the verbs you actually need.
+
+  - id: 8
+    front: |
+      What is impersonate verb?
+    back: |
+      Special verb: `kubectl --as=user` requires the requesting subject to have `impersonate` on the user. Used for debugging RBAC and integration testing.

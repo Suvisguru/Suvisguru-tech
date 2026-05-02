@@ -1,0 +1,22 @@
+# Quiz — Lesson 43
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team enables Istio Ambient on a 200-Pod cluster. After enable, they see 30% of services have higher latency. What's the diagnosis?
+    answer: |
+      **Common causes:** (1) *Waypoint proxy not deployed*. Some services need L7 features (retries, header routing); without a waypoint, the calls fall back to L4 only — features silently inactive but no perf regression there. Latency regression is more often: (2) *ztunnel CPU starvation*. Node's ztunnel pod doesn't have enough CPU; queueing builds up. Tune resource requests. (3) *Application-level retries on top of mesh retries*. Doubled retry storms. Either disable mesh retries or app retries; not both. (4) *mTLS handshake on every connection*. Long-lived connections amortise; short-lived bursts pay the handshake cost. Tune connection pool sizes. **Diagnostic:** Hubble / Envoy access logs; mesh-side latency vs app-side latency. The latter doesn't lie.
+
+  - id: 2
+    prompt: |
+      A team's Linkerd dashboard shows their `checkout` service has 0.5% 5xx but no clear cause in app logs. How to use mesh observability?
+    answer: |
+      **Linkerd's** per-flow telemetry shows the call graph + per-call status. **Steps:** (1) `linkerd viz tap deploy/checkout` — see live request streaming with status codes. (2) Filter for 5xx; look at peer service. The 5xx might originate from a downstream call, not from `checkout` itself. (3) `linkerd viz top deploy/checkout` — top routes by error rate. Pinpoint the failing endpoint. (4) Cross-reference with traces (if OTel is wired up). **Without mesh:** you'd add logs in every service, cross-correlate by request ID, check timestamps. Mesh observability cuts that workflow to seconds.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The platform team is choosing between Istio Ambient and Linkerd for a 100-service cluster. **Click for the decision framework. ▼**
+    answer: |
+      **Same considerations as Argo CD vs Flux but with different criteria:** **Pick Linkerd when:** (1) operational simplicity is the top concern. Linkerd has the smallest learning curve. (2) Per-Pod overhead is non-issue (your services are mid-to-large; Linkerd's ~50MB doesn't matter). (3) You don't need rich L7 traffic shaping; mTLS + golden signals + simple authz is enough. **Pick Istio Ambient when:** (1) You need rich L7 traffic shaping (header routing, complex retries, fault injection). (2) You're already in the Istio ecosystem (Kiali, etc.). (3) Multi-cluster or virtual-machine workloads. **Pilot:** install both side-by-side on a non-prod cluster; deploy 5-10 representative services to each; compare ops engineer feedback after 2 weeks. **Migration:** mesh migrations are non-trivial (cert / identity / policy reauthoring). Pick once + commit. **Cilium Service Mesh:** the wildcard if you're already running Cilium. Lower per-Pod overhead than either; less mature L7 features.

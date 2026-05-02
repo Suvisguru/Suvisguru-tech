@@ -1,0 +1,51 @@
+# Flashcards — Lesson 35
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Voluntary vs involuntary disruption?
+    back: |
+      Voluntary: cluster chose (drain, autoscaler, upgrade). Bounded by PDBs. Involuntary: just happened (hardware, zone). PDBs don't apply; redundancy + spread does.
+
+  - id: 2
+    front: |
+      PDB minAvailable vs maxUnavailable?
+    back: |
+      Pick one. `minAvailable`: hard floor ("keep ≥ N ready"). `maxUnavailable`: bounded disruption ("≤ M down at once"). Both express the same idea differently; pick whichever reads clearer for your case.
+
+  - id: 3
+    front: |
+      When does a PDB matter?
+    back: |
+      During `kubectl drain` on a node with PDB-protected Pods. During cluster autoscaler / Karpenter consolidation. During controlled upgrades. NOT during involuntary failures.
+
+  - id: 4
+    front: |
+      Topology spread for HA?
+    back: |
+      `topologyKey: topology.kubernetes.io/zone`, `maxSkew: 1`, `whenUnsatisfiable: DoNotSchedule`. Add a similar hostname spread for in-zone protection. Replicas ≥ zones.
+
+  - id: 5
+    front: |
+      Why WaitForFirstConsumer for StatefulSets?
+    back: |
+      Topology spread schedules a Pod in a zone first; the PVC is then provisioned in the same zone. With `Immediate` binding mode, the PVC could land in a zone the Pod can't reach — Pod stays Pending forever.
+
+  - id: 6
+    front: |
+      RPO vs RTO?
+    back: |
+      RPO = Recovery Point Objective (max acceptable data loss). RTO = Recovery Time Objective (max acceptable downtime). Both expressed in time. Both drive DR strategy.
+
+  - id: 7
+    front: |
+      Cold / warm / active-active DR?
+    back: |
+      Cold = standby exists, manual failover (RTO hours). Warm = standby running smaller, automated scale-up (RTO 15-30 min). Active-active = both serving (RTO seconds, expensive, complex).
+
+  - id: 8
+    front: |
+      What is chaos engineering?
+    back: |
+      Practice of injecting failures (Pod kills, network partitions, zone outages) to verify the system recovers. Tools: Chaos Mesh, LitmusChaos. Without it, your DR plan is hypothesis.

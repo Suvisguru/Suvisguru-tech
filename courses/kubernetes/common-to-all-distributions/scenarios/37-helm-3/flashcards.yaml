@@ -1,0 +1,51 @@
+# Flashcards — Lesson 37
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Chart anatomy?
+    back: |
+      `Chart.yaml` (metadata), `values.yaml` (default values), `values.schema.json` (JSON-schema for values), `templates/` (Go templates), `charts/` (sub-charts), `crds/` (CRDs installed first, never templated).
+
+  - id: 2
+    front: |
+      Helm 3 release state?
+    back: |
+      Stored in K8s Secrets in the release namespace, named `sh.helm.release.v1.<name>.v<rev>`. `helm history` reads them.
+
+  - id: 3
+    front: |
+      Hook phases?
+    back: |
+      `pre-install`, `post-install`, `pre-upgrade`, `post-upgrade`, `pre-delete`, `post-delete`, `pre-rollback`, `post-rollback`. Annotated with `helm.sh/hook` on regular K8s resources (usually Jobs).
+
+  - id: 4
+    front: |
+      OCI distribution?
+    back: |
+      Helm 3.8+ pushes/pulls charts to OCI registries (Docker Hub, Harbor, ECR, GAR). Same auth as images. `helm push my-chart oci://registry/charts`.
+
+  - id: 5
+    front: |
+      Chart signing?
+    back: |
+      `cosign sign <chart-oci-ref>` signs in OCI. `helm install --verify` with cosign policy verifies before install.
+
+  - id: 6
+    front: |
+      Helm vs Kustomize?
+    back: |
+      Helm: templates + values + lifecycle + distribution. Best for vendor software. Kustomize: overlays + plain YAML. Best for own apps. Most teams use both.
+
+  - id: 7
+    front: |
+      What is Helmfile?
+    back: |
+      Tool for declaratively managing multiple Helm releases in one file. Useful for installing many charts (cert-manager + Prometheus + Grafana + ...) in one go.
+
+  - id: 8
+    front: |
+      What's a sub-chart?
+    back: |
+      A chart depended on by another chart. Listed in `Chart.yaml dependencies`; vendored under `charts/`. Used to compose: e.g., a Postgres-Operator chart depending on a cert-manager chart.

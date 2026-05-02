@@ -1,0 +1,51 @@
+# Flashcards — Lesson 43
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      What is a service mesh?
+    back: |
+      Data plane (proxies in traffic path) + control plane (policy + cert + config). Adds mTLS, observability, traffic shaping, policy without app changes.
+
+  - id: 2
+    front: |
+      Sidecar vs ambient mode?
+    back: |
+      Sidecar: proxy per Pod; per-Pod overhead but full isolation. Ambient: node-level proxy for L4 + selective waypoint proxies for L7; less overhead, newer.
+
+  - id: 3
+    front: |
+      Istio Ambient components?
+    back: |
+      ztunnel (node-level DaemonSet for mTLS + L4); waypoint proxies (Pods, deployed selectively for L7 features); istiod control plane.
+
+  - id: 4
+    front: |
+      Linkerd architecture?
+    back: |
+      Sidecar-based (Rust proxy, very small). Control plane: identity, destination, policy. Simplest mesh by design.
+
+  - id: 5
+    front: |
+      Cilium Service Mesh?
+    back: |
+      eBPF-based data plane integrated with Cilium CNI. No extra proxy for many features. Hubble for observability. Best when Cilium is already your CNI.
+
+  - id: 6
+    front: |
+      What is mTLS in mesh context?
+    back: |
+      Mutual TLS between service-to-service calls. Each workload has a cert tied to its identity (SPIFFE-style). Auto-rotated by control plane.
+
+  - id: 7
+    front: |
+      VirtualService / AuthorizationPolicy (Istio)?
+    back: |
+      VirtualService: traffic-shaping rules (routing, retries, splits). AuthorizationPolicy: which clients (by identity) can call this service's endpoints.
+
+  - id: 8
+    front: |
+      When to skip a mesh?
+    back: |
+      ≤10-30 services, no compliance pressure, observability via OTel SDK works, mTLS via cert-manager works. Mesh overhead exceeds value at small scale.

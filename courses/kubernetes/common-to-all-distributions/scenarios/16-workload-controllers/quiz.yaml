@@ -1,0 +1,38 @@
+# Quiz — Lesson 16
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team's nightly report-generator runs as a Deployment with `replicas: 1`. The Pod runs 4 hours, exits, then K8s restarts it because Deployment expects it Running. What's the right fix?
+    answer: |
+      Convert to a CronJob (or a Job if it's truly one-time). Deployment is wrong here because it's designed for long-running services that should always be Running. Job is designed exactly for run-to-completion semantics: the Pod runs, exits 0, the Job records success, K8s doesn't restart. CronJob wraps Job in a schedule. Spec example:
+      
+      ```yaml
+      apiVersion: batch/v1
+      kind: CronJob
+      metadata:
+        name: nightly-report
+      spec:
+        schedule: '0 2 * * *'
+        jobTemplate:
+          spec:
+            template:
+              spec:
+                restartPolicy: OnFailure
+                containers:
+                - name: report
+                  image: report:v1
+      ```
+
+  - id: 2
+    prompt: |
+      A Postgres team uses Deployment instead of StatefulSet. Each Pod has a PVC mounted. They scale 1 → 3 replicas. What goes wrong?
+    answer: |
+      Multiple problems: (1) all 3 replicas try to mount the same PVC (RWO conflict). (2) Pods get random names, so client config can't reference a specific replica. (3) No ordered startup — the followers might come up before the primary is ready. (4) On Pod replacement, the new Pod gets a new name and may not match the existing data layout. The fix is StatefulSet with volumeClaimTemplates: each replica gets its own PVC, stable Pod names (postgres-0, postgres-1), ordered startup, predictable identity.
+
+  - id: 3
+    prompt: |
+      Your team uses a DaemonSet for a logging agent. They want to roll out a new version with zero downtime. What's the strategy?
+    answer: |
+      DaemonSet supports `updateStrategy: RollingUpdate` with `maxUnavailable` controlling how many node-Pods can be down simultaneously. Default is 1 (one node at a time — slow but safe). For a 1000-node cluster you might bump to 10% to roll faster. Combined with PodDisruptionBudget you can also limit the total fleet downtime. Each node's Pod is independent, so rolling-update means 'update Pod on node-A, wait for Ready, move to node-B'. Skip OnDelete strategy unless you need manual control.

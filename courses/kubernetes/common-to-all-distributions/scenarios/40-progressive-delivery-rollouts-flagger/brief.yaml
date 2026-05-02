@@ -1,0 +1,58 @@
+# Intake brief — Lesson 40, K-COM
+# Topic: Progressive Delivery · Argo Rollouts and Flagger
+# Module 17 · GitOps · Lesson 3 of 3
+
+lesson:
+  title: 'Progressive Delivery · Argo Rollouts and Flagger'
+  slug: '40-progressive-delivery-rollouts-flagger'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 40
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'Print Shop — Progressive Release Floor — The Print Shop''s progressive release floor doesn''t print every poster all at once. The first 5% of customers get the new version (canary); the other 95% get the established run (stable). A quality-control inspector watches what comes back: '
+  module: 'Module 17 · GitOps · Lesson 3 of 3'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-39 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain beyond rolling updates.'
+  - 'Learner can explain the K8s-native option.'
+  - 'Learner can explain the other major option.'
+
+sections:
+  - 'Beyond rolling updates'
+  - 'The K8s-native option'
+  - 'The other major option'
+  - 'What "good metrics" means in canary'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Every Deployment migrated to Rollout CRD.'
+    - 'Linkerd handles mTLS + traffic shifting.'
+    - 'Not all services need canary; some prefer blue/green for atomic switches.'
+    - 'Initially had Argo Rollouts with no AnalysisTemplate — just timed canary.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-40.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-40.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Argo Rollouts** + **Flagger** are the two main K8s progressive-delivery controllers. They replace Deployment with a CRD that knows how to *shift traffic gradually* (10% → 25% → 100%) using a service mesh, Ingress, or Gateway API. They run *automated analysis* (Prometheus metrics, custom queries) at each step; promote on success, abort + rollback on failure. **Argo Rollouts** is K8s-native + integrates with Argo CD; **Flagger** is mesh-native + integrates with Flux + many meshes.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/'

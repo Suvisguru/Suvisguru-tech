@@ -1,0 +1,22 @@
+# Quiz — Lesson 28
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team adds a ValidatingAdmissionPolicy: "every container image must come from `cgr.dev/...` or `internal-registry.corp/...`." The first apply works; the second fails with "image violates policy." How do you debug?
+    answer: |
+      **Step 1:** read the rejection message. The API server returns the policy name + violated rule. **Step 2:** `kubectl get vap <name> -o yaml` to inspect the CEL. CEL is ordinary YAML; you can read it. **Step 3:** use the CEL expression evaluator: `kubectl alpha cel-eval` (or any CEL playground) to test the expression against your object. **Step 4:** if it's a legitimate exception, add the team's namespace to the policy's exceptions via VAP exceptions or a label selector on the binding. **Diagnostic-friendliness** is one of VAP's biggest wins over webhooks — admission rejections are auditable as data, not opaque webhook errors.
+
+  - id: 2
+    prompt: |
+      A namespace is labelled `pod-security.kubernetes.io/enforce: restricted`. A developer applies a Pod manifest with `securityContext.runAsNonRoot: true` but no `seccompProfile` set. PSA rejects it. Why, and what's the fix?
+    answer: |
+      **Why:** PSA `restricted` profile requires every container to have `seccompProfile: RuntimeDefault` (or a localhost profile). Setting only `runAsNonRoot` isn't enough. **Fix:** add `spec.securityContext.seccompProfile.type: RuntimeDefault` at the Pod level (applies to all containers) or per-container. Other restricted requirements: `runAsNonRoot: true`, drop ALL capabilities, no `privileged`, no `hostPath/hostNetwork/hostPID`, AppArmor profile (default OK). For new manifests, copy from a known-good restricted-profile template. K8s docs publish a baseline + restricted reference YAML.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The platform team migrates 12 simple webhook policies to VAP. After migration, one webhook (still in place for richer logic) is taking 800ms per admission. **Click for the diagnostic + fix. ▼**
+    answer: |
+      **Step 1:** identify what the webhook does. Is it making external HTTP calls? Querying a database? Each external call adds latency. **Step 2:** measure where the time goes — add tracing to the webhook's admission handler. **Step 3:** common fixes: (a) cache external lookups (e.g., image scan results) in the webhook's memory with TTLs. (b) `matchPolicy: Exact` instead of `Equivalent` if your selector doesn't need wildcard expansion. (c) Tighten `rules` on the MutatingWebhookConfiguration to only invoke on relevant objects (e.g., only Pods, not every resource). (d) Bump replica count + use anti-affinity to keep webhook Pods on different nodes. **Step 4:** if the rule can be expressed in CEL, migrate it to VAP — VAP is essentially zero-latency. Webhooks are reserved for true cross-cutting policies. **Long-term:** the trend is clear — push everything possible into VAP/MAP, leave webhooks for richer logic with deliberate latency budgets.

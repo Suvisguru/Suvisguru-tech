@@ -1,0 +1,51 @@
+# Flashcards — Lesson 31
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Are namespaces security boundaries?
+    back: |
+      No, they're organisational/logical boundaries. Security comes from layered policy: RBAC + NetworkPolicy/ANP + PSA + ResourceQuota + LimitRange.
+
+  - id: 2
+    front: |
+      ResourceQuota?
+    back: |
+      Caps namespace-aggregate resource usage: CPU, memory, storage, object counts. Enforced at admission. Can be scoped to PriorityClasses.
+
+  - id: 3
+    front: |
+      LimitRange?
+    back: |
+      Per-Pod or per-container min/max + defaults. Applies *defaults* to Pods missing requests/limits. Required for ResourceQuota to actually work.
+
+  - id: 4
+    front: |
+      Why pair ResourceQuota + LimitRange?
+    back: |
+      Without LimitRange defaults, Pods without explicit requests count as 0 toward quota. Quota becomes ineffective. LimitRange ensures sane defaults; quota then actually caps.
+
+  - id: 5
+    front: |
+      What is kube-bench?
+    back: |
+      Aqua's open-source tool. Runs CIS Kubernetes Benchmark against a cluster and reports pass/fail/warn. Run on schedule; treat score as metric.
+
+  - id: 6
+    front: |
+      HierarchicalNamespaces (HNC)?
+    back: |
+      CRD adding parent/child relationships. RBAC + NetworkPolicy + ResourceQuota cascade down. Scales policy management at 50+ tenants.
+
+  - id: 7
+    front: |
+      vCluster?
+    back: |
+      Run a virtual K8s API server in a Pod. Tenants get a full K8s experience without real cluster overhead. Strong isolation.
+
+  - id: 8
+    front: |
+      When do you need hard multi-tenancy?
+    back: |
+      Truly untrusted code execution: CI build runners, Jupyter notebook hosting, multi-tenant SaaS where tenants run arbitrary workloads. Use vCluster, Kata, or separate clusters.

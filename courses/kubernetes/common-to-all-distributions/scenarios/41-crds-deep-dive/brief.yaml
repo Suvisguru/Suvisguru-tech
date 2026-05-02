@@ -1,0 +1,58 @@
+# Intake brief — Lesson 41, K-COM
+# Topic: CRDs Deep Dive · Schema, CEL, Conversion Webhooks
+# Module 18 · Extending K8s · Lesson 1 of 3
+
+lesson:
+  title: 'CRDs Deep Dive · Schema, CEL, Conversion Webhooks'
+  slug: '41-crds-deep-dive'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 41
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'Permit Office — Advanced CRD Wing — Back at the Permit Office, the advanced wing handles custom permit forms (CRDs). New form designs need an **OpenAPI schema** describing every field. Validation rules can be inline (**CEL** annotations on the form) or run by a third-party cl'
+  module: 'Module 18 · Extending K8s · Lesson 1 of 3'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-40 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain cRD anatomy.'
+  - 'Learner can explain in-CRD validation rules.'
+  - 'Learner can explain schema evolution without breaking users.'
+
+sections:
+  - 'CRD anatomy'
+  - 'In-CRD validation rules'
+  - 'Schema evolution without breaking users'
+  - 'Polish that matters in practice'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Used Kubebuilder to scaffold v1 alongside v1alpha1.'
+    - 'Custom `SecurityPolicy` CRD.'
+    - '`WorkerPool` custom resource has `spec.'
+    - '`kubectl get certificates` shows NAME, READY, SECRET, EXPIRES, AGE.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-41.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-41.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'A CRD has a name, group, versions, scope, and (per version) an OpenAPI v3 schema. Add **CEL validation** via `x-kubernetes-validations`. To evolve schemas safely, define multiple `versions` with one as `storage` + a **conversion webhook** that translates between them on read/write. **Status subresource** separates user spec from controller writes; **scale subresource** enables HPA on custom kinds.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/'

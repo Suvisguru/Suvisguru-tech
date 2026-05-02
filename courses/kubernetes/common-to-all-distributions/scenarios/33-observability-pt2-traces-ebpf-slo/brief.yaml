@@ -1,0 +1,58 @@
+# Intake brief — Lesson 33, K-COM
+# Topic: Observability Part 2 · Traces, eBPF, SLOs
+# Module 14 · Observability · Lesson 2 of 2
+
+lesson:
+  title: 'Observability Part 2 · Traces, eBPF, SLOs'
+  slug: '33-observability-pt2-traces-ebpf-slo'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 33
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'Observatory — Tracing & Reliability Wing — Two more rooms in the Observatory. The **tracing room** has a flight-data recorder for every request: when it entered the city, which buildings it visited, how long it spent in each, who else it talked to. Open one flight record and you see'
+  module: 'Module 14 · Observability · Lesson 2 of 2'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-32 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain what a trace is.'
+  - 'Learner can explain auto-instrumentation, sampling, backends.'
+  - 'Learner can explain the view from the kernel.'
+
+sections:
+  - 'What a trace is'
+  - 'Auto-instrumentation, sampling, backends'
+  - 'The view from the kernel'
+  - 'Error budgets and burn-rate alerts'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Every Go service has the OTel SDK; auto-instrumentation for HTTP, gRPC, Postgres clients.'
+    - 'Pre-existing apps; instrumentation requires legal review per service.'
+    - 'Pixie DaemonSet on every node.'
+    - 'Each service ships an SLO YAML alongside its manifests.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-33.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 10
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-33.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 10 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Traces** answer "where did time go in this request?" Implement with OTel SDKs; store in **Tempo / Jaeger**. **eBPF** tools (Hubble, Pixie, Tetragon) get kernel-level visibility without app changes. **SLOs** are explicit reliability targets (e.g., "99.9% of requests under 200ms over 30 days"); the gap between target and reality is your *error budget*. Alerts page when the budget burns fast.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/'

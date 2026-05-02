@@ -1,0 +1,61 @@
+# Intake brief — Lesson 16, K-COM
+# Topic: Workload Controllers · Deployment, StatefulSet, DaemonSet, Job, CronJob
+# Module 4 · Workloads · Lesson 1 of 5
+
+lesson:
+  title: 'Workload Controllers · Deployment, StatefulSet, DaemonSet, Job, CronJob'
+  slug: '16-workload-controllers'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 16
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Town Dispatch Office — workforce dispatch service. Deployments are rotating shifts (interchangeable workers, last-out-first-in roll); StatefulSets are assigned-seat employees (Anna at desk-0, Brian at desk-1, identity persists); DaemonSets are the one-per-building watchman; Jobs are one-time work orders; CronJobs are the scheduled maintenance round.'
+  module: 'Module 4 · Workloads · Lesson 1 of 5'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-15 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Pick the right controller for a given workload (Deployment vs StatefulSet vs DaemonSet vs Job vs CronJob).'
+  - 'Read a Deployment YAML and explain the rolling-update strategy.'
+  - 'Understand why StatefulSet Pods get stable identities + ordered startup.'
+  - 'Know when DaemonSet beats Deployment+nodeAffinity.'
+  - 'Convert a one-shot script to a Job; a recurring script to a CronJob.'
+
+sections:
+  - 'See lesson.md for full section list.'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Deployment with replicas tied to HPA.'
+    - 'Three replicas (postgres-0 primary, postgres-1/2 replicas).'
+    - 'One Falco Pod per node.'
+    - 'Customer uploads → SQS message → CronJob (every 1 min) checks queue.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-16.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-16.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'Five workload controllers, each for a specific shape of work — match shape to controller, the rest is mostly tuning.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/workloads/controllers/deployment/'
+  - 'https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/'
+  - 'https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/'
+  - 'https://kubernetes.io/docs/concepts/workloads/controllers/job/'
+  - 'https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/'

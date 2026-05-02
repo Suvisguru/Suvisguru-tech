@@ -1,0 +1,37 @@
+# Quiz — Lesson 29
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team adopts Kyverno. They write a policy requiring every Deployment to have a `team` label. They forget to test it. The next morning, the platform team's in-cluster operators (which deploy as Deployments without that label) are stuck. What's the playbook?
+    answer: |
+      **Immediate:** add a `PolicyException` for the platform team's namespaces while you fix the rollout. **Process fix:** (1) Enforce policies in `Audit` mode first — they log violations but don't block. Watch the report for a few days. (2) When you have a baseline, switch to `Enforce`. (3) Always test with `kyverno test` against fixtures including platform components. (4) Review policy reports cluster-wide weekly — the report is the leading indicator of broken assumptions. The pattern "Audit-mode → soak → Enforce-mode" is the standard rollout for any new restrictive policy.
+
+  - id: 2
+    prompt: |
+      A team's Gatekeeper Constraint is rejecting valid Pods with a confusing error. The Rego in the ConstraintTemplate is hard to debug. What's the diagnostic toolchain?
+    answer: |
+      **(1) Rego playground (rego.openpolicy.org)** — paste the rule + a test Pod input, see what evaluates. **(2) `gator test`** — Gatekeeper's CLI test framework. Define expected results in YAML; `gator test` runs them locally. **(3) `kubectl describe constraint`** — Gatekeeper writes evaluation traces here. **(4) Enable Gatekeeper's audit mode** at TRACE level: `--log-level=DEBUG`. **(5) For complex rules, factor them.** Rego supports composition; smaller rules are easier to debug than monolithic ones. **Long-term:** require unit tests for every Rego rule before merging — catch bugs before they hit a cluster. Gatekeeper's steep learning curve is real; teams that succeed with it invest heavily in tests + tooling.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CISO mandates: "every production image must be cosign-signed by our CI key." Pick + implement the simplest correct enforcement. **Click for the Kyverno solution. ▼**
+    answer: |
+      **(1) Generate the cosign keypair** in CI (or use Sigstore keyless if you can). Store the public key in a ConfigMap or directly in the policy. **(2) Write a Kyverno ClusterPolicy**: apiVersion: kyverno.io/v2beta1
+      kind: ClusterPolicy
+      spec:
+        rules:
+        - name: verify-prod-images
+          match:
+            resources:
+              kinds: [Pod]
+              namespaceSelector:
+                matchLabels: {env: prod}
+          verifyImages:
+          - imageReferences: ["prod-registry.corp/*"]
+            mutateDigest: true
+            attestors:
+            - entries:
+              - keys: {publicKeys: "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"} **(3) Test:** apply policy in Audit mode; watch report for legitimate failures (e.g., third-party images you forgot). **(4) Add exceptions** for known third-party images (e.g., `cgr.dev/chainguard` already-signed images via their separate keys). **(5) Switch to Enforce.** **(6) Pipe PolicyReports into your SOC dashboard.** Total time: 2 hours of YAML + a week of soak. Compare to building a custom webhook: 2 weeks of Go + ongoing maintenance. The Kyverno solution is also easier to audit — the YAML is the spec.

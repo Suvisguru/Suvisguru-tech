@@ -1,0 +1,22 @@
+# Quiz — Lesson 19
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      Your StorageClass has `allowVolumeExpansion: true` but a PVC edit to grow from 100Gi to 200Gi gets stuck. What's the most likely cause?
+    answer: |
+      Either (1) the underlying CSI driver doesn't advertise `EXPAND_VOLUME` (rare with modern drivers, common with custom or in-tree-migrated ones), or (2) the filesystem inside the volume doesn't support online resize and the kubelet is waiting for a Pod restart to remount. Check `kubectl describe pvc` for events; look for `FilesystemResizePending` — bouncing the Pod typically completes the resize.
+
+  - id: 2
+    prompt: |
+      A team writes a backup CronJob that uses `kubectl cp` from inside a Postgres Pod to an S3-backed sidecar. What's wrong with this strategy compared to `VolumeSnapshot`?
+    answer: |
+      Three problems: (1) `kubectl cp` traffics through the API server, which has hard timeout and size limits; large databases will fail. (2) Backup is application-level not storage-level, so you're paying network egress and CPU. (3) No point-in-time guarantees — Postgres might be writing while you copy. `VolumeSnapshot` is a storage-layer copy-on-write op, instant, doesn't touch the Pod, and combined with Postgres's WAL gives you crash-consistent recovery.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Promo traffic ramps. The team's PostgreSQL PVC needs 8000 IOPS for the next 4 hours; today it's provisioned at 3000. The cluster runs K8s 1.34. **Click for the modern playbook. ▼**
+    answer: |
+      Define a `VolumeAttributesClass` with the higher IOPS tier (e.g. `tier: premium-burst` with 8000 IOPS, 500 MB/s). Patch the PVC: `kubectl patch pvc postgres-data --type=merge -p '{"spec":{"volumeAttributesClassName":"premium-burst"}}'`. The CSI driver picks this up and modifies the underlying EBS volume in place — no detach, no restart, no snapshot. Postgres keeps serving traffic at the new IOPS within ~30 seconds. After the promo, patch back to the standard tier. Total downtime: zero. **Pre-1.34 alternative:** snapshot-and-restore, which would have meant a 5-10 minute primary failover. VolumeAttributesClass is the single most consequential storage feature K8s shipped in years.

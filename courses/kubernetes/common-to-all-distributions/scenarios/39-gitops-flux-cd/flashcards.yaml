@@ -1,0 +1,51 @@
+# Flashcards — Lesson 39
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Flux's five core controllers?
+    back: |
+      source-controller, kustomize-controller, helm-controller, notification-controller, image-automation + image-reflector-controllers.
+
+  - id: 2
+    front: |
+      GitRepository CRD?
+    back: |
+      Source-controller CRD. Defines a git URL + ref + interval. Source-controller fetches and exposes the contents to other controllers.
+
+  - id: 3
+    front: |
+      Kustomization CRD?
+    back: |
+      Distinct from `kustomization.yaml`. The K8s CRD points at a source path, runs `kustomize build`, applies result. Has `prune`, `healthChecks`, `dependsOn` fields.
+
+  - id: 4
+    front: |
+      HelmRelease CRD?
+    back: |
+      Declarative Helm install. Points at a chart source + values; helm-controller manages install/upgrade/rollback.
+
+  - id: 5
+    front: |
+      flux bootstrap?
+    back: |
+      One command to install Flux into a cluster + commit Flux's own manifests to a git repo. From then on, Flux manages itself via GitOps.
+
+  - id: 6
+    front: |
+      dependsOn?
+    back: |
+      Kustomization field: "don't apply this until that Kustomization is healthy." Used for ordering: install CRDs first, then operators.
+
+  - id: 7
+    front: |
+      Notification provider types?
+    back: |
+      Slack, Discord, Microsoft Teams, PagerDuty, OpsGenie, generic webhook, GitHub/GitLab/Bitbucket commit-status, Forge, Grafana, Sentry.
+
+  - id: 8
+    front: |
+      image-automation flow?
+    back: |
+      image-reflector watches OCI; when a new tag matches policy, image-automation-controller commits the tag bump back to git. Source-controller picks up; Kustomize-controller deploys.

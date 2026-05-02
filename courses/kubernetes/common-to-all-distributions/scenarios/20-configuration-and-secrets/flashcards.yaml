@@ -1,0 +1,51 @@
+# Flashcards — Lesson 20
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      ConfigMap vs Secret — are they technically different?
+    back: |
+      Mostly the same shape (key/value, namespace-scoped, env-var or file mount). Real difference is *intent* + *ergonomic guardrails*: Secrets get RBAC scrutiny, are stored on tmpfs (RAM) when mounted, and benefit from KMS encryption-at-rest. ConfigMaps usually don't.
+
+  - id: 2
+    front: |
+      Are K8s Secrets encrypted at rest?
+    back: |
+      Only if you configure encryption. By default they're base64 in etcd. Wire up an `EncryptionConfiguration` with a KMS provider (v2 in K8s 1.31+) for real encryption.
+
+  - id: 3
+    front: |
+      Two ways to project a ConfigMap into a Pod?
+    back: |
+      (1) `envFrom: configMapRef` or per-key `env: valueFrom: configMapKeyRef` — read once at Pod start. (2) `volumes: configMap` with a `volumeMounts` entry — file per key; ~60s auto-sync when ConfigMap changes.
+
+  - id: 4
+    front: |
+      What's KMS v2?
+    back: |
+      K8s 1.31 GA. Replaces KMS v1: adds key rotation without API server restart, batched encrypt/decrypt for performance, and a health-check API. Always use v2 in new clusters.
+
+  - id: 5
+    front: |
+      What is the External Secrets Operator?
+    back: |
+      A CRD-driven controller that syncs credentials from external sources (Vault, AWS SM, GCP SM, Azure KV, 1Password) into K8s Secrets on a refresh interval. De-facto standard since ~2023. Three core CRDs: SecretStore, ExternalSecret, PushSecret.
+
+  - id: 6
+    front: |
+      Sealed Secrets vs ESO?
+    back: |
+      Sealed Secrets: encrypts a Secret with a cluster-public-key so the encrypted form can be committed to git; cluster controller decrypts on apply. ESO: pulls from an external secret store at runtime; nothing in git. Different threat models — both common in GitOps shops.
+
+  - id: 7
+    front: |
+      What's `kubernetes.io/tls`?
+    back: |
+      A Secret type carrying `tls.crt` and `tls.key`. Used by Ingresses, Gateways, and webhook configurations. cert-manager creates these automatically from issued certificates.
+
+  - id: 8
+    front: |
+      Hot-reload of mounted Secret/ConfigMap?
+    back: |
+      Mounted as a volume → kubelet rewrites the file when the Secret changes (delay ~60s by default; controlled by sync period). Mounted as env var → no refresh; needs Pod restart. App must watch the file (inotify) to pick up the change.

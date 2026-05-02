@@ -1,0 +1,58 @@
+# Intake brief — Lesson 30, K-COM
+# Topic: Supply Chain Security · Cosign, Sigstore, SLSA, SBOM
+# Module 13 · Security · Lesson 4 of 5
+
+lesson:
+  title: 'Supply Chain Security · Cosign, Sigstore, SLSA, SBOM'
+  slug: '30-supply-chain-security'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 30
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'Bank Vault Quarter — Trust Ledger — Bank Vault Quarter holds K-Town''s ledgers. Every package coming into the city has a paper trail. A signed **declaration of origin** (Cosign signature) — "this came from this CI workflow on this date." A **build manifest** (SLSA provenance a'
+  module: 'Module 13 · Security · Lesson 4 of 5'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-29 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain what''s in an image, and what can go wrong.'
+  - 'Learner can explain signing made boring.'
+  - 'Learner can explain a grading system for build supply chains.'
+
+sections:
+  - 'What''s in an image, and what can go wrong'
+  - 'Signing made boring'
+  - 'A grading system for build supply chains'
+  - 'What''s actually in the image'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'GitHub Actions builds + signs images via Cosign keyless.'
+    - 'When CVE drops, query `cosign download attestation --predicate-type cyclonedx .'
+    - 'Migrated to `cgr.'
+    - 'Routine SBOM diff on a base-image update flagged a new package not in the previous SBOM.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-30.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-30.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'Three artefacts plus signing: **SBOM** (Software Bill of Materials — what''s in the image), **SLSA provenance** (how the image was built, attested), **Cosign signature** (the artefact is authentic). All stored alongside the image in the OCI registry. Admission verifies the chain via `cosign verify` or Kyverno `verifyImages`.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/'

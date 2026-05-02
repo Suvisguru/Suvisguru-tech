@@ -1,0 +1,51 @@
+# Flashcards — Lesson 32
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Three observability pillars?
+    back: |
+      Logs (discrete events), Metrics (numeric time series), Traces (distributed request flow). Modern stacks unify the three under OpenTelemetry.
+
+  - id: 2
+    front: |
+      What is OpenTelemetry (OTel)?
+    back: |
+      CNCF project unifying SDKs + collector across logs, metrics, traces. By 2026 the de-facto standard. Replaces older OpenTracing + OpenCensus.
+
+  - id: 3
+    front: |
+      Three log-collection patterns?
+    back: |
+      Node DaemonSet (most common), Sidecar (per-Pod), Direct-from-app via OTel SDK. DaemonSet scales best, sidecar handles legacy.
+
+  - id: 4
+    front: |
+      kube-state-metrics vs node-exporter?
+    back: |
+      kube-state-metrics: K8s API state (Pod counts, deployment ready replicas) as Prometheus metrics. node-exporter: node-level resources (CPU, memory, disk). Different domains, both common.
+
+  - id: 5
+    front: |
+      What's a cardinality bomb?
+    back: |
+      A metric label with high or unbounded uniqueness (user_id, request_id, full URL with IDs). Every unique combination = a new time series. Crashes Prometheus servers.
+
+  - id: 6
+    front: |
+      Loki vs Elasticsearch?
+    back: |
+      Loki: indexes labels only; full-text via grep at query time. Cheap, fast. Elasticsearch: full-text indexes. More powerful queries, more expensive.
+
+  - id: 7
+    front: |
+      Four golden signals?
+    back: |
+      Latency, Traffic, Errors, Saturation. Google SRE's framework. Every service's primary dashboard should show these four.
+
+  - id: 8
+    front: |
+      Vector?
+    back: |
+      Datadog's Rust-based logs/metrics shipping agent. Increasingly common alternative to Fluent Bit + Fluentd. Same role: collect on nodes, ship to backends.

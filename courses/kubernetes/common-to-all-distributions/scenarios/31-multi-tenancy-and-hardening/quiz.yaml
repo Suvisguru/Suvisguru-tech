@@ -1,0 +1,22 @@
+# Quiz — Lesson 31
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      Your CISO says: "prove no Pod in production can run privileged." What's the layered control + audit?
+    answer: |
+      **Control layers:** (1) PSA: `pod-security.kubernetes.io/enforce: restricted` on every prod namespace. Restricts privileged, hostPath, hostNetwork, etc. (2) Kyverno or VAP rule: "`spec.containers[*].securityContext.privileged != true`" — defense in depth. (3) NetworkPolicy + AdminNetworkPolicy: even if a privileged Pod somehow runs, its egress is restricted. **Audit:** (1) `kubectl get pods -A -o jsonpath='{.items[?(@.spec.containers[*].securityContext.privileged==true)]}'` — should return nothing. (2) PolicyReport CRD output: any violations of "no privileged" policies. (3) kube-bench control 5.2.1 ("minimize the admission of privileged containers"): should pass. (4) Audit log: alerts on any Pod creation with `privileged: true`. The combination is what holds up under scrutiny.
+
+  - id: 2
+    prompt: |
+      A platform team operates 200 tenant namespaces flat. Adding a new policy means a Kyverno generate rule + 200 places to update. They consider HNC. Worth it?
+    answer: |
+      **Yes, with caveats.** HNC lets parent policies cascade — write once, apply to many. **Trade-offs:** (1) HNC is a CRD + controller — operational complexity. (2) Some K8s features don't play perfectly with HNC (specific webhook patterns). (3) HNC's policy inheritance covers RBAC, NetworkPolicy, ResourceQuota, LimitRange — exactly the right primitives. **Migration:** install HNC; pick a pilot tenant; create a parent namespace; convert child relationships incrementally. **Verdict:** at 50+ tenants, HNC pays off. At <20, the overhead probably isn't worth it. The 2026 community trend is HNC-or-cluster-API for orgs at scale.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to spec a new "hard multi-tenant" cluster for hosting customer-uploaded ML notebooks. Tenants are untrusted. **Click for the design. ▼**
+    answer: |
+      **Recommended approach: vCluster + Kata Containers + per-tenant node pools.** **Layer 1 — vCluster per tenant.** Each tenant gets a virtual K8s API server in a Pod. Tenant's API operations don't touch the host cluster's API server. Tenants can install CRDs, create their own RBAC, etc. Strong API-level isolation. **Layer 2 — Kata Containers as runtime class.** Inside the vCluster, Pods run in Kata's lightweight VMs. Kernel exploits don't escape the VM. **Layer 3 — per-tenant node pools.** Each tenant's vCluster Pods run on tenant-specific tainted nodes. Even if VM escape happens, blast radius is one tenant's nodes. **Layer 4 — strong AdminNetworkPolicy.** Tenants can't reach each other's vClusters or the host cluster's control plane. **Layer 5 — runtime monitoring with Falco.** Detect anomalous syscall patterns; alert + auto-isolate. **Layer 6 — quotas at vCluster + node-pool level.** Bound resource use. **Trade-off:** ~3-4× the operational complexity of soft multi-tenancy. Right for genuinely untrusted code; overkill for most multi-team enterprise clusters. **Alternative:** for the most untrusted code, give each tenant a separate dedicated cluster — at scale this is cheaper than the multi-layer approach above.

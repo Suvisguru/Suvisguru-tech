@@ -1,0 +1,22 @@
+# Quiz — Lesson 35
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team's 5-replica Deployment has `minAvailable: 5`. They run an upgrade. The upgrade hangs for 30 minutes. Diagnosis?
+    answer: |
+      The PDB is set so tight that **no** Pod can be evicted: any eviction would drop available below 5. Fix: change to `minAvailable: 4` (one can be down) or `maxUnavailable: 1`. **General rule:** always allow at least one Pod-worth of disruption headroom for upgrades + drains. Otherwise the cluster gets stuck and ops humans bypass the PDB (defeating the purpose) to make progress.
+
+  - id: 2
+    prompt: |
+      A team's StatefulSet uses `volumeClaimTemplates` with a default StorageClass that has `volumeBindingMode: Immediate`. They configure topology spread by zone. After deploy, half the Pods are Pending. Diagnosis?
+    answer: |
+      **Classic combo bug.** With Immediate binding, the PVC is provisioned *before* the Pod is scheduled — and it lands in some zone (often us-east-1a). Topology spread then tries to schedule the Pod in another zone (us-east-1b) — but cloud block storage can't cross zones. Pod is Pending. **Fix:** change StorageClass to `volumeBindingMode: WaitForFirstConsumer`. The scheduler picks the Pod's zone first; PVC is provisioned in the same zone. Always WaitForFirstConsumer in multi-zone clusters.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CISO mandates a quarterly DR test. Design the runbook. **Click for the playbook. ▼**
+    answer: |
+      **Pre-test:** communicate. "Game day at 2 PM Wednesday — DR cluster will be promoted, primary disabled." Stakeholders, support, customer comms team aware. **Step 1 — Capture state.** RPO check: when was the last DB replication? Note the timestamp. **Step 2 — Trigger the failure.** AWS console: terminate primary cluster's zone(s) or stop the EKS control plane (or simulate it via DNS-level failover script). **Step 3 — Watch automated recovery.** Monitor: did DNS flip? Did warm-standby cluster scale up? How long did it take? Did any user requests fail? **Step 4 — Verify functionality.** Smoke test: login, checkout, search. Watch synthetic monitoring. **Step 5 — Verify data integrity.** Pull a recent record from primary and DR; verify they match (within RPO bound). **Step 6 — Failback.** Once confident, restore primary; flip DNS back. Verify no data loss in either direction. **Step 7 — Post-mortem.** What went well? What broke? What's the action list? Update runbooks; tighten alerts; fix gaps. **Cadence:** quarterly. The teams that survive real outages are the ones for whom failover is muscle memory, not theory.

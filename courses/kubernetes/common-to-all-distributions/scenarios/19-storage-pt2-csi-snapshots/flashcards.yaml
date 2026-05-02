@@ -1,0 +1,51 @@
+# Flashcards — Lesson 19
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      What does CSI stand for?
+    back: |
+      Container Storage Interface — a gRPC API spec for storage drivers. Vendors implement it; K8s consumes it through sidecar containers (external-provisioner, external-attacher, external-snapshotter, external-resizer).
+
+  - id: 2
+    front: |
+      What runs where in a CSI driver?
+    back: |
+      A Deployment (typically 1-2 replicas) for controller-side ops (create, delete, attach, snapshot) + a DaemonSet for node-side ops (mount, format). Both are usually in the `kube-system` or driver's own namespace.
+
+  - id: 3
+    front: |
+      VolumeSnapshot — what's a VolumeSnapshotContent?
+    back: |
+      A snapshot has two objects: VolumeSnapshot (namespace-scoped, declared by users) and VolumeSnapshotContent (cluster-scoped, created by the snapshotter; binds the snapshot to the actual storage-system snapshot ID).
+
+  - id: 4
+    front: |
+      How do you clone a PVC?
+    back: |
+      Set `dataSource: { kind: PersistentVolumeClaim, name: source-pvc }` on the new PVC spec. CSI driver does a fast-path copy. Same namespace, same StorageClass required.
+
+  - id: 5
+    front: |
+      When does volume expansion work online?
+    back: |
+      StorageClass has `allowVolumeExpansion: true`; CSI driver supports `EXPAND_VOLUME`; filesystem supports online resize (ext4, XFS do; Btrfs partly). Edit PVC `spec.resources.requests.storage` upward; can't shrink.
+
+  - id: 6
+    front: |
+      What is VolumeAttributesClass (VAC)?
+    back: |
+      K8s 1.34 GA. Changes performance attributes (IOPS, throughput) on a live PVC by switching its `volumeAttributesClassName`. CSI driver re-tunes the underlying disk in place — no detach, no Pod restart.
+
+  - id: 7
+    front: |
+      Why do multi-attach errors happen?
+    back: |
+      RWO volume + Pod rescheduled before old node releases the attachment. Common when a node goes NotReady. CSI driver's force-detach logic + a node-down detection loop normally clears it within ~6 minutes.
+
+  - id: 8
+    front: |
+      VolumeGroupSnapshot — what's it for?
+    back: |
+      K8s 1.32+. Snapshots a *group* of PVCs atomically (e.g., a Postgres data PVC + WAL PVC at the same point in time). Required for true crash-consistent snapshots of multi-volume databases.

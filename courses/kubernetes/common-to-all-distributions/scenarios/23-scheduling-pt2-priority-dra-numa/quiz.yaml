@@ -1,0 +1,22 @@
+# Quiz — Lesson 23
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team accidentally creates a PriorityClass with priority 2,000,000,001 — higher than even `system-node-critical`. What's the risk?
+    answer: |
+      Their Pod can preempt *cluster-critical* components — kube-proxy, CNI Pods, even kubelet's static Pods. If the high-priority Pod misbehaves and OOMs the node, the very system Pods that would recover the node have already been evicted. **Mitigation:** use ValidatingAdmissionPolicy or Kyverno to cap user-defined priority at, say, 1,000,000,000. Reserved values (≥2,000,000,000) should be off-limits to non-system creators.
+
+  - id: 2
+    prompt: |
+      Pre-DRA, the team's Pod-spec for GPU was `resources.limits: nvidia.com/gpu: 1`. They migrate to DRA on K8s 1.34. What's the new shape?
+    answer: |
+      Three steps: (1) Define a `DeviceClass` for NVIDIA GPUs (typically pre-installed by the NVIDIA DRA driver). (2) Per Pod, declare a `ResourceClaimTemplate` referencing that DeviceClass with attribute selectors (e.g., MIG profile). (3) In the Pod spec, list the claim under `spec.resourceClaims` and reference it from the container. The old `nvidia.com/gpu: 1` still works for the legacy device plugin path during transition; both can coexist on a node. Most teams migrate workload-by-workload over a quarter.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Black Friday 2026. Traffic spikes 4×. Critical payment Pods are Pending; the autoscaler is mid-flight. **Click for the priority playbook in action. ▼**
+    answer: |
+      The setup: `critical=1000` (payment), `standard=500`, `batch=10`, `opportunistic=-100`. Sequence of events at minute 0:00 — traffic spike begins; payment HPA wants 8 more replicas; cluster has no fit. **0:01** — scheduler identifies preemption candidates: 12 opportunistic spot Pods running ML inference experiments. Issues evictions with 30s grace. **0:31** — eviction complete; payment Pods place. **0:45** — Cluster Autoscaler / Karpenter (Lesson 34) finishes provisioning new nodes; opportunistic Pods reschedule there. **2:00** — system stable, batch / opportunistic catch up on the new capacity. **Total user impact:** 30 seconds of slightly elevated payment latency. **Without priority + preemption:** 12 minutes of degraded payments while ops humans manually killed batch jobs. **The lesson:** priority hierarchy isn't a feature you bolt on during incidents — it's a posture you bake in before the incident.

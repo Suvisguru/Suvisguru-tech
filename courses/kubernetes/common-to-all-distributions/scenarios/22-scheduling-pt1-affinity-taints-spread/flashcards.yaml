@@ -1,0 +1,51 @@
+# Flashcards — Lesson 22
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Filter vs Score?
+    back: |
+      Two scheduler phases. Filter: remove ineligible nodes (taints, resource fit, affinity required). Score: rank surviving candidates (preferred affinity, topology spread, image locality, etc.). Highest score wins.
+
+  - id: 2
+    front: |
+      nodeSelector vs node affinity?
+    back: |
+      nodeSelector = simple `map[string]string`, hard match. Node affinity = operator-rich (In/NotIn/Exists/Gt/Lt), supports required + preferred. Affinity is the modern API; nodeSelector is still around for simplicity.
+
+  - id: 3
+    front: |
+      Three taint effects?
+    back: |
+      `NoSchedule` (don't schedule new), `PreferNoSchedule` (try not to), `NoExecute` (evict existing too). Pods opt in via tolerations matching key/value/effect.
+
+  - id: 4
+    front: |
+      Pod anti-affinity — what's `topologyKey`?
+    back: |
+      The label key that defines "sameness." `kubernetes.io/hostname` = same node. `topology.kubernetes.io/zone` = same AZ. The constraint is evaluated per-bucket of that key.
+
+  - id: 5
+    front: |
+      Topology spread vs anti-affinity?
+    back: |
+      Spread is N-replica-aware (maxSkew controls imbalance). Anti-affinity is pairwise ("don't co-locate"). Spread is generally better for ≥3 replicas; anti-affinity is fine for 2-replica master/replica setups.
+
+  - id: 6
+    front: |
+      `whenUnsatisfiable` options?
+    back: |
+      `DoNotSchedule` — hard, Pod stays Pending if can't satisfy. `ScheduleAnyway` — soft, prefer satisfaction but place anyway.
+
+  - id: 7
+    front: |
+      What does drain do at the scheduling level?
+    back: |
+      kubectl drain = cordon (taint `node.kubernetes.io/unschedulable:NoSchedule`) + evict existing Pods (gracefully). Combined effect: no new Pods land; running Pods rescheduled elsewhere.
+
+  - id: 8
+    front: |
+      `matchLabelKeys` in topology spread?
+    back: |
+      K8s 1.33+. Lets the scheduler compute skew per-revision so old and new replicas during a rolling update don't double-count. Cleaner rollouts; recommended for new Deployments.

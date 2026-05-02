@@ -1,0 +1,51 @@
+# Flashcards — Lesson 36
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Kustomize directory layout?
+    back: |
+      `base/` with canonical manifests + `kustomization.yaml` listing them. `overlays/{env}/` with environment-specific kustomization.yaml + patches.
+
+  - id: 2
+    front: |
+      kubectl apply -k vs kubectl apply -f?
+    back: |
+      `-k` applies a Kustomize directory (renders + applies). `-f` applies a single YAML file or directory of plain YAMLs.
+
+  - id: 3
+    front: |
+      Strategic-merge vs JSON 6902 patches?
+    back: |
+      Strategic-merge: YAML-shape patches; readable. JSON 6902: path-based ops (replace, add, remove); precise.
+
+  - id: 4
+    front: |
+      commonLabels?
+    back: |
+      Apply a label to every resource. `commonLabels: app: web` → every Deployment, Service, ConfigMap, etc., gets `app: web`.
+
+  - id: 5
+    front: |
+      namePrefix / nameSuffix?
+    back: |
+      Add prefix or suffix to every resource's metadata.name. Useful for shared-namespace deployments.
+
+  - id: 6
+    front: |
+      ConfigMap / Secret generators?
+    back: |
+      `configMapGenerator` in kustomization.yaml: build a ConfigMap from a file or literal; the generated name has a content hash, so changing content auto-rolls Pods.
+
+  - id: 7
+    front: |
+      Kustomize Components?
+    back: |
+      Reusable transformations. "Add monitoring sidecar" as a Component; reference from multiple overlays.
+
+  - id: 8
+    front: |
+      When NOT Kustomize?
+    back: |
+      When you need conditionals, loops, or are publishing a chart for others. Helm fits those cases. Mix Kustomize on top of Helm for vendor-chart customisation.

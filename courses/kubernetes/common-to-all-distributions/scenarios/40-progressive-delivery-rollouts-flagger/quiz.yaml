@@ -1,0 +1,22 @@
+# Quiz — Lesson 40
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team's Rollout aborts during analysis because P99 latency exceeded threshold by 5%. Investigation shows: the canary Pod was scheduled on a slower node. What's the fix?
+    answer: |
+      **Two paths:** (1) *Make analysis more robust*. Use a comparison query: `p99(canary) - p99(stable) < 10ms` instead of absolute threshold. Comparing canary to stable handles cluster-wide variability. (2) *Schedule canary like stable*. Use the same nodeSelector / affinity for canary Pods. If stable runs on x86, so should canary. **Anti-pattern:** tightening AnalysisTemplate thresholds to ignore the issue — masks real regressions. **Better:** understand why the canary differs from stable; eliminate that difference. Progressive delivery exposes infrastructure variance; sometimes that's the bug.
+
+  - id: 2
+    prompt: |
+      A team adopts Argo Rollouts. They notice the rollout takes 20 minutes for what was a 5-minute deploy. Justified?
+    answer: |
+      **Yes — and no.** The 20-minute total reflects: (1) Multiple canary phases (5% → 25% → 50%, 5 min each). (2) Final analysis. (3) Promotion. **What you're trading:** 15 extra minutes of deploy time for ~30 seconds of customer impact during regression vs ~10 minutes of full-blast impact. **Tunables:** shorten pauses if your traffic volume gives statistical confidence faster. Skip canary for trivial config-only changes (`spec.template.metadata.annotations` bumps). Some teams have two strategies: "safe path" (full canary) for risky changes, "fast path" (rolling update) for trivial. Pick by classifying the diff. **The 20-minute total is the cost of safety**; a regression that escapes canary is far more expensive.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The team is rolling out Argo Rollouts cluster-wide. **Click for the migration playbook. ▼**
+    answer: |
+      **(1) Pilot.** Pick one non-critical service; convert Deployment → Rollout CRD with simple canary (5% → 100%, 2-min pause, no analysis). Validate the rollout works without breaking deploys. **(2) Add AnalysisTemplate.** Define one for success rate. Validate it triggers correctly by introducing a synthetic 5xx. **(3) Roll to one team.** Migrate 5-10 services. Engineers see the UI; Slack alerts on aborts. Iterate on AnalysisTemplate accuracy. **(4) Define team-wide patterns.** Standard AnalysisTemplate library: success-rate, latency-comparison, custom-metric-comparison. Standard step pattern: 5% → 25% → 50% → 100% with 5-min pauses. **(5) Roll cluster-wide.** One service team at a time. Two-quarter migration; track abort rate as KPI. **(6) Stretch goal — automated promotion gate.** No service can deploy to prod without a Rollout + AnalysisTemplate. Enforce via Kyverno or VAP. **Lessons learned:** the social side is harder than the technical: getting engineers to trust the controller takes a quarter of "yes, we're aware of the changes; the controller is doing the right thing." Once trust is established, ship velocity goes up because confidence is higher.

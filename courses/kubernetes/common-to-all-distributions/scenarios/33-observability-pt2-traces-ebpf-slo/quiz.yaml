@@ -1,0 +1,22 @@
+# Quiz — Lesson 33
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team's P99 latency dashboard shows a spike. They want to find the slow requests. What's the workflow with traces?
+    answer: |
+      **(1) Click the spike on the dashboard** — Grafana panel for P99 should be linked to the trace backend with a time-window filter. **(2) Tempo / Jaeger UI** shows traces in that window, sorted by duration descending. **(3) Open the slowest trace** — flame graph shows where time went across services. **(4) Identify the slow span** — usually one service or one DB call dominates. **(5) Drill into that service's logs** via the trace ID; correlated logs explain the slow path. **Pre-tracing**, the same workflow took an hour of cross-service log grep. With traces, 2 minutes.
+
+  - id: 2
+    prompt: |
+      A team adopts SLOs. They write "99.99% over 30 days" for their internal user-mgmt service. Their ops budget can't support that. What's the conversation?
+    answer: |
+      **SLOs aren't aspirational; they're commitments.** The ops budget tells you what's achievable. **Discussion:** (1) What's the actual user need? Does the user-mgmt service have to be 99.99%? Often "login during business hours" is the real constraint. (2) What's the current performance? Measure it for a month before committing. (3) What's the cost of the next 9? 99.9 → 99.99 = ~10× the engineering effort. (4) Is the upstream dependency reliable enough? You can't be more reliable than your dependencies. **Outcome:** usually the SLO drops to 99.9% or even 99.5%, with explicit acknowledgement of the trade-off. Honest SLOs build trust; aspirational SLOs cause permanent paging.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Production has been on fire for 3 hours. The team is firefighting reactively. **Click for what they should do tomorrow. ▼**
+    answer: |
+      **(1) Document the incident.** Timeline (when alerts fired, who responded, what was done), root cause, contributing factors. Blameless. **(2) Computed observability gap.** What did you wish you had? Traces? eBPF? Better logs? Specific SLOs? Each "I wish I had X" is the highest-priority observability investment. **(3) Update SLOs.** Did the incident burn unbudgeted error budget? Recalibrate the SLO if reality is different from assumption. **(4) Add the missing alert.** Whatever caught the issue (probably a customer ticket) should have been an alert. Add it as a burn-rate alert if it relates to an SLO. **(5) Update the runbook.** The runbook for the alert should describe what the team did to remediate. Next on-call doesn't have to learn what you learned. **(6) Schedule an observability sprint.** The post-mortem identifies gaps; turn each into a ticket; close them within a quarter. **The lesson:** the cheapest observability is the kind you set up before you need it. Don't skip the sprint.

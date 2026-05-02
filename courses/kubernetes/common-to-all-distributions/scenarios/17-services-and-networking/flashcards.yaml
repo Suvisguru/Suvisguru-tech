@@ -1,0 +1,51 @@
+# Flashcards — Lesson 17
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Why don't Pods have stable IPs?
+    back: |
+      Pod IPs are assigned from the cluster network at scheduling time. When a Pod restarts, dies, or is rescheduled, it gets a fresh IP. Hardcoding a Pod IP is hardcoding tomorrow's outage.
+
+  - id: 2
+    front: |
+      Four Service types?
+    back: |
+      ClusterIP (internal), NodePort (each node's high port), LoadBalancer (cloud LB), ExternalName (DNS alias to external host).
+
+  - id: 3
+    front: |
+      When use ClusterIP?
+    back: |
+      For Pod-to-Pod traffic inside the cluster. The default. The most common type — every internal microservice gets one.
+
+  - id: 4
+    front: |
+      When use LoadBalancer?
+    back: |
+      On a cloud cluster, exposing a non-HTTP service (or a single HTTP service) to the public internet. The cloud-controller-manager provisions an external LB.
+
+  - id: 5
+    front: |
+      Ingress vs Service?
+    back: |
+      A Service exposes a group of Pods at L4 (TCP/UDP). An Ingress is an L7 (HTTP/HTTPS) router in front of Services — host-based and path-based routing, TLS termination, shared LB.
+
+  - id: 6
+    front: |
+      Headless Service?
+    back: |
+      A Service with `clusterIP: None`. DNS returns the IPs of all backing Pods directly (multiple A records) instead of a single virtual IP. Used for StatefulSets where callers need each Pod's identity.
+
+  - id: 7
+    front: |
+      NetworkPolicy default behaviour?
+    back: |
+      Default-allow. Every Pod can reach every other Pod, and the public internet, until a NetworkPolicy selects it. Then it becomes default-deny — only the rules you wrote allow traffic.
+
+  - id: 8
+    front: |
+      Gateway API?
+    back: |
+      The next-gen replacement for Ingress. Same job, more expressive, role-separated APIs (Gateway = cluster-operator-owned; HTTPRoute / TCPRoute = app-team-owned). New clusters often ship both.

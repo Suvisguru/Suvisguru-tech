@@ -1,0 +1,58 @@
+# Intake brief — Lesson 23, K-COM
+# Topic: Scheduling Part 2 · Priority, DRA, NUMA, Profiles
+# Module 11 · Scheduling · Lesson 2 of 2
+
+lesson:
+  title: 'Scheduling Part 2 · Priority, DRA, NUMA, Profiles'
+  slug: '23-scheduling-pt2-priority-dra-numa'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 23
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'Dispatch Office — VIP & Specialty Routing — Back to Dispatch Office, but now we''re past the routing board into the VIP wing. Three new desks. The **priority desk** hands out lane stickers — VIP, premium, regular, walk-in. When the road is jammed and a VIP truck can''t move, the dispat'
+  module: 'Module 11 · Scheduling · Lesson 2 of 2'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-22 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain when the cluster is full, who wins?.'
+  - 'Learner can explain gPUs (and friends) get a structured API — GA in 1.34.'
+  - 'Learner can explain when microseconds matter.'
+
+sections:
+  - 'When the cluster is full, who wins?'
+  - 'GPUs (and friends) get a structured API — GA in 1.34'
+  - 'When microseconds matter'
+  - 'When one scheduler isn''t enough'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - '`critical` = 1000 (payment), `standard` = 500 (everything user-facing), `batch` = 10 (analytics, ML), `opportunistic` = -100 (spot-eligible).'
+    - 'DRA + NVIDIA''s DRA driver.'
+    - 'Topology Manager `policy: single-numa-node`.'
+    - 'Default scheduler handles user-facing workloads.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-23.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-23.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**PriorityClass + preemption** decides who runs when the cluster is full. **Dynamic Resource Allocation (DRA)** — GA in K8s 1.34 — replaces ad-hoc device plugins with a structured CRD model for GPUs, FPGAs, NICs. **Topology Manager** + **CPU Manager** keep latency-sensitive workloads on the same NUMA node as their memory.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/'

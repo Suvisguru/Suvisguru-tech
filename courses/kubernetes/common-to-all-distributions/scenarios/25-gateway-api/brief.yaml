@@ -1,0 +1,58 @@
+# Intake brief — Lesson 25, K-COM
+# Topic: Gateway API · Roles, Listeners, Routes, and the Ingress Sunset
+# Module 12 · Networking depth · Lesson 2 of 3
+
+lesson:
+  title: 'Gateway API · Roles, Listeners, Routes, and the Ingress Sunset'
+  slug: '25-gateway-api'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 25
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'Switchboard — Customer Counter — Switchboard, customer counter side. The old setup had every business carrying a single big poster with their phone number, address, who could call them, what hours they answered, and the rules for caller ID — all stuck on one wall, written '
+  module: 'Module 12 · Networking depth · Lesson 2 of 3'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-24 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain why Ingress wasn''t enough.'
+  - 'Learner can explain gatewayClass, Gateway, Route.'
+  - 'Learner can explain out of annotations, into a typed schema.'
+
+sections:
+  - 'Why Ingress wasn''t enough'
+  - 'GatewayClass, Gateway, Route'
+  - 'Out of annotations, into a typed schema'
+  - 'What''s actually happening in 2026'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'One Gateway per cluster (managed by platform team), Routes per app team.'
+    - 'Cilium provides both CNI and Gateway in the same DaemonSet.'
+    - 'Used HTTPRoute weighted backends for canary deploys: 90% to `v1`, 10% to `v2`.'
+    - 'HTTPRoute filter `RequestMirror` sends a copy of every prod request to the staging Service.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-25.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-25.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'Gateway API splits Ingress into three roles: **GatewayClass** (cluster recipe — infra team), **Gateway** (listener bank — platform team), **HTTPRoute / GRPCRoute / TCPRoute / TLSRoute** (traffic clips — app teams). The same logical setup as Ingress, but with cleaner ownership boundaries and far more expressiveness. Ingress NGINX is sunsetting in 2026 — start the migration now.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/'

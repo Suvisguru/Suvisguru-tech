@@ -1,0 +1,51 @@
+# Flashcards — Lesson 28
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      When does admission run?
+    back: |
+      After authentication + RBAC, before etcd persistence. Two phases: mutating (rewrite) then validating (accept/reject).
+
+  - id: 2
+    front: |
+      What is PSA?
+    back: |
+      Pod Security Admission. Built-in admission controller. Three profiles (privileged/baseline/restricted) configured via namespace labels. Replaced PodSecurityPolicy in K8s 1.25.
+
+  - id: 3
+    front: |
+      Three PSA labels?
+    back: |
+      `pod-security.kubernetes.io/enforce` (block violations), `audit` (log violations), `warn` (show user). Different profiles per label allow gradual rollout.
+
+  - id: 4
+    front: |
+      What is ValidatingAdmissionPolicy (VAP)?
+    back: |
+      K8s 1.30 GA. CEL-based admission rules running in-cluster (no webhook). Two CRDs: `ValidatingAdmissionPolicy` (rule) + `ValidatingAdmissionPolicyBinding` (selector for which namespaces/objects).
+
+  - id: 5
+    front: |
+      What is MutatingAdmissionPolicy (MAP)?
+    back: |
+      K8s 1.32+. The mutating cousin of VAP — rewrite objects via CEL/JSONPatch in-cluster, no webhook. Replaces many simple Kyverno mutate policies.
+
+  - id: 6
+    front: |
+      Kyverno vs OPA Gatekeeper?
+    back: |
+      Kyverno: K8s-native, YAML policies, mutate/validate/generate/cleanup. Gatekeeper: Rego-based, K8s's flagship OPA integration, harder to learn but more flexible. Kyverno is more common in 2026.
+
+  - id: 7
+    front: |
+      failurePolicy on a webhook?
+    back: |
+      `Fail` = block the request if webhook is unreachable. `Ignore` = allow it. `Fail` is safer for security, riskier for availability — pair with careful exclusions.
+
+  - id: 8
+    front: |
+      Order: which admission runs first?
+    back: |
+      All *mutating* admission controllers run before any *validating* admission controller. Within each phase, ordering is by registration order (built-ins by name, webhooks by alphabetical name).

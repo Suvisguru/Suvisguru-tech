@@ -1,0 +1,22 @@
+# Quiz — Lesson 44
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A Pod is stuck in Pending. `kubectl describe` shows event: "0/3 nodes available: 3 Insufficient memory." What's the diagnostic + remediation path?
+    answer: |
+      **Diagnosis:** the Pod's memory request exceeds available memory on every node. **(1) Check the Pod's request:** `kubectl get pod -o jsonpath='{.spec.containers[*].resources.requests.memory}'`. (2) Check node capacity: `kubectl describe nodes` — Allocatable + Allocated. (3) Decide: is the request realistic? Apps often request more than they use. Set requests to actual P95 + headroom. (4) Or: scale up nodes. Cluster Autoscaler / Karpenter (Lesson 34) should add a node automatically; if not, autoscaler logs reveal why. (5) Or: tighter Pod scheduling. Topology spread, anti-affinity may be unnecessarily restricting nodes. **Anti-pattern:** dropping requests to 0 to make Pod schedule. Then you have no QoS guarantee + nothing for HPA to compute on.
+
+  - id: 2
+    prompt: |
+      Application is intermittently failing with TLS errors. App logs say "x509: certificate expired." What's the investigation?
+    answer: |
+      **(1) Identify which cert.** Is it the cluster's API server cert? Service-to-service mTLS (mesh)? Application-level TLS (Ingress)? Each has a different rotation mechanism. **(2) `kubectl get certificate -A`** — cert-manager managed certs. Check status. Status conditions reveal renewal failure. **(3) `kubectl describe issuer / clusterissuer`** — is the issuer healthy? Let's Encrypt rate-limited? DNS provider misconfigured? **(4) Mesh certs:** mesh control plane handles rotation; check control-plane logs. **(5) API server cert:** kubeadm or cloud control plane handles. Check the cluster's health. **(6) Time skew:** if the node's clock is wrong, every cert appears expired. `chronyc tracking` on nodes. **(7) Long-term:** alert on certificate expiry >14 days out. Don't learn this on Friday at 5 PM.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The team's on-call engineer pages everyone: "production is broken!" The CTO asks how to handle. **Click for the playbook. ▼**
+    answer: |
+      **(1) Acknowledge + impact assessment.** Is it user-facing? How many users? Severity. SLO budget burning fast? **(2) Form an incident channel.** Slack channel #incident-2026-05-03-prod. Pin the goal: "restore service." Anyone with relevant context joins. **(3) Roles.** Incident Commander (decision-maker, communicates externally), Subject-Matter Expert (technical lead), Scribe (documents timeline), Comms (updates customers/leadership). Roles can collapse to one person at small scale. **(4) Capture pre-mutation state.** `kubectl get all -A -o yaml > incident-pre.yaml`. Describe affected resources. **(5) Triage with methodology.** Reproduce → observe → hypothesise → test. Don't skip steps. **(6) Comms cadence.** Status update every 15-30 minutes ("investigating," "identified cause," "deploying fix," "monitoring"). External users get bare facts; internal team gets richer. **(7) Mitigate first; root-cause later.** Roll back the change, scale up capacity, route around the failure — restore service first, even with a duct-tape fix. Root cause investigation can be in a calm post-mortem. **(8) Post-mortem within 48h.** Timeline, contributing factors, action items, who owns each. Blameless. **(9) Action items in tickets.** Track closure. Half the value of post-mortems is the prevention work; the other half is the muscle memory for the next incident.

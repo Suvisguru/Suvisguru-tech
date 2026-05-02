@@ -1,0 +1,22 @@
+# Quiz — Lesson 27
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team's monitoring controller needs to `list` all Pods cluster-wide. Two ways to grant this. Which is better, and why?
+    answer: |
+      **Better:** create a ClusterRole with `verbs: [list, watch], resources: [pods]`, then a ClusterRoleBinding to the monitoring SA. **Alternative (worse):** create a RoleBinding in every namespace. Why ClusterRoleBinding is better: (1) one object, not N. (2) Automatically applies to new namespaces. (3) Clearly expresses intent: "this is cluster-wide read." The downside is wider blast radius — if the monitoring SA is compromised, the attacker can read all Pods. Mitigate by ensuring the monitoring SA can't do anything else (no exec, no get on secrets, etc.).
+
+  - id: 2
+    prompt: |
+      A pen-tester finds a Pod with `kubectl auth can-i list secrets --all-namespaces` = yes. What's the playbook to remediate without breaking the workload?
+    answer: |
+      **Step 1:** identify why. Is the Pod's SA bound to a ClusterRoleBinding to `cluster-admin` or similar? `kubectl get clusterrolebindings -o json | jq '.items[] | select(.subjects[]?.name == "<sa-name>")'`. **Step 2:** understand the legitimate need. Maybe the workload needs to read *one specific* Secret. Maybe nothing — it was a test that wasn't cleaned up. **Step 3:** replace the over-grant with a minimal Role: `verbs: [get], resources: [secrets], resourceNames: [the-one-it-needs]`. **Step 4:** verify the workload still works (canary deploy). **Step 5:** add a CI check that prevents this regression. **Step 6:** audit other namespaces for similar over-grants — they probably exist too.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CISO asks: "prove that no Pod in the production cluster can list Secrets in `kube-system`." **Click for the audit walkthrough. ▼**
+    answer: |
+      **(1) Enumerate all SAs:** `kubectl get sa -A -o name | wc -l`. **(2) For each SA, check the relevant verb:** `kubectl auth can-i list secrets --as=system:serviceaccount:<ns>:<sa> -n kube-system`. Script this; expect every result to be "no". Any "yes" is the audit finding. **(3) For deeper assurance:** use `rakkess` or `kubectl-who-can list secrets --namespace kube-system`. The output shows every subject (User, Group, ServiceAccount) that has the permission. Compare against an allow-list of intended subjects. **(4) Add to CI:** store the expected allow-list in git; run the same audit on every RBAC change PR. Catch new grants at PR time, not pen-test time. **(5) Defense in depth:** AdminNetworkPolicy at the network layer to deny `kube-system` egress from non-system namespaces. Layered defenses make audit findings rare.

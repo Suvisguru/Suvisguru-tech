@@ -1,0 +1,51 @@
+# Flashcards — Lesson 40
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Argo Rollouts vs Flagger?
+    back: |
+      Argo Rollouts: replaces Deployment with Rollout CRD; integrates with Argo CD. Flagger: watches Deployment + creates parallel canary; integrates with Flux + meshes. Both do the same canary thing differently.
+
+  - id: 2
+    front: |
+      Canary phases?
+    back: |
+      Sequence of `setWeight` + `pause` + (optional) `analysis` steps. "5% pause 5m, 25% pause 5m, analysis, 100%" is typical.
+
+  - id: 3
+    front: |
+      AnalysisTemplate?
+    back: |
+      CRD defining metrics queries + success criteria. Argo Rollouts runs it as part of canary phases. Returns success / failure / inconclusive.
+
+  - id: 4
+    front: |
+      Traffic routing options for Argo Rollouts?
+    back: |
+      Ingress NGINX, Gateway API, Istio, Linkerd, Cilium, AWS LB Controller, manual replica-count weights.
+
+  - id: 5
+    front: |
+      Blue/green strategy?
+    back: |
+      Deploy new version alongside old. Run tests. Flip Service selector to new. Old kept around for rollback. Atomic switch; no traffic split.
+
+  - id: 6
+    front: |
+      Experiments?
+    back: |
+      Argo Rollouts feature: deploy two versions side by side without flipping traffic. Compare metrics; decide which to promote. Used for A/B tests with controlled exposure.
+
+  - id: 7
+    front: |
+      Flagger TrafficSplit?
+    back: |
+      Flagger's native CRD for service-mesh-aware splits. With Linkerd, it generates SMI TrafficSplit. With Istio, VirtualService.
+
+  - id: 8
+    front: |
+      Analysis at the right cadence?
+    back: |
+      Pause should give enough samples for statistically valid metrics. Low-volume services need longer pauses or higher canary weights.

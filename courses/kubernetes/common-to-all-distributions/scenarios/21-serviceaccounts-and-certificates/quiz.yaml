@@ -1,0 +1,22 @@
+# Quiz — Lesson 21
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A Pod's token works fine when the Pod is running, but a CronJob script tries to capture the token and use it later. The captured token is rejected after a few minutes. Why?
+    answer: |
+      Bound tokens. The token includes the Pod's UID and node binding; the API server validates these on every request. When the Pod terminates (or even just rolls), the binding becomes invalid. **Fix:** use the TokenRequest API directly to mint a longer-lived (but still bounded) token if the use case is legitimate, or restructure so the work happens inside the Pod's lifetime. There's no "token forever" option in modern K8s, by design.
+
+  - id: 2
+    prompt: |
+      A team needs to migrate an old integration from a static `kubernetes.io/service-account-token` Secret to bound tokens. The integration is a third-party SaaS that needs to authenticate to the cluster's API server. What's the modern approach?
+    answer: |
+      Three options ranked best-first: (1) **OIDC federation**: configure the SaaS to trust the cluster's OIDC endpoint and present projected JWTs from a sidecar workload — zero static credentials. (2) **kubectl create token**: issue a longer-lived (e.g., 24h) bound token on a refresh schedule via a CronJob; the SaaS gets rotating creds. (3) **Long-lived SA Secret**: only if (1) and (2) are impossible — and ensure the Secret is in a tightly-RBAC'd namespace and rotated manually. Most modern SaaS integrations support (1) or (2).
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      On Friday at 5 PM your Ingress starts returning `x509: certificate has expired`. cert-manager is installed but the Certificate object hasn't renewed. **Click for the diagnostic walk. ▼**
+    answer: |
+      Check in this order: (1) `kubectl describe certificate` — look at the `Status.Conditions` and `Events`. The most common cause is `Renewal Failed` with an issuer error. (2) `kubectl describe issuer / clusterissuer` — is the issuer reachable? Let's Encrypt rate-limited? Vault token expired? DNS-01 provider misconfigured? (3) `kubectl get certificaterequest -A` + describe the most recent — what error is the issuer returning? (4) Common causes: ACME rate limit hit (5 certs/week per registered domain), DNS provider creds rotated, Vault PKI role expired, ClusterIssuer's signing CA actually expired (this is the big one for self-signed roots — they're not magic, they expire too). **Lesson:** set up an alert on `cert-manager.io/certificate-expiry` with 14-day lead time. Do not learn this on Friday at 5 PM.

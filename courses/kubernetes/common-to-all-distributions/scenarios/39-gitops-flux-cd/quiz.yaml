@@ -1,0 +1,22 @@
+# Quiz — Lesson 39
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team is choosing between Argo CD and Flux. They have 80 microservices, ~30 engineers, mix of Kustomize and Helm. What factors should drive the choice?
+    answer: |
+      **Both work.** Factors that tip the choice: **Argo CD if:** (1) team values UI for visibility — Argo CD's default UI is excellent. (2) need PR-preview-environments — ApplicationSet PR generator is purpose-built. (3) onboarding new engineers fast — UI lowers ramp time. **Flux if:** (1) team is kubectl-first — Flux feels native. (2) need multi-source flexibility (S3 buckets, generic OCI) — Flux's source types are broader. (3) prefer composable architecture (install only what you need). (4) heavy Helm — HelmRelease is first-class, more flexible than Argo CD's Helm support. **Same regardless:** both need git workflow discipline; both have CNCF graduate maturity; both integrate with Kustomize + Helm. Pilot one for a quarter; switch only if you hit a hard limit (rare). Most successful shops use whichever they tried first.
+
+  - id: 2
+    prompt: |
+      A Flux `HelmRelease` for cert-manager keeps showing `Stalled` after upgrade. What's the diagnostic path?
+    answer: |
+      **(1) `flux get helmreleases -A`** — see the high-level state. **(2) `kubectl describe helmrelease cert-manager`** — read the `status.conditions`. Common stalled reasons: (a) values schema validation failed — check the chart's values.schema.json against your values. (b) hook timeout — increase `spec.timeout`. (c) immutable field change — Helm can't modify it; needs uninstall + reinstall. **(3) `kubectl logs -n flux-system deploy/helm-controller`** — controller logs show the actual Helm error. **(4) `flux suspend helmrelease cert-manager`** + manual fix + `flux resume` — bypass automation while you debug. **(5) Last resort: uninstall + reinstall.** `kubectl delete helmrelease cert-manager` (forces uninstall). Restore the HelmRelease YAML in git (Flux re-installs). Test changes in dev / staging first.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Engineering manager: "we're adopting GitOps. Pick Flux or Argo CD by Friday." **Click for the decision framework. ▼**
+    answer: |
+      **(1) Survey the team.** 5-minute poll: do they prefer GUIs or kubectl? Are they comfortable with K8s CRDs as the primary interface? Strong GUI preference → Argo CD. Strong kubectl preference → Flux. **(2) Audit existing infrastructure.** Already using Helm heavily? Flux's HelmRelease is more flexible. Already using lots of multi-cluster? Argo CD's ApplicationSet cluster generator + UI is helpful. **(3) Pick the use case driving the decision.** Need preview environments per PR? Argo CD's PR generator is purpose-built; Flux requires more glue. Need multi-source (Bucket, OCI, generic git)? Flux's source types are broader. **(4) Pilot.** Set up one cluster on each, with 3-5 microservices each, for 2 weeks. Compare engineer feedback. **(5) Decide; commit.** Both tools support migration if you need to switch later, but it's rare. The bigger risk is indecision; pick + commit + onboard. **(6) Don't over-engineer the decision.** Either tool works. The 80% of value is GitOps itself; the tool is the 20%.

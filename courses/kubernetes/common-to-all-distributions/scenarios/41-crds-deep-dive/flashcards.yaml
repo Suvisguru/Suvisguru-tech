@@ -1,0 +1,51 @@
+# Flashcards — Lesson 41
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      CRD top-level fields?
+    back: |
+      `group`, `names`, `scope` (Namespaced/Cluster), `versions` (list with served/storage/schema each), `conversion` (None or Webhook).
+
+  - id: 2
+    front: |
+      What is x-kubernetes-validations?
+    back: |
+      CEL-based validation rules in CRD schema. K8s 1.29 GA. Replaces many validating admission webhooks.
+
+  - id: 3
+    front: |
+      status subresource?
+    back: |
+      Separates user-managed spec from controller-managed status. Enabled per-version. Required for healthy reconciliation.
+
+  - id: 4
+    front: |
+      scale subresource?
+    back: |
+      Exposes `/scale` endpoint. Lets HPA + `kubectl scale` work on the CRD.
+
+  - id: 5
+    front: |
+      Multiple versions in a CRD?
+    back: |
+      Define multiple in `versions` array. Exactly one `storage: true`. Conversion webhook translates between served versions on read/write.
+
+  - id: 6
+    front: |
+      Conversion webhook?
+    back: |
+      HTTPS service that converts CR between versions. Called on read (if client requests non-storage version) and on write (if write isn't storage version).
+
+  - id: 7
+    front: |
+      Storage version migration?
+    back: |
+      To switch storage version safely: add new version with conversion; flip `storage: true` to new; rewrite all CRs (forces conversion to new storage); drop old version once safe.
+
+  - id: 8
+    front: |
+      additionalPrinterColumns?
+    back: |
+      Defines columns for `kubectl get`. JSONPath expressions into the CR. Big UX improvement.

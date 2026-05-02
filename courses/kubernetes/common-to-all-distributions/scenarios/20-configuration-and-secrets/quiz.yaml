@@ -1,0 +1,22 @@
+# Quiz — Lesson 20
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team mounts a `Secret` as both an env var *and* a volume. They rotate the underlying credential in the Secret. What happens?
+    answer: |
+      The volume-mounted file gets the new value within ~60 seconds (the kubelet sync period). The env var **does not change** — env vars are populated once at Pod start. Result: the same Pod has two versions of the credential at the same time. Fix: pick one method (file mount is generally preferred for rotation) and have the app re-read the file on a watch.
+
+  - id: 2
+    prompt: |
+      Your security team asks: "is it safe for an engineer to `kubectl describe secret/db-creds` in prod?" What's the answer?
+    answer: |
+      Mostly safe — `describe` shows metadata and key names but not values. `kubectl get secret -o yaml` *does* show base64-encoded values, which is plaintext after one decode. Lock down `get` verb on Secrets to a small set of subjects via RBAC; allow `list` + `describe` for ops users. Add an audit policy entry that logs all Secret reads at `RequestResponse` level.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Production etcd backup ends up on an exposed S3 bucket. Cluster has no KMS configured. Storage class admin asks: "how exposed are we?" **Click for the assessment. ▼**
+    answer: |
+      Catastrophically. With no `EncryptionConfiguration`, every Secret in etcd is base64-encoded plaintext. `etcdctl get --prefix /registry/secrets/ --print-value-only | base64 -d` reveals every credential the cluster has — DB passwords, API tokens, TLS keys, service account tokens, image-pull credentials. The blast radius is the union of every Secret across every namespace. **Action items:** (1) treat every Secret as compromised — rotate all of them. (2) Enable KMS v2 on the new cluster before re-creating Secrets. (3) Audit etcd backup access policies. (4) Add a runtime detection rule: alert if any process other than kube-apiserver reads etcd. KMS doesn't make backups invincible (the KMS could be compromised too) but it raises the bar from "one S3 leak compromises everything" to "attacker needs both the etcd dump *and* KMS access."

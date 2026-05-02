@@ -1,0 +1,58 @@
+# Intake brief — Lesson 31, K-COM
+# Topic: Multi-Tenancy & Hardening · Quotas, Limits, kube-bench, Hierarchies
+# Module 13 · Security · Lesson 5 of 5
+
+lesson:
+  title: 'Multi-Tenancy & Hardening · Quotas, Limits, kube-bench, Hierarchies'
+  slug: '31-multi-tenancy-and-hardening'
+  domain: 'kubernetes'
+  course_slug: 'common-to-all-distributions'
+  position: 31
+  granularity: 'concept'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'Watchtower — Tenant Compound Aerial — From the Watchtower we look down at K-Town''s tenant district: a fenced grid of compounds, each with its own gate, RBAC plaque on the door, NetworkPolicy fence around it, posted PSA standard on the wall, and a metered utility meter (Resource'
+  module: 'Module 13 · Security · Lesson 5 of 5'
+
+learner_profile:
+  prerequisites:
+    - 'Lessons 1-30 of K-COM (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain the myth of namespace isolation.'
+  - 'Learner can explain the two namespace-level resource gates.'
+  - 'Learner can explain run the audit, fix what fails.'
+
+sections:
+  - 'The myth of namespace isolation'
+  - 'The two namespace-level resource gates'
+  - 'Run the audit, fix what fails'
+  - 'When flat namespaces aren''t enough'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'HNC for tenant tree (parent: org, children: dev/staging/prod).'
+    - 'Tenants tagged by sensitivity: `sensitivity=public`, `sensitivity=internal`, `sensitivity=restricted`.'
+    - 'Each PR builds in an ephemeral namespace with vCluster (isolated K8s API).'
+    - 'Every cluster runs kube-bench daily as a CronJob, output piped to S3.'
+
+section_6_animated_svg:
+  modes_count: 3
+  description: 'See preview-kubernetes-lesson-31.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-lesson-31.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'Namespaces are logical, not security boundaries. Multi-tenancy stacks: RBAC + NetworkPolicy + PSA + **ResourceQuota** (cap CPU/mem/object counts per namespace) + **LimitRange** (per-Pod min/max defaults). Run **kube-bench** regularly for CIS Benchmark scoring. Use **HierarchicalNamespaces (HNC)** for namespace trees with inherited policy. For real isolation: **vCluster**, **kata containers**, or separate clusters.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/'

@@ -1,0 +1,51 @@
+# Flashcards — Lesson 44
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Four-step triage flow?
+    back: |
+      Reproduce, Observe + measure, Hypothesise, Test + verify. The discipline that beats panic.
+
+  - id: 2
+    front: |
+      kubectl describe vs get?
+    back: |
+      `describe` shows the resource's status + events at the bottom. `get` shows just the spec/status. `describe` is the diagnostic; `get` is the inspection.
+
+  - id: 3
+    front: |
+      kubectl logs --previous?
+    back: |
+      Logs from the *previous* container instance (post-crash). Critical: current logs are post-restart and don't include the crash.
+
+  - id: 4
+    front: |
+      kubectl debug ephemeral container?
+    back: |
+      `kubectl debug -it pod-x --image=busybox --target=container-y`. Adds a debug container into a running Pod sharing namespaces. Useful for distroless containers without shells.
+
+  - id: 5
+    front: |
+      The 8 usual suspects?
+    back: |
+      Image pulls, Resource limits, Storage (zone/CSI/SC), Networking (NP/MTU/DNS), Admission (PSA/policy), Certificates, Scheduling (taints/affinity), Operator/controller (RBAC/finalizers/webhook).
+
+  - id: 6
+    front: |
+      What is a game day?
+    back: |
+      Scheduled chaos engineering exercise. Inject failure (kill a zone, kill Pods, slow a dependency) and have the team practise response. Quarterly cadence; produces runbook + system improvements.
+
+  - id: 7
+    front: |
+      Why blameless post-mortems?
+    back: |
+      Individual blame discourages reporting; system-level fixes prevent recurrence. Focus on contributing factors, what worked, what didn't, action items.
+
+  - id: 8
+    front: |
+      Most important pre-mutation step during incident?
+    back: |
+      Capture state. `kubectl get all -A -o yaml > incident-pre.yaml`; describe affected resources; preserve logs. You can't debug what you can't reproduce.

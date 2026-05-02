@@ -1,0 +1,51 @@
+# Flashcards — Lesson 24
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Three Linux primitives behind a Pod's network?
+    back: |
+      `veth` pair (virtual cable, Pod end + host end), bridge (virtual L2 switch on the host), routing table + iptables/nftables/eBPF rules for forwarding/policy.
+
+  - id: 2
+    front: |
+      What is CNI?
+    back: |
+      Container Network Interface — CNCF spec. The kubelet (runtime) calls a CNI plugin binary at Pod ADD/DEL/CHECK. Plugin sets up the Pod's networking. Vendor implementations: Cilium, Calico, Flannel, AWS VPC, Azure CNI, etc.
+
+  - id: 3
+    front: |
+      Encapsulation vs native routing?
+    back: |
+      Encap (VXLAN/Geneve): wrap each cross-node packet in an outer UDP header. Works on any network. Costs ~5-10% throughput + adds MTU overhead. Native routing: nodes route directly using BGP or cloud VPC integration. Faster, requires infrastructure support.
+
+  - id: 4
+    front: |
+      What's an MTU mismatch?
+    back: |
+      Pod thinks MTU is X, but encap overhead means real maximum is X-50. Packets at X get fragmented or dropped. Symptom: cross-node tail latency spikes for large packets. Fix: pin Pod MTU below underlay minus encap overhead.
+
+  - id: 5
+    front: |
+      Why does eBPF beat iptables for Service routing?
+    back: |
+      iptables = linear chain of rules per Service, O(n) per packet. eBPF = compiled programs running at kernel hooks, O(1) per packet. At 5K+ Services, iptables hits a perf cliff; eBPF scales linearly to 50K+.
+
+  - id: 6
+    front: |
+      What is Hubble?
+    back: |
+      Cilium's observability layer. Per-flow visibility: who's talking to whom, what's blocked by policy, where latency lives. Standard tool in Cilium-based clusters since 2023.
+
+  - id: 7
+    front: |
+      Why does GKE Dataplane V2 matter?
+    back: |
+      GKE's default data plane is Cilium-based since 2024. Means most new GKE clusters get eBPF + Hubble out of the box. AKS and EKS have similar offerings (AKS Cilium, EKS-with-Cilium addon).
+
+  - id: 8
+    front: |
+      What's `kube-proxy ipvs` mode?
+    back: |
+      Older alternative to iptables mode. Uses Linux IPVS (in-kernel L4 LB). Better than iptables at high Service counts but less common now that eBPF-based CNIs replace kube-proxy outright.

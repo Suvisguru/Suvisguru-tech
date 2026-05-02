@@ -1,0 +1,22 @@
+# Quiz — Lesson 22
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A 6-replica Deployment with `topologySpreadConstraints: maxSkew=1, topologyKey=zone, whenUnsatisfiable=DoNotSchedule`. The cluster has 3 zones. One zone has a brief capacity issue and only 1 node is available there. What's the placement?
+    answer: |
+      The scheduler aims for 2-2-2 across zones. With the constrained zone capacity-light, it might place 2-2-2 if those nodes can fit two Pods each — but if the constrained zone's single node can only fit 1 Pod, the constraint becomes unsatisfiable: scheduling 3-2-1 would have skew=2 (>1). With `DoNotSchedule`, two Pods stay Pending until capacity returns. **Lesson:** `DoNotSchedule` is great for production correctness but can cause Pending Pods during partial outages. Some teams pair `maxSkew=1, DoNotSchedule` on zone with a relaxed `maxSkew=2, ScheduleAnyway` on hostname to balance correctness vs flexibility.
+
+  - id: 2
+    prompt: |
+      A junior engineer adds `nodeSelector: env=prod` to a Pod. There are no nodes labelled `env=prod`. What's the scheduler's behavior?
+    answer: |
+      The Pod stays in `Pending` indefinitely with a `FailedScheduling` event citing "0/N nodes available: didn't match Pod's node affinity." The scheduler doesn't error out — it just keeps trying. Most clusters have monitoring on Pending duration that would alert. **Fix:** either label some nodes `env=prod`, or change the selector to soft (preferred affinity), or remove it. There's no auto-fallback.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The platform team adds a topology-spread enforcement policy via Kyverno. An old Deployment without spread constraints triggers a Pod that lands on an over-loaded zone. **Click for what happens during the rollout. ▼**
+    answer: |
+      Kyverno is mutating-mode: it injects a default topology-spread constraint into every newly-admitted Pod. Old Pods (admitted before the policy) keep running where they are — Kyverno does not retro-evict. On the next rolling update of the old Deployment, new ReplicaSet's Pods get the spread constraint, and they land balanced across zones. The old ReplicaSet's Pods drain over the rollout. So you get "eventually consistent" spread without a forced eviction storm. **If you wanted faster correction:** run the descheduler with the `RemovePodsViolatingTopologySpreadConstraint` strategy. It evicts violators on a schedule; the scheduler re-places. **If you wanted instant correction:** roll the Deployment manually. Each approach trades disruption for correctness — and that's why most platform teams prefer mutating policies + lazy reconcile + descheduler over forced changes.

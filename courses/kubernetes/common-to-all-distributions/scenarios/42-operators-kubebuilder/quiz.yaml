@@ -1,0 +1,22 @@
+# Quiz — Lesson 42
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      An operator's Reconciler runs slowly: 5 seconds per reconcile. Cluster has 200 CRs. Diagnosis?
+    answer: |
+      **Common causes:** (1) *API server calls per reconcile*. `r.Get(...)` is cached; `r.List(...)` with no label selector is expensive. Use the cache; filter at the API level. (2) *External calls (cloud SDK, database)*. Each reconcile makes external calls; cache + concurrent calls help. (3) *Single-threaded reconciler*. Set `MaxConcurrentReconciles` to a higher value (default 1). (4) *Hot loop*. If reconcile triggers a watch that triggers reconcile, you're in a loop. Check that updates aren't triggering each other. **Diagnostic:** add Prometheus metrics from controller-runtime (built-in); look at reconcile_time histogram; profile with pprof if needed. **Fix order:** increase concurrency first, optimise hot paths second.
+
+  - id: 2
+    prompt: |
+      A team's operator updates the CR's spec from inside the Reconciler. Why is this a problem?
+    answer: |
+      **Anti-pattern.** The CR's `spec` is user-managed; the controller writes `status`. If the controller writes spec, it competes with the user (next `kubectl apply` reverts the operator's change). Also: any change to spec triggers a reconcile; the operator can loop forever. **Fix:** use the `status` subresource. Read user intent from spec; encode controller observations in status. Use `r.Status().Update(ctx, ...)`. The spec is what the user wants; status is what the controller observes.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      A team is starting a new operator project. **Click for the recommended setup. ▼**
+    answer: |
+      **(1) Bootstrap with Kubebuilder.** `kubebuilder init --domain example.com --repo github.com/myorg/db-operator`. `kubebuilder create api --group databases --version v1alpha1 --kind PostgresCluster --resource --controller`. **(2) Define types in `api/v1alpha1/postgrescluster_types.go`.** Spec for user-facing config; Status for observed state. Add CEL validation via kubebuilder annotations: `// +kubebuilder:validation:XValidation:rule="self.replicas > 0"`. **(3) Implement Reconciler.** Fetch CR; reconcile owned resources (StatefulSet, Service, Secret, ConfigMap); update status. Use `controllerutil.CreateOrUpdate` for idempotency. **(4) Add finalizer logic** if you manage external resources. **(5) Tests.** envtest spins up a local kube-apiserver; write integration tests that verify reconcile behaviour. **(6) Distribution.** Default to Helm. Generate the chart from `config/`. Sign with cosign. Push to OCI registry. **(7) Documentation.** Sample CRs in `config/samples/`; tutorial in README. **(8) CI.** Lint, test, build image, sign, package chart, publish. **Total time-to-functional-operator:** 1-2 weeks for a competent Go developer. **Total time-to-production:** add 4-8 weeks of testing + observability + multi-version support + operational runbooks.

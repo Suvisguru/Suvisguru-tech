@@ -1,0 +1,51 @@
+# Flashcards — Lesson 18
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      PV vs PVC?
+    back: |
+      PVC = Persistent Volume Claim, the request (namespace-scoped, written by app teams). PV = Persistent Volume, the actual disk (cluster-scoped, created by provisioner or admin). They bind 1:1.
+
+  - id: 2
+    front: |
+      What is StorageClass for?
+    back: |
+      A 'recipe' telling K8s how to provision PVs on demand. Names the CSI provisioner, sets parameters (disk type, IOPS, encryption), reclaim policy, volume binding mode.
+
+  - id: 3
+    front: |
+      Four access modes?
+    back: |
+      RWO ReadWriteOnce — one node, read-write. ROX ReadOnlyMany — many nodes, read-only. RWX ReadWriteMany — many nodes, read-write (needs network FS). RWOP ReadWriteOncePod — one Pod, read-write (1.27+).
+
+  - id: 4
+    front: |
+      Reclaim policies?
+    back: |
+      Delete (default for dynamic) — PV and underlying disk deleted with the PVC. Retain — PV stays in Released state; human reclaims. Recycle — deprecated; don't use.
+
+  - id: 5
+    front: |
+      Volume binding modes?
+    back: |
+      Immediate — provision PV when PVC created (problematic in multi-zone). WaitForFirstConsumer — provision PV when first Pod scheduled (correct for multi-zone — disk lands in the right zone).
+
+  - id: 6
+    front: |
+      Static vs dynamic provisioning?
+    back: |
+      Static — admin pre-creates PVs by hand; PVCs match against existing PVs. Dynamic — StorageClass + provisioner creates PVs on demand. Dynamic is the modern default.
+
+  - id: 7
+    front: |
+      When does data actually get cleaned?
+    back: |
+      Container filesystem: at every container restart. emptyDir: at Pod removal. PVC-backed volumes: per the PV's reclaim policy when the PVC is deleted (Delete = now; Retain = manual).
+
+  - id: 8
+    front: |
+      Why doesn't RWX work on EBS?
+    back: |
+      EBS (and most cloud block storage) attaches to one node at a time. RWX requires multiple nodes mounting concurrently — only network filesystems (EFS, Filestore, Azure Files, Ceph, Longhorn) support it.

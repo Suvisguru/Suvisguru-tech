@@ -1,0 +1,51 @@
+# Flashcards — Lesson 42
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      What is an operator?
+    back: |
+      A custom controller for one or more CRDs. Encodes operational knowledge as reconciliation logic.
+
+  - id: 2
+    front: |
+      What is controller-runtime?
+    back: |
+      Go library providing Manager, Reconciler, watches, cache, leader election. The K8s-canonical operator framework.
+
+  - id: 3
+    front: |
+      What is Kubebuilder?
+    back: |
+      CLI scaffolder for controller-runtime projects. Generates project structure, CRD types, controller skeleton, RBAC, Dockerfile, Makefile.
+
+  - id: 4
+    front: |
+      What is Operator SDK?
+    back: |
+      Red Hat's operator-building toolkit. Supports Go (similar to Kubebuilder), Helm-based, Ansible-based operators.
+
+  - id: 5
+    front: |
+      Reconciler signature?
+    back: |
+      `Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error)`. Returning Result with RequeueAfter schedules another reconcile; error retries with backoff.
+
+  - id: 6
+    front: |
+      What is a finalizer?
+    back: |
+      String in `metadata.finalizers`. Blocks resource deletion until removed. Use to ensure operator cleans up external resources before CR vanishes.
+
+  - id: 7
+    front: |
+      What are conditions?
+    back: |
+      Standardised status fields: type, status (True/False/Unknown), reason, message, lastTransitionTime. Common types: Ready, Progressing, Degraded.
+
+  - id: 8
+    front: |
+      OLM vs Helm for distribution?
+    back: |
+      Helm: standard package, manual upgrades. OLM: Red Hat lifecycle manager; channels (stable/fast), automatic upgrades, dependency mgmt. Helm is more common; OLM in OpenShift ecosystems.

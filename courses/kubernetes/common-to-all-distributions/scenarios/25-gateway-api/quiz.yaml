@@ -1,0 +1,22 @@
+# Quiz — Lesson 25
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team has a single Ingress with 28 hosts on it (NGINX annotations for split, retry, headers). They start a Gateway API migration. What's the right first step?
+    answer: |
+      Don't convert all 28 at once. **(1)** Install a Gateway controller alongside Ingress NGINX (Envoy Gateway is a common choice). **(2)** Create a single Gateway with listeners matching the existing Ingress's TLS setup. **(3)** Pick one host (the lowest-stakes one), create an HTTPRoute, switch DNS for that host. Validate. **(4)** Repeat for the next host. **(5)** When all 28 hosts are on the Gateway, decommission the old Ingress. Tools like InGate help with the bulk YAML transformation; the careful per-host cutover is the safe migration sequence.
+
+  - id: 2
+    prompt: |
+      The Gateway API has GRPCRoute, TCPRoute, TLSRoute, UDPRoute. When would you pick TLSRoute over HTTPRoute?
+    answer: |
+      TLSRoute does *SNI-based routing without TLS termination*. Use case: a Pod-managed service that wants to handle its own TLS internally (e.g., a database with mTLS, a service mesh proxy) — but you still want to use the cluster's external Gateway as a passthrough load balancer. The Gateway looks at the Server Name Indication (SNI) field in the TLS handshake to pick a backend, then passes the bytes through. HTTPRoute would terminate TLS, see the HTTP requests, and re-encrypt to the backend if needed. TLSRoute = no termination. TCPRoute = no SNI inspection at all, just a flat L4 proxy.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The platform team installs Cilium Gateway in production but app teams keep getting 503s on cross-namespace HTTPRoutes. **Click for the diagnosis. ▼**
+    answer: |
+      The most common cause: the Gateway's listeners specify `allowedRoutes.namespaces.from: Same` (the default), so Routes in other namespaces are silently rejected. **Diagnosis steps:** (1) `kubectl get httproute -A` — for each, check `status.parents.conditions`. Routes that didn't attach show `Accepted=False` with reason `NotAllowedByListeners`. (2) `kubectl get gateway` — inspect the listeners' `allowedRoutes`. **Fix:** set `allowedRoutes.namespaces.from: All` (loose) or `Selector` with a namespace label match (tighter). Once the Route attaches, traffic flows. **Why this is a feature, not a bug:** the explicit attach model prevents app-team A from accidentally claiming app-team B's hostname — which used to happen all the time with Ingress.

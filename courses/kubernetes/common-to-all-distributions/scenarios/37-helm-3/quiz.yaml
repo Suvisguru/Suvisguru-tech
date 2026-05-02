@@ -1,0 +1,22 @@
+# Quiz — Lesson 37
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team's `helm upgrade` fails halfway: some resources updated, some didn't. What's the recovery path?
+    answer: |
+      **Step 1:** `helm history <release>` — see the failed revision and the previous good one. **Step 2:** `helm rollback <release> <previous-revision>` — re-apply the previous version's manifests. Helm reconciles the cluster state to the previous revision. **Step 3:** diagnose why the upgrade failed (often: hook timeout, CRD schema mismatch, immutable field change). **Step 4:** fix the chart or values; `helm upgrade` again. **Important:** hooks that ran before the failure are NOT undone by rollback (e.g., a pre-upgrade migration that already ran). Plan migrations to be reversible (down-migrations), or accept some manual cleanup. **Production hygiene:** always test upgrades in staging first; `helm upgrade --atomic` auto-rollbacks on failure (good for non-stateful charts; risky for stateful ones).
+
+  - id: 2
+    prompt: |
+      A vendor's Helm chart has a values schema. The team wants to enforce that production never sets `insecure: true`. What's the best mechanism?
+    answer: |
+      **Three layers, in order:** (1) **values.schema.json** in the chart can express "`insecure must be false`" — but the vendor controls this, not you. (2) **Helm values overlay process** — your CI pipeline merges base + env-specific values, validates against your *policy*, fails if production overrides set `insecure: true`. `helm template + kubeconform + custom checks`. (3) **Cluster-side admission** — Kyverno or VAP rule that rejects rendered manifests with insecure-related fields. The first two prevent the bad config; the third stops it even if it slipped through. Defense in depth.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The platform team wants to mirror public Helm charts to an internal OCI registry. **Click for the design. ▼**
+    answer: |
+      **(1) Internal OCI registry** — Harbor, ECR, GAR, etc. Already exists for container images. **(2) Mirror process** — daily CronJob or CI scheduled task: `helm pull external-repo/cert-manager --version 1.13 --untar=false`; `helm push cert-manager-1.13.tgz oci://internal-registry/charts`. Track which versions are mirrored. **(3) Vulnerability scanning** — Trivy / Grype scan the chart's rendered manifests for image references; alert on CVEs. **(4) Signing on mirror** — re-sign with internal cosign key after mirroring; cluster admission verifies internal signature. **(5) Internal index** — for discovery, expose `oci://internal-registry/charts` as an Argo CD / Flux source. **(6) Air-gapped support** — for clusters without internet, the internal registry is the only path; configuration ensures Helm never reaches public registries. **Result:** single source of truth for charts, vulnerability oversight, supply-chain control. Marginal cost: ~3 hours of CI per week. Marginal benefit: full control of what enters the cluster.

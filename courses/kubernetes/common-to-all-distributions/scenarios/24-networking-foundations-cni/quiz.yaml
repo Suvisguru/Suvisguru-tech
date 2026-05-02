@@ -1,0 +1,22 @@
+# Quiz — Lesson 24
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A Pod's `eth0` is up, IP looks right, but `curl another-pod-ip` times out. Same-node Pods reach each other fine. What do you check first?
+    answer: |
+      Cross-node connectivity → check the inter-node path. (1) `ip route` on the source node — does it have a route to the destination Pod's CIDR? (2) `iptables -L FORWARD -n -v` — is the FORWARD chain accepting? (3) Underlay reachability — can the source node ping the destination node? (4) MTU — try `ping -M do -s 1472 dest-pod-ip`; if it fails, MTU. (5) NetworkPolicy — is one denying? CNI logs (`kubectl -n kube-system logs ds/cilium`) usually narrow it down within minutes.
+
+  - id: 2
+    prompt: |
+      Your team migrated from Flannel (VXLAN) to Cilium native-routing mode. After the migration, throughput went UP — but a few specific apps now get TCP resets on big payloads. What's wrong?
+    answer: |
+      MTU. Native routing has no encap overhead, so the underlay's full MTU is usable. If the new CNI config didn't bump Pod MTU back up (or worse, set it lower than the underlay), you can have either (a) Pod MTU too low — wasting capacity but otherwise fine, or (b) Pod MTU too high — packets bigger than what some intermediate hop allows, causing PMTU discovery messages that get blocked, leading to silent black-holing of large flows. Check `cilium config` for `mtu` setting; ping with DF bit set; verify ICMP-needed messages aren't being dropped by network ACLs.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      A platform team running 30K Services hits a kube-proxy perf cliff. `iptables-save | wc -l` returns 480,000 rules. They consider migrating to eBPF. **Click for the migration playbook. ▼**
+    answer: |
+      Migration is non-trivial — but well-trodden. Sequence: (1) Pilot Cilium on a non-prod cluster of similar scale; verify NetworkPolicy semantics match. (2) Install Cilium alongside kube-proxy on a prod cluster (Cilium has `kubeProxyReplacement: false` mode). Cilium handles CNI; kube-proxy still handles Services. (3) Switch to `kubeProxyReplacement: true` on a node-by-node basis using node selectors. (4) Validate with Hubble that Service traffic is flowing through eBPF. (5) Drain and remove kube-proxy DaemonSet. **Pitfalls:** some old apps depend on iptables-visible rules (rare), some firewalls inspect iptables for compliance evidence (more common in regulated industries — Cilium has equivalents but auditors may need to be educated). **Payoff:** Service latency drops 5-10x at scale, NetworkPolicy enforcement gains observability, kube-proxy maintenance disappears.

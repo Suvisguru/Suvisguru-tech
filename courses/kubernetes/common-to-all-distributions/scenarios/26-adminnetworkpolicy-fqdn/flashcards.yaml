@@ -1,0 +1,51 @@
+# Flashcards — Lesson 26
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Three tiers of K8s network policy (2026)?
+    back: |
+      AdminNetworkPolicy (cluster-scoped, admin-owned, priority-ordered, evaluated first). NetworkPolicy v1 (namespace-scoped, team-owned, additive allows). BaselineAdminNetworkPolicy (cluster-scoped, one per cluster, admin default, evaluated last).
+
+  - id: 2
+    front: |
+      Three ANP actions?
+    back: |
+      `Allow` (terminate, packet flows), `Deny` (terminate, packet dropped), `Pass` (skip ANP for this packet, defer to NetworkPolicy). Pass enables admin-delegated trust to specific namespaces.
+
+  - id: 3
+    front: |
+      Why does ANP have priority?
+    back: |
+      To express "this admin rule trumps that admin rule." Higher priority value wins. NetworkPolicy v1 had no priority — every rule was equal.
+
+  - id: 4
+    front: |
+      What does BANP solve?
+    back: |
+      The "team forgot to write a NetworkPolicy" problem. BANP is the cluster-wide default. Teams override per-namespace; cluster default applies otherwise.
+
+  - id: 5
+    front: |
+      What is an FQDN policy?
+    back: |
+      An egress policy matching by DNS hostname (`github.com`) instead of IP CIDR. CNI-vendor extension — Cilium `CiliumNetworkPolicy`, Calico `GlobalNetworkPolicy`, etc.
+
+  - id: 6
+    front: |
+      How do FQDN policies work under the hood?
+    back: |
+      CNI intercepts DNS responses, caches IP→name mappings, installs short-lived per-IP allow rules with TTLs matching DNS TTL. Pod-by-Pod, kept fresh as DNS records change.
+
+  - id: 7
+    front: |
+      Limit of FQDN policies?
+    back: |
+      Pods that hard-code IPs (skipping DNS entirely) bypass FQDN matching. Mitigation: combine FQDN policies with CIDR denies (block direct internet IPs except whitelisted ranges).
+
+  - id: 8
+    front: |
+      When does ANP/BANP go GA?
+    back: |
+      ANP: GA in K8s 1.32. BANP: GA in 1.32. Cilium and Calico support both natively. CIS K8s benchmarks now reference them.

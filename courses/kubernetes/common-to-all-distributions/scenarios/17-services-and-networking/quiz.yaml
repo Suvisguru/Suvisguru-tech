@@ -1,0 +1,21 @@
+# Quiz — Lesson 17
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team has 30 microservices behind one Ingress controller. They want to add a new service available at `api.acme.com/inventory`. Walk through what they create.
+    answer: |
+      Three things. (1) A Deployment running the inventory service Pods (with labels `app=inventory`). (2) A ClusterIP Service named `inventory` that selects those Pods on the right port. (3) An Ingress rule (either appended to the existing Ingress resource or a new one) saying 'traffic to `api.acme.com/inventory` goes to the `inventory` Service.' The shared Ingress controller already terminates TLS at `api.acme.com`; this is just one more route. No new cloud LB; same external IP serves the new endpoint.
+
+  - id: 2
+    prompt: |
+      A team's `kubectl get pods` shows three replicas of the front-end with three different IPs. They want to load-balance traffic across all three. They write the front-end's URL into the back-end's config as `http://10.0.4.7:80`. Why is this wrong, and what's the right fix?
+    answer: |
+      Two problems. (1) `10.0.4.7` is one specific Pod's IP. The other two Pods get no traffic; if that Pod dies, the back-end breaks. (2) That IP changes on every restart. Fix: create a ClusterIP Service named `frontend` that selects all three Pods by label. Reference it as `http://frontend` (or `frontend.default.svc.cluster.local`) from the back-end. The Service load-balances across all matching Pods, and survives Pod churn. This is the Service abstraction's whole point.
+
+  - id: 3
+    prompt: |
+      Your front-end Pod hardcodes the database connection string to a Pod IP it discovered with `kubectl describe pod`. `DATABASE_URL=postgres://10.0.5.7:5432/app`. What happens at the next database restart?
+    answer: |
+      The database Pod restarts (a routine event — node maintenance, image update, eviction under memory pressure). Comes back up with a fresh IP, `10.0.6.2`. The front-end keeps trying `10.0.5.7`. Every API request returns a connection-refused error. The error message in the logs is generic; the underlying cause (the IP changed) is invisible without manual investigation. **Fix:** never use Pod IPs directly. Create a ClusterIP Service for Postgres; reference it by DNS name (`postgres.default.svc.cluster.local`, or just `postgres` in the same namespace). The Service tracks healthy backing Pods and routes accordingly. Pod IPs become an implementation detail you never see.

@@ -1,0 +1,44 @@
+# Quiz — Lesson 38
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      An Argo CD Application is OutOfSync. Click "Sync" — it stays OutOfSync. What's the diagnostic path?
+    answer: |
+      **(1) Argo CD UI** — click on the Application; expand the Diff view. See exactly which resources are different and what fields. **(2) Common causes:** (a) *Mutating webhook* (Kyverno, Istio, etc.) added a field to the live resource; git doesn't have it; Argo CD diffs every sync. *Fix:* add `argocd.argoproj.io/sync-options: IgnoreExtraneous=true` on the resource, or use `spec.ignoreDifferences` on the Application. (b) *Server-side defaults*. K8s API adds defaults that aren't in git. Same fix. (c) *Resource managed by another controller*. HPA modifies replicas; ConfigMap modified by external-secrets. Either remove from git or use ServerSideApply with field manager. **(3) `argocd app diff <name>`** from CLI for scriptable output. **(4) `argocd app sync <name> --force`** — force re-apply. Sometimes shakes loose stuck syncs.
+
+  - id: 2
+    prompt: |
+      A team adopts Argo CD. After 2 weeks, half the engineers complain it's slowing them down. What's typically going wrong?
+    answer: |
+      **Common problems:** (1) *Too many manual approvals*. They have selfHeal off + manual sync; every PR requires explicit Argo CD sync. *Fix:* auto-sync for non-prod; manual approval only for prod. (2) *OutOfSync alarms*. Mutating webhooks cause perpetual OutOfSync. *Fix:* ignoreDifferences. (3) *Slow git → cluster latency*. Default polling is 3 min. *Fix:* webhook setup so git pushes trigger immediate refresh, latency drops to seconds. (4) *Engineers used to `kubectl edit`*. selfHeal reverts; they think Argo CD is broken. *Fix:* training + cultural shift; "kubectl edit" becomes a hotfix-branch commit. (5) *Argo CD UI overwhelming*. 200 Applications in one project. *Fix:* AppProjects per team; filter by ownership. **The cultural shift takes a quarter**; once it settles, deployment velocity is higher than pre-Argo CD.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The platform team wants every PR to spin up a preview environment with that PR's manifests. **Click for the design. ▼**
+    answer: |
+      **(1) ApplicationSet with PR generator:** apiVersion: argoproj.io/v1alpha1
+      kind: ApplicationSet
+      spec:
+        generators:
+        - pullRequest:
+            github:
+              owner: myorg
+              repo: web-app
+            requeueAfterSeconds: 60
+        template:
+          metadata:
+            name: 'preview-pr-{{number}}'
+          spec:
+            source:
+              repoURL: https://github.com/myorg/web-app
+              targetRevision: '{{head_sha}}'
+              path: deploy
+            destination:
+              namespace: 'pr-{{number}}'
+              server: https://kubernetes.default.svc
+            syncPolicy:
+              automated: {prune: true, selfHeal: true}
+              syncOptions: [CreateNamespace=true] **(2) DNS:** wildcard `*.pr.dev.example.com` → ingress controller; per-PR Ingress with hostname `preview-pr-1234.pr.dev.example.com`. **(3) Cleanup:** when PR is closed/merged, the generator removes the Application; namespace is deleted (prune). **(4) Cost control:** Karpenter scales nodes for active PRs only; cluster autoscaler returns nodes when PRs close. **(5) Required permissions:** Argo CD needs GitHub credentials with repo:read; AppProject permissions to create namespaces. **Result:** PR is opened → 90 seconds → `preview-pr-1234.pr.dev.example.com` works. PR is merged → 60 seconds → namespace gone. Total ops cost: zero per PR. This is the GitOps preview-environment pattern that replaced custom provisioning systems across the industry.

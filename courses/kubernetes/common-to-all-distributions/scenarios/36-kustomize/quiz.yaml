@@ -1,0 +1,41 @@
+# Quiz — Lesson 36
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team's Kustomize overlay produces a different result locally vs in CI. What's the diagnosis?
+    answer: |
+      **Common causes:** (1) *Different Kustomize versions*. `kubectl`'s embedded Kustomize lags the standalone `kustomize` CLI by 1-2 minor versions. Pin the version in CI: `kustomize/kustomize@v5.4.0`. (2) *Path resolution*. `resources: ../../base` works locally if the cwd matches; CI may run from a different cwd. Use absolute paths or relative paths consistent with your repo root. (3) *Symlinks*. Kustomize follows symlinks differently in some versions. Avoid symlinks. (4) *API server validation*. `kustomize build` doesn't validate; `kubectl apply --dry-run=server` does. The local build might pass, the apply fail. **Diagnostic command:** `kustomize build overlays/prod/ --output rendered.yaml` in both environments and diff the outputs.
+
+  - id: 2
+    prompt: |
+      A junior engineer adds a JSON 6902 patch `op: replace, path: /spec/template/spec/containers/0/env/2/value`. The patch fails when env vars are reordered. How to make it robust?
+    answer: |
+      JSON 6902 patches use *numeric indices* — fragile when arrays reorder. **Better:** use a strategic-merge patch that targets by *name*: spec:
+        template:
+          spec:
+            containers:
+            - name: web
+              env:
+              - name: LOG_LEVEL
+                value: debug Strategic-merge knows that lists with name-keyed items merge by name, not index. Order-independent. Always prefer strategic-merge for env vars, container ports, and other named-list items. JSON 6902 is for cases strategic-merge can't express (e.g., specific-index removal).
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The platform team wants every prod overlay to enforce: PSA-restricted label, NetworkPolicy default-deny, ResourceQuota. **Click for the Kustomize Component design. ▼**
+    answer: |
+      **(1) Create a Component** at `components/compliance/`: apiVersion: kustomize.config.k8s.io/v1alpha1
+      kind: Component
+      resources:
+        - networkpolicy-default-deny.yaml
+        - resourcequota.yaml
+      patches:
+        - target: {kind: Namespace}
+          patch: |-
+            - op: add
+              path: /metadata/labels/pod-security.kubernetes.io~1enforce
+              value: restricted **(2) Reference from prod overlays:** # overlays/prod/kustomization.yaml
+      components:
+        - ../../components/compliance **(3) Versioning:** Component is in the same repo (or a separate one referenced by URL). Updates to the Component reach every prod overlay on the next sync. **(4) Audit:** CI check verifies every prod overlay references `components/compliance`. Missing reference = PR rejected. **(5) Per-tenant overrides:** if a tenant needs different ResourceQuota, they patch the Component's output in their overlay — explicit, auditable. **Result:** compliance team owns the Component once; 47 prod overlays inherit. Single source of truth.

@@ -1,0 +1,51 @@
+# Flashcards — Lesson 23
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      What's a PriorityClass?
+    back: |
+      Cluster-scoped object mapping a name to an integer priority value. Pods reference it via `priorityClassName`. Higher values = higher priority. Two reserved system classes: `system-cluster-critical` + `system-node-critical`.
+
+  - id: 2
+    front: |
+      When does preemption happen?
+    back: |
+      When a Pod can't be scheduled because no node fits and a lower-priority Pod's eviction would create room. Scheduler picks victims (smallest set, lowest priority), evicts gracefully, places the high-priority Pod.
+
+  - id: 3
+    front: |
+      What does DRA stand for?
+    back: |
+      Dynamic Resource Allocation. GA in K8s 1.34. Modern API for declaring and matching specialized devices (GPUs, FPGAs, NICs). Replaces device plugins.
+
+  - id: 4
+    front: |
+      Four DRA objects?
+    back: |
+      `DeviceClass` (cluster-scoped, like StorageClass for devices), `ResourceClaim` (namespace-scoped, the request), `ResourceClaimTemplate` (like volumeClaimTemplates), `ResourceSlice` (kubelet-published inventory).
+
+  - id: 5
+    front: |
+      What does CPU Manager `static` policy do?
+    back: |
+      Dedicates whole CPU cores to Pods with Guaranteed QoS that request integer CPU. Other Pods are kept off those cores. Removes context-switching jitter for the dedicated Pod.
+
+  - id: 6
+    front: |
+      Topology Manager `single-numa-node` policy?
+    back: |
+      Refuses to schedule a Pod unless its CPU, memory, and (DRA) devices can all be allocated on the same NUMA node. Hard same-NUMA enforcement; can cause Pending.
+
+  - id: 7
+    front: |
+      Scheduler profile vs separate scheduler?
+    back: |
+      Profile = named config in the same kube-scheduler process; Pods opt in via `schedulerName`. Separate scheduler = different binary (e.g., Volcano) with its own kube-scheduler process. Both coexist because they only handle Pods naming them.
+
+  - id: 8
+    front: |
+      Bin-packing vs spreading scoring?
+    back: |
+      `NodeResourcesFit: MostAllocated` = pack Pods tightly (good for batch + spot eviction). `LeastAllocated` = spread (default; good for traffic-serving). Configured per scheduler profile.

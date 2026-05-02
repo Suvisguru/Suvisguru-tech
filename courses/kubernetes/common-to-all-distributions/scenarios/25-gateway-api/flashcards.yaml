@@ -1,0 +1,51 @@
+# Flashcards — Lesson 25
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: |
+      Three Gateway API roles?
+    back: |
+      GatewayClass (cluster, infra-team-owned, recipe). Gateway (namespace, platform-team-owned, listener bank). Route (namespace, app-team-owned, traffic clip). Roles map to organisational responsibility; small teams may collapse them.
+
+  - id: 2
+    front: |
+      What's a listener?
+    back: |
+      A (port, protocol, optional hostname, optional TLS) tuple on a Gateway. Each listener has its own `allowedRoutes` rules about which Routes from which namespaces can attach.
+
+  - id: 3
+    front: |
+      HTTPRoute vs GRPCRoute vs TCPRoute vs TLSRoute?
+    back: |
+      HTTPRoute = full HTTP/2 features. GRPCRoute = gRPC-aware (method matching). TCPRoute = raw TCP backend selection. TLSRoute = SNI-based routing for TLS without termination.
+
+  - id: 4
+    front: |
+      parentRefs?
+    back: |
+      Field on a Route specifying which Gateway(s) it attaches to. Cross-namespace by name + namespace; allowed only if the Gateway listener's `allowedRoutes` permits.
+
+  - id: 5
+    front: |
+      Traffic splitting in HTTPRoute?
+    back: |
+      Multiple backendRefs in a rule with weights. `weight: 90` on backend A and `weight: 10` on backend B = 90/10 split. Canary in pure declarative YAML.
+
+  - id: 6
+    front: |
+      Common Gateway controllers?
+    back: |
+      Envoy Gateway, NGINX Gateway Fabric (F5-supported), Cilium Gateway, Istio Gateways, Traefik, HAProxy Kubernetes Ingress (now Gateway-capable), Kong Gateway, Solo gloo. Pick by org familiarity + conformance level.
+
+  - id: 7
+    front: |
+      What is conformance?
+    back: |
+      Formal test suite the Gateway API project ships. Controllers run conformance and publish their support level (Core / Extended / Implementation-specific). Lets you switch controllers with confidence.
+
+  - id: 8
+    front: |
+      When does Ingress NGINX EOL?
+    back: |
+      End of 2026 — kubernetes/ingress-nginx specifically (not NGINX Inc.'s commercial NGINX or any other Ingress controller). Migrate to Gateway API + a conformant controller.
