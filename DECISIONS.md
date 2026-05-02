@@ -757,3 +757,46 @@ The "(first speaking part, Lesson 03)" parenthetical is mildly jokey but consist
 **Alternatives considered:** Place the intro inside L01's hero (between H1 and hero-sub) — rejected, would compete with the lesson's own opening claim ("What is Kubernetes?") for the reader's first focus. Place it inside the `.ktown-map-wrap` div as a caption *under* the map — rejected, the visual reading order "see the city, then read about it" is acceptable but the chosen "read first, then see the visual" is slightly stronger because the intro names the slate-pin-at-centre that the reader is about to look at. Make the intro a `<details>` collapsible on every lesson (collapsed by default except L01) so returning readers can refresh — rejected for now as scope expansion; can promote later if user testing wants it. Push the intro into Lesson 7.5 primer instead — rejected, L7.5 is read by readers who need a Linux primer specifically; not all L01 readers go through it.
 
 **Revisit when:** User testing surfaces that returning readers want a K-Town reminder on later lessons, OR a second domain (VMware, AWS) reaches universe parity and needs its own intro pattern. At the second-domain point, factor `.ktown-intro` into a generalised `.universe-intro` class so the same shape works for whatever the next domain's universe is named.
+
+---
+
+## 2026-05-02 — L01 K-Town meta explainer — close the why-K-Town gap
+
+**Context:** Founder review of the just-shipped K-Town universe intro (DECISIONS entry directly above) surfaced a deeper gap: the universe intro names the cast (Mayor Katie, Podrick, the Thermostat) but doesn't first tell the reader *why* K-Town exists at all — that it's a teaching device chosen to make Kubernetes' concept-heavy vocabulary easier to absorb. A first-time reader landing on Lesson 01 needs the meta explanation ("we built a stylised city to help you learn") *before* the specific cast introduction ("Katie does X, Podrick does Y"). Otherwise the cast intro reads as a charming-but-arbitrary list rather than the deliberate pedagogical move it is.
+
+**Decision:** Add a second L01-only block — the **K-Town meta explainer** — sitting between the district line and the universe intro. ~125 words, three short paragraphs in a why → how → payoff arc, ending with an explicit navigational pointer telling the reader what comes next on the page. New reading order on Lesson 01:
+
+1. District line ("📍 Today's stop in K-Town: Mayor's Office.").
+2. **K-Town meta explainer (NEW)** — what K-Town is, why we built it, how each lesson uses it, what the reader should expect to walk away with. Slate-left-border `<aside>`, ~125 words.
+3. K-Town universe intro (the cast — Katie / Podrick / Thermostat). Soft-cream box, ~95 words.
+4. K-Town map graphic (the visual rendering of the universe).
+5. Hero / Nightmare / stamp / lesson body.
+
+Shipped copy (Draft D, synthesis of three substantively different drafts per QUALITY.md):
+
+> 🏙 **Before we start — about K-Town**
+>
+> Kubernetes has a lot of moving parts and a lot of jargon (Pods, controllers, kubelets, sidecars, schedulers, the API server). Learning each one as an abstract technical term is exhausting and easy to forget.
+>
+> So instead of starting with vocabulary, we built **K-Town** — a stylised city where every Kubernetes concept lives somewhere you can picture. Each lesson takes you to one district. You learn the place first (a property manager, a thermostat, a bakery) and then the technical name for it.
+>
+> By the end of the course you won't have memorised 60 disconnected terms — you'll have walked a city you know. The map below shows the whole city; the panel under it introduces the recurring characters. From there, the lesson begins.
+
+One new CSS class: `.ktown-meta` — slate left-border accent (4px), no fill background, max-width 680px to align with the map's content rail and the universe intro below. Visually distinct from `.ktown-intro` (which has the soft-cream fill) — the meta block reads as "the author speaking to you before the lesson starts" while the cast block reads as "framed callout." Both theme-aware via the existing `[data-theme="dark"]` overrides.
+
+L01 only — same scope as the cast intro. Together the two blocks give a first-time reader a complete onboarding arc: meta (why) → cast (who) → map (where) → lesson (what). Subsequent lessons keep just the district line + map; the reader has been onboarded.
+
+**Drafting protocol per QUALITY.md:** Three substantively different drafts generated (concrete-examples / explicit-contrast / confident-lead), self-critiqued, synthesised into Draft D. Discards saved to `notes/k8s-revision-drafts.md` with per-draft rationale. Brief summary:
+
+- **Draft A (concrete examples)** — friendliest tone but leaks future districts the reader hasn't met.
+- **Draft B (explicit contrast)** — strongest framing but slightly defensive ("Most tutorials do X").
+- **Draft C (confident lead)** — tightest voice but missed the navigational pointer.
+- **Draft D (synthesis, shipped)** — inherits Draft C's voice + closer ("walked a city you know"), adds Draft A's why-first framing minus the leaked-districts trap, adds an explicit "the map below… the panel under it… from there, the lesson begins" pointer that signposts the rest of the page for the reader.
+
+**Reasoning:** The two L01-only blocks operate at different levels of abstraction and answer different reader questions: "What's the framing for this whole course?" (the meta block) vs "Who am I going to meet across the lessons?" (the universe intro). Splitting them rather than combining keeps each tight and unambiguous. The slate left-border style on the meta block (vs the soft-cream box on the universe intro) gives the reader a visual cue that these are different *kinds* of pre-lesson context — the meta is a teacher's note before class begins; the cast intro is the front-of-the-room introduction of the recurring players. Together they form an arc that the lesson body completes.
+
+The closing "From there, the lesson begins" is intentional — it tells the reader explicitly that the meta + cast + map are scaffolding and the actual lesson body is about to start. Layman-first signposting.
+
+**Alternatives considered:** Combine the meta and cast into one longer block — rejected, would be ~220 words and would obscure the distinction between "why this universe exists" and "who lives in it." Place the meta block *below* the cast intro (so cast comes first) — rejected, the meta explanation is the deeper why; readers absorb it more cleanly when it precedes the specifics rather than retroactively justifying them. Make the meta block a `<details>` collapsed by default — rejected, the pedagogical why is exactly what an absolute-beginner first-time reader most needs to read; hiding it behind a click would defeat the purpose. Apply the meta block to every lesson — rejected, the meta is onboarding (read once, internalised); repeating it on L02–L15 would clutter chrome that's already dense.
+
+**Revisit when:** A reader test surfaces that some readers skip the meta block and head straight for the lesson body. At that point, consider styling the meta block more like the existing Nightmare opener (warm-coral border + tag) so it reads as more visually arresting. Or, conversely, if testing surfaces that readers feel the meta block is *too much* upfront context, consider moving it inside an opt-in `<details summary="What is K-Town?">` so the curious can open it and the impatient can skip. Either change is a one-class-edit and ~5 minutes of work.

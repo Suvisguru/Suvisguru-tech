@@ -93,3 +93,98 @@ balance for the slot. If the founder pushes back on tone, swap "first
 speaking part" → "first appears" for a more neutral register.
 
 Ship-ready: yes.
+
+---
+
+## 2026-05-02 — L01 K-Town meta explainer (the why-K-Town pre-lesson aside)
+
+**Accepted:** Draft D (synthesis), placed at top of L01 between the
+district line and the K-Town universe intro. See DECISIONS.md
+"L01 K-Town meta explainer" entry for the live copy.
+
+### Drafts not chosen
+
+#### Draft A — Friendly + concrete examples
+
+> 🏙 **Why we built K-Town.** Kubernetes has a lot of jargon — Pods,
+> controllers, kubelets, sidecars, schedulers, the API server, on and on.
+> Each one is its own concept, and trying to learn them as raw vocabulary
+> is exhausting. So we built **K-Town**: a stylised city where every
+> Kubernetes concept is a place or a person you can picture. Want to know
+> what a Pod is? Visit the Co-Living Quarter. Curious about how Kubernetes
+> makes decisions? Stop by the Mayor's Office. Same city every lesson,
+> same characters keep showing up, same rules. By Lesson 5 you'll have a
+> mental map of Kubernetes that fits on a postcard. That's the trick.
+
+**Why discarded:** Friendliest tone, names a concrete payoff ("mental
+map that fits on a postcard"). But the concrete examples leak future
+districts the reader hasn't met yet — "Co-Living Quarter" is L15, far
+away — and "Visit the X to learn about Y" is a CTA the page can't
+fulfill (the lesson navigation doesn't yet exist; readers have to
+manually open other lessons). Risk of disorienting the very
+first-time reader the explainer is for.
+
+#### Draft B — Explicit "most tutorials do X, we do Y"
+
+> 🏙 **About K-Town.** Most Kubernetes tutorials hit you with a wall of
+> new vocabulary on day one — Pods, controllers, the API server, kubelets,
+> sidecars, schedulers — and ask you to absorb each one as an abstract
+> technical term. We took a different approach. We built a stylised city
+> called **K-Town** and mapped every Kubernetes concept onto a place or a
+> person inside it. The whole course is a tour: each lesson visits one
+> district, learns what happens there, and connects it back to the wider
+> city. By the end you'll have a single coherent mental picture of
+> Kubernetes — one map of one place — instead of a vocabulary list with
+> 60 disconnected entries. That's how K-Town makes the learning stick.
+
+**Why discarded:** Strongest *contrast framing* — actually explains the
+pedagogical choice by naming what other tutorials get wrong. But the
+"Most Kubernetes tutorials hit you with…" lead is comparative and
+slightly defensive; it tells the reader "we know what you've been
+through" before the reader has even started. For a first-time reader
+who hasn't tried other tutorials, the comparison falls flat. Draft D
+keeps the substance (jargon is exhausting; concrete map is the answer)
+without comparing.
+
+#### Draft C — Confident "first, a word about K-Town"
+
+> 🏙 **First, a word about K-Town.** Kubernetes is a big system with a
+> lot of moving parts, and most people learning it for the first time get
+> drowned in vocabulary — Pods, controllers, kubelets, sidecars,
+> schedulers — before they can build a picture of what's happening. So we
+> built one for you. **K-Town is a stylised city**, and every Kubernetes
+> concept lives somewhere in it. Each lesson is one stop on a tour of the
+> city. You'll learn the place (the analogy), then the technical name for
+> it (the K8s term). By the end of the course you won't have memorised 60
+> disconnected terms — you'll have walked a city you know. That's the
+> whole framing.
+
+**Why discarded** (it nearly won): Tightest of the three. "First, a
+word about K-Town" is a confident, self-aware lead. "Walked a city you
+know" is the strongest closer in any draft. But misses one thing the
+synthesis adds: a navigational pointer telling the reader what's about
+to happen on the page next ("the map below… the panel under it
+introduces the recurring characters"). Without that pointer, the
+reader doesn't know the cast intro is coming and might think the meta
+block IS the framing — and then encounter the cast block as a
+duplicate. Draft D inherits Draft C's voice and tightens further.
+
+### Self-critique on the winner (Draft D)
+
+What works: three short paragraphs in a why → how → payoff arc.
+"Walked a city you know" closer (borrowed from Draft C). Explicit
+navigational pointer at the end ("the map below… the panel under it
+introduces the recurring characters. From there, the lesson begins.")
+— layman-first signal that signposts what the reader is about to see.
+
+What's mediocre: "60 disconnected terms" is a slightly arbitrary
+number — the K8s vocabulary canon list in STYLE.md has 7 canonical
+terms, the lesson-15 mapping had 15 rows, and the full course
+vocabulary is more than 60 but not exactly. The number is rhetorical,
+not a count. Acceptable.
+
+What I'd change with one more revision: nothing. The structure is
+why-built-K-Town → how-K-Town-works → what-the-payoff-is →
+what-comes-next-on-this-page. Each paragraph is one move. Ship-ready.
+
+Ship-ready: yes.
