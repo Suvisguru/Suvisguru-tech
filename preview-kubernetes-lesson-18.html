@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 18 — Storage Part 1: PV, PVC, StorageClass · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'📚';font-size:18px}
+  .glossary summary::after{content:'›';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+
+  /* Three-role storage cards */
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+
+  /* Access modes table */
+  .am-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td{border-bottom:0}
+  .am-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+
+  /* ============ LAYMAN-FIRST SCAFFOLDING ============ */
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'…in Kubernetes · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the K-COM course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L01 What is Kubernetes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L02 containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L03 reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L04 12-factor + monoliths</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L05 K8s fit / overkill</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L06 GitOps + SRE</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L07 history + KEPs</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>L7.5 Linux primer</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L08 namespaces &amp; cgroups</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L09 runtimes &amp; OCI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L10 image building</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L11 container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L12 PID 1 &amp; lifecycle</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L13 cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L14 K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L15 Pods deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L16 workload controllers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L17 services &amp; networking</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>L18 storage Pt 1 — PV/PVC/SC</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L19 storage Pt 2 — CSI</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L20 config &amp; secrets</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L21 service accounts &amp; certs</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L22 scheduling Pt 1</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L23 scheduling Pt 2</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 18</span></a>
+    <span class="progress-pill">18 · storage Pt 1</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Customs Warehouse</strong> · storage Part 1.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: today we are at Customs Warehouse, Lesson 18">
+    <title>K-Town district map · today: Customs Warehouse</title>
+    <desc>Stylised map of K-Town. Customs Warehouse highlighted for the storage lesson.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#3F4A5E">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin active" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li><li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Customs Warehouse · storage Pt 1</strong> <span>· lesson 19 of 24</span><span class="visually-hidden">Lesson 18, Customs Warehouse, storage Part 1.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 9 · Lesson 18 · stateful workloads start here</span>
+    <h1>Storage Part 1 · Persistent Volumes, Persistent Volume Claims, StorageClass</h1>
+    <p class="hero-sub">A Pod's filesystem disappears when the Pod restarts. <strong>Persistent storage</strong> survives. Three roles — the <strong>PV</strong> is the disk, the <strong>PVC</strong> is the request, the <strong>StorageClass</strong> is the recipe.</p>
+
+    <div class="hero-illu">
+      <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A customs warehouse cross-section: rows of numbered storage lockers, a clerk at a counter holding rental forms, a forklift bringing in a new locker. Labels point at PVC (the form), PV (the locker), and StorageClass (the warehouse template).">
+        <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+        <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">CUSTOMS WAREHOUSE · LOCKER RENTAL</text>
+        <!-- Customer with form (PVC) -->
+        <g transform="translate(40,60)">
+          <circle cx="30" cy="20" r="14" fill="#FBF1D6" stroke="#2A2520" stroke-width="1.4"/>
+          <circle cx="26" cy="18" r="1.4" fill="#2A2520"/><circle cx="34" cy="18" r="1.4" fill="#2A2520"/>
+          <path d="M 24 24 Q 30 28 36 24" stroke="#2A2520" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path d="M 18 34 Q 18 80 24 100 L 36 100 Q 42 80 42 34 Z" fill="#5A9F7A"/>
+          <!-- form held -->
+          <rect x="44" y="44" width="36" height="44" rx="2" fill="#FFFFFF" stroke="#2A2520" stroke-width="1"/>
+          <text x="62" y="58" text-anchor="middle" font-size="6" font-weight="700" fill="#3D7857">PVC</text>
+          <line x1="50" y1="64" x2="74" y2="64" stroke="#9D9389" stroke-width="0.6"/>
+          <line x1="50" y1="70" x2="74" y2="70" stroke="#9D9389" stroke-width="0.6"/>
+          <line x1="50" y1="76" x2="74" y2="76" stroke="#9D9389" stroke-width="0.6"/>
+          <line x1="50" y1="82" x2="68" y2="82" stroke="#9D9389" stroke-width="0.6"/>
+          <text x="40" y="120" text-anchor="middle" font-size="10" font-weight="700" fill="#3D7857">your Pod</text>
+          <text x="40" y="135" text-anchor="middle" font-size="9" font-style="italic" fill="#6B6058">"I need 10 GiB"</text>
+        </g>
+        <!-- Clerk + counter -->
+        <g transform="translate(160,60)">
+          <rect x="0" y="80" width="120" height="20" rx="4" fill="#A06B45" stroke="#5A4F45" stroke-width="1"/>
+          <circle cx="60" cy="20" r="14" fill="#FBF1D6" stroke="#2A2520" stroke-width="1.4"/>
+          <circle cx="56" cy="18" r="1.4" fill="#2A2520"/><circle cx="64" cy="18" r="1.4" fill="#2A2520"/>
+          <path d="M 54 24 Q 60 28 66 24" stroke="#2A2520" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path d="M 48 34 Q 48 80 54 80 L 66 80 Q 72 80 72 34 Z" fill="#3F4A5E"/>
+          <text x="60" y="120" text-anchor="middle" font-size="10" font-weight="700" fill="#3F4A5E">clerk</text>
+          <text x="60" y="135" text-anchor="middle" font-size="9" font-style="italic" fill="#6B6058">(StorageClass)</text>
+        </g>
+        <!-- Wall of lockers (PVs) -->
+        <g transform="translate(330,40)">
+          <rect width="320" height="140" rx="6" fill="#D6CFC0" stroke="#8B7355" stroke-width="1.5"/>
+          <text x="160" y="14" text-anchor="middle" font-size="9" fill="#5A4F45" font-weight="700">LOCKER WALL · PVs (the actual disks)</text>
+          <!-- Lockers -->
+          <g transform="translate(10,22)">
+            <rect width="56" height="52" fill="#F5EFE3" stroke="#5A4F45" stroke-width="1.2"/>
+            <circle cx="48" cy="26" r="2" fill="#A04832"/>
+            <text x="28" y="34" text-anchor="middle" font-size="11" font-weight="700" fill="#5A4F45">10G</text>
+          </g>
+          <g transform="translate(72,22)">
+            <rect width="56" height="52" fill="#FFFFFF" stroke="#3D7857" stroke-width="1.5"/>
+            <circle cx="48" cy="26" r="2" fill="#5A9F7A"/>
+            <text x="28" y="32" text-anchor="middle" font-size="10" font-weight="700" fill="#3D7857">10G</text>
+            <text x="28" y="44" text-anchor="middle" font-size="6" fill="#3D7857" font-style="italic">bound</text>
+            <line x1="20" y1="2" x2="36" y2="-6" stroke="#5A9F7A" stroke-width="1.2" stroke-dasharray="3,2"/>
+          </g>
+          <g transform="translate(134,22)">
+            <rect width="56" height="52" fill="#F5EFE3" stroke="#5A4F45" stroke-width="1.2"/>
+            <circle cx="48" cy="26" r="2" fill="#A04832"/>
+            <text x="28" y="34" text-anchor="middle" font-size="11" font-weight="700" fill="#5A4F45">20G</text>
+          </g>
+          <g transform="translate(196,22)">
+            <rect width="56" height="52" fill="#F5EFE3" stroke="#5A4F45" stroke-width="1.2"/>
+            <circle cx="48" cy="26" r="2" fill="#A04832"/>
+            <text x="28" y="34" text-anchor="middle" font-size="11" font-weight="700" fill="#5A4F45">50G</text>
+          </g>
+          <g transform="translate(258,22)">
+            <rect width="56" height="52" fill="#F5EFE3" stroke="#5A4F45" stroke-width="1.2" stroke-dasharray="3,2"/>
+            <text x="28" y="38" text-anchor="middle" font-size="14" fill="#9D9389">+</text>
+            <text x="28" y="64" text-anchor="middle" font-size="6" fill="#5A4F45" font-style="italic">forklift</text>
+          </g>
+          <text x="160" y="100" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">closed = unbound | open = bound to a PVC | + = provisioned on demand</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Your team's PostgreSQL Pod stores all data on the Pod's local filesystem. The Pod restarts at 3 AM (a routine event — a node taint, an image update, anything). It comes back up clean — fresh filesystem, no data. Years of customer records, gone in fifteen seconds. The recovery story is ugly. This lesson is about the abstraction that prevents this — and the three roles you need to understand to use it.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Pod storage is ephemeral. To survive a Pod restart, declare a <strong>PVC</strong> (the request). A <strong>StorageClass</strong> (the recipe) tells K8s how to provision a <strong>PV</strong> (the actual disk). The PV binds to the PVC and the Pod mounts it.</p>
+  </div>
+
+  <!-- ============================== SECTION 1 — CONCEPT ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Ephemeral by default; persistent on request</h2>
+    <p>A Pod's container has a writable layer on top of the image's read-only layers. Anything the app writes there — log files, uploaded user data, cached computation — lives in that writable layer. <strong>That writable layer is destroyed when the container or Pod is removed.</strong> The next Pod gets a fresh writable layer; nothing carries over. Even <code>emptyDir</code>, the default scratch volume, is destroyed when the Pod itself is removed.</p>
+    <p>For data that must survive Pod churn (databases, file uploads, queue state), Kubernetes provides a layer of indirection. The Pod doesn't bind to a specific disk; it declares what it needs. A controller binds the declaration to actual storage. That's the <strong>PV / PVC / StorageClass</strong> trio. Each plays one role in the negotiation between "what this Pod wants" and "what disk the cluster can give it."</p>
+  </section>
+
+  <!-- ============================== SECTION 1.5 — THE THREE ROLES ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · Three roles, three K8s objects</span>
+    <h2>PV, PVC, and StorageClass — each plays one part</h2>
+    <p>Understanding storage in Kubernetes is mostly understanding which object plays which role. Memorise these three and you've got the spine of the whole module.</p>
+
+    <div class="role-grid">
+      <div class="role r1">
+        <span class="role-icon">📋</span>
+        <h3 class="role-name">PersistentVolumeClaim (PVC)</h3>
+        <p class="role-tag">the request</p>
+        <p class="role-desc">App-level: written by whoever owns the workload. Says "I need <code>10Gi</code> of <code>ReadWriteOnce</code> storage from the <code>fast-ssd</code> StorageClass." Lives in a namespace. Mentioned by the Pod under <code>volumes:</code>.</p>
+        <p class="role-who">Written by: app teams</p>
+      </div>
+      <div class="role r2">
+        <span class="role-icon">💾</span>
+        <h3 class="role-name">PersistentVolume (PV)</h3>
+        <p class="role-tag">the actual disk</p>
+        <p class="role-desc">Cluster-level: a real piece of storage (an EBS volume, a Ceph RBD, an NFS export). Has capacity, access modes, a backing CSI driver, a reclaim policy. PVCs and PVs <em>bind</em> to each other, 1:1.</p>
+        <p class="role-who">Created by: dynamic provisioning (StorageClass) or hand-rolled by the cluster admin</p>
+      </div>
+      <div class="role r3">
+        <span class="role-icon">📜</span>
+        <h3 class="role-name">StorageClass</h3>
+        <p class="role-tag">the recipe</p>
+        <p class="role-desc">Cluster-level: tells K8s <em>how</em> to provision a PV when a PVC arrives that asks for this class. Names the CSI provisioner, sets parameters (disk type, IOPS, encryption), the reclaim policy, and the binding mode.</p>
+        <p class="role-who">Written by: cluster operators</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px">The flow: a PVC arrives → its <code>storageClassName</code> picks a StorageClass → the StorageClass's provisioner creates a PV with the right capacity and parameters → K8s binds the PV to the PVC → the Pod mounts the PVC and gets the volume at the path it asked for.</p>
+  </section>
+
+  <!-- ============================== SECTION 1.7 — ACCESS MODES ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · Access modes</span>
+    <h2>Who can mount the volume — and how many at once</h2>
+    <p>Access modes describe how many Pods (and on how many nodes) can mount the same volume simultaneously, and whether they get read-write or read-only access. The PVC asks for a mode; the PV must support it; the underlying storage must actually allow it.</p>
+
+    <table class="am-table">
+      <thead>
+        <tr><th>Mode</th><th>Short</th><th>Means</th><th>Typical use</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>ReadWriteOnce</code></td><td><code>RWO</code></td><td>One node mounts it for read-write. Only Pods on that node access it. The default.</td><td>Single-replica databases, workloads that own their disk.</td></tr>
+        <tr><td><code>ReadOnlyMany</code></td><td><code>ROX</code></td><td>Many nodes mount the same volume read-only.</td><td>Shared static assets, ML model files.</td></tr>
+        <tr><td><code>ReadWriteMany</code></td><td><code>RWX</code></td><td>Many nodes mount it for read-write. Requires a network filesystem (NFS, CephFS, Azure Files).</td><td>Shared content stores, log aggregators that multiple Pods write into.</td></tr>
+        <tr><td><code>ReadWriteOncePod</code></td><td><code>RWOP</code></td><td>Stricter than RWO — only one Pod (not just one node) gets read-write access. K8s 1.27+.</td><td>Single-writer guarantees, leader-election storage.</td></tr>
+      </tbody>
+    </table>
+
+    <p style="margin-top:18px">Most cloud block storage (EBS, GCE PD, Azure Managed Disk) supports only <code>RWO</code>. For <code>RWX</code> you need a network filesystem (EFS, Filestore, Azure Files) or an in-cluster solution (Rook/Ceph, Longhorn, OpenEBS).</p>
+  </section>
+
+  <!-- ============================== SECTION 1.9 — RECLAIM POLICIES + BINDING MODES ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · Reclaim policies &amp; binding modes</span>
+    <h2>What happens when the PVC is deleted, and when the PV is provisioned</h2>
+    <p><strong>Reclaim policy</strong> on the PV decides what happens to the underlying disk when the PVC is deleted:</p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px">
+      <li><code>Delete</code> (default for dynamic) — the PV and the underlying cloud disk are deleted with the PVC. Tidy. Risk: an accidental PVC delete loses your data.</li>
+      <li><code>Retain</code> — the PV stays around in <code>Released</code> state with the data intact. A human reclaims or deletes it later. Safer for production data.</li>
+      <li><code>Recycle</code> — deprecated, removed. Don't use.</li>
+    </ul>
+
+    <p><strong>Volume binding mode</strong> on the StorageClass decides <em>when</em> the PV is provisioned:</p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px">
+      <li><code>Immediate</code> (the historical default) — the PV is provisioned the moment the PVC is created, before any Pod has been scheduled. In a multi-zone cluster this can put the disk in a zone the Pod can never reach.</li>
+      <li><code>WaitForFirstConsumer</code> — the PV is only provisioned once a Pod that uses the PVC has been scheduled. The scheduler picks the node first; storage gets provisioned in the right zone. <strong>This is the right default for any multi-zone cluster.</strong></li>
+    </ul>
+
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>Static provisioning (the cluster admin creates PVs in advance, manually) is rare in modern clusters but still used for hand-managed network storage, NFS exports, or pre-existing SAN volumes. Dynamic provisioning via StorageClass is the default. When you read about an "in-tree" provisioner versus a "CSI" provisioner, that's a generational distinction — older Kubernetes shipped storage drivers inside the kube-controller-manager (in-tree); modern Kubernetes loads them as separate CSI drivers (out-of-tree). All in-tree drivers are being migrated to CSI. Lesson 19 covers CSI in detail.</p>
+  </section>
+
+  <!-- Pause-and-check #1 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A Pod has been writing user uploads to <code>/data</code> in its container's filesystem for an hour. The Pod restarts. What survives?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Everything — Pods auto-snapshot before restart</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">b) Only files in <code>emptyDir</code> volumes</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">c) Only data on PVCs (Persistent Volume Claims) — the container filesystem and <code>emptyDir</code> are wiped at the boundaries the K8s docs call "container restart" and "Pod removal" respectively</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: c.</strong> Container filesystem is wiped on container restart. <code>emptyDir</code> is wiped on Pod removal. Only PVC-backed volumes persist across the Pod's full lifecycle and across rescheduling.</p>
+    </div>
+  </div>
+
+  <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>Manual disk wrangling vs declarative storage</h2>
+
+    <div class="ba-grid">
+      <div class="ba before">
+        <span class="ba-label">Before · hand-managed</span>
+        <p>You SSH into a cloud VM and attach an EBS volume by hand. You <code>mkfs.ext4</code>, mount it at <code>/mnt/data</code>, edit <code>/etc/fstab</code>. You document the steps in a runbook nobody reads. When the VM moves, someone has to re-attach the volume. Multiply by 50 services and 3 environments and you have a permanent backlog.</p>
+      </div>
+      <div class="ba after">
+        <span class="ba-label">After · PVC + StorageClass</span>
+        <p>You write a PVC manifest declaring <code>10Gi</code> of <code>fast-ssd</code> class. <code>kubectl apply</code>. K8s provisions an EBS volume, formats it, attaches it to the right node, mounts it into the Pod at <code>/data</code>. The Pod restarts → the same disk is re-attached. The Pod moves to another node → the disk is detached and re-attached there. You wrote no scripts. The cluster handled it.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">What didn't change: the disk itself. EBS, GCE PD, Azure Disk — all still real cloud volumes. What changed is the layer between the Pod's wish and the cloud's reality. Declarative storage is just declarative scheduling, applied to disks.</p>
+  </section>
+
+  <!-- ============================== SECTION 3 — ANALOGY ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The Customs Warehouse</h2>
+    <p>You arrive at K-Town's Customs Warehouse with goods you need to store. You don't pick a locker yourself — you fill out a <strong>rental form</strong> describing what you need: how much space (<code>10Gi</code>), whether you alone need access or several teammates, and how long you'll need it. The clerk reads your form, checks the locker manifest, and either <em>assigns</em> you an unused locker that fits or <em>orders a new one</em> built to spec. The clerk hands you a key. You use the locker for as long as you need; when you check out, the warehouse policy decides whether to clear the locker or keep it pending pickup.</p>
+    <p>The warehouse runs by three roles. The <strong>rental form</strong> (PVC) is yours — every team that wants storage submits one. The <strong>locker</strong> (PV) is the warehouse's — physical, with capacity and locks. The <strong>warehouse policy</strong> (StorageClass) is set by the city — what kinds of lockers exist, how to build new ones, what happens when a renter leaves. Renters never deal with policy; clerks never deal with apps; the city writes policy once.</p>
+
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>The rental form you fill out</td><td>A <code>PersistentVolumeClaim</code> (PVC)</td></tr>
+          <tr><td>The locker assigned to you</td><td>A <code>PersistentVolume</code> (PV)</td></tr>
+          <tr><td>The warehouse policy book</td><td>A <code>StorageClass</code></td></tr>
+          <tr><td>The clerk reading your form</td><td>The provisioner (CSI driver)</td></tr>
+          <tr><td>"Just me / many of us / read-only"</td><td>Access modes (RWO / RWX / ROX / RWOP)</td></tr>
+          <tr><td>Whether the locker is wiped or saved at checkout</td><td>Reclaim policy (<code>Delete</code> vs <code>Retain</code>)</td></tr>
+          <tr><td>"Assign now" vs "wait until you arrive at your destination"</td><td>Volume binding mode (<code>Immediate</code> vs <code>WaitForFirstConsumer</code>)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real lockers don't move. K8s persistent volumes can be detached from one node and re-attached to another (within the same zone for cloud block storage), so a Pod can reschedule and keep its disk.</em></p>
+  </section>
+
+  <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Your Pod is like a kid at school. The desk they sit at gets cleared at the end of every day — anything they leave on it is gone tomorrow. If they want to keep their drawings, they need a <em>cubby</em>. They ask the teacher for a cubby ("I want a cubby!"). The teacher gives them one. The drawings live in the cubby. The kid can move desks every day, but the cubby stays theirs.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>A Pod's container filesystem is wiped on restart. To keep data, you declare a <strong>PVC</strong> (a request for storage) referencing a <strong>StorageClass</strong> (the recipe). The cluster's provisioner creates a <strong>PV</strong> (a real disk) matching the PVC, binds them, and mounts the volume into the Pod at the path you specified. Pod restarts re-attach the same PV. Choose access mode based on how many Pods need it (<code>RWO</code> for single-writer, <code>RWX</code> for shared); choose reclaim policy based on whether deleting the PVC should delete the data (<code>Delete</code>) or keep it (<code>Retain</code>); choose <code>WaitForFirstConsumer</code> binding mode in any multi-zone cluster.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pause-and-check #2 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A team has 5 stateless web Pods that need to share a directory of static assets — read-only. What access mode fits?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) <code>ReadWriteOnce</code> — only one writer needed</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) <code>ReadOnlyMany</code> — many Pods read; nobody writes</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) <code>ReadWriteMany</code> — multiple Pods need access</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> <code>ReadOnlyMany</code> fits the pattern: many readers, no writers. Most cloud block storage supports it. <code>ReadWriteMany</code> would work too but requires a network filesystem and adds cost without need.</p>
+    </div>
+  </div>
+
+  <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams use these three objects</h2>
+
+    <div class="scenarios">
+      <div class="scenario">
+        <p class="scenario-name">A SaaS startup running PostgreSQL</p>
+        <p>Single primary, two read replicas, all on EKS. Storage class: <code>gp3</code> with 4000 IOPS, <code>WaitForFirstConsumer</code>, <code>Retain</code> reclaim. Each Pod gets a 200 GiB PVC via StatefulSet's <code>volumeClaimTemplates</code>. Pod restarts re-attach the same disk. When they decommission a replica, the PV stays in <code>Released</code> state — a human verifies and deletes manually. Zero data loss in 18 months.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">A bank running shared log aggregation</p>
+        <p>Five Fluentd Pods need to write into the same staging directory before forwarding to a SIEM. <code>ReadWriteMany</code> on Azure Files (SMB-based). Slower than local SSD but everyone can write concurrently. The team accepted the latency hit for the pipeline simplicity.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">A media company training ML models</p>
+        <p>Training Pods need read access to a 4 TB dataset of pre-processed images. Their CSI driver supports <code>ReadOnlyMany</code> from object storage (S3-via-CSI). Each new training run mounts the same PVC; no copying, no duplication. Cost: pennies. Updates: re-mount when the dataset version changes.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">A retail platform migrating from local disk</p>
+        <p>Legacy app wrote to <code>/var/lib/myapp/sessions</code> on the host. New PVC mounted at the same path via <code>subPath</code>. Code unchanged. The PVC handles the persistence; the app code stayed identical. Migration was a YAML change, not a refactor.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 7 — MISCONCEPTIONS + FLASHCARDS + QUIZ ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>Three common misconceptions to clear up first, then the flashcards and quiz.</p>
+
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> A PVC <em>is</em> the disk.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> The PVC is the <em>request</em>. The PV is the disk. They're separate objects that bind 1:1. You can delete a PVC without deleting the PV (with <code>Retain</code> reclaim policy).</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> <code>WaitForFirstConsumer</code> is just an optimisation.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> It's a correctness fix in any multi-zone cluster. With <code>Immediate</code> binding the disk gets provisioned in some random zone <em>before</em> the Pod is scheduled — and cloud block storage can't cross zones. The Pod ends up Pending forever.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Deleting a PVC deletes the data instantly.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Depends on the PV's reclaim policy. <code>Delete</code> (default for dynamic) → yes, the disk is gone. <code>Retain</code> → the PV moves to <code>Released</code>; data still there until a human decides. For production data, prefer <code>Retain</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">PV vs PVC?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">PVC = Persistent Volume Claim, the request (namespace-scoped, written by app teams). PV = Persistent Volume, the actual disk (cluster-scoped, created by provisioner or admin). They bind 1:1.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is StorageClass for?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A "recipe" telling K8s how to provision PVs on demand. Names the CSI provisioner, sets parameters (disk type, IOPS, encryption), reclaim policy, volume binding mode.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Four access modes?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">RWO ReadWriteOnce — one node, read-write. ROX ReadOnlyMany — many nodes, read-only. RWX ReadWriteMany — many nodes, read-write (needs network FS). RWOP ReadWriteOncePod — one Pod, read-write (1.27+).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Reclaim policies?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Delete (default for dynamic) — PV and underlying disk deleted with the PVC. Retain — PV stays in Released state; human reclaims. Recycle — deprecated; don't use.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Volume binding modes?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Immediate — provision PV when PVC created (problematic in multi-zone). WaitForFirstConsumer — provision PV when first Pod scheduled (correct for multi-zone — disk lands in the right zone).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Static vs dynamic provisioning?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Static — admin pre-creates PVs by hand; PVCs match against existing PVs. Dynamic — StorageClass + provisioner creates PVs on demand. Dynamic is the modern default.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When does data actually get cleaned?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Container filesystem: at every container restart. <code>emptyDir</code>: at Pod removal. PVC-backed volumes: per the PV's reclaim policy when the PVC is deleted (Delete = now; Retain = manual).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why doesn't <code>RWX</code> work on EBS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">EBS (and most cloud block storage) attaches to one node at a time. RWX requires multiple nodes mounting concurrently — only network filesystems (EFS, Filestore, Azure Files, Ceph, Longhorn) support it.</div></div></div>
+    </div>
+
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card">
+        <p class="quiz-prompt">A team writes <code>storageClassName: ""</code> (empty string) on their PVC. What does this mean?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>It explicitly opts out of dynamic provisioning. The PVC will only bind to a <em>pre-existing</em> PV that also has empty <code>storageClassName</code>. Different from omitting the field, which uses the cluster's default StorageClass. Used when you've manually created a PV and want this PVC to claim it specifically.</div>
+      </div>
+      <div class="quiz-card">
+        <p class="quiz-prompt">You delete a PVC with <code>kubectl delete pvc my-data</code>. The underlying disk should be preserved. What's the right setup?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Use a StorageClass with <code>reclaimPolicy: Retain</code> (or set the PV's reclaim policy to Retain after the fact with <code>kubectl patch pv ... --type=json -p='[{"op":"replace","path":"/spec/persistentVolumeReclaimPolicy","value":"Retain"}]'</code>). On PVC deletion the PV moves to <code>Released</code> state with the data intact. A human verifies before deleting it manually.</div>
+      </div>
+      <div class="quiz-card cyoa-quiz">
+        <span class="cyoa-tag">🎬 Choose Your Own Adventure</span>
+        <p class="quiz-prompt">Your team uses a StorageClass with <code>volumeBindingMode: Immediate</code> (the historical default). The cluster spans three availability zones. A new PVC is created. <strong>Click to see what happens. ▼</strong></p>
+        <button class="quiz-reveal" type="button">Show what happened</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">at the next restart</span>The PV was provisioned the moment the PVC was created — before any Pod existed to consume it. The provisioner picked a zone at random: <code>us-east-1b</code>. Two days later the workload's Pod gets scheduled — to <code>us-east-1c</code>. The Pod tries to mount the PVC. Cloud block storage can't attach across zones. The Pod is stuck Pending forever, with a cryptic <code>FailedAttachVolume</code> event. <strong>Fix:</strong> set <code>volumeBindingMode: WaitForFirstConsumer</code> on every StorageClass in any multi-zone cluster. The scheduler picks the node first; the disk gets provisioned in the right zone. Make this the default; never ship <code>Immediate</code> binding to a multi-zone production cluster.</div>
+      </div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">PersistentVolume (PV)</div><div class="gloss-def">A piece of storage in the cluster — an actual disk. Cluster-scoped object. Has capacity, access modes, reclaim policy, and a backing CSI driver.</div></div>
+      <div class="gloss-item"><div class="gloss-name">PersistentVolumeClaim (PVC)</div><div class="gloss-def">A request for storage by a workload. Namespace-scoped. Says "I need <code>X</code> Gi of <code>Y</code> StorageClass with <code>Z</code> access mode."</div></div>
+      <div class="gloss-item"><div class="gloss-name">StorageClass</div><div class="gloss-def">Cluster-scoped recipe that tells K8s how to provision a PV when a PVC arrives. Names the provisioner, parameters, reclaim policy, binding mode.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Access mode</div><div class="gloss-def">RWO / ROX / RWX / RWOP — describes how many concurrent mounters and what permissions they get.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Reclaim policy</div><div class="gloss-def">What happens to the underlying disk when its PVC is deleted. Delete = removed; Retain = preserved (manual cleanup).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Volume binding mode</div><div class="gloss-def">When the PV is provisioned. Immediate = on PVC creation. WaitForFirstConsumer = when the first consuming Pod is scheduled.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Static provisioning</div><div class="gloss-def">Admin manually creates PVs ahead of time; PVCs claim from this pool. Used for hand-managed network storage or pre-existing volumes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Dynamic provisioning</div><div class="gloss-def">PVs created on-demand by a StorageClass's provisioner when a matching PVC arrives. The modern default.</div></div>
+      <div class="gloss-item"><div class="gloss-name">In-tree provisioner</div><div class="gloss-def">Storage driver historically built into Kubernetes itself (kube-controller-manager). Being phased out in favour of CSI.</div></div>
+      <div class="gloss-item"><div class="gloss-name">CSI driver</div><div class="gloss-def">Container Storage Interface — the modern standard for plugin-based storage drivers. Covered in detail in Lesson 19.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Pod storage is ephemeral. To survive a Pod restart, declare a <strong>PVC</strong> (the request). A <strong>StorageClass</strong> (the recipe) tells K8s how to provision a <strong>PV</strong> (the actual disk). The PV binds to the PVC and the Pod mounts it.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 18 complete</span>
+    <p>Three roles: PVC requests storage, StorageClass tells K8s how to make it, PV is the actual disk. Pod restarts → same PV re-attached. Data survives.</p>
+    <p class="recap-next"><strong>Next — Lesson 19: Storage Part 2.</strong> CSI drivers under the hood, snapshots and cloning, the new <code>VolumeAttributesClass</code> for live performance changes (GA in 1.34), stateful patterns, multi-attach errors. The same Customs Warehouse — just behind the loading dock this time.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 18 of 24 · grounded in kubernetes.io</footer>
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '☀ Light' : '🌙 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '☀ Light' : '🌙 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+</script>
+</body>
+</html>
