@@ -316,7 +316,7 @@ A floating left rail visible while scrolling on desktop.
   - `▶` (slate accent, current) — current lesson, with "← you are here" suffix
   - `○` (muted gray) — future
 - Each item is text + icon only, no boxes.
-- Behaviour below 720px width: collapses to a horizontal progress bar at top of the page.
+- Visibility: rendered only at viewport ≥ 1240px (where the centred 820px main + the 170-180px rail + breathing space all fit). Below 1240px the rail is hidden; the K-Town dot-strip already serves the "where am I in the journey" function for narrower viewports, so duplicating it as a horizontal bar would clutter mobile.
 - Hard-coded per lesson. No state persistence — the rail reflects "this lesson's position in the journey," not actual user progress.
 
 #### CYOA quiz reveal

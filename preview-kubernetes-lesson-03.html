@@ -166,9 +166,160 @@
   .principle-illu{display:flex;align-items:center;justify-content:center;height:84px;background:var(--bg-soft);border-radius:var(--r-soft);margin:6px 0;overflow:hidden}
   .principle-illu svg{display:block;width:100%;height:100%;max-width:140px}
   .principle-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  /* ============ LAYMAN-FIRST SCAFFOLDING (K-Town revision Phase 2) ============ */
+
+  /* Inline code inside section paragraphs (parity with L13) */
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+  /* Visually-hidden utility for screen-reader-only content */
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* District line — single-line K-Town pin under topbar */
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+
+  /* K-Town map */
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease)}
+  .ktown-map .pin .pin-circle{fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+
+  /* Nightmare opener */
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+
+  /* One-sentence stamp */
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:19px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box{background:var(--accent-soft)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+
+  /* Translation Legend (table inside §3) */
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'…in Kubernetes · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+
+  /* Pause-and-check */
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+
+  /* Common Misconceptions panel (start of §7) */
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+
+  /* Analogy-stops-here callout */
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+
+  /* Skip-if-new pill (defined for future lessons; unused in L01) */
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+
+  /* Persistent concept rail (desktop only, ≥1240px) */
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){
+    .concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50}
+  }
+
+  /* CYOA quiz reveal */
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  .cyoa-quiz .quiz-answer pre{font-family:'ui-monospace',monospace;font-size:12px;line-height:1.45;background:var(--bg-soft);padding:10px 12px;border-radius:var(--r-soft);overflow-x:auto;margin:10px 0;color:var(--ink-soft)}
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .ktown-map .pin .pin-circle,.pause-check-opt,.ktown-strip-pin{transition:none}
+    .quiz-reveal{animation:none}
+  }
 </style>
 </head>
 <body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the Kubernetes course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>what Kubernetes is</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>containers vs VMs</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>the reconciliation loop</span><span class="concept-rail-here">← you are here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how apps should be designed</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>when K8s makes sense</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how mature teams operate it</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how the project evolves</span></div>
+  <div class="concept-rail-item primer"><span class="concept-rail-icon">○</span><span>Linux foundations <small>(primer)</small></span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how containers actually work</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>runtimes &amp; the OCI standard</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how images are built</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>container security</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how containers shut down</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>cluster architecture</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>Pods deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>workload controllers</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>services &amp; networking</span></div>
+</aside>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -177,6 +328,69 @@
     <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
   </div>
 </header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Climate Control Tower</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: today we are at Climate Control Tower, Lesson 03">
+    <title>K-Town district map · today: Climate Control Tower</title>
+    <desc>Stylised map of K-Town. Each Kubernetes lesson maps to one named district. Mayor's Office is the city anchor and is highlighted as the current district.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/>
+      </linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/>
+      </linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin active" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#3F4A5E">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+  </svg>
+
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Climate Control Tower</strong> <span>· lesson 3 of 16</span><span class="visually-hidden">Lesson 3 of 16, Climate Control Tower.</span></p>
+</div>
 
 <main>
 
@@ -286,13 +500,26 @@
     </div>
   </section>
 
+  <!-- 3 AM Nightmare opener -->
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Your deploy script has 200 lines of bash. Step 4 runs <code>ssh</code> to 30 servers. Tonight, on server 17, step 4 fails — and you have no idea what state servers 1–16 are in, or 18–30. Are they on the new version? The old? Half each? You can't tell without looking. The script can't recover; it just stopped. This lesson is about the model that makes that whole class of problem go away.</p>
+    </div>
+  </div>
+
+  <!-- One-sentence stamp · top placement -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Kubernetes is a thermostat. You set what you want; controllers watch forever; gaps close automatically. Everything else in the course is a variation of this loop.</p>
+  </div>
+
   <!-- ============================== SECTION 1 — CONCEPT ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 1 · Concept</span>
     <h2>What "cloud-native" actually means</h2>
     <p><strong>Cloud-native</strong> is a way of building software that assumes the world keeps breaking and changing. Servers fail. Network blips happen. Traffic goes up and down. Apps need to ship 50 times a day. Cloud-native software is designed for that — not in spite of it.</p>
-    <p>Seven principles describe it. They sound like a long list, but they all stem from one idea: <strong>the reconciliation loop</strong>. A small program (called a <strong>controller</strong>) reads what you said you wanted, looks at what's actually running, and takes the smallest action to close the gap. Then it does it again. Forever. That's the whole game.</p>
-    <p>The seven principles: <strong>1. Declarative config</strong> — you say what, not how. <strong>2. Reconciliation loops</strong> — controllers always watching. <strong>3. Desired vs actual state</strong> — the spec vs reality. <strong>4. Immutable infrastructure</strong> — replace, don't patch. <strong>5. Pets vs cattle</strong> — replaceable, not unique. <strong>6. Horizontal scaling</strong> — more copies, not bigger ones. <strong>7. Failure as normal</strong> — designed-in resilience.</p>
+    <p>Seven principles describe it. They sound like a long list, but they all stem from one idea: <strong>the reconciliation loop</strong>. A small program (called a <strong>controller</strong>) reads the <strong>desired state</strong> (what you want), looks at the <strong>actual state</strong> (what's running), and takes the smallest action to close the gap. Then it does it again. Forever. That's the whole game.</p>
+    <p>The seven principles: <strong>1. Declarative config</strong> — you say what, not how. <strong>2. Reconciliation loops</strong> — controllers always watching. <strong>3. Desired vs actual state</strong> — what you want vs what's actually running. <strong>4. Immutable infrastructure</strong> — replace, don't patch. <strong>5. Pets vs cattle</strong> — replaceable, not unique. <strong>6. Horizontal scaling</strong> — more copies, not bigger ones. <strong>7. Failure as normal</strong> — designed-in resilience.</p>
 
     <div class="illu">
       <svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The reconciliation loop: desired state on the left, actual state on the right, controller in the middle reading both and taking action to close the gap, with arrows showing the loop never stops">
@@ -351,7 +578,7 @@
         <!-- Bottom note: the loop never stops -->
         <text x="340" y="296" font-size="13" font-weight="700" fill="#3F4A5E" text-anchor="middle">↻ this loop never stops</text>
       </svg>
-      <div class="illu-caption">Three pieces. The desired state (what you said), the actual state (what's running), and a controller that closes the gap. Forever.</div>
+      <div class="illu-caption">Three pieces. The desired state, the actual state, and a controller that closes the gap. Forever.</div>
     </div>
   </section>
 
@@ -421,7 +648,7 @@
           <span class="principle-num">3</span>
           <h3 class="principle-name">Desired vs actual state</h3>
         </div>
-        <p class="principle-tag">the <strong>spec</strong> vs <strong>reality</strong></p>
+        <p class="principle-tag"><strong>desired</strong> vs <strong>actual</strong></p>
         <div class="principle-illu">
           <svg viewBox="0 0 140 84" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two boxes side by side: desired (3) vs actual (2), with a comparison symbol between">
             <!-- Desired box -->
@@ -561,6 +788,20 @@
     <p style="margin-top:24px;color:var(--ink-soft);font-size:15px;font-style:italic;text-align:center">All seven boil down to one thing: <strong style="color:var(--ink)">describe the goal, let the loop close the gaps</strong>.</p>
   </section>
 
+  <!-- Pause-and-check #1 · after Section 1 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Your YAML says <code>replicas: 3</code>. A Pod crashes. Now 2 are running. What does the controller do?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Sends an email</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Notices the gap (3 ≠ 2) and starts a 3rd Pod on a healthy node</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Updates the YAML to say <code>replicas: 2</code></button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> The controller is constantly comparing desired (3) to actual (2). When they differ, it acts. Forever. That's the loop.</p>
+    </div>
+  </div>
+
   <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 2 · Before &amp; After</span>
@@ -623,7 +864,7 @@
       </div>
       <div class="ba after">
         <span class="ba-label">After · declarative</span>
-        <p>You write the goal. The controller figures out the steps. If something fails halfway, the controller picks up where it left off. State is always either "matches the spec" or "actively being reconciled."</p>
+        <p>You write the goal. The controller figures out the steps. If something fails halfway, the controller picks up where it left off. State is always either "matches the desired state" or "actively being reconciled."</p>
         <p>"Cattle" — every server is identical and replaceable. Lose one, the controller starts another. No one notices.</p>
       </div>
     </div>
@@ -732,15 +973,23 @@
       <div class="illu-caption">A thermostat is the perfect cloud-native system. So is Kubernetes.</div>
     </div>
 
-    <p style="margin-top:18px"><strong>The mapping:</strong></p>
-    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
-      <li><strong>The thermostat dial</strong> = your YAML file (desired state)</li>
-      <li><strong>The room</strong> = your live cluster (actual state)</li>
-      <li><strong>The thermostat brain</strong> = a controller (the small program watching forever)</li>
-      <li><strong>The thermometer</strong> = the cluster reporting what's running</li>
-      <li><strong>The heater firing</strong> = the controller taking action (start a pod, scale up, restart)</li>
-      <li><strong>"Never stops watching"</strong> = the reconciliation loop (the heart of Kubernetes)</li>
-    </ul>
+    <div class="translation-legend">
+      <table>
+        <thead>
+          <tr><th>In the story…</th><th>…in Kubernetes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>The thermostat dial</td><td>Your YAML manifest <em>(desired state)</em></td></tr>
+          <tr><td>The room</td><td>Your live cluster <em>(actual state)</em></td></tr>
+          <tr><td>The thermostat brain</td><td>A controller</td></tr>
+          <tr><td>The thermometer</td><td>The cluster reporting actual state</td></tr>
+          <tr><td>The heater firing</td><td>The controller acting (start a Pod, scale up, restart)</td></tr>
+          <tr><td>"Never stops watching"</td><td>The reconciliation loop</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: a real thermostat watches one thing — temperature. Kubernetes runs many "thermostats" at once, one per resource type, all in parallel.</em></p>
   </section>
 
   <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
@@ -761,6 +1010,20 @@
     </div>
   </section>
 
+  <!-- Pause-and-check #2 · after Section 4 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Imperative vs declarative — which one is Kubernetes?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Imperative: "do step 1, then step 2, then step 3"</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Declarative: "I want this end state; figure it out"</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Both</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> You write the goal; controllers figure out the steps. That's why K8s recovers from failures — it doesn't have a "step 4 failed" problem because there's no fixed step 4.</p>
+    </div>
+  </div>
+
   <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
@@ -770,15 +1033,15 @@
     <div class="scenarios">
       <div class="scenario">
         <p class="scenario-name">Black Friday at an e-commerce site</p>
-        <p>Traffic jumps from 100 requests per second to 8,000 in under an hour. The team set up a "horizontal pod autoscaler" that watches CPU usage and scales the number of app copies up when it gets busy. By 11 AM there are 40 copies of the app running across the cluster (up from 3 normally). By 11 PM, traffic falls and the count drops back to 3. The team watched on the dashboard. Nobody manually scaled anything.</p>
+        <p>Traffic jumps from 100 requests per second to 8,000 in under an hour. The team set up a Horizontal Pod Autoscaler that watches CPU usage and scales the number of app copies up when it gets busy. By 11 AM there are 40 copies of the app running across the cluster (up from 3 normally). By 11 PM, traffic falls and the count drops back to 3. The team watched on the dashboard. Nobody manually scaled anything.</p>
       </div>
       <div class="scenario">
         <p class="scenario-name">A cloud machine fails at 3 AM</p>
-        <p>AWS rotates out a server for maintenance. The 12 pods running on it all die instantly. The controllers notice within seconds and reschedule them onto other healthy servers. By the time anyone wakes up, the dashboard shows everything green and a Slack message saying "self-healed at 03:14 — no action needed." The on-call engineer doesn't even know about it until standup.</p>
+        <p>AWS rotates out a server for maintenance. The 12 Pods running on it all die instantly. The controllers notice within seconds and reschedule them onto other healthy servers. By the time anyone wakes up, the dashboard shows everything green and a Slack message saying "self-healed at 03:14 — no action needed." The on-call engineer doesn't even know about it until standup.</p>
       </div>
       <div class="scenario">
         <p class="scenario-name">A bad deployment is rolling out</p>
-        <p>An engineer pushes a new version. The Deployment controller starts replacing pods one at a time. The new pods crash on startup (bug in the new code). The controller sees the failed pods, stops the rollout, and keeps the old version running. The engineer rolls back with a single command. Production never went down.</p>
+        <p>An engineer pushes a new version. The Deployment controller starts replacing Pods one at a time. The new Pods crash on startup (bug in the new code). The controller sees the failed Pods, stops the rollout, and keeps the old version running. The engineer rolls back with a single command. Production never went down.</p>
       </div>
       <div class="scenario">
         <p class="scenario-name">Someone manually edits a config file in production</p>
@@ -794,7 +1057,7 @@
     <p>Three modes. Same loop. Different scenario.</p>
 
     <div class="anim-wrap">
-      <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animated reconciliation loop showing the thermostat firing the heater, then a pod self-healing, then scaling up">
+      <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animated reconciliation loop showing the thermostat firing the heater, then a Pod self-healing, then scaling up">
         <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: thermostat fires the heater</text>
 
         <!-- Top-right: cycle counter (kept clear of stack content) -->
@@ -869,14 +1132,33 @@
 
   <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
   <section class="s">
-    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
     <h2>Lock it in</h2>
-    <p>Eight flashcards on the key terms, then three quick questions.</p>
+    <p>Three common misconceptions to clear up first, then the flashcards and quiz.</p>
+
+    <!-- Common Misconceptions panel -->
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> The reconciliation loop runs once and stops when everything matches.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> It never stops. When the gap is zero it idles, but it keeps watching. The moment something drifts (a crash, a manual edit), the loop fires again.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Declarative means "I never write any logic."</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> You still write a correct spec. If the YAML says "3 copies of a broken app," you'll get 3 copies of a broken app — restarted forever.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> There's one big controller in Kubernetes.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> There are dozens, each watching one type of resource (Deployments, Services, Jobs…), all running the same loop pattern in parallel.</div>
+        </div>
+      </div>
+    </div>
 
     <div class="flashcard-grid">
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is the reconciliation loop?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A small program (a controller) that reads desired state, observes actual state, takes the smallest action to close the gap, and repeats forever. The heart of Kubernetes.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Declarative vs imperative?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Imperative: "do step 1, then step 2, then step 3." Declarative: "I want this end state." Kubernetes is declarative; you write the goal, controllers figure out the steps.</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Desired vs actual state?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Desired = what you said you wanted (your YAML). Actual = what's running right now (the live cluster). Controllers constantly compare them and act to close the gap.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Desired vs actual state?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Desired state = the state described in your YAML manifest. Actual state = the state running right now in the cluster. Controllers constantly compare them and act to close the gap.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Pets vs cattle?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Pets: hand-tuned, named, irreplaceable servers — you'd grieve if one died. Cattle: identical, numbered, replaceable units — when one dies, you bring in another. Cloud-native treats every resource as cattle.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is immutable infrastructure?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">You don't patch a running server — you build a new one with the new config and replace the old. No drift over time, no "what state is this in?" mystery.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Horizontal vs vertical scaling?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Vertical: make one machine bigger (more CPU/RAM). Horizontal: add more identical machines. Cloud-native prefers horizontal because it's resilient and limitless.</div></div></div>
@@ -896,10 +1178,11 @@
         <button class="quiz-reveal" type="button">Show answer</button>
         <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Replace the script with a declarative YAML file that describes the goal ("3 copies of web:v2 running, healthy, exposed on port 80"). Hand it to Kubernetes. The "if this fails, do that" logic becomes the controller's job — and the controller is way better at it than the script, because it never stops watching and never gets confused about what state things are in.</div>
       </div>
-      <div class="quiz-card">
-        <p class="quiz-prompt">Why is "treat servers as cattle" a reliability strategy, not just a fashion statement?</p>
-        <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Because if every server is hand-tuned (a "pet"), losing one means losing knowledge. Documentation is always incomplete. Recovery means a human reverse-engineering what made that server special. If servers are interchangeable cattle described declaratively, losing one is a non-event — the controller starts another from the same spec. Reliability scales because nothing depends on a specific machine surviving.</div>
+      <div class="quiz-card cyoa-quiz">
+        <span class="cyoa-tag">🎬 Choose Your Own Adventure</span>
+        <p class="quiz-prompt">You SSH into a production node and "quickly" hand-edit a config to fix an issue. Your cluster is GitOps-managed by Argo CD. You log off feeling smart. <strong>Click to see what happens in 30 seconds. ▼</strong></p>
+        <button class="quiz-reveal" type="button">Show what happened</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">30 seconds later</span>Argo CD reads your hand-edit (drift), reads what Git says (the source of truth), notices they differ, reverts your change. Slack pings the team channel: <code>drift detected, reconciled to git/main</code>. Your "fix" is gone. <strong>Lesson:</strong> in a GitOps world, Git is the truth. Out-of-band edits get politely undone — by design.</div>
       </div>
     </div>
   </section>
@@ -911,13 +1194,18 @@
       <div class="gloss-item"><div class="gloss-name">Cloud-native</div><div class="gloss-def">A way of building software that assumes dynamic infrastructure, treats failure as normal, and uses declarative reconciliation loops.</div></div>
       <div class="gloss-item"><div class="gloss-name">Declarative</div><div class="gloss-def">You describe the end state ("I want X"), not the steps to get there. The opposite of imperative.</div></div>
       <div class="gloss-item"><div class="gloss-name">Reconciliation loop</div><div class="gloss-def">A controller program that constantly reads desired and actual state and acts to close the gap. The core idea behind Kubernetes.</div></div>
-      <div class="gloss-item"><div class="gloss-name">Desired state</div><div class="gloss-def">What you said you wanted. Lives in your YAML files (and gets stored in the cluster's database, etcd).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Desired state</div><div class="gloss-def">What you want, as described in your YAML manifest. Stored in the cluster's database, etcd.</div></div>
       <div class="gloss-item"><div class="gloss-name">Actual state</div><div class="gloss-def">What's actually running right now in the cluster. Reported back by the kubelet on each node.</div></div>
       <div class="gloss-item"><div class="gloss-name">Controller</div><div class="gloss-def">A small program that runs the reconciliation loop for one type of resource. Many controllers run inside Kubernetes; some are custom.</div></div>
       <div class="gloss-item"><div class="gloss-name">Pets vs cattle</div><div class="gloss-def">Pets are hand-tuned, irreplaceable servers. Cattle are identical, replaceable units. Cloud-native treats everything as cattle.</div></div>
       <div class="gloss-item"><div class="gloss-name">Immutable infrastructure</div><div class="gloss-def">Servers and containers are never modified after deployment. To change them, you replace them with a new version. Eliminates configuration drift.</div></div>
     </div>
   </details>
+
+  <!-- One-sentence stamp · bottom placement (identical to top) -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Kubernetes is a thermostat. You set what you want; controllers watch forever; gaps close automatically. Everything else in the course is a variation of this loop.</p>
+  </div>
 
   <!-- ============================== RECAP + COMPLETION ============================== -->
   <section class="recap">
@@ -951,12 +1239,27 @@
     card.addEventListener('click', () => card.classList.toggle('flipped'));
   });
 
-  // quiz reveals
+  // quiz reveals (handles both "Show answer" and CYOA "Show what happened")
   document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
     btn.addEventListener('click', () => {
       const ans = btn.parentElement.querySelector('.quiz-answer');
       const open = ans.classList.toggle('show');
-      btn.textContent = open ? 'Hide answer' : 'Show answer';
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+
+  // pause-and-check
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      });
     });
   });
 
@@ -1044,30 +1347,30 @@
 
   function runHeal() {
     clearTimeouts();
-    animModeLabel.textContent = 'Mode: pod self-heals after failure';
+    animModeLabel.textContent = 'Mode: Pod self-heals after failure';
     animDesiredIcon.textContent = '📋';
-    animDesiredText.textContent = '3 pods';
+    animDesiredText.textContent = '3 Pods';
     animDesiredSub.textContent = 'replicas: 3';
     animActualIcon.textContent = '🟢🟢🟢';
     animActualText.textContent = '3 / 3';
     animActualSub.textContent = 'all healthy';
     animCtrlStatus.textContent = 'in sync ✓';
-    setStatus('Desired = 3 pods, actual = 3 pods. All matches.');
-    setReadout('<strong>Step 1.</strong> Steady state. Three pods running. The loop is idle.');
+    setStatus('Desired = 3 Pods, actual = 3 Pods. All matches.');
+    setReadout('<strong>Step 1.</strong> Steady state. Three Pods running. The loop is idle.');
 
     later(2000, () => {
       animActualIcon.textContent = '🟢🟢💀';
       animActualText.textContent = '2 / 3';
       animActualSub.textContent = 'one died!';
       animCtrlStatus.textContent = 'gap detected!';
-      setStatus('A pod died. Actual = 2, desired = 3. Gap detected.');
-      setReadout('<strong>Step 2.</strong> One pod died. Actual dropped to 2. Controller notices.');
+      setStatus('A Pod died. Actual = 2, desired = 3. Gap detected.');
+      setReadout('<strong>Step 2.</strong> One Pod died. Actual dropped to 2. Controller notices.');
     });
     later(3500, () => {
-      animCtrlStatus.textContent = 'creating pod…';
+      animCtrlStatus.textContent = 'creating Pod…';
       flashAction();
-      setStatus('Controller creates a replacement pod.');
-      setReadout('<strong>Step 3.</strong> Controller schedules a replacement pod on a healthy node.');
+      setStatus('Controller creates a replacement Pod.');
+      setReadout('<strong>Step 3.</strong> Controller schedules a replacement Pod on a healthy node.');
     });
     later(5000, () => {
       animActualIcon.textContent = '🟢🟢🟢';
@@ -1075,7 +1378,7 @@
       animActualSub.textContent = 'self-healed';
       animCtrlStatus.textContent = 'in sync ✓';
       setStatus('Self-healed. Back to 3 / 3. No human action needed.');
-      setReadout('<strong>Step 4.</strong> New pod is running. Self-healed in seconds. The on-call engineer slept through it.');
+      setReadout('<strong>Step 4.</strong> New Pod is running. Self-healed in seconds. The on-call engineer slept through it.');
     });
     later(7000, () => {
       cycleCount++;
@@ -1088,38 +1391,38 @@
     clearTimeouts();
     animModeLabel.textContent = 'Mode: scale up to 5 copies';
     animDesiredIcon.textContent = '📋';
-    animDesiredText.textContent = '2 pods';
+    animDesiredText.textContent = '2 Pods';
     animDesiredSub.textContent = 'replicas: 2';
     animActualIcon.textContent = '🟢🟢';
     animActualText.textContent = '2 / 2';
     animActualSub.textContent = 'all healthy';
     animCtrlStatus.textContent = 'in sync ✓';
     setStatus('Desired = 2, actual = 2. All matches.');
-    setReadout('<strong>Step 1.</strong> Steady state. Two pods running.');
+    setReadout('<strong>Step 1.</strong> Steady state. Two Pods running.');
 
     later(2000, () => {
-      animDesiredText.textContent = '5 pods';
+      animDesiredText.textContent = '5 Pods';
       animDesiredSub.textContent = 'replicas: 5';
       animCtrlStatus.textContent = 'gap detected!';
-      setStatus('You changed the spec to 5. Actual is still 2. Gap of 3.');
+      setStatus('You changed the desired state to 5. Actual is still 2. Gap of 3.');
       setReadout('<strong>Step 2.</strong> You edited the YAML to "replicas: 5". Controller sees the gap.');
     });
     later(3500, () => {
       animActualIcon.textContent = '🟢🟢🟡🟡🟡';
       animActualText.textContent = '2 / 5';
       animActualSub.textContent = '3 starting…';
-      animCtrlStatus.textContent = 'starting pods…';
+      animCtrlStatus.textContent = 'starting Pods…';
       flashAction();
-      setStatus('Controller starts 3 new pods.');
-      setReadout('<strong>Step 3.</strong> Controller schedules 3 new pods. They start up.');
+      setStatus('Controller starts 3 new Pods.');
+      setReadout('<strong>Step 3.</strong> Controller schedules 3 new Pods. They start up.');
     });
     later(5500, () => {
       animActualIcon.textContent = '🟢🟢🟢🟢🟢';
       animActualText.textContent = '5 / 5';
       animActualSub.textContent = 'all healthy';
       animCtrlStatus.textContent = 'in sync ✓';
-      setStatus('All 5 pods healthy. Desired = actual.');
-      setReadout('<strong>Step 4.</strong> Scaled. 5 pods running. Loop returns to steady state.');
+      setStatus('All 5 Pods healthy. Desired = actual.');
+      setReadout('<strong>Step 4.</strong> Scaled. 5 Pods running. Loop returns to steady state.');
     });
     later(7000, () => {
       cycleCount++;
