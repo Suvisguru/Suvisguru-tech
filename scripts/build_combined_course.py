@@ -51,6 +51,33 @@ LESSONS = [
     ("15", "preview-kubernetes-lesson-15.html", "Pods Deep Dive"),
     ("16", "preview-kubernetes-lesson-16.html", "Workload Controllers · Deployment, StatefulSet, DaemonSet, Job, CronJob"),
     ("17", "preview-kubernetes-lesson-17.html", "Services & Networking · ClusterIP, NodePort, LoadBalancer, Ingress, NetworkPolicy"),
+    ("18", "preview-kubernetes-lesson-18.html", "Storage Pt 1 · PV, PVC, StorageClass"),
+    ("19", "preview-kubernetes-lesson-19.html", "Storage Pt 2 · CSI, Snapshots, VolumeAttributesClass"),
+    ("20", "preview-kubernetes-lesson-20.html", "Configuration & Secrets · ConfigMap, Secret, KMS, ESO"),
+    ("21", "preview-kubernetes-lesson-21.html", "ServiceAccounts & Certificates · Tokens, cert-manager, PKI"),
+    ("22", "preview-kubernetes-lesson-22.html", "Scheduling Pt 1 · Affinity, Taints, Topology Spread"),
+    ("23", "preview-kubernetes-lesson-23.html", "Scheduling Pt 2 · Priority, DRA, NUMA, Profiles"),
+    ("24", "preview-kubernetes-lesson-24.html", "Networking Foundations · Linux Primitives, CNI, MTU"),
+    ("25", "preview-kubernetes-lesson-25.html", "Gateway API · Roles, Listeners, Routes, Ingress Sunset"),
+    ("26", "preview-kubernetes-lesson-26.html", "AdminNetworkPolicy & FQDN-Based Egress"),
+    ("27", "preview-kubernetes-lesson-27.html", "RBAC & Authentication · Roles, Bindings, OIDC"),
+    ("28", "preview-kubernetes-lesson-28.html", "Admission Control · ValidatingAdmissionPolicy, PSA, Webhooks"),
+    ("29", "preview-kubernetes-lesson-29.html", "Policy Engines · Kyverno and OPA Gatekeeper"),
+    ("30", "preview-kubernetes-lesson-30.html", "Supply Chain Security · Cosign, Sigstore, SLSA, SBOM"),
+    ("31", "preview-kubernetes-lesson-31.html", "Multi-Tenancy & Hardening · Quotas, kube-bench, HNC"),
+    ("32", "preview-kubernetes-lesson-32.html", "Observability Pt 1 · Logs and Metrics"),
+    ("33", "preview-kubernetes-lesson-33.html", "Observability Pt 2 · Traces, eBPF, SLOs"),
+    ("34", "preview-kubernetes-lesson-34.html", "Autoscaling · HPA, VPA, KEDA, Karpenter"),
+    ("35", "preview-kubernetes-lesson-35.html", "Reliability & HA · PDB, Multi-Zone, Regional DR"),
+    ("36", "preview-kubernetes-lesson-36.html", "Kustomize · Overlay-Based Manifest Customisation"),
+    ("37", "preview-kubernetes-lesson-37.html", "Helm 3 · Charts, Values, Hooks, OCI"),
+    ("38", "preview-kubernetes-lesson-38.html", "GitOps with Argo CD · Application CRD, Sync, Drift"),
+    ("39", "preview-kubernetes-lesson-39.html", "GitOps with Flux CD · Multi-Controller Architecture"),
+    ("40", "preview-kubernetes-lesson-40.html", "Progressive Delivery · Argo Rollouts and Flagger"),
+    ("41", "preview-kubernetes-lesson-41.html", "CRDs Deep Dive · Schema, CEL, Conversion Webhooks"),
+    ("42", "preview-kubernetes-lesson-42.html", "Operators with Kubebuilder · controller-runtime, OLM"),
+    ("43", "preview-kubernetes-lesson-43.html", "Service Mesh · Istio Ambient, Linkerd, Cilium Mesh"),
+    ("44", "preview-kubernetes-lesson-44.html", "Troubleshooting Methodology + Drills (Capstone)"),
 ]
 
 
@@ -86,7 +113,7 @@ def main() -> None:
     out.append("<head>")
     out.append('<meta charset="UTF-8">')
     out.append('<meta name="viewport" content="width=device-width, initial-scale=1.0">')
-    out.append("<title>K-COM · The Whole Course (all 16 lessons)</title>")
+    out.append(f"<title>K-COM · The Whole Course (all {len(LESSONS)} lessons)</title>")
     out.append("<style>")
 
     # Concatenate every lesson's <style> block. Duplicate CSS rules are
@@ -177,7 +204,7 @@ def main() -> None:
 
     # --- Left sidebar (visible at >=1240px) ---
     out.append('<aside class="course-sidebar" aria-label="Course lesson navigation">')
-    out.append('  <h3>The 16 lessons</h3>')
+    out.append(f'  <h3>The {len(LESSONS)} lessons</h3>')
     out.append('  <ol>')
     for b in bundles:
         cls = ' class="primer"' if 'primer' in b['title'].lower() else ''
@@ -192,8 +219,8 @@ def main() -> None:
     # --- Course TOC ---
     out.append('<section class="course-toc" id="course-toc">')
     out.append("  <h2>K-COM — the whole course in one page</h2>")
-    out.append("  <p class=\"toc-sub\">All 16 K-COM lessons concatenated into one scrollable document. Use the dropdown in the top bar to jump between lessons, or click a lesson title below.</p>")
-    out.append("  <div class=\"toc-caveat\"><strong>Heads up:</strong> Animations are disabled in this combined view (per-lesson animation scripts use shared element IDs that would collide across 16 sections). For interactive animations, open the per-lesson page directly. Static diagrams, flashcards, quizzes, and pause-and-checks all work in this combined view.</div>")
+    out.append(f"  <p class=\"toc-sub\">All {len(LESSONS)} K-COM lessons concatenated into one scrollable document. Use the dropdown in the top bar to jump between lessons, or click a lesson title below.</p>")
+    out.append("  <div class=\"toc-caveat\"><strong>Heads up:</strong> Animations are disabled in this combined view (per-lesson animation scripts use shared element IDs that would collide across sections). For interactive animations, open the per-lesson page directly. Static diagrams, flashcards, quizzes, and pause-and-checks all work in this combined view.</div>")
     out.append("  <ol>")
     for b in bundles:
         cls = "primer" if "primer" in b["title"].lower() else ""
