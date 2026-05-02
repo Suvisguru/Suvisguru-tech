@@ -1,0 +1,85 @@
+# Intake brief — Lesson 11, K-COM
+# Topic: Container Security & Registries — rootless, read-only filesystem,
+#        capabilities/seccomp, registry auth (imagePullSecrets), pull policies
+# Module 2 (Containers Comprehensive) · Lesson 4 of 5
+
+lesson:
+  title: "Container Security · Rootless · Read-Only · Registries"
+  slug: "11-container-security-registries"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 11
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "fortified bank — vault (registry) + teller window (auth) + glass inspection booth (rootless / read-only / least-privilege runtime) + security cameras (seccomp/AppArmor)"
+  module: "Module 2 · Containers (Comprehensive) · Lesson 4 of 5"
+
+learner_profile:
+  prerequisites:
+    - "Lesson 08: Linux Primitives (so they know capabilities, namespaces, seccomp exist)"
+    - "Lesson 09: Runtimes & OCI (so they know what a registry is)"
+    - "Lesson 10: Image Building (so they know about distroless, signing)"
+  assumed_zero_knowledge_of:
+    - "Pod securityContext fields (runAsNonRoot, runAsUser, capabilities, readOnlyRootFilesystem)."
+    - "Why containers default to root and why that's bad."
+    - "How registry authentication works in K8s (imagePullSecrets, docker-registry secret type)."
+    - "Pull policies (Always / IfNotPresent / Never) and when to use each."
+    - "Pod Security Standards (Privileged / Baseline / Restricted)."
+
+learning_outcomes:
+  - "Learner can write a securityContext that drops root, drops all caps, and makes the rootfs read-only."
+  - "Learner can configure imagePullSecrets for a private registry."
+  - "Learner can pick the right imagePullPolicy for tagged vs latest images."
+  - "Learner understands the three Pod Security Standards levels."
+  - "Learner can name the difference between rootless containers and a non-root user inside a container."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Hero: a fortified bank. Vault (registry) on left with stacked image-bricks inside, teller window in middle with credentials being checked, glass inspection booth on right with a non-root visitor, no tools allowed sign, read-only display case, security camera overhead"
+    word_target: 320
+  section_1_5_blocks:
+    illustration: "5 tile cards: Rootless (non-root user) · Read-only filesystem · Capabilities + seccomp · Registry auth · Pull policies"
+  section_1_7_security_context:
+    illustration: "The securityContext spec broken down — 6 fields with example values and what they prevent"
+  section_1_8_pull_policies:
+    illustration: "3 pull policy cards — Always, IfNotPresent, Never — with use cases"
+  section_2_before_after:
+    illustration: "Naive pod (root user, full caps, writable rootfs, public registry, latest tag) vs hardened pod (non-root, drop ALL, read-only, private registry, pinned digest) — 5 markers each"
+  section_3_analogy:
+    primary: "Fortified bank — vault, teller window, inspection booth, security cameras"
+    illustration: "Already shown in hero"
+  section_4_eli_pair:
+    eli5: "Bank vault, teller checks ID, you visit a glass room with no tools, cameras watch. Under 100 words."
+    eli10: "securityContext + imagePullSecrets + pull policies + Pod Security Standards. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "Container escape blocked by readOnlyRootFilesystem + non-root user"
+      - "Private registry pull failed silently — fixed with imagePullSecret"
+      - "Pull policy bug caused old code to keep running after a tag re-push"
+      - "Pod Security Standards 'Restricted' caught a privileged pod attempt at admission"
+  section_6_animated_svg:
+    modes: ["Pod admission with securityContext checks (4 steps)", "Image pull from private registry (4 steps)", "Pull policy comparison (4 steps)"]
+    description: "Mode 1: pod manifest → admission controller checks runAsNonRoot, capabilities, readOnly → admit/reject. Mode 2: kubelet sees image ref → looks up imagePullSecret → auths to private registry → pulls layers. Mode 3: same image, three pods with different pullPolicy → who hits the registry, who uses cache."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-11.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can read a securityContext block and tell whether it's hardened or not."
+  - "First-timer understands why running as root inside a container is risky."
+  - "First-timer knows when to use Always vs IfNotPresent pull policy."
+  - "First-timer can name what an imagePullSecret is for."
+
+fact_check_anchors:
+  - "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/"
+  - "https://kubernetes.io/docs/concepts/security/pod-security-standards/"
+  - "https://kubernetes.io/docs/concepts/containers/images/#using-a-private-registry"
+  - "https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy"
+  - "https://docs.docker.com/engine/security/rootless/"

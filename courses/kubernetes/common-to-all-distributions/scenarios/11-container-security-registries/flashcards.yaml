@@ -1,0 +1,35 @@
+# Flashcards — Lesson 11, Container Security & Registries
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "What does runAsNonRoot: true do?"
+    back: "Tells the kubelet to refuse the pod if the image's USER is root (UID 0). Forces non-root execution. Pair with runAsUser: 1000 to pin a specific UID. The image's Dockerfile must include a USER directive that's non-root."
+
+  - id: 2
+    front: "What does readOnlyRootFilesystem: true do?"
+    back: "Makes the container's root filesystem immutable at runtime. An attacker can't drop binaries, can't tamper with code. If the app needs to write (logs, /tmp), mount an emptyDir at that path."
+
+  - id: 3
+    front: "Linux capabilities — best practice in a pod?"
+    back: "drop: [\"ALL\"], then add only the specific capabilities your app needs (e.g., NET_BIND_SERVICE for ports under 1024). Default of 'inherit all root powers' is dangerous."
+
+  - id: 4
+    front: "What is an imagePullSecret?"
+    back: "A Kubernetes secret of type kubernetes.io/dockerconfigjson holding registry credentials. Referenced from a pod's imagePullSecrets list (or attached to a ServiceAccount). Without it, kubelet can't pull from private registries — pod stuck in ImagePullBackOff."
+
+  - id: 5
+    front: "Three imagePullPolicy values and when to use each?"
+    back: "Always — kubelet checks registry on every start (right for :latest and other mutable tags). IfNotPresent — use cache if present (default for tagged images, right for pinned versions). Never — must already be on the node (air-gapped, dev)."
+
+  - id: 6
+    front: "What is the seccomp profile RuntimeDefault?"
+    back: "A built-in syscall filter that blocks ~50 dangerous syscalls (kexec, ptrace certain modes, etc.) while allowing what normal apps need. Set seccompProfile: { type: RuntimeDefault } in securityContext. Cheap, effective hardening default."
+
+  - id: 7
+    front: "Three Pod Security Standards levels?"
+    back: "Privileged (no restrictions, anything goes). Baseline (block known-bad patterns: hostNetwork, hostPath, privileged). Restricted (production-grade: non-root, drop caps, no privilege escalation, seccomp). Apply per namespace via labels."
+
+  - id: 8
+    front: "Why pin images to a digest (@sha256:...) instead of a tag?"
+    back: "Tags are mutable — someone can re-push :v2 with different content. Digests are immutable — @sha256:abc always means the exact same image. Pinning to digest defeats supply-chain tag swaps and removes pull-policy guesswork."

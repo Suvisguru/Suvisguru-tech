@@ -1,0 +1,56 @@
+# Quiz — Lesson 11, Container Security & Registries
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      You inherit a deployment with no securityContext set. The image
+      runs as root and writes a few log files into /var/log/myapp. What
+      are the three highest-leverage hardening changes, and what does
+      each prevent?
+    answer: |
+      (1) runAsNonRoot: true + runAsUser: 1000 — prevents an attacker
+      who pops the app from being root inside the container, which is
+      one host-kernel-bug away from being root on the node. (2)
+      capabilities: { drop: [ALL] } and allowPrivilegeEscalation: false
+      — strips the ~40 Linux superpowers and prevents setuid binaries
+      from regaining them. (3) readOnlyRootFilesystem: true (with an
+      emptyDir mounted at /var/log/myapp so the app can still write
+      logs) — prevents an attacker from dropping malware on disk or
+      tampering with binaries. Add seccompProfile: RuntimeDefault for
+      free syscall hardening. The image's Dockerfile may need a USER
+      directive added so the app starts as 1000.
+
+  - id: 2
+    prompt: |
+      Your pod is stuck in ImagePullBackOff. The image is at
+      private-registry.company.com/team/api:v3.2. You can pull it
+      manually from your laptop with docker login. Why does the pod
+      fail, and what's the fix?
+    answer: |
+      Your laptop has a local docker config with credentials; the K8s
+      cluster does not. The kubelet can't authenticate to your private
+      registry. Fix: create a Kubernetes secret of type
+      kubernetes.io/dockerconfigjson holding the registry credentials
+      (kubectl create secret docker-registry registry-creds
+      --docker-server=… --docker-username=… --docker-password=…), then
+      reference it from the pod via imagePullSecrets: [{ name:
+      registry-creds }]. For convenience, attach the secret to the
+      default ServiceAccount in that namespace so every pod inherits it
+      automatically.
+
+  - id: 3
+    prompt: |
+      A team uses image: my-app:v2 with imagePullPolicy: IfNotPresent.
+      They re-push v2 with a hotfix. Most pods keep running the OLD
+      image. Why? What's the right fix going forward?
+    answer: |
+      IfNotPresent means "if the node already has an image with this
+      tag locally cached, use it — don't re-pull." Most nodes had v2
+      cached from earlier deploys, so they kept the old binary; only
+      brand-new nodes pulled the hotfix. Two fixes: (1) Never re-push
+      tags. Cut a fresh tag (v2.1, v2.0.1) per change. (2) Pin to
+      digest: image: my-app@sha256:abc... — digests are immutable, so
+      the question of "what does this tag point to today" goes away.
+      If you absolutely must mutate a tag, set imagePullPolicy: Always
+      so every pod start re-validates against the registry.
