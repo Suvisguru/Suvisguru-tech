@@ -238,6 +238,17 @@
   .cyoa-quiz .quiz-prompt{font-style:italic}
   .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
   .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
 </style>
 </head>
 <body data-theme="light">
@@ -604,6 +615,33 @@ pod-security.kubernetes.io/warn: restricted</code></pre>
   </section>
 
   <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Admission flow — accepted vs rejected</h2>
+    <p>Pod-create requests go through mutation, then schema, then validation. Three modes: clean accept; mutator-fixed; PSA reject.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="80" width="110" height="60" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="95" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">request</text><text x="95" y="118" text-anchor="middle" font-size="9" fill="#6B6058">Pod create</text>
+        <rect x="190" y="80" width="130" height="60" rx="6" fill="#E8B547" stroke="#8B5A00" stroke-width="1.5"/><text x="255" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#5A4F45">Mutating</text><text x="255" y="118" text-anchor="middle" font-size="9" fill="#6B6058">add defaults</text>
+        <rect x="360" y="80" width="130" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="425" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Validating</text><text x="425" y="118" text-anchor="middle" font-size="9" fill="#6B6058">PSA · VAP · webhook</text>
+        <rect x="540" y="30" width="200" height="50" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="640" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">Schema validation passes</text><text x="640" y="68" text-anchor="middle" font-size="9" fill="#6B6058">object well-formed</text>
+        <rect x="540" y="90" width="200" height="50" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="640" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">Persisted to etcd</text><text x="640" y="128" text-anchor="middle" font-size="9" fill="#6B6058">Pod scheduled</text>
+        <rect x="540" y="150" width="200" height="50" rx="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1.5"/><text x="640" y="172" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">Rejected — DENY</text><text x="640" y="188" text-anchor="middle" font-size="9" fill="#6B6058">psa.restricted violation</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,110)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="accept">▶ Clean accept</button>
+        <button class="anim-btn" type="button" data-mode="mutate">▶ Mutator injects defaults</button>
+        <button class="anim-btn" type="button" data-mode="reject">▶ PSA rejects privileged</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a Pod-create request walking the admission chain.</div>
+    </div>
+  </section>
+
+  <section class="s">
     <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
     <h2>Lock it in</h2>
     <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
@@ -698,6 +736,91 @@ pod-security.kubernetes.io/warn: restricted</code></pre>
       fb.classList.add('show');
     }));
   });
+
+  // -------- Animation --------
+  (function() {
+    const SCENES = [{"mode_id": "accept", "mode_label": "Mode: well-formed, policy-compliant Pod", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Mutating admission: nothing to add \u2014 Pod already has labels + requests.", "move_to": [255, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Validating admission: PSA <code>baseline</code> profile satisfied.", "move_to": [425, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Persisted to etcd. Scheduler picks it up.", "move_to": [640, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "mutate", "mode_label": "Mode: Pod missing label; mutator adds default", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod has no <code>team</code> label. Kyverno mutate policy injects <code>team: unassigned</code>.", "move_to": [255, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Validating admission then sees the now-mutated Pod with the required label.", "move_to": [425, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Accepted. Mutate-then-validate is the standard pattern.", "move_to": [640, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "reject", "mode_label": "Mode: PSA restricted denies privileged Pod", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Mutating admission: nothing to do.", "move_to": [255, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Validating: PSA reads namespace label <code>enforce: restricted</code>.", "move_to": [425, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod has <code>privileged: true</code> \u2192 rejected with clear message. Never reaches etcd.", "move_to": [640, 175], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })();
+
 </script>
 
 </body>

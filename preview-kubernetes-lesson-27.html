@@ -238,6 +238,17 @@
   .cyoa-quiz .quiz-prompt{font-style:italic}
   .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
   .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
 </style>
 </head>
 <body data-theme="light">
@@ -618,6 +629,34 @@
   </section>
 
   <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>A request through authn + RBAC — three identity types</h2>
+    <p>Every API request walks identity → permission → admission. Pick an identity and watch the path.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="70" width="110" height="80" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="95" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">Subject</text><text x="95" y="108" text-anchor="middle" font-size="9" fill="#6B6058">user / SA</text>
+        <rect x="190" y="60" width="140" height="30" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="260" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Authentication</text><text x="260" y="98" text-anchor="middle" font-size="9" fill="#6B6058">OIDC / SA token / cert</text>
+        <rect x="190" y="100" width="140" height="30" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="260" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">RBAC authoriser</text><text x="260" y="138" text-anchor="middle" font-size="9" fill="#6B6058">verb on resource</text>
+        <rect x="190" y="140" width="140" height="30" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="260" y="162" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Admission</text><text x="260" y="178" text-anchor="middle" font-size="9" fill="#6B6058">PSA / VAP / webhook</text>
+        <rect x="370" y="60" width="130" height="110" rx="6" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.5"/><text x="435" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#3F4A5E">Role binder</text><text x="435" y="98" text-anchor="middle" font-size="9" fill="#6B6058">matched</text>
+        <rect x="540" y="60" width="110" height="50" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="595" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">✓ ALLOW</text><text x="595" y="98" text-anchor="middle" font-size="9" fill="#6B6058">writes to etcd</text>
+        <rect x="540" y="120" width="110" height="50" rx="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1.5"/><text x="595" y="142" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">✗ DENY</text><text x="595" y="158" text-anchor="middle" font-size="9" fill="#6B6058">401 / 403</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,110)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="user">▶ Human user via OIDC</button>
+        <button class="anim-btn" type="button" data-mode="sa">▶ Pod via SA token</button>
+        <button class="anim-btn" type="button" data-mode="anon">▶ Anonymous request</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a request looking for permission to <code>list secrets</code>. Each identity has its own check path.</div>
+    </div>
+  </section>
+
+  <section class="s">
     <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
     <h2>Lock it in</h2>
     <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
@@ -712,6 +751,91 @@
       fb.classList.add('show');
     }));
   });
+
+  // -------- Animation --------
+  (function() {
+    const SCENES = [{"mode_id": "user", "mode_label": "Mode: human user via OIDC", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User's kubectl presents an OIDC token from corp SSO.", "move_to": [260, 75], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> API server validates JWT signature; identity = alice@corp.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> RBAC: <code>cluster-admins</code> ClusterRoleBinding includes alice \u2192 allow.", "move_to": [435, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Admission OK. Read returns Secrets.", "move_to": [595, 85], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "sa", "mode_label": "Mode: Pod presents bound SA token", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod presents projected JWT from <code>/var/run/secrets/.../token</code>.", "move_to": [260, 75], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> API server validates signature + claims; identity = system:serviceaccount:app:web.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> RBAC: web SA has Role for ConfigMaps, NOT Secrets \u2192 deny.", "move_to": [435, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> 403 Forbidden. Pod sees the error; can't list Secrets.", "move_to": [595, 145], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "anon", "mode_label": "Mode: anonymous request (no token)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Request arrives with no Authorization header.", "move_to": [260, 75], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Authentication: identity = system:anonymous (if anonymous-auth=true) or 401.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> RBAC: no rule grants system:anonymous \u2192 deny. Production should disable anonymous-auth.", "move_to": [595, 145], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })();
+
 </script>
 
 </body>

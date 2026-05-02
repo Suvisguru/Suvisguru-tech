@@ -16,6 +16,7 @@ import os
 import sys
 from dataclasses import dataclass, field
 from typing import Optional
+import json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -374,6 +375,17 @@ BASE_CSS = """
   .cyoa-quiz .quiz-prompt{font-style:italic}
   .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
   .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
 """
 
 SCRIPT_BLOCK = """
@@ -465,6 +477,46 @@ class GlossaryItem:
 
 
 @dataclass
+class AnimationPhase:
+    """One step in a mode timeline.
+
+    `readout` is HTML for the narration line (e.g. "<strong>Step 1.</strong> ...").
+    `move_to` is an (x, y) destination for the moving packet, or None to skip motion.
+    `duration_ms` is the motion duration; `pause_after_ms` is the post-motion wait.
+    `set_text` is a list of (element_id, new_text) to set at phase start.
+    `set_attr` is a list of (element_id, attr_name, attr_value) tuples.
+    """
+    readout: str
+    move_to: tuple = None
+    duration_ms: int = 1100
+    pause_after_ms: int = 1500
+    set_text: list = None
+    set_attr: list = None
+
+
+@dataclass
+class AnimationScene:
+    """A mode (button) with its sequence of phases. Loops indefinitely."""
+    mode_id: str
+    button_label: str  # "▶ ClusterIP (internal)"
+    mode_label: str    # text for #anim-mode-label
+    initial_set_text: list = None  # element label swaps applied when mode starts
+    phases: list = None
+
+
+@dataclass
+class Animation:
+    """Section 6 animation. svg_body must include element id="anim-mode-label" + a moving packet g id="anim-pkg" (opacity:0 at start)."""
+    h2: str
+    intro: str
+    svg_viewbox: str  # e.g. "0 0 760 320"
+    svg_body: str      # static SVG body inside <svg>...</svg>
+    initial_packet_xy: tuple   # (x, y) starting transform of #anim-pkg
+    initial_readout: str       # default readout HTML
+    scenes: list = None        # list of AnimationScene
+
+
+@dataclass
 class LessonSpec:
     num: str
     title_short: str  # e.g. "storage Pt 1" — used in pill, footer
@@ -495,6 +547,7 @@ class LessonSpec:
     recap_lead: str
     recap_next: str
     extra_css: str = ""
+    animation: Optional['Animation'] = None
 
 
 # ---------------------------------------------------------------------------
@@ -650,6 +703,151 @@ def _render_section(idx: int, sec: 'Section') -> str:
   </section>"""
 
 
+def _render_animation(anim: 'Animation') -> tuple:
+    """Returns (section_html, script_js). section_html slots in between
+    Section 5 (scenarios) and Section 7 (misconceptions/quiz). script_js
+    is appended to the page's bottom <script> block."""
+    if anim is None:
+        return "", ""
+
+    buttons = []
+    for i, scene in enumerate(anim.scenes):
+        cls = "anim-btn active" if i == 0 else "anim-btn"
+        buttons.append(f'<button class="{cls}" type="button" data-mode="{scene.mode_id}">{scene.button_label}</button>')
+    buttons_html = "\n        ".join(buttons)
+
+    section_html = f"""  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>{anim.h2}</h2>
+    <p>{anim.intro}</p>
+    <div class="anim-wrap">
+      <svg viewBox="{anim.svg_viewbox}" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+{anim.svg_body}
+        <g id="anim-pkg" opacity="0" transform="translate({anim.initial_packet_xy[0]},{anim.initial_packet_xy[1]})">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        {buttons_html}
+      </div>
+      <div class="anim-readout" id="anim-readout">{anim.initial_readout}</div>
+    </div>
+  </section>"""
+
+    # Build a JS data structure describing every scene + phase
+    scenes_data = []
+    for scene in anim.scenes:
+        phases_data = []
+        for ph in scene.phases:
+            phase = {
+                "readout": ph.readout,
+                "move_to": list(ph.move_to) if ph.move_to else None,
+                "duration_ms": ph.duration_ms,
+                "pause_after_ms": ph.pause_after_ms,
+                "set_text": list(ph.set_text) if ph.set_text else None,
+                "set_attr": list(ph.set_attr) if ph.set_attr else None,
+            }
+            phases_data.append(phase)
+        scenes_data.append({
+            "mode_id": scene.mode_id,
+            "mode_label": scene.mode_label,
+            "initial_set_text": list(scene.initial_set_text) if scene.initial_set_text else None,
+            "phases": phases_data,
+        })
+    initial_xy = list(anim.initial_packet_xy)
+    scenes_json = json.dumps(scenes_data)
+    initial_xy_json = json.dumps(initial_xy)
+
+    script_js = """
+  // -------- Animation --------
+  (function() {{
+    const SCENES = {scenes_json};
+    const INITIAL_XY = {initial_xy_json};
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() {{ if (timer) {{ clearTimeout(timer); timer = null; }} }}
+
+    function setText(pairs) {{
+      if (!pairs) return;
+      pairs.forEach(p => {{
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      }});
+    }}
+    function setAttr(triples) {{
+      if (!triples) return;
+      triples.forEach(t => {{
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      }});
+    }}
+
+    function moveTo(end, duration, done) {{
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {{
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else {{ currentXY = [end[0], end[1]]; if (done) done(); }}
+      }}
+      requestAnimationFrame(frame);
+    }}
+
+    function runScene(modeId) {{
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {{
+        if (i >= scene.phases.length) {{ i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }}
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {{
+          moveTo(p.move_to, p.duration_ms, () => {{ timer = setTimeout(nextPhase, p.pause_after_ms); }});
+        }} else {{
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }}
+      }}
+      nextPhase();
+    }}
+
+    modeBtns.forEach(btn => {{
+      btn.addEventListener('click', () => {{
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      }});
+    }});
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  }})();
+""".format(scenes_json=scenes_json, initial_xy_json=initial_xy_json)
+
+    return section_html, script_js
+
+
 def render_lesson(spec: LessonSpec) -> str:
     css = BASE_CSS + (spec.extra_css or "")
     map_html = _render_ktown_map(spec.district_pin, spec.num, spec.district_label, len(CONCEPT_RAIL))
@@ -756,6 +954,15 @@ def render_lesson(spec: LessonSpec) -> str:
             )
     quizzes_html = "\n".join(quiz_cards_html)
 
+    anim_section, anim_script = _render_animation(spec.animation)
+
+    # Combine the static script block with any per-lesson animation script.
+    # SCRIPT_BLOCK ends with `</script>`. Insert the animation script just before that.
+    if anim_script:
+        combined_script = SCRIPT_BLOCK.rstrip().rstrip("</script>").rstrip() + "\n" + anim_script + "\n</script>\n"
+    else:
+        combined_script = SCRIPT_BLOCK
+
     misc_quiz_block = f"""  <section class="s">
     <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
     <h2>Lock it in</h2>
@@ -847,6 +1054,8 @@ def render_lesson(spec: LessonSpec) -> str:
 
 {scenarios_block}
 
+{anim_section}
+
 {misc_quiz_block}
 
 {glossary_block}
@@ -861,7 +1070,7 @@ def render_lesson(spec: LessonSpec) -> str:
 
 <footer>Suvis Guru · K-COM · Lesson {spec.num} · grounded in kubernetes.io</footer>
 
-{SCRIPT_BLOCK}
+{combined_script}
 </body>
 </html>
 """
@@ -883,6 +1092,23 @@ def load_spec_module(path: str):
     return mod
 
 
+def _maybe_attach_animation(spec: LessonSpec, spec_path: str) -> None:
+    """If a sibling animations.py exists exporting ANIMATIONS dict keyed by
+    lesson num, attach the matching animation to the spec."""
+    spec_dir = os.path.dirname(os.path.abspath(spec_path))
+    anim_path = os.path.join(spec_dir, "animations.py")
+    if not os.path.exists(anim_path):
+        return
+    if spec_dir not in sys.path:
+        sys.path.insert(0, spec_dir)
+    spec_spec = importlib.util.spec_from_file_location("animations", anim_path)
+    mod = importlib.util.module_from_spec(spec_spec)
+    spec_spec.loader.exec_module(mod)
+    animations = getattr(mod, "ANIMATIONS", {})
+    if spec.num in animations and spec.animation is None:
+        spec.animation = animations[spec.num]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("specs", nargs="+", help="Python files defining LESSON = LessonSpec(...)")
@@ -894,6 +1120,7 @@ def main():
         if not hasattr(mod, "LESSON"):
             sys.exit(f"{spec_path}: missing top-level LESSON = LessonSpec(...)")
         spec: LessonSpec = mod.LESSON
+        _maybe_attach_animation(spec, spec_path)
         html = render_lesson(spec)
         out_path = os.path.join(args.out, f"preview-kubernetes-lesson-{spec.num}.html")
         with open(out_path, "w") as f:

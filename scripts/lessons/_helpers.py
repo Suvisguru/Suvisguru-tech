@@ -15,4 +15,7 @@ from k8s_lesson_generator import (  # noqa: E402,F401
     Scenario,
     PauseCheck,
     GlossaryItem,
+    Animation,
+    AnimationScene,
+    AnimationPhase,
 )

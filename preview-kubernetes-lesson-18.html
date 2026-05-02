@@ -625,6 +625,34 @@
     </div>
   </section>
 
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Watch a PVC bind to a PV — three reclaim outcomes</h2>
+    <p>A Pod requests 10Gi via a PVC. The StorageClass tells the provisioner how to make a PV. Then the PVC is deleted — three different reclaim policies, three outcomes.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 230" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="70" width="130" height="70" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="105" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">PVC</text><text x="105" y="108" text-anchor="middle" font-size="9" fill="#6B6058">user request</text>
+        <rect x="220" y="70" width="130" height="70" rx="6" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.5"/><text x="285" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#3F4A5E">StorageClass</text><text x="285" y="108" text-anchor="middle" font-size="9" fill="#6B6058">the recipe</text>
+        <rect x="400" y="70" width="130" height="70" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="465" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">Provisioner</text><text x="465" y="108" text-anchor="middle" font-size="9" fill="#6B6058">the CSI driver</text>
+        <rect x="580" y="70" width="140" height="70" rx="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1.5"/><text x="650" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">PV</text><text x="650" y="108" text-anchor="middle" font-size="9" fill="#6B6058">the actual disk</text>
+        <text x="105" y="195" text-anchor="middle" font-size="10" fill="#3F4A5E" font-weight="700">Pod</text>
+        <text x="105" y="210" text-anchor="middle" font-size="9" fill="#6B6058">"I need 10Gi"</text>
+        <line x1="170" y1="105" x2="220" y2="105" stroke="#9D9389" stroke-width="1.2" stroke-dasharray="3,3"/><line x1="350" y1="105" x2="400" y2="105" stroke="#9D9389" stroke-width="1.2" stroke-dasharray="3,3"/><line x1="530" y1="105" x2="580" y2="105" stroke="#9D9389" stroke-width="1.2" stroke-dasharray="3,3"/>
+        <g id="anim-pkg" opacity="0" transform="translate(105,105)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="delete">▶ reclaim: Delete (default)</button>
+        <button class="anim-btn" type="button" data-mode="retain">▶ reclaim: Retain</button>
+        <button class="anim-btn" type="button" data-mode="static">▶ static provisioning</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a Pod's PVC arrives at the StorageClass; the provisioner creates a PV; PV binds to PVC. Then watch what happens when the PVC is deleted.</div>
+    </div>
+  </section>
+
   <!-- ============================== SECTION 7 — MISCONCEPTIONS + FLASHCARDS + QUIZ ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
@@ -743,6 +771,92 @@
       fb.classList.add('show');
     }));
   });
+
+
+  // -------- Animation --------
+  (function() {
+    const SCENES = [{"mode_id": "delete", "mode_label": "Mode: reclaimPolicy=Delete \u2014 disk removed with PVC", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> PVC submitted; <code>storageClassName: fast-ssd</code>.", "move_to": [285, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> StorageClass invokes the provisioner.", "move_to": [465, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Provisioner creates a PV; binds to PVC. Pod mounts <code>/data</code>.", "move_to": [650, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": [["anim-pv-state", "fill", "#5A9F7A"]]}, {"readout": "<strong>Step 4.</strong> User <code>kubectl delete pvc</code>. Reclaim=Delete \u2192 PV + underlying disk gone.", "move_to": [650, 200], "duration_ms": 900, "pause_after_ms": 2200, "set_text": [["anim-mode-label", "Mode: reclaimPolicy=Delete \u2014 disk removed with PVC"]], "set_attr": null}]}, {"mode_id": "retain", "mode_label": "Mode: reclaimPolicy=Retain \u2014 PV kept; data preserved", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> PVC submitted with <code>storageClassName: prod-retain</code>.", "move_to": [285, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Provisioner creates PV bound to the PVC.", "move_to": [650, 105], "duration_ms": 1100, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> User deletes PVC. PV moves to <code>Released</code> state \u2014 data still there.", "move_to": null, "duration_ms": 400, "pause_after_ms": 1800, "set_text": [["anim-mode-label", "Mode: reclaimPolicy=Retain \u2014 PV kept in Released state"]], "set_attr": null}, {"readout": "<strong>Step 4.</strong> A human reviews + deletes the PV manually when ready. Safer for production data.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2200, "set_text": null, "set_attr": null}]}, {"mode_id": "static", "mode_label": "Mode: static provisioning \u2014 admin pre-creates PVs", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Admin pre-creates a PV by hand (NFS export, pre-existing SAN volume).", "move_to": [650, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": [["anim-mode-label", "Mode: static \u2014 admin pre-creates PV"]], "set_attr": null}, {"readout": "<strong>Step 2.</strong> Later, a PVC is submitted that matches the existing PV's capacity + access mode.", "move_to": [105, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Controller binds the PVC to the existing PV. No provisioner involved.", "move_to": [650, 105], "duration_ms": 1100, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [105, 105];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })();
+
 </script>
 </body>
 </html>
