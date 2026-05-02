@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 13 — Cluster Architecture · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:40px;font-weight:700;line-height:1.15;letter-spacing:-0.8px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:30px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:28px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+  .illu{margin:24px 0;background:var(--bg-soft);border-radius:var(--r-soft);padding:20px;text-align:center}
+  .illu svg{display:block;width:100%;height:auto;max-width:680px;margin:0 auto}
+  .illu-caption{font-size:14px;color:var(--ink-soft);margin-top:12px;font-style:italic;line-height:1.5}
+
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'📚';font-size:18px}
+  .glossary summary::after{content:'›';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+
+  /* 5 topic tiles */
+  .build-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .build{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent);transition:transform .15s var(--ease),box-shadow .15s var(--ease)}
+  .build:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  .build.b1{border-top-color:#3F4A5E}
+  .build.b2{border-top-color:#5A9F7A}
+  .build.b3{border-top-color:#D97757}
+  .build.b4{border-top-color:#5E4A8E}
+  .build.b5{border-top-color:#8E2A2A}
+  .build-icon{font-size:34px;line-height:1}
+  .build-name{font-weight:700;font-size:15px;color:var(--ink);margin:0;line-height:1.3}
+  .build.b1 .build-name{color:#3F4A5E}
+  [data-theme="dark"] .build.b1 .build-name{color:var(--accent)}
+  .build.b2 .build-name{color:#3D7857}
+  [data-theme="dark"] .build.b2 .build-name{color:var(--good)}
+  .build.b3 .build-name{color:#A04832}
+  [data-theme="dark"] .build.b3 .build-name{color:var(--warm)}
+  .build.b4 .build-name{color:#5E4A8E}
+  [data-theme="dark"] .build.b4 .build-name{color:#9D8FCC}
+  .build.b5 .build-name{color:#8E2A2A}
+  [data-theme="dark"] .build.b5 .build-name{color:#E07474}
+  .build-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .build-illu{display:flex;align-items:center;justify-content:center;height:80px;background:var(--bg-soft);border-radius:var(--r-soft);margin:6px 0;overflow:hidden}
+  .build-illu svg{display:block;width:100%;height:100%;max-width:140px}
+  .build-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+
+  /* Node component cards */
+  .node-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:18px}
+  @media (max-width:760px){.node-grid{grid-template-columns:1fr}}
+  .node{padding:18px;border-radius:var(--r-soft);border:2px solid;background:var(--bg-card);display:flex;flex-direction:column;gap:6px}
+  .node.k{border-color:#3D7857;background:#E0EFE6}
+  .node.p{border-color:#5E4A8E;background:#EDE6F8}
+  .node.r{border-color:#D97757;background:#FBE8DC}
+  .node-icon{font-size:28px;line-height:1}
+  .node-name{font-family:'ui-monospace',monospace;font-weight:700;font-size:15px;margin:4px 0 0}
+  .node.k .node-name{color:#3D7857}
+  .node.p .node-name{color:#5E4A8E}
+  .node.r .node-name{color:#A04832}
+  .node-job{font-size:13px;color:var(--ink);line-height:1.5;margin:6px 0 0}
+
+  /* Pod-creation request flow boxes */
+  .flow-list{display:grid;gap:8px;margin-top:18px}
+  .flow{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-soft);border-radius:var(--r-soft);border-left:4px solid var(--accent)}
+  .flow-num{font-family:'ui-monospace',monospace;font-weight:700;color:var(--warm);font-size:13px;min-width:24px}
+  .flow-from{font-family:'ui-monospace',monospace;font-weight:700;color:var(--accent);font-size:13px;min-width:120px}
+  .flow-arr{color:var(--ink-faint);font-size:14px}
+  .flow-to{font-family:'ui-monospace',monospace;font-weight:700;color:var(--accent);font-size:13px;min-width:120px}
+  .flow-what{font-size:13px;color:var(--ink-soft);line-height:1.5;flex:1}
+
+  /* HA cards */
+  .ha-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+  @media (max-width:600px){.ha-grid{grid-template-columns:1fr}}
+  .ha{padding:18px;border-radius:var(--r-soft);border:2px solid var(--line);background:var(--bg-card)}
+  .ha.api{border-color:#3F4A5E;background:#ECEFF5}
+  .ha.etc{border-color:#5E4A8E;background:#EDE6F8}
+  .ha-name{font-family:'ui-monospace',monospace;font-weight:700;font-size:15px;margin:0 0 6px}
+  .ha.api .ha-name{color:#3F4A5E}
+  .ha.etc .ha-name{color:#5E4A8E}
+  .ha-desc{font-size:13.5px;color:var(--ink);line-height:1.55}
+
+  /* Managed vs self-managed */
+  .own-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+  @media (max-width:600px){.own-grid{grid-template-columns:1fr}}
+  .own{padding:16px;border-radius:var(--r-soft);border:2px solid;background:var(--bg-card)}
+  .own.managed{border-color:#3D7857;background:#E0EFE6}
+  .own.self{border-color:#8B5A00;background:#FBF1D6}
+  .own-name{font-weight:700;font-size:15px;margin:0 0 6px}
+  .own.managed .own-name{color:#3D7857}
+  .own.self .own-name{color:#8B5A00}
+  .own-desc{font-size:13px;color:var(--ink);line-height:1.55}
+  .own-desc code{font-family:'ui-monospace',monospace;font-size:12px;background:rgba(255,255,255,0.5);padding:1px 4px;border-radius:3px;color:var(--ink)}
+</style>
+</head>
+<body data-theme="light">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 13</span></a>
+    <span class="progress-pill">13 of 17</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================== HERO ============================== -->
+  <section class="hero">
+    <span class="eyebrow">Module 3 · Lesson 13 · how a cluster is built</span>
+    <h1>Cluster Architecture · Control Plane &amp; Nodes</h1>
+    <p class="hero-sub">A cluster is two halves: a <strong>control tower</strong> (control plane — decides) and several <strong>terminals</strong> (worker nodes — execute). One radio between them: the API server.</p>
+
+    <div class="hero-illu">
+      <svg viewBox="0 0 680 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An air traffic control tower on the left labeled with K8s control-plane components, radio waves emanating right to three terminal buildings each housing planes (pods) and a kubelet operator">
+        <defs>
+          <linearGradient id="sky-grad-13" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#D6E6F0"/>
+            <stop offset="100%" stop-color="#FBF7F0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Sky -->
+        <rect x="0" y="30" width="680" height="160" fill="url(#sky-grad-13)"/>
+        <!-- Sun -->
+        <circle cx="630" cy="50" r="18" fill="#E8B547" opacity="0.7"/>
+        <!-- Clouds -->
+        <ellipse cx="280" cy="55" rx="22" ry="6" fill="#FFFFFF" opacity="0.7"/>
+        <ellipse cx="298" cy="51" rx="14" ry="5" fill="#FFFFFF" opacity="0.7"/>
+        <ellipse cx="500" cy="48" rx="18" ry="6" fill="#FFFFFF" opacity="0.6"/>
+        <!-- Ground (concrete tarmac) -->
+        <rect x="0" y="190" width="680" height="30" fill="#C9BFAE"/>
+        <!-- Runway markings -->
+        <line x1="0" y1="205" x2="680" y2="205" stroke="#FBF7F0" stroke-width="1" stroke-dasharray="14,12" opacity="0.7"/>
+
+        <!-- Title -->
+        <text x="340" y="22" font-size="13" font-weight="700" fill="#3F4A5E" text-anchor="middle" letter-spacing="1.5">CONTROL TOWER + TERMINALS · ONE RADIO</text>
+
+        <!-- =========== ATC TOWER (left, x=30-200) =========== -->
+        <!-- Antenna mast + beacon at top -->
+        <line x1="115" y1="32" x2="115" y2="42" stroke="#2E3640" stroke-width="2"/>
+        <circle cx="115" cy="30" r="3.5" fill="#A04832" stroke="#5A2520" stroke-width="0.8"/>
+        <!-- Roof platform under obs deck -->
+        <rect x="74" y="42" width="82" height="6" fill="#5A6878" stroke="#2E3640" stroke-width="1"/>
+        <!-- Observation deck (glass) -->
+        <rect x="76" y="48" width="78" height="32" fill="#ECEFF5" stroke="#2E3640" stroke-width="1.5"/>
+        <!-- Glass band (windows) -->
+        <rect x="80" y="56" width="70" height="20" fill="#4A8FA8" opacity="0.85"/>
+        <!-- Operator silhouette inside obs deck -->
+        <ellipse cx="115" cy="65" rx="4" ry="5" fill="#FBF1D6" stroke="#2A2520" stroke-width="0.8"/>
+        <!-- "API server" label inside obs deck (white text on blue glass) -->
+        <text x="115" y="74" font-size="6" font-weight="700" fill="#FBF7F0" text-anchor="middle">API server</text>
+
+        <!-- Tower shaft -->
+        <rect x="100" y="80" width="30" height="80" fill="#ECEFF5" stroke="#5A6878" stroke-width="1.4"/>
+        <!-- 3 shaft floors: scheduler / controller-manager / cloud-cm -->
+        <text x="115" y="95" font-size="6.5" font-weight="700" fill="#3F4A5E" text-anchor="middle">scheduler</text>
+        <line x1="100" y1="100" x2="130" y2="100" stroke="#5A6878" stroke-width="0.5"/>
+        <text x="115" y="116" font-size="6" font-weight="700" fill="#3F4A5E" text-anchor="middle">controller</text>
+        <text x="115" y="125" font-size="6" font-weight="700" fill="#3F4A5E" text-anchor="middle">manager</text>
+        <line x1="100" y1="140" x2="130" y2="140" stroke="#5A6878" stroke-width="0.5"/>
+        <text x="115" y="153" font-size="6.5" font-weight="700" fill="#3F4A5E" text-anchor="middle">cloud-cm</text>
+
+        <!-- Foundation building (etcd archive) -->
+        <rect x="50" y="160" width="130" height="48" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/>
+        <!-- 3 archive boxes inside foundation -->
+        <rect x="60" y="170" width="34" height="16" rx="2" fill="#E8B547" stroke="#8B5A00" stroke-width="1"/>
+        <text x="77" y="181" font-size="6.5" font-weight="700" fill="#5A4F45" text-anchor="middle" font-family="ui-monospace,monospace">m1</text>
+        <rect x="98" y="170" width="34" height="16" rx="2" fill="#E8B547" stroke="#8B5A00" stroke-width="1"/>
+        <text x="115" y="181" font-size="6.5" font-weight="700" fill="#5A4F45" text-anchor="middle" font-family="ui-monospace,monospace">m2</text>
+        <rect x="136" y="170" width="34" height="16" rx="2" fill="#E8B547" stroke="#8B5A00" stroke-width="1"/>
+        <text x="153" y="181" font-size="6.5" font-weight="700" fill="#5A4F45" text-anchor="middle" font-family="ui-monospace,monospace">m3</text>
+        <text x="115" y="200" font-size="9" font-weight="700" fill="#8B5A00" text-anchor="middle" font-family="ui-monospace,monospace">etcd</text>
+
+        <!-- =========== RADIO WAVES (center, x=160-400) =========== -->
+        <!-- Three concentric arcs from antenna position toward terminals -->
+        <path d="M 130 35 Q 220 35 280 100" fill="none" stroke="#3D7857" stroke-width="1.6" stroke-dasharray="5,4" opacity="0.7"/>
+        <path d="M 135 38 Q 250 50 380 110" fill="none" stroke="#3D7857" stroke-width="1.6" stroke-dasharray="5,4" opacity="0.7"/>
+        <path d="M 140 40 Q 290 55 480 110" fill="none" stroke="#3D7857" stroke-width="1.6" stroke-dasharray="5,4" opacity="0.7"/>
+
+        <!-- Radio label badge -->
+        <rect x="240" y="76" width="120" height="20" rx="10" fill="#FBE8DC" stroke="#A04832" stroke-width="1.3"/>
+        <text x="300" y="89" font-size="9" font-weight="700" fill="#A04832" text-anchor="middle" font-family="ui-monospace,monospace">single API door</text>
+
+        <!-- =========== TERMINALS (right, x=400-660) =========== -->
+        <!-- Terminal 1 (node-1) -->
+        <g transform="translate(400,100)">
+          <!-- Building -->
+          <rect width="80" height="90" rx="3" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.4"/>
+          <!-- Roof slope -->
+          <path d="M -2 0 L 82 0 L 75 -8 L 5 -8 Z" fill="#5A6878" stroke="#2E3640" stroke-width="1"/>
+          <!-- Building label band -->
+          <rect x="6" y="6" width="68" height="12" rx="2" fill="#3F4A5E"/>
+          <text x="40" y="15" font-size="7.5" font-weight="700" fill="#FBF7F0" text-anchor="middle" font-family="ui-monospace,monospace">node-1</text>
+          <!-- Kubelet operator inside (small head) -->
+          <ellipse cx="20" cy="34" rx="4" ry="5" fill="#FBF1D6" stroke="#2A2520" stroke-width="0.8"/>
+          <text x="20" y="48" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle">kubelet</text>
+          <!-- Pods (boxes/planes) at gates -->
+          <rect x="36" y="30" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+          <text x="54" y="41" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-a</text>
+          <rect x="36" y="50" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+          <text x="54" y="61" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-b</text>
+          <!-- kube-proxy stripe at bottom -->
+          <rect x="6" y="72" width="68" height="12" rx="2" fill="#EDE6F8" stroke="#5E4A8E" stroke-width="1"/>
+          <text x="40" y="81" font-size="6.5" font-weight="700" fill="#5E4A8E" text-anchor="middle" font-family="ui-monospace,monospace">kube-proxy</text>
+        </g>
+
+        <!-- Terminal 2 (node-2) -->
+        <g transform="translate(490,100)">
+          <rect width="80" height="90" rx="3" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.4"/>
+          <path d="M -2 0 L 82 0 L 75 -8 L 5 -8 Z" fill="#5A6878" stroke="#2E3640" stroke-width="1"/>
+          <rect x="6" y="6" width="68" height="12" rx="2" fill="#3F4A5E"/>
+          <text x="40" y="15" font-size="7.5" font-weight="700" fill="#FBF7F0" text-anchor="middle" font-family="ui-monospace,monospace">node-2</text>
+          <ellipse cx="20" cy="34" rx="4" ry="5" fill="#FBF1D6" stroke="#2A2520" stroke-width="0.8"/>
+          <text x="20" y="48" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle">kubelet</text>
+          <rect x="36" y="30" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+          <text x="54" y="41" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-c</text>
+          <rect x="36" y="50" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+          <text x="54" y="61" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-d</text>
+          <rect x="6" y="72" width="68" height="12" rx="2" fill="#EDE6F8" stroke="#5E4A8E" stroke-width="1"/>
+          <text x="40" y="81" font-size="6.5" font-weight="700" fill="#5E4A8E" text-anchor="middle" font-family="ui-monospace,monospace">kube-proxy</text>
+        </g>
+
+        <!-- Terminal 3 (node-3) -->
+        <g transform="translate(580,100)">
+          <rect width="80" height="90" rx="3" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.4"/>
+          <path d="M -2 0 L 82 0 L 75 -8 L 5 -8 Z" fill="#5A6878" stroke="#2E3640" stroke-width="1"/>
+          <rect x="6" y="6" width="68" height="12" rx="2" fill="#3F4A5E"/>
+          <text x="40" y="15" font-size="7.5" font-weight="700" fill="#FBF7F0" text-anchor="middle" font-family="ui-monospace,monospace">node-3</text>
+          <ellipse cx="20" cy="34" rx="4" ry="5" fill="#FBF1D6" stroke="#2A2520" stroke-width="0.8"/>
+          <text x="20" y="48" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle">kubelet</text>
+          <rect x="36" y="30" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+          <text x="54" y="41" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-e</text>
+          <rect x="36" y="50" width="36" height="16" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+          <text x="54" y="61" font-size="6" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">pod-f</text>
+          <rect x="6" y="72" width="68" height="12" rx="2" fill="#EDE6F8" stroke="#5E4A8E" stroke-width="1"/>
+          <text x="40" y="81" font-size="6.5" font-weight="700" fill="#5E4A8E" text-anchor="middle" font-family="ui-monospace,monospace">kube-proxy</text>
+        </g>
+
+        <!-- =========== Section labels =========== -->
+        <text x="115" y="232" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">CONTROL TOWER</text>
+        <text x="115" y="246" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">5 control-plane components</text>
+
+        <text x="300" y="232" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">RADIO LINK</text>
+        <text x="300" y="246" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">API server is the only door</text>
+
+        <text x="530" y="232" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">TERMINALS · NODES</text>
+        <text x="530" y="246" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">kubelet · kube-proxy · runtime</text>
+
+        <!-- Bottom tagline -->
+        <text x="340" y="278" font-size="11" font-weight="700" fill="#3F4A5E" text-anchor="middle">Tower decides. Terminals execute. Nothing talks except through the radio.</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 1 — CONCEPT ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Two halves: brain and muscle</h2>
+    <p>A Kubernetes cluster is two distinct halves: a <strong>control plane</strong> (the brain — decides what should run) and one or more <strong>worker nodes</strong> (the muscle — actually runs the containers). They are different machines with different jobs, talking over a network.</p>
+    <p><strong>The control plane.</strong> Five processes, usually on dedicated control-plane nodes (and never running your app workloads):</p>
+    <p>• <strong>API server</strong> (<code>kube-apiserver</code>) — the only door into the cluster. Every read, write, watch, authentication request goes here. Stateless, horizontally scalable.<br>
+      • <strong>etcd</strong> — strongly-consistent key-value store holding the entire cluster state. Source of truth.<br>
+      • <strong>Controller manager</strong> (<code>kube-controller-manager</code>) — runs dozens of reconcile loops (Deployment, ReplicaSet, Node, Endpoints, ServiceAccount, Job…). Each watches the API for desired state, compares to actual, takes action.<br>
+      • <strong>Scheduler</strong> (<code>kube-scheduler</code>) — picks which node runs each newly-created pod, based on resource requests, taints, affinity, topology.<br>
+      • <strong>Cloud controller manager</strong> (<code>cloud-controller-manager</code>) — bridges K8s to the cloud (load balancers, persistent disks, node lifecycle). Optional on bare metal.</p>
+    <p><strong>The worker nodes.</strong> Every node — control plane or worker — runs three things:</p>
+    <p>• <strong>kubelet</strong> — the node agent. Watches the API server for pods assigned to its node, tells the runtime to start/stop them, reports node status.<br>
+      • <strong>kube-proxy</strong> — manages the local network rules (iptables, IPVS, eBPF) that implement Services on this node.<br>
+      • <strong>Container runtime</strong> — containerd, CRI-O, or runc-based — actually starts and stops the containers (Lesson 09).</p>
+    <p><strong>The constraint.</strong> Nothing talks directly to etcd. Nothing talks directly between controllers. <em>All communication goes through the API server.</em> That single-door discipline is the architectural constraint that makes the rest of K8s possible: scaling, watching, RBAC, audit, admission — every mechanism is built on top of "everything is a typed object you read/write through the API server."</p>
+  </section>
+
+  <!-- ============================== SECTION 1.5 — 5 TILES ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · The 5 control-plane components</span>
+    <h2>Each one, one tile</h2>
+
+    <div class="build-grid">
+
+      <div class="build b1">
+        <div class="build-icon">📡</div>
+        <h3 class="build-name">1 · API server</h3>
+        <p class="build-tag">the only door</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A door with multiple arrows pointing through it">
+            <!-- Door frame -->
+            <rect x="56" y="14" width="28" height="52" rx="2" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.6"/>
+            <circle cx="78" cy="40" r="1.5" fill="#5A4F45"/>
+            <text x="70" y="44" font-size="6" fill="#3F4A5E" text-anchor="middle" font-weight="700" font-family="ui-monospace,monospace">API</text>
+            <!-- Arrows from various sources converging on door -->
+            <path d="M 14 24 L 50 32" stroke="#A04832" stroke-width="1.5" marker-end="url(#a13-arr1)"/>
+            <path d="M 14 56 L 50 50" stroke="#A04832" stroke-width="1.5" marker-end="url(#a13-arr1)"/>
+            <path d="M 130 24 L 92 32" stroke="#3D7857" stroke-width="1.5" marker-end="url(#a13-arr2)"/>
+            <path d="M 130 56 L 92 50" stroke="#3D7857" stroke-width="1.5" marker-end="url(#a13-arr2)"/>
+            <text x="14" y="20" font-size="5" font-weight="700" fill="#A04832">kubectl</text>
+            <text x="14" y="74" font-size="5" font-weight="700" fill="#A04832">kubelet</text>
+            <text x="130" y="20" font-size="5" font-weight="700" fill="#3D7857" text-anchor="end">scheduler</text>
+            <text x="130" y="74" font-size="5" font-weight="700" fill="#3D7857" text-anchor="end">controller</text>
+            <defs>
+              <marker id="a13-arr1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#A04832"/></marker>
+              <marker id="a13-arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3D7857"/></marker>
+            </defs>
+          </svg>
+        </div>
+        <p class="build-desc">REST + watch endpoints. Validates, authenticates, persists to etcd, fans out watches. Stateless · scales horizontally.</p>
+      </div>
+
+      <div class="build b2">
+        <div class="build-icon">🗄️</div>
+        <h3 class="build-name">2 · etcd</h3>
+        <p class="build-tag">source of truth</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three etcd database cylinders connected by lines representing Raft consensus">
+            <!-- Three cylinders in a triangle -->
+            <g transform="translate(20,30)">
+              <ellipse cx="14" cy="6" rx="14" ry="4" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+              <rect x="0" y="6" width="28" height="20" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+              <ellipse cx="14" cy="26" rx="14" ry="4" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+              <text x="14" y="20" font-size="7" font-weight="700" fill="#8B5A00" text-anchor="middle" font-family="ui-monospace,monospace">m1</text>
+            </g>
+            <g transform="translate(56,16)">
+              <ellipse cx="14" cy="6" rx="14" ry="4" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+              <rect x="0" y="6" width="28" height="20" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+              <ellipse cx="14" cy="26" rx="14" ry="4" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+              <text x="14" y="20" font-size="7" font-weight="700" fill="#8B5A00" text-anchor="middle" font-family="ui-monospace,monospace">m2</text>
+            </g>
+            <g transform="translate(92,30)">
+              <ellipse cx="14" cy="6" rx="14" ry="4" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+              <rect x="0" y="6" width="28" height="20" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+              <ellipse cx="14" cy="26" rx="14" ry="4" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+              <text x="14" y="20" font-size="7" font-weight="700" fill="#8B5A00" text-anchor="middle" font-family="ui-monospace,monospace">m3</text>
+            </g>
+            <!-- Raft connections between cylinders -->
+            <line x1="48" y1="40" x2="70" y2="32" stroke="#8B5A00" stroke-width="1" stroke-dasharray="3,2"/>
+            <line x1="92" y1="32" x2="112" y2="40" stroke="#8B5A00" stroke-width="1" stroke-dasharray="3,2"/>
+            <line x1="34" y1="48" x2="106" y2="48" stroke="#8B5A00" stroke-width="1" stroke-dasharray="3,2"/>
+            <text x="70" y="74" font-size="7" font-weight="700" fill="#8B5A00" text-anchor="middle">Raft · quorum</text>
+          </svg>
+        </div>
+        <p class="build-desc">Strongly-consistent KV store. Holds every K8s object. Odd-member quorum (3 or 5). Lose majority → cluster read-only.</p>
+      </div>
+
+      <div class="build b3">
+        <div class="build-icon">🔄</div>
+        <h3 class="build-name">3 · Controller manager</h3>
+        <p class="build-tag">reconcile loops</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A circular reconcile loop with desired and actual states">
+            <!-- Big circle representing the loop -->
+            <circle cx="70" cy="40" r="22" fill="none" stroke="#A04832" stroke-width="2" stroke-dasharray="3,2"/>
+            <path d="M 88 28 L 92 22 L 86 22 Z" fill="#A04832"/>
+            <!-- Desired box -->
+            <rect x="14" y="20" width="40" height="14" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.2"/>
+            <text x="34" y="30" font-size="7" font-weight="700" fill="#3D7857" text-anchor="middle">desired: 3</text>
+            <!-- Actual box -->
+            <rect x="14" y="46" width="40" height="14" rx="2" fill="#FBE8DC" stroke="#A04832" stroke-width="1.2"/>
+            <text x="34" y="56" font-size="7" font-weight="700" fill="#A04832" text-anchor="middle">actual: 2</text>
+            <!-- Action -->
+            <text x="100" y="44" font-size="7" font-weight="700" fill="#A04832">act:</text>
+            <text x="100" y="54" font-size="7" font-weight="700" fill="#3D7857">+1 pod</text>
+            <text x="70" y="74" font-size="6.5" font-style="italic" fill="#5A4F45" text-anchor="middle">watch · diff · act</text>
+          </svg>
+        </div>
+        <p class="build-desc">Bundle of loops: Deployment, ReplicaSet, Node, Endpoints, Job, etc. Each watches API for desired vs actual, takes action.</p>
+      </div>
+
+      <div class="build b4">
+        <div class="build-icon">🎯</div>
+        <h3 class="build-name">4 · Scheduler</h3>
+        <p class="build-tag">picks the node</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A pod object with arrows scoring three nodes by fitness">
+            <!-- Pod -->
+            <rect x="6" y="32" width="28" height="20" rx="3" fill="#5E4A8E" stroke="#3D2868" stroke-width="1.2"/>
+            <text x="20" y="44" font-size="7" font-weight="700" fill="#FFF" text-anchor="middle" font-family="ui-monospace,monospace">pod</text>
+            <!-- 3 nodes scored -->
+            <rect x="56" y="14" width="38" height="16" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+            <text x="75" y="25" font-size="7" font-weight="700" fill="#3D7857" text-anchor="middle">n1 · 80</text>
+            <rect x="56" y="34" width="38" height="16" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="2"/>
+            <text x="75" y="45" font-size="7" font-weight="700" fill="#3D7857" text-anchor="middle">n2 · 95 ✓</text>
+            <rect x="56" y="54" width="38" height="16" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1"/>
+            <text x="75" y="65" font-size="7" font-weight="700" fill="#A04832" text-anchor="middle">n3 · 40</text>
+            <!-- Arrow to winner -->
+            <path d="M 100 42 L 124 42" stroke="#3D7857" stroke-width="1.6" marker-end="url(#a13-arr3)"/>
+            <text x="118" y="58" font-size="6" font-weight="700" fill="#3D7857" text-anchor="end">bind n2</text>
+            <defs>
+              <marker id="a13-arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3D7857"/></marker>
+            </defs>
+          </svg>
+        </div>
+        <p class="build-desc">For each unscheduled pod: filter feasible nodes, score them, pick highest. Resource fit · taints · affinity · topology.</p>
+      </div>
+
+      <div class="build b5">
+        <div class="build-icon">☁️</div>
+        <h3 class="build-name">5 · Cloud controller mgr</h3>
+        <p class="build-tag">bridge to provider</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="K8s box bridging to a cloud provider with LB, disk, node icons">
+            <!-- K8s -->
+            <rect x="6" y="20" width="40" height="40" rx="3" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.4"/>
+            <text x="26" y="44" font-size="9" font-weight="700" fill="#3F4A5E" text-anchor="middle">K8s</text>
+            <!-- Bridge arrow -->
+            <path d="M 48 40 L 88 40" stroke="#5E4A8E" stroke-width="2" marker-end="url(#a13-arr4)"/>
+            <text x="68" y="34" font-size="6" font-weight="700" fill="#5E4A8E" text-anchor="middle">cloud-cm</text>
+            <!-- Cloud icons -->
+            <rect x="92" y="14" width="42" height="14" rx="2" fill="#E0EEF3" stroke="#2D6F8C" stroke-width="1"/>
+            <text x="113" y="24" font-size="7" font-weight="700" fill="#2D6F8C" text-anchor="middle">LoadBalancer</text>
+            <rect x="92" y="32" width="42" height="14" rx="2" fill="#E0EEF3" stroke="#2D6F8C" stroke-width="1"/>
+            <text x="113" y="42" font-size="7" font-weight="700" fill="#2D6F8C" text-anchor="middle">EBS · PD</text>
+            <rect x="92" y="50" width="42" height="14" rx="2" fill="#E0EEF3" stroke="#2D6F8C" stroke-width="1"/>
+            <text x="113" y="60" font-size="7" font-weight="700" fill="#2D6F8C" text-anchor="middle">node lifecycle</text>
+            <defs>
+              <marker id="a13-arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5E4A8E"/></marker>
+            </defs>
+          </svg>
+        </div>
+        <p class="build-desc">Translates K8s objects into AWS/GCP/Azure API calls (LBs, disks, node info). Optional on bare metal.</p>
+      </div>
+
+    </div>
+
+    <p style="margin-top:24px;font-size:15px;color:var(--ink-soft);font-style:italic;text-align:center">All five compound: <strong style="color:var(--ink)">API + etcd + controllers + scheduler + cloud-cm = the brain that survives any single failure.</strong></p>
+  </section>
+
+  <!-- ============================== SECTION 1.7 — NODE COMPONENTS ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · Worker node components</span>
+    <h2>Three things on every node</h2>
+    <p>The control plane decides; these three actually do the work on each node.</p>
+
+    <div class="node-grid">
+      <div class="node k">
+        <div class="node-icon">🛠️</div>
+        <p class="node-name">kubelet</p>
+        <p class="node-job">Node agent. Watches API server for pods bound to this node, asks the runtime to start them, reports status (CPU, memory, disk, conditions) back. Also runs liveness/readiness probes.</p>
+      </div>
+      <div class="node p">
+        <div class="node-icon">🚦</div>
+        <p class="node-name">kube-proxy</p>
+        <p class="node-job">Implements Kubernetes Services on this node — programs iptables, IPVS, or eBPF rules so traffic to a Service's virtual IP gets load-balanced across the right pod IPs.</p>
+      </div>
+      <div class="node r">
+        <div class="node-icon">🐳</div>
+        <p class="node-name">container runtime</p>
+        <p class="node-job">containerd, CRI-O, or runc-based. Pulls images, manages container lifecycle, sets up namespaces/cgroups. Speaks the CRI (Container Runtime Interface) to the kubelet.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Together they form the "node runtime" — the per-machine subsystem that turns control-plane decisions into actually running containers.</p>
+  </section>
+
+  <!-- ============================== SECTION 1.8 — POD CREATION FLOW ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.8 · How a pod gets created</span>
+    <h2>The end-to-end flow, in 6 hops</h2>
+    <p>This is the request path that every Kubernetes object follows. Memorize it; it explains 90% of the questions you'll have about K8s behavior.</p>
+
+    <div class="flow-list">
+      <div class="flow"><span class="flow-num">1</span><span class="flow-from">kubectl</span><span class="flow-arr">→</span><span class="flow-to">API server</span><span class="flow-what">POST /api/v1/namespaces/default/pods (your YAML)</span></div>
+      <div class="flow"><span class="flow-num">2</span><span class="flow-from">API server</span><span class="flow-arr">→</span><span class="flow-to">etcd</span><span class="flow-what">Validate, authorize, run admission, persist Pod object</span></div>
+      <div class="flow"><span class="flow-num">3</span><span class="flow-from">scheduler</span><span class="flow-arr">→</span><span class="flow-to">API server</span><span class="flow-what">Watches new Pods · picks node-3 · POSTs Binding</span></div>
+      <div class="flow"><span class="flow-num">4</span><span class="flow-from">kubelet (n3)</span><span class="flow-arr">→</span><span class="flow-to">API server</span><span class="flow-what">Watches Pods bound to node-3 · sees the new Pod</span></div>
+      <div class="flow"><span class="flow-num">5</span><span class="flow-from">kubelet</span><span class="flow-arr">→</span><span class="flow-to">runtime</span><span class="flow-what">CRI: pull image, create container, start container</span></div>
+      <div class="flow"><span class="flow-num">6</span><span class="flow-from">kubelet</span><span class="flow-arr">→</span><span class="flow-to">API server</span><span class="flow-what">PATCH Pod status: phase=Running, containerStatuses</span></div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Notice every step routes through the API server. The scheduler never tells the kubelet anything directly — it writes a Binding, the kubelet's watch picks it up. That's the design.</p>
+  </section>
+
+  <!-- ============================== SECTION 1.9 — HA ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · HA control plane</span>
+    <h2>What "production-ready" means</h2>
+    <p>One control-plane node is fine for learning. Production needs replication. Two pieces matter: API server replication and etcd quorum.</p>
+
+    <div class="ha-grid">
+      <div class="ha api">
+        <h3 class="ha-name">API server: 3+ replicas behind a LB</h3>
+        <p class="ha-desc">API server is stateless — etcd holds all state. Run 3 (or 5) instances behind a load-balancer. Any can serve any request. Lose one, the LB routes around it. <strong>Controller manager and scheduler also run with leader election</strong>: only one of the three is active at a time, others stand by; if the leader dies, a new one wins the lease in etcd within ~15s.</p>
+      </div>
+      <div class="ha etc">
+        <h3 class="ha-name">etcd: odd-member quorum</h3>
+        <p class="ha-desc">etcd uses Raft. Writes need a majority (quorum). 3 members tolerate 1 failure; 5 members tolerate 2. <em>Always odd</em> (4 members tolerate the same as 3 — 1 — and you've added latency). Co-locate one etcd per CP node, or run them as a separate cluster (stacked vs external topology).</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Lose quorum (e.g., 2 of 3 etcd dead) and the cluster goes read-only — gets work, no writes, no failover, no scheduling. This is why etcd backups and quorum-zone planning matter.</p>
+  </section>
+
+  <!-- ============================== SECTION 1.10 — MANAGED VS SELF ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.10 · Managed vs self-managed</span>
+    <h2>Who runs the control plane?</h2>
+
+    <div class="own-grid">
+      <div class="own managed">
+        <h3 class="own-name">Managed (EKS · GKE · AKS · DO · Linode)</h3>
+        <p class="own-desc">Cloud provider runs the control plane for you. You manage worker nodes (or use managed node pools too). Pay <code>~$73/cluster/mo</code> (GKE / EKS) or sometimes free (AKS, GKE Autopilot). Patching, etcd backups, HA — all theirs. Best for teams that aren't full-time cluster operators.</p>
+      </div>
+      <div class="own self">
+        <h3 class="own-name">Self-managed (kubeadm · kops · k3s · RKE)</h3>
+        <p class="own-desc"><code>kubeadm</code> sets up a vanilla CP on your VMs. <code>k3s</code> is a tiny K8s for edge/IoT. <code>RKE</code> automates the install. You own everything: etcd, certs, HA, upgrades. More control, more ops time. Bare-metal, edge, regulated environments, or 100+ clusters where managed-per-cluster cost adds up.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">For most teams under 50 engineers: managed. The control plane is undifferentiated heavy lifting and the hourly rate is silly cheap compared to engineering time spent on it.</p>
+  </section>
+
+  <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>Single-machine app vs cluster-native app</h2>
+    <p>The same workload, before and after the control-plane / nodes split.</p>
+
+    <div class="illu">
+      <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Single machine on the left running everything in one place vs a clustered architecture on the right with a control plane and three nodes">
+        <!-- LEFT: single machine -->
+        <g transform="translate(0,0)">
+          <rect width="320" height="220" rx="14" fill="#FBE8DC"/>
+          <text x="160" y="22" font-size="11" font-weight="700" fill="#A04832" text-anchor="middle" letter-spacing="1.5">SINGLE MACHINE · NO SEPARATION</text>
+          <!-- Big box with everything mashed in -->
+          <rect x="40" y="46" width="240" height="150" rx="6" fill="#FFFFFF" stroke="#A04832" stroke-width="1.5"/>
+          <text x="160" y="64" font-size="10" font-weight="700" fill="#A04832" text-anchor="middle">one Linux process</text>
+          <rect x="56" y="78" width="208" height="20" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1"/>
+          <text x="160" y="92" font-size="9" font-weight="700" fill="#A04832" text-anchor="middle">your app</text>
+          <rect x="56" y="104" width="208" height="20" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1"/>
+          <text x="160" y="118" font-size="9" font-weight="700" fill="#A04832" text-anchor="middle">DIY scheduler / config / state</text>
+          <rect x="56" y="130" width="208" height="20" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1"/>
+          <text x="160" y="144" font-size="9" font-weight="700" fill="#A04832" text-anchor="middle">DIY HA / failover / upgrades</text>
+          <rect x="56" y="156" width="208" height="30" rx="3" fill="#5A2520" stroke="#1F0808" stroke-width="1.4"/>
+          <text x="160" y="176" font-size="10" font-weight="700" fill="#FFF" text-anchor="middle">one machine dies → all dies</text>
+        </g>
+
+        <!-- RIGHT: cluster -->
+        <g transform="translate(360,0)">
+          <rect width="320" height="220" rx="14" fill="#E0EFE6"/>
+          <text x="160" y="22" font-size="11" font-weight="700" fill="#3D7857" text-anchor="middle" letter-spacing="1.5">CLUSTER · CP + NODES</text>
+          <!-- Control plane -->
+          <rect x="20" y="46" width="280" height="48" rx="6" fill="#FFFFFF" stroke="#3D7857" stroke-width="1.5"/>
+          <text x="160" y="62" font-size="9.5" font-weight="700" fill="#3D7857" text-anchor="middle">CONTROL PLANE (3-replicated)</text>
+          <text x="160" y="78" font-size="8" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">api · etcd · controllers · scheduler · cloud-cm</text>
+          <text x="160" y="89" font-size="7" fill="#6B6058" text-anchor="middle" font-style="italic">decides what should run</text>
+          <!-- Nodes -->
+          <rect x="20" y="104" width="86" height="48" rx="4" fill="#FFFFFF" stroke="#3D7857" stroke-width="1.4"/>
+          <text x="63" y="120" font-size="9" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">node-1</text>
+          <text x="63" y="134" font-size="7" fill="#3D7857" text-anchor="middle">2 pods</text>
+          <text x="63" y="146" font-size="6" fill="#6B6058" text-anchor="middle" font-style="italic">kubelet+proxy+rt</text>
+          <rect x="116" y="104" width="86" height="48" rx="4" fill="#FFFFFF" stroke="#3D7857" stroke-width="1.4"/>
+          <text x="159" y="120" font-size="9" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">node-2</text>
+          <text x="159" y="134" font-size="7" fill="#3D7857" text-anchor="middle">3 pods</text>
+          <text x="159" y="146" font-size="6" fill="#6B6058" text-anchor="middle" font-style="italic">kubelet+proxy+rt</text>
+          <rect x="212" y="104" width="86" height="48" rx="4" fill="#FFFFFF" stroke="#3D7857" stroke-width="1.4"/>
+          <text x="255" y="120" font-size="9" font-weight="700" fill="#3D7857" text-anchor="middle" font-family="ui-monospace,monospace">node-3</text>
+          <text x="255" y="134" font-size="7" fill="#3D7857" text-anchor="middle">2 pods</text>
+          <text x="255" y="146" font-size="6" fill="#6B6058" text-anchor="middle" font-style="italic">kubelet+proxy+rt</text>
+          <!-- Outcome -->
+          <rect x="20" y="162" width="280" height="34" rx="3" fill="#5A9F7A" stroke="#3D7857" stroke-width="1.4"/>
+          <text x="160" y="184" font-size="10" font-weight="700" fill="#FFFFFF" text-anchor="middle">node dies → CP reschedules · cluster survives</text>
+        </g>
+      </svg>
+      <div class="illu-caption">Left: one process is your scheduler, your state store, and your app — and your single point of failure. Right: those concerns are factored apart, and any node can disappear without the cluster noticing for more than a few seconds.</div>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba before">
+        <span class="ba-label">Before · single machine</span>
+        <p>One process running your app + a "scheduler" + a "config store" all together. Process dies → everything dies. Adding a second machine? Now they need to coordinate state — and you've invented half of K8s, badly.</p>
+      </div>
+      <div class="ba after">
+        <span class="ba-label">After · CP + nodes</span>
+        <p>Control plane is one logical unit (HA-replicated underneath). Worker nodes are interchangeable cattle. The pod you deployed yesterday survives a node failure tonight, because the control plane noticed and recreated it elsewhere.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">What changed: separation of concerns. The control plane decides; the nodes do. Every K8s feature builds on top of this split.</p>
+  </section>
+
+  <!-- ============================== SECTION 3 — ANALOGY ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The airport: tower + terminals</h2>
+    <p>A Kubernetes cluster is an <strong>airport</strong> with one <strong>control tower</strong> and several <strong>terminal buildings</strong>. The tower (the control plane) is where all the decisions happen. The terminals (worker nodes) is where aircraft (your pods) actually park, board, and fly.</p>
+    <p>Inside the <strong>tower</strong>, five rooms: <strong>radio dispatch</strong> at the top window (API server — every plane radios here, nobody else has authority to broadcast); <strong>flight plan archive</strong> in the basement (etcd — every plane that ever existed, every assignment, written down); <strong>specialist controllers</strong> (controller manager — "always-3-planes-on-this-route", "this-plane-needs-a-gate", "node-just-went-dark"); <strong>runway assignment desk</strong> (scheduler — picks which terminal/runway each plane goes to); and a <strong>cloud liaison</strong> (cloud-controller-manager — radio link to outside power, fuel, navigation aids).</p>
+    <p>Inside each <strong>terminal</strong>, three roles: <strong>gate manager</strong> (kubelet — receives assignments, executes them, reports back); <strong>ground crew router</strong> (kube-proxy — directs taxiing planes via the local taxiway map); <strong>tug operator</strong> (container runtime — actually moves the planes).</p>
+    <p>The tower never directly grabs a plane. It writes the assignment to the archive; the gate manager picks it up. The gate manager never calls another terminal directly; it goes through the tower's radio. That single-door discipline is what lets the airport scale to hundreds of terminals.</p>
+
+    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>Control tower</strong> = control plane (the brain)</li>
+      <li><strong>Radio dispatch</strong> = API server (the only door)</li>
+      <li><strong>Flight plan archive</strong> = etcd (source of truth)</li>
+      <li><strong>Specialist controllers</strong> = controller manager (reconcile loops)</li>
+      <li><strong>Runway assignment desk</strong> = scheduler</li>
+      <li><strong>Cloud liaison</strong> = cloud-controller-manager</li>
+      <li><strong>Terminal building</strong> = worker node</li>
+      <li><strong>Gate manager</strong> = kubelet</li>
+      <li><strong>Ground crew router</strong> = kube-proxy</li>
+      <li><strong>Tug operator</strong> = container runtime</li>
+      <li><strong>Aircraft at the gate</strong> = pod</li>
+    </ul>
+  </section>
+
+  <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>A control tower talks to terminals. Terminals park planes. The tower decides where each plane goes, the terminal makes it happen. If a plane crashes, the tower puts up a new one somewhere else. If a terminal closes, the tower moves all its planes to another terminal.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>A K8s cluster has a brain (control plane) and muscles (worker nodes). The brain has 5 parts: an <code>API server</code> (the only door in), <code>etcd</code> (where state is stored), a <code>controller manager</code> (lots of small loops keeping desired state matching reality), a <code>scheduler</code> (picks which node runs which pod), and a <code>cloud-controller-manager</code> (bridges to AWS/GCP/Azure). Each worker node runs <code>kubelet</code> (the agent that runs your pods), <code>kube-proxy</code> (network rules for Services), and a <code>container runtime</code> (containerd or CRI-O). When you <code>kubectl apply</code>, your YAML goes to the API server, which writes it to etcd; the scheduler picks a node and writes the binding back; the kubelet on that node reads its assignment and tells the runtime to start the container. <strong>Everything talks through the API server, nothing talks directly.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>Where architecture decisions show up in production</h2>
+
+    <div class="scenarios">
+      <div class="scenario">
+        <p class="scenario-name">etcd lost quorum during a network partition — cluster went read-only</p>
+        <p>A 3-member etcd cluster across three AZs hit a network partition that isolated 2 of 3 nodes from each other. Quorum couldn't be achieved → etcd switched to read-only → API server could serve gets but not writes → no new pods scheduled, no failover, no Deployments updated. Lesson: 5-member etcd survives 2 failures; 3-member only survives 1. Cross-AZ etcd needs careful quorum-zone planning.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">API server overloaded by an aggressive controller</p>
+        <p>A custom controller was watching all pods and re-LISTing every second. At 8000 pods, that hammered the API server with hundreds of MB/s of JSON. API server fell behind on writes, kubectl timed out cluster-wide. Fix: use proper <code>informers</code> (LIST once + WATCH for diffs) and respect server-side rate limits. Standard <code>controller-runtime</code> libraries do this for you.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">Managed CP (GKE) saved a startup from etcd backup nightmares</p>
+        <p>A 12-engineer startup ran self-managed K8s on EC2 with kubeadm. They spent ~30 hours/month on etcd backups, version upgrades, and CP patching. Migrated to GKE. Engineering time on cluster ops dropped to zero. They paid $73/month per cluster; they paid one engineer ~$14k/month before. Math is what it is.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">kube-scheduler bug pinned all pods to one node</p>
+        <p>A scheduler bug in a specific minor version assigned all newly-created pods to the same node, ignoring resource constraints. That node OOM'd and got cordoned. Subsequent pods went to the next node, also OOM'd. Cascading failure. Workaround: deploy a second scheduler (multi-scheduler is supported via <code>schedulerName</code> on the pod spec) until the upstream fix landed. Real fix: upgrade.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 6 — ANIMATED SVG ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Watch the cluster work</h2>
+    <p>Three modes. Pod creation end-to-end, a controller reconcile loop in action, and an HA control plane surviving a node failure.</p>
+
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 410" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animation of pod creation flow, reconcile loop, and HA control plane">
+        <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: pod creation flow</text>
+
+        <g transform="translate(580,14)">
+          <rect width="160" height="34" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.4"/>
+          <text x="14" y="22" font-size="11" fill="#6B6058">step:</text>
+          <text x="148" y="22" font-size="14" font-weight="700" fill="#3F4A5E" text-anchor="end" font-family="ui-monospace,monospace" id="anim-step">0 / 5</text>
+        </g>
+
+        <g id="anim-stage" transform="translate(40,60)"></g>
+
+        <g transform="translate(40,350)">
+          <rect width="680" height="40" rx="6" fill="#FBF7F0" stroke="#3F4A5E" stroke-width="1.5"/>
+          <text x="340" y="25" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-status">Pick a mode to start.</text>
+        </g>
+      </svg>
+
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="podflow">▶ Pod creation flow</button>
+        <button class="anim-btn" type="button" data-mode="reconcile">▶ Reconcile loop</button>
+        <button class="anim-btn" type="button" data-mode="ha">▶ HA + node failure</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> kubectl → API → etcd → scheduler → kubelet → runtime → Running.</div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Five control-plane components?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">API server (only door in), etcd (state store), controller manager (reconcile loops), scheduler (picks nodes), cloud-controller-manager (bridges to cloud APIs).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does the API server do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">The only door into the cluster. Validates, authenticates, persists to etcd, fans out watches. Stateless and horizontally scalable. Every other component talks to it.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why is etcd special?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Strongly-consistent KV store holding the entire cluster state. Source of truth. Uses Raft consensus; needs odd-member quorum (3 or 5). Lose majority → cluster goes read-only.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does the controller manager do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Runs dozens of reconcile loops as a single binary: Deployment, ReplicaSet, Node, Endpoints, Job, ServiceAccount, etc. Each watches API for desired state, compares to actual, takes action.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does the scheduler do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Picks which node runs each newly-created pod. Considers resource requests, taints/tolerations, affinity, topology spread. Writes the binding back to the API server.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three components on every worker node?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">kubelet (node agent — runs assigned pods, reports status), kube-proxy (programs iptables/IPVS/eBPF for Services), container runtime (containerd/CRI-O — actually starts containers).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Trace 'kubectl apply pod.yaml'.<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">kubectl → API server (validates) → etcd (persisted) → scheduler (picks node) → API server (writes binding) → kubelet on that node (sees its pod) → runtime (pulls image, starts) → Pod Running. Status flows back via the API server.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Managed vs self-managed control plane?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Managed (EKS/GKE/AKS): cloud runs the CP, you manage worker nodes. ~$75/mo per cluster. Self-managed (kubeadm/kops/k3s/RKE): you run all of it. Most teams under 50 engineers choose managed.</div></div></div>
+    </div>
+
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card">
+        <p class="quiz-prompt">You run <code>kubectl apply -f pod.yaml</code>. Trace the request end-to-end: which components touch it, in what order, and what does each do?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) kubectl POSTs the YAML to the API server, authenticated with your kubeconfig. (2) The API server runs admission, validates, applies defaults, and writes the Pod object to etcd. (3) etcd persists across its quorum. The API server returns 201 Created. (4) The scheduler is watching the API server for unscheduled pods. It evaluates fit, picks node-3, POSTs a Binding to the API server. (5) The kubelet on node-3 is watching the API server for pods bound to itself. It sees the new pod, reads the spec, and asks the container runtime (containerd) to pull the image and start the container. (6) The kubelet PATCHes Pod status (Running) back to the API server, which writes it to etcd. <code>kubectl get pod</code> sees Running. Notice: nothing talks directly to etcd; nothing talks between scheduler and kubelet directly. The API server is the only door.</div>
+      </div>
+      <div class="quiz-card">
+        <p class="quiz-prompt">Your 3-member etcd is split across three AZs. A network partition isolates AZ-1 from AZ-2 and AZ-3 (but AZ-2 and AZ-3 still talk). What happens? How would 5 members have changed it?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>AZ-2 and AZ-3 still have 2 of 3 etcd members → quorum (majority) is achieved → those 2 form the active etcd group, accept writes, cluster keeps running. AZ-1's etcd is isolated and goes read-only. So a 3-member etcd survives this partition fine, as long as 2 members remain together. But: if the partition isolated EACH AZ separately, no group has 2 members and the whole cluster goes read-only. With 5 members spread 1-2-2 across 3 AZs, two AZs together have quorum. Bottom line: 3-member tolerates 1 failure, 5-member tolerates 2, but topology of the partition matters as much as the count.</div>
+      </div>
+      <div class="quiz-card">
+        <p class="quiz-prompt">A 12-engineer startup is debating between keeping their kubeadm-managed K8s on EC2 or migrating to GKE. They spend ~30 hours/month on cluster ops. Make the case.</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Managed (GKE/EKS/AKS) wins almost every time at this scale. Cost math: 30 eng-hours/month × ~$87/hr fully-loaded = $2,610/month in eng time on cluster ops. GKE control plane is ~$73/cluster/month. Net savings: ~$2,500/month, plus better security patching, faster CP version upgrades, and etcd backups handled by SREs who do this all day. Self-managed wins when: you need a CP version not yet supported by the managed offering, you need physical control of etcd (regulatory), you're on bare metal where no managed option exists, you have hundreds of clusters and per-cluster cost adds up, or cluster ops is genuinely a core competency. For 12 engineers shipping product, managed is a no-brainer.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== GLOSSARY ============================== -->
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Control plane</div><div class="gloss-def">The "brain" of the cluster: API server, etcd, controller manager, scheduler, cloud-cm. Decides what should run.</div></div>
+      <div class="gloss-item"><div class="gloss-name">API server</div><div class="gloss-def">The only door into the cluster. REST + watch endpoints over HTTPS. Stateless; horizontally scalable. Every other component talks to it.</div></div>
+      <div class="gloss-item"><div class="gloss-name">etcd</div><div class="gloss-def">Strongly-consistent KV store holding all cluster state. Uses Raft. Odd-member quorum (3 or 5). Source of truth.</div></div>
+      <div class="gloss-item"><div class="gloss-name">controller manager</div><div class="gloss-def">Bundle of reconcile loops as a single process: Deployment, ReplicaSet, Node, Endpoints, Job, etc.</div></div>
+      <div class="gloss-item"><div class="gloss-name">scheduler</div><div class="gloss-def">Picks which node runs each new pod. Considers resource fit, taints, affinity, topology spread.</div></div>
+      <div class="gloss-item"><div class="gloss-name">cloud-controller-manager</div><div class="gloss-def">Bridges K8s to cloud APIs (load balancers, persistent disks, node lifecycle). Optional on bare metal.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubelet</div><div class="gloss-def">Node agent. Watches API for assigned pods, runs them via the runtime, reports status. Also runs probes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kube-proxy</div><div class="gloss-def">Programs local iptables/IPVS/eBPF rules to implement Services on each node.</div></div>
+      <div class="gloss-item"><div class="gloss-name">container runtime</div><div class="gloss-def">containerd, CRI-O, or runc-based. Starts containers. Speaks the CRI to the kubelet.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Quorum</div><div class="gloss-def">Majority of etcd members agreeing on a write. 3 members → quorum is 2; 5 members → quorum is 3. Lose quorum → read-only.</div></div>
+      <div class="gloss-item"><div class="gloss-name">leader election</div><div class="gloss-def">Mechanism using a Lease in etcd so only one of N controller-manager / scheduler replicas is active at a time.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubeadm</div><div class="gloss-def">CLI for bootstrapping a self-managed K8s cluster on your own VMs. Sets up the CP, joins worker nodes.</div></div>
+    </div>
+  </details>
+
+  <!-- ============================== RECAP + COMPLETION ============================== -->
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 13 complete</span>
+    <p>Control plane decides; nodes execute. Five CP components, three node components, one API door between them. Memorize the 6-hop pod-creation flow — it explains 90% of K8s behavior.</p>
+    <p class="recap-next"><strong>Next — Lesson 14: The K8s API &amp; YAML.</strong> apiVersion · kind · metadata · spec · status. How `kubectl explain` is the manual you didn't know you had. CRDs as first-class citizens.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 13 of 17 · grounded in kubernetes.io/docs/concepts/overview/components · etcd.io · raft consensus</footer>
+
+<script>
+  // theme
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '☀ Light' : '🌙 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '☀ Light' : '🌙 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+
+  // flashcards
+  document.querySelectorAll('.flashcard').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('flipped'));
+  });
+
+  // quiz reveals
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? 'Hide answer' : 'Show answer';
+    });
+  });
+
+  // ====== Animation ======
+  const animStage = document.getElementById('anim-stage');
+  const animModeLabel = document.getElementById('anim-mode-label');
+  const animReadout = document.getElementById('anim-readout');
+  const animStep = document.getElementById('anim-step');
+  const animStatus = document.getElementById('anim-status');
+  const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+
+  let timeouts = [];
+  function clearTimeouts() { timeouts.forEach(t => clearTimeout(t)); timeouts = []; }
+  function later(ms, fn) { const t = setTimeout(fn, ms); timeouts.push(t); return t; }
+  function clearStage() { animStage.innerHTML = ''; }
+  function setReadout(html) { animReadout.innerHTML = html; }
+  function setStatus(text) { animStatus.textContent = text; }
+
+  const NS = 'http://www.w3.org/2000/svg';
+  function svgRect(x, y, w, h, fill, stroke, label, opts = {}) {
+    const g = document.createElementNS(NS, 'g');
+    const rect = document.createElementNS(NS, 'rect');
+    rect.setAttribute('x', x); rect.setAttribute('y', y);
+    rect.setAttribute('width', w); rect.setAttribute('height', h);
+    rect.setAttribute('rx', opts.rx || 5);
+    rect.setAttribute('fill', fill);
+    rect.setAttribute('stroke', stroke);
+    rect.setAttribute('stroke-width', 1.4);
+    g.appendChild(rect);
+    if (label) {
+      const txt = document.createElementNS(NS, 'text');
+      txt.setAttribute('x', x + w / 2); txt.setAttribute('y', y + h / 2 + 4);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('font-family', opts.font || 'sans-serif');
+      txt.setAttribute('font-size', opts.fontSize || 11);
+      txt.setAttribute('font-weight', '700');
+      txt.setAttribute('fill', opts.textFill || '#FFFFFF');
+      txt.textContent = label;
+      g.appendChild(txt);
+    }
+    g.style.opacity = 0;
+    g.style.transition = 'opacity 0.3s';
+    animStage.appendChild(g);
+    requestAnimationFrame(() => g.style.opacity = 1);
+    return g;
+  }
+  function svgText(x, y, text, opts = {}) {
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', x); t.setAttribute('y', y);
+    t.setAttribute('text-anchor', opts.anchor || 'middle');
+    t.setAttribute('font-size', opts.fontSize || 11);
+    t.setAttribute('font-weight', opts.weight || '700');
+    t.setAttribute('fill', opts.fill || '#3F4A5E');
+    if (opts.font) t.setAttribute('font-family', opts.font);
+    t.textContent = text;
+    t.style.opacity = 0;
+    t.style.transition = 'opacity 0.3s';
+    animStage.appendChild(t);
+    requestAnimationFrame(() => t.style.opacity = 1);
+    return t;
+  }
+  function svgArrow(x1, y1, x2, y2, color) {
+    const id = 'a13-marker-' + Math.floor(Math.random() * 1000000);
+    const defs = document.createElementNS(NS, 'defs');
+    defs.innerHTML = '<marker id="' + id + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="' + color + '"/></marker>';
+    animStage.appendChild(defs);
+    const line = document.createElementNS(NS, 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', color);
+    line.setAttribute('stroke-width', 2);
+    line.setAttribute('marker-end', 'url(#' + id + ')');
+    line.style.opacity = 0;
+    line.style.transition = 'opacity 0.3s';
+    animStage.appendChild(line);
+    requestAnimationFrame(() => line.style.opacity = 1);
+    return line;
+  }
+
+  function runPodflow() {
+    clearTimeouts(); clearStage();
+    animModeLabel.textContent = 'Mode: pod creation flow';
+    animStep.textContent = '0 / 5';
+    setStatus('A user runs kubectl apply -f pod.yaml.');
+    setReadout('<strong>Step 0.</strong> Watch the request walk through control-plane and node components.');
+
+    // Lay out 5 component boxes across a row
+    later(0, () => {
+      svgRect(20, 30, 110, 50, '#FBF1D6', '#8B5A00', 'kubectl', { fontSize: 11, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
+      svgRect(150, 30, 110, 50, '#ECEFF5', '#3F4A5E', 'API server', { fontSize: 11, textFill: '#3F4A5E', font: 'ui-monospace,monospace' });
+      svgRect(280, 30, 110, 50, '#FBF1D6', '#8B5A00', 'etcd', { fontSize: 11, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
+      svgRect(410, 30, 110, 50, '#EDE6F8', '#5E4A8E', 'scheduler', { fontSize: 11, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
+      svgRect(540, 30, 110, 50, '#E0EFE6', '#3D7857', 'kubelet (n3)', { fontSize: 11, textFill: '#3D7857', font: 'ui-monospace,monospace' });
+    });
+    later(1300, () => {
+      animStep.textContent = '1 / 5';
+      setStatus('Step 1: kubectl POSTs YAML to API server.');
+      setReadout('<strong>Step 1.</strong> kubectl → API server. POST /api/v1/namespaces/default/pods.');
+      svgArrow(130, 55, 150, 55, '#A04832');
+      svgRect(20, 95, 240, 26, '#FBE8DC', '#A04832', 'POST pod.yaml (kubectl)', { fontSize: 10.5, textFill: '#A04832', font: 'ui-monospace,monospace' });
+    });
+    later(2700, () => {
+      animStep.textContent = '2 / 5';
+      setStatus('Step 2: API server validates and writes to etcd.');
+      setReadout('<strong>Step 2.</strong> API server runs admission, validates schema, writes Pod object to etcd.');
+      svgArrow(260, 55, 280, 55, '#3F4A5E');
+      svgRect(150, 130, 240, 26, '#ECEFF5', '#3F4A5E', '✓ admission · validate · persist', { fontSize: 10.5, textFill: '#3F4A5E', font: 'ui-monospace,monospace' });
+    });
+    later(4100, () => {
+      animStep.textContent = '3 / 5';
+      setStatus('Step 3: scheduler watches, picks node-3, posts Binding.');
+      setReadout('<strong>Step 3.</strong> scheduler sees an unscheduled Pod. Evaluates fit. Picks node-3. POSTs Binding to API server.');
+      svgArrow(390, 75, 410, 75, '#5E4A8E');
+      svgArrow(465, 80, 270, 100, '#5E4A8E');
+      svgRect(280, 165, 240, 26, '#EDE6F8', '#5E4A8E', '✓ scheduler binds → node-3', { fontSize: 10.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
+    });
+    later(5800, () => {
+      animStep.textContent = '4 / 5';
+      setStatus('Step 4: kubelet on node-3 sees its pod, asks runtime to start it.');
+      setReadout('<strong>Step 4.</strong> kubelet watches API for pods on node-3. Sees the new pod. CRI: pull image, create + start container.');
+      svgArrow(520, 75, 540, 75, '#3D7857');
+      svgArrow(595, 80, 595, 100, '#3D7857');
+      svgRect(410, 200, 240, 26, '#E0EFE6', '#3D7857', '✓ pull image · start container', { fontSize: 10.5, textFill: '#3D7857', font: 'ui-monospace,monospace' });
+    });
+    later(7500, () => {
+      animStep.textContent = '5 / 5';
+      setStatus('Step 5: kubelet PATCHes status. Pod is Running.');
+      setReadout('<strong>Step 5.</strong> kubelet reports status (Running) back to API server → etcd. kubectl get pod sees Running.');
+      svgRect(20, 240, 660, 36, '#5A9F7A', '#3D7857', '✓ Pod Running · status flowed back through API server', { fontSize: 12, textFill: '#FFFFFF' });
+    });
+    later(11000, runPodflow);
+  }
+
+  function runReconcile() {
+    clearTimeouts(); clearStage();
+    animModeLabel.textContent = 'Mode: reconcile loop';
+    animStep.textContent = '0 / 4';
+    setStatus('A Deployment wants 3 replicas. One pod just crashed.');
+    setReadout('<strong>Step 0.</strong> Watch the Deployment controller notice and act.');
+
+    later(0, () => {
+      // Desired vs actual top
+      svgRect(20, 20, 200, 40, '#E0EFE6', '#3D7857', 'desired: replicas=3', { fontSize: 11, textFill: '#3D7857' });
+      svgRect(240, 20, 200, 40, '#FBE8DC', '#A04832', 'actual: replicas=2', { fontSize: 11, textFill: '#A04832' });
+      // Deployment controller
+      svgRect(490, 20, 200, 40, '#EDE6F8', '#5E4A8E', 'Deployment controller', { fontSize: 11, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
+      // The 3 desired, 2 actual visualization below
+      svgRect(20, 80, 60, 40, '#E0EFE6', '#3D7857', 'pod-1', { fontSize: 9, textFill: '#3D7857', font: 'ui-monospace,monospace' });
+      svgRect(90, 80, 60, 40, '#E0EFE6', '#3D7857', 'pod-2', { fontSize: 9, textFill: '#3D7857', font: 'ui-monospace,monospace' });
+      svgRect(160, 80, 60, 40, '#FBE8DC', '#A04832', '✗ pod-3', { fontSize: 9, textFill: '#A04832', font: 'ui-monospace,monospace' });
+    });
+    later(1500, () => {
+      animStep.textContent = '1 / 4';
+      setStatus('Step 1: controller watches the Deployment via informer.');
+      setReadout('<strong>Step 1.</strong> Deployment controller WATCH on /deployments/myapp picks up the spec.');
+      svgArrow(490, 40, 460, 40, '#5E4A8E');
+      svgRect(490, 80, 200, 30, '#FFFFFF', '#5E4A8E', 'WATCH /deployments/myapp', { fontSize: 9.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
+    });
+    later(3000, () => {
+      animStep.textContent = '2 / 4';
+      setStatus('Step 2: controller compares: desired 3, actual 2 → diff = +1.');
+      setReadout('<strong>Step 2.</strong> Comparison: 1 pod is missing. Controller decides to create one new pod.');
+      svgRect(490, 120, 200, 30, '#FBF1D6', '#8B5A00', 'diff: need +1 pod', { fontSize: 10, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
+    });
+    later(4500, () => {
+      animStep.textContent = '3 / 4';
+      setStatus('Step 3: controller POSTs new ReplicaSet pod template.');
+      setReadout('<strong>Step 3.</strong> ReplicaSet controller (sub-controller) POSTs a fresh Pod object to the API server.');
+      svgRect(490, 160, 200, 30, '#EDE6F8', '#5E4A8E', 'POST /pods (template)', { fontSize: 9.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
+      svgRect(230, 80, 60, 40, '#FBF1D6', '#8B5A00', 'pod-3\'', { fontSize: 9, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
+    });
+    later(6500, () => {
+      animStep.textContent = '4 / 4';
+      setStatus('Step 4: scheduler binds → kubelet starts. desired = actual.');
+      setReadout('<strong>Step 4.</strong> The new pod gets scheduled and started. Loop continues, will fire again on next change.');
+      svgRect(20, 200, 670, 36, '#5A9F7A', '#3D7857', '✓ desired = actual = 3 · controller idle until next event', { fontSize: 12, textFill: '#FFFFFF' });
+      svgRect(20, 244, 670, 26, '#FBF1D6', '#8B5A00', 'this is the controller pattern (Lesson 06) — applied to every K8s primitive', { fontSize: 10, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
+    });
+    later(11000, runReconcile);
+  }
+
+  function runHa() {
+    clearTimeouts(); clearStage();
+    animModeLabel.textContent = 'Mode: HA control plane';
+    animStep.textContent = '0 / 4';
+    setStatus('3 control-plane nodes. 3 API servers. 3 etcd members. Leader election for controllers.');
+    setReadout('<strong>Step 0.</strong> Production HA layout: any single CP node can fail without downtime.');
+
+    later(0, () => {
+      // 3 CP nodes side by side
+      const xs = [40, 280, 520];
+      xs.forEach((x, i) => {
+        svgRect(x, 30, 160, 200, '#ECEFF5', '#3F4A5E', '', { rx: 8 });
+        svgText(x + 80, 50, 'CP node-' + (i + 1), { fontSize: 12, fill: '#3F4A5E' });
+        svgRect(x + 12, 70, 136, 30, '#FFFFFF', '#3F4A5E', 'api-server', { fontSize: 10.5, textFill: '#3F4A5E', font: 'ui-monospace,monospace' });
+        svgRect(x + 12, 108, 136, 30, '#FBF1D6', '#8B5A00', 'etcd m' + (i + 1), { fontSize: 10.5, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
+        svgRect(x + 12, 146, 136, 30, '#EDE6F8', '#5E4A8E', i === 0 ? 'controller (leader)' : 'controller', { fontSize: 9.5, textFill: '#5E4A8E', font: 'ui-monospace,monospace' });
+        svgRect(x + 12, 184, 136, 30, '#E0EFE6', '#3D7857', i === 0 ? 'scheduler (leader)' : 'scheduler', { fontSize: 9.5, textFill: '#3D7857', font: 'ui-monospace,monospace' });
+      });
+    });
+    later(1500, () => {
+      animStep.textContent = '1 / 4';
+      setStatus('Step 1: a load-balancer fronts the 3 API servers.');
+      setReadout('<strong>Step 1.</strong> kubectl and kubelets hit a stable VIP/DNS that LB across all 3 API servers. Any can serve.');
+      svgRect(20, 244, 660, 26, '#FBF1D6', '#8B5A00', 'LB → api-1 · api-2 · api-3 (round-robin or least-conn)', { fontSize: 11, textFill: '#5A4F45', font: 'ui-monospace,monospace' });
+    });
+    later(3200, () => {
+      animStep.textContent = '2 / 4';
+      setStatus('Step 2: 3 etcd members vote on every write. Need 2/3 for quorum.');
+      setReadout('<strong>Step 2.</strong> etcd Raft: writes are committed only when 2 of 3 ACK. Reads can come from any.');
+      // Highlight the etcd row
+      svgArrow(160, 123, 280, 123, '#8B5A00');
+      svgArrow(400, 123, 520, 123, '#8B5A00');
+    });
+    later(4800, () => {
+      animStep.textContent = '3 / 4';
+      setStatus('Step 3: CP node-1 fails. Quorum survives (2 of 3 etcd alive).');
+      setReadout('<strong>Step 3.</strong> CP node-1 dies. LB removes api-1. etcd m1 is gone — but m2 + m3 still have quorum. Cluster keeps writing.');
+      svgRect(40, 30, 160, 200, '#FBE8DC', '#A04832', '', { rx: 8 });
+      svgText(120, 50, '✗ CP node-1 DOWN', { fontSize: 12, fill: '#A04832' });
+    });
+    later(6500, () => {
+      animStep.textContent = '4 / 4';
+      setStatus('Step 4: leader election → CP node-2 becomes new controller leader.');
+      setReadout('<strong>Step 4.</strong> Old leader (on n1) lost its lease. Within ~15s, n2 wins the lease in etcd and takes over. Zero user-visible downtime.');
+      svgRect(292, 146, 136, 30, '#5A9F7A', '#3D7857', 'controller (NEW LEADER)', { fontSize: 9, textFill: '#FFFFFF', font: 'ui-monospace,monospace' });
+      svgRect(292, 184, 136, 30, '#5A9F7A', '#3D7857', 'scheduler (NEW LEADER)', { fontSize: 9, textFill: '#FFFFFF', font: 'ui-monospace,monospace' });
+    });
+    later(11000, runHa);
+  }
+
+  function runMode(mode) {
+    clearTimeouts();
+    if (mode === 'podflow') runPodflow();
+    else if (mode === 'reconcile') runReconcile();
+    else if (mode === 'ha') runHa();
+  }
+
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      runMode(btn.dataset.mode);
+    });
+  });
+
+  runPodflow();
+</script>
+
+</body>
+</html>

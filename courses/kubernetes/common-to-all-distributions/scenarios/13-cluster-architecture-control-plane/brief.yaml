@@ -1,0 +1,88 @@
+# Intake brief — Lesson 13, K-COM
+# Topic: Cluster Architecture — control plane (API server, etcd, controller
+#        manager, scheduler, cloud controller manager) + worker nodes (kubelet,
+#        kube-proxy, container runtime). High-availability control planes,
+#        managed CPs (EKS/GKE/AKS), kubeadm-built CPs.
+# Module 3 (Architecture & API) · Lesson 1 of ~5
+
+lesson:
+  title: "Cluster Architecture · Control Plane &amp; Nodes"
+  slug: "13-cluster-architecture-control-plane"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 13
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "air traffic control tower + airport terminals — tower (control plane) houses radio dispatch (API server), flight-plan archive (etcd), specialist controllers, and runway scheduler; terminals (worker nodes) host gate managers (kubelet) and ground routing (kube-proxy) handling aircraft (pods)"
+  module: "Module 3 · Architecture &amp; API · Lesson 1 of 5"
+
+learner_profile:
+  prerequisites:
+    - "Module 2 complete (containers, runtimes, images, security, lifecycle)"
+  assumed_zero_knowledge_of:
+    - "What the control plane is and what runs there."
+    - "API server's role as the only door into the cluster."
+    - "etcd as the source of truth and why quorum matters."
+    - "Controller manager and individual controllers (deployment, replicaset, node, endpoints)."
+    - "Scheduler and how it picks a node."
+    - "Worker node components (kubelet, kube-proxy, runtime)."
+    - "How a pod gets created end-to-end."
+    - "Managed control planes (EKS, GKE, AKS) vs self-managed (kubeadm)."
+
+learning_outcomes:
+  - "Learner can name the 5 control-plane components and what each does."
+  - "Learner can name the 3 worker-node components and what each does."
+  - "Learner can describe the data flow for 'kubectl apply pod.yaml' end-to-end."
+  - "Learner can explain why etcd needs an odd number of members."
+  - "Learner understands the difference between managed and self-managed control planes."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Hero: ATC tower on the left with components labeled inside (API server window at top, etcd archive room at base, controllers and scheduler as workers in the tower); 3 terminal buildings on the right (node-1, node-2, node-3) each with planes (pods) at gates and a gate manager (kubelet) icon; radio waves connecting tower to terminals"
+    word_target: 320
+  section_1_5_blocks:
+    illustration: "5 tile cards for control-plane components: API server · etcd · Controller manager · Scheduler · Cloud controller manager"
+  section_1_7_node_components:
+    illustration: "3 cards: kubelet · kube-proxy · container runtime — what runs on every worker node"
+  section_1_8_pod_lifecycle:
+    illustration: "End-to-end flow: kubectl → API server → etcd → scheduler → API server → kubelet → runtime → Pod Running. 8-arrow flow diagram."
+  section_1_9_ha:
+    illustration: "HA control plane: 3 API servers + 3 etcd members + leader election for controllers. Quorum visualization."
+  section_2_before_after:
+    illustration: "Single-node 'cluster' (everything in one process, no separation) vs multi-node K8s (control plane separate from workloads, HA, workloads scheduled across nodes)"
+  section_3_analogy:
+    primary: "Air traffic control + terminals — tower houses dispatch/archive/controllers/scheduler; terminals host gate managers handling aircraft"
+    illustration: "Already in hero"
+  section_4_eli_pair:
+    eli5: "Tower talks. Terminals listen. Planes fly. Under 100 words."
+    eli10: "Control plane components + node components + pod lifecycle in plain words. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "etcd lost quorum during a network partition — cluster went read-only"
+      - "API server overloaded by too-aggressive controller — rate-limit fix"
+      - "Managed control plane (GKE) saved a startup from etcd backup nightmares"
+      - "kube-scheduler bug pinned all pods to one node — manual scheduler.alpha.k8s.io/scheduler-name workaround"
+  section_6_animated_svg:
+    modes: ["Pod creation request flow (5 steps)", "Reconcile loop in action (4 steps)", "HA control plane: API server + etcd quorum (4 steps)"]
+    description: "Mode 1: kubectl apply → API server validates → writes to etcd → scheduler watches and binds → kubelet watches and pulls → runtime starts container. Mode 2: deployment controller sees desired=3, actual=2, creates a new pod. Mode 3: 3 etcd members vote on writes; leader election for controllers; one node fails, quorum survives."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-13.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can recite: API server is the only door, etcd is the source of truth, controllers reconcile, scheduler picks nodes, kubelet runs containers."
+  - "First-timer can trace 'kubectl apply' through 5 components."
+  - "First-timer understands why managed control planes are popular."
+
+fact_check_anchors:
+  - "https://kubernetes.io/docs/concepts/overview/components/"
+  - "https://kubernetes.io/docs/concepts/architecture/control-plane-node-communication/"
+  - "https://etcd.io/docs/v3.5/faq/"
+  - "https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/ha-topology/"

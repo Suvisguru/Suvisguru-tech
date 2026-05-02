@@ -1,0 +1,35 @@
+# Flashcards — Lesson 13, Cluster Architecture
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "Five control-plane components?"
+    back: "API server (the only door in), etcd (state store), controller manager (reconcile loops), scheduler (picks nodes for new pods), cloud-controller-manager (bridges to AWS/GCP/Azure)."
+
+  - id: 2
+    front: "What is the API server's role?"
+    back: "The only door into the cluster. Every read, write, watch, and authentication request goes through it. Validates objects, persists to etcd, fans out watch events to clients. Stateless and horizontally scalable."
+
+  - id: 3
+    front: "Why is etcd special?"
+    back: "Strongly-consistent key-value store holding the entire cluster state. Source of truth — every Kubernetes object lives here. Uses Raft for consensus; needs an odd number of members (3 or 5) for quorum. Lose quorum, cluster goes read-only."
+
+  - id: 4
+    front: "What does the controller manager do?"
+    back: "Runs dozens of reconcile loops as a single binary: Deployment, ReplicaSet, Node, Endpoints, Job, ServiceAccount, etc. Each loop watches the API server for desired state, compares to actual, takes action to converge. The controller pattern (Lesson 06) executed for built-in resources."
+
+  - id: 5
+    front: "What does the scheduler do?"
+    back: "Picks which node should run each newly-created pod. Considers: resource requests (CPU/memory fit), node selectors, affinity/anti-affinity, taints/tolerations, pod topology spread. Writes the binding back to the API server."
+
+  - id: 6
+    front: "Three components on every worker node?"
+    back: "kubelet (node agent — watches API server for assigned pods, tells runtime to start them, reports status), kube-proxy (manages local iptables/IPVS/eBPF rules for Services), container runtime (containerd/CRI-O — actually starts containers)."
+
+  - id: 7
+    front: "Trace 'kubectl apply pod.yaml' end-to-end."
+    back: "kubectl → API server (validates) → etcd (persisted) → scheduler (sees unscheduled pod, picks node-3) → API server (writes binding) → kubelet on node-3 (sees its pod) → container runtime (pulls image, starts container) → Pod Running. Status flows back: kubelet → API server → etcd."
+
+  - id: 8
+    front: "Managed vs self-managed control plane?"
+    back: "Managed (EKS/GKE/AKS): cloud runs the control plane for you, you manage worker nodes. Pay per cluster (~$75-150/mo). Self-managed (kubeadm/kops/k3s/RKE): you run all of it. More control, more ops time. Most teams under 50 engineers choose managed."

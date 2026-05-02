@@ -1,0 +1,74 @@
+# Quiz — Lesson 13, Cluster Architecture
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      You run kubectl apply -f pod.yaml. Trace the request end-to-end:
+      which components touch the request, in what order, and what does
+      each one do?
+    answer: |
+      (1) kubectl reads the YAML and POSTs it to the API server's
+      /api/v1/namespaces/{ns}/pods endpoint over HTTPS, authenticated
+      with your kubeconfig.
+      (2) The API server runs admission controllers, validates the
+      schema, applies defaults, and writes the Pod object to etcd.
+      (3) etcd persists the write across its quorum (3 or 5 members).
+      The API server returns 201 Created to kubectl.
+      (4) The scheduler is watching the API server. It sees a new pod
+      with no nodeName. It evaluates resource requests, taints,
+      affinity, etc., picks node-3, and POSTs a Binding object back
+      to the API server.
+      (5) The kubelet on node-3 is watching the API server for pods
+      with spec.nodeName = node-3. It sees the new pod, reads the
+      spec, and asks the container runtime (containerd) to pull the
+      image and start the container.
+      (6) The kubelet reports Pod status (Running) back to the API
+      server, which writes it to etcd. kubectl get pod sees Running.
+      Notice: nothing talks directly to etcd; nothing talks directly
+      between scheduler and kubelet. The API server is the only door.
+
+  - id: 2
+    prompt: |
+      Your team's 3-member etcd cluster is split across three
+      availability zones. A network partition isolates AZ-1 from AZ-2
+      and AZ-3 (but AZ-2 and AZ-3 can still talk to each other). What
+      happens to the cluster, and how would 5 etcd members have
+      changed the outcome?
+    answer: |
+      AZ-2 and AZ-3 still have 2 of 3 etcd members → quorum (majority)
+      is achieved → those 2 form the active etcd group, accept writes,
+      cluster keeps running. AZ-1's etcd is isolated and goes
+      read-only; clients in AZ-1 can't write but can read stale data.
+      So actually a 3-member etcd survives this partition fine, as
+      long as 2 members remain together.
+      But: if instead the partition isolated EACH AZ (split brain
+      three ways), no group has 2 members and the whole cluster goes
+      read-only. With 5 members spread 2-2-1, you need 3 in
+      communication to keep writing, so you also lose to a 2-2-1
+      isolation. With 5 spread 1-2-2 across 3 AZs, two AZs together
+      have quorum. Bottom line: 3-member tolerates 1 failure,
+      5-member tolerates 2 failures, but the topology of those
+      failures matters as much as the count.
+
+  - id: 3
+    prompt: |
+      A 12-engineer startup is debating whether to keep their
+      kubeadm-managed K8s on EC2 or migrate to GKE. They spend ~30
+      hours/month on cluster ops (etcd backups, version upgrades, CP
+      patching). What's the case for managed, and when does
+      self-managed actually win?
+    answer: |
+      Managed (GKE/EKS/AKS) wins almost every time at this scale. Cost
+      math: 30 eng-hours/month × ($14k/12 weeks ÷ 160 hours = ~$87/hr
+      fully loaded) = $2,610/month in eng time. GKE control plane is
+      ~$73/cluster/month. Net savings: ~$2,500/month, plus the cluster
+      gets better security patching, faster CP version upgrades, and
+      etcd backups handled by SREs who do this all day.
+      Self-managed wins when: you need a CP version not yet supported
+      by the managed offering, you need physical control of etcd
+      (regulatory), you're running on bare metal where no managed
+      option exists, you have hundreds of clusters and operational
+      tooling makes per-cluster cost <$10/mo, or you genuinely have
+      cluster-ops engineers as a core competency. For 12 engineers
+      shipping product, managed is a no-brainer.
