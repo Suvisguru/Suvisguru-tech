@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 16 — Workload Controllers · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:40px;font-weight:700;line-height:1.15;letter-spacing:-0.8px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:30px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:28px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+  .illu{margin:24px 0;background:var(--bg-soft);border-radius:var(--r-soft);padding:20px;text-align:center}
+  .illu svg{display:block;width:100%;height:auto;max-width:680px;margin:0 auto}
+  .illu-caption{font-size:14px;color:var(--ink-soft);margin-top:12px;font-style:italic;line-height:1.5}
+
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'📚';font-size:18px}
+  .glossary summary::after{content:'›';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+
+  /* Five workload-controller cards */
+  .ctrl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .ctrl{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent);transition:transform .15s var(--ease),box-shadow .15s var(--ease)}
+  .ctrl:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  .ctrl.c1{border-top-color:#3F4A5E}
+  .ctrl.c2{border-top-color:#5E4A8E}
+  .ctrl.c3{border-top-color:#5A9F7A}
+  .ctrl.c4{border-top-color:#D97757}
+  .ctrl.c5{border-top-color:#8E2A2A}
+  .ctrl-icon{font-size:32px;line-height:1}
+  .ctrl-name{font-weight:700;font-size:15px;color:var(--ink);margin:0;line-height:1.3}
+  .ctrl.c1 .ctrl-name{color:#3F4A5E}
+  [data-theme="dark"] .ctrl.c1 .ctrl-name{color:var(--accent)}
+  .ctrl.c2 .ctrl-name{color:#5E4A8E}
+  [data-theme="dark"] .ctrl.c2 .ctrl-name{color:#9D8FCC}
+  .ctrl.c3 .ctrl-name{color:#3D7857}
+  [data-theme="dark"] .ctrl.c3 .ctrl-name{color:var(--good)}
+  .ctrl.c4 .ctrl-name{color:#A04832}
+  [data-theme="dark"] .ctrl.c4 .ctrl-name{color:var(--warm)}
+  .ctrl.c5 .ctrl-name{color:#8E2A2A}
+  [data-theme="dark"] .ctrl.c5 .ctrl-name{color:#E07474}
+  .ctrl-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .ctrl-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .ctrl-when{font-size:12.5px;color:var(--ink-soft);margin-top:6px}
+  .ctrl-when strong{color:var(--ink)}
+
+  /* Strategy comparison cards (Deployment vs StatefulSet) */
+  .strat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
+  @media (max-width:600px){.strat-grid{grid-template-columns:1fr}}
+  .strat{padding:18px;border-radius:var(--r-soft);border:2px solid;background:var(--bg-card)}
+  .strat.dep{border-color:#3F4A5E;background:#ECEFF5}
+  .strat.sts{border-color:#5E4A8E;background:#EDE6F8}
+  .strat-name{font-weight:700;font-size:15px;margin:0 0 8px}
+  .strat.dep .strat-name{color:#3F4A5E}
+  .strat.sts .strat-name{color:#5E4A8E}
+  .strat-list{margin:0;padding-left:18px;font-size:13.5px;line-height:1.55;color:var(--ink)}
+  .strat-list li{margin-bottom:4px}
+
+  /* ============ LAYMAN-FIRST SCAFFOLDING ============ */
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:19px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box{background:var(--accent-soft)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'…in Kubernetes · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){
+    .concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50}
+  }
+
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+
+  @media (prefers-reduced-motion: reduce){
+    .ktown-map .pin .pin-circle,.pause-check-opt,.ktown-strip-pin{transition:none}
+    .quiz-reveal{animation:none}
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the Kubernetes course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>what Kubernetes is</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>the reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how apps should be designed</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>when K8s makes sense</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how mature teams operate it</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how the project evolves</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>Linux foundations <small>(primer)</small></span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how containers actually work</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>runtimes &amp; the OCI standard</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how images are built</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how containers shut down</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>Pods deep dive</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>workload controllers</span><span class="concept-rail-here">← you are here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>services &amp; networking</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 16</span></a>
+    <span class="progress-pill">16 of 18</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>K-Town Dispatch Office</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: today we are at the Dispatch Office, Lesson 16">
+    <title>K-Town district map · today: Dispatch Office</title>
+    <desc>Stylised map of K-Town. Today's lesson is at the Dispatch Office, the workforce control centre.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#3F4A5E">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin active" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+  </svg>
+
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Dispatch Office</strong> <span>· lesson 16 of 18</span><span class="visually-hidden">Lesson 16 of 18, Dispatch Office.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 4 · Lesson 16 · how Kubernetes runs your apps</span>
+    <h1>Workload Controllers · Deployment, StatefulSet, DaemonSet, Job, CronJob</h1>
+    <p class="hero-sub">Pods come and go; <strong>workload controllers</strong> keep your apps running at the right shape. Five flavours, one pattern: declare what you want, the controller reconciles. Forever.</p>
+
+    <div class="hero-illu">
+      <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A dispatch board with five tickets pinned: rotating-shifts (Deployment), assigned-seat (StatefulSet), one-per-building (DaemonSet), one-time order (Job), scheduled (CronJob). The dispatcher carries a clipboard.">
+        <rect width="680" height="280" rx="12" fill="#F5EFE3"/>
+        <text x="340" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">DISPATCH BOARD · FIVE WORK ORDERS</text>
+        <!-- Dispatcher figure -->
+        <g transform="translate(50, 70)">
+          <circle cx="40" cy="20" r="18" fill="#FBF1D6" stroke="#2A2520" stroke-width="1.6"/>
+          <circle cx="34" cy="18" r="1.8" fill="#2A2520"/><circle cx="46" cy="18" r="1.8" fill="#2A2520"/>
+          <path d="M 32 26 Q 40 31 48 26" stroke="#2A2520" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <path d="M 26 38 Q 26 90 32 110 L 48 110 Q 54 90 54 38 Z" fill="#3F4A5E"/>
+          <path d="M 26 44 Q 12 60 16 84" stroke="#FBF1D6" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <path d="M 54 44 Q 68 56 74 70" stroke="#FBF1D6" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <g transform="translate(58,60)"><rect width="28" height="36" rx="3" fill="#FFFFFF" stroke="#2A2520" stroke-width="1.4"/><line x1="4" y1="10" x2="24" y2="10" stroke="#9D9389" stroke-width="1"/><line x1="4" y1="16" x2="24" y2="16" stroke="#9D9389" stroke-width="1"/><line x1="4" y1="22" x2="24" y2="22" stroke="#9D9389" stroke-width="1"/></g>
+          <text x="40" y="135" text-anchor="middle" font-size="11" font-weight="700" fill="#3F4A5E">dispatcher</text>
+          <text x="40" y="150" text-anchor="middle" font-size="10" font-style="italic" fill="#6B6058">(controller)</text>
+        </g>
+        <!-- Five tickets pinned to a corkboard -->
+        <g transform="translate(170,70)">
+          <rect width="480" height="160" rx="6" fill="#D6CFC0" stroke="#8B7355" stroke-width="1.5"/>
+          <!-- ticket 1: rotating shift -->
+          <g transform="translate(14,12)">
+            <rect width="86" height="64" rx="4" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.4"/>
+            <text x="43" y="14" text-anchor="middle" font-size="8" font-weight="700" fill="#3F4A5E">DEPLOYMENT</text>
+            <text x="43" y="28" text-anchor="middle" font-size="7" fill="#6B6058">rotating shifts</text>
+            <text x="43" y="44" text-anchor="middle" font-size="9" font-weight="700" fill="#3F4A5E">×5</text>
+            <text x="43" y="56" text-anchor="middle" font-size="6" fill="#6B6058">stateless</text>
+          </g>
+          <!-- ticket 2: assigned seat -->
+          <g transform="translate(108,12)">
+            <rect width="86" height="64" rx="4" fill="#EDE6F8" stroke="#5E4A8E" stroke-width="1.4"/>
+            <text x="43" y="14" text-anchor="middle" font-size="8" font-weight="700" fill="#5E4A8E">STATEFULSET</text>
+            <text x="43" y="28" text-anchor="middle" font-size="7" fill="#6B6058">assigned seats</text>
+            <text x="43" y="44" text-anchor="middle" font-size="8" font-weight="700" fill="#5E4A8E">db-0 db-1 db-2</text>
+            <text x="43" y="56" text-anchor="middle" font-size="6" fill="#6B6058">stable identity</text>
+          </g>
+          <!-- ticket 3: one per building -->
+          <g transform="translate(202,12)">
+            <rect width="86" height="64" rx="4" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.4"/>
+            <text x="43" y="14" text-anchor="middle" font-size="8" font-weight="700" fill="#3D7857">DAEMONSET</text>
+            <text x="43" y="28" text-anchor="middle" font-size="7" fill="#6B6058">watchman</text>
+            <text x="43" y="44" text-anchor="middle" font-size="9" font-weight="700" fill="#3D7857">1 per node</text>
+            <text x="43" y="56" text-anchor="middle" font-size="6" fill="#6B6058">logs · monitoring</text>
+          </g>
+          <!-- ticket 4: one-time order -->
+          <g transform="translate(296,12)">
+            <rect width="86" height="64" rx="4" fill="#FBE8DC" stroke="#A04832" stroke-width="1.4"/>
+            <text x="43" y="14" text-anchor="middle" font-size="8" font-weight="700" fill="#A04832">JOB</text>
+            <text x="43" y="28" text-anchor="middle" font-size="7" fill="#6B6058">one-time order</text>
+            <text x="43" y="44" text-anchor="middle" font-size="9" font-weight="700" fill="#A04832">run-once</text>
+            <text x="43" y="56" text-anchor="middle" font-size="6" fill="#6B6058">batch · migrate</text>
+          </g>
+          <!-- ticket 5: scheduled -->
+          <g transform="translate(390,12)">
+            <rect width="86" height="64" rx="4" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.4"/>
+            <text x="43" y="14" text-anchor="middle" font-size="8" font-weight="700" fill="#8B5A00">CRONJOB</text>
+            <text x="43" y="28" text-anchor="middle" font-size="7" fill="#6B6058">scheduled round</text>
+            <text x="43" y="44" text-anchor="middle" font-size="9" font-weight="700" fill="#8B5A00">0 2 * * *</text>
+            <text x="43" y="56" text-anchor="middle" font-size="6" fill="#6B6058">backups · reports</text>
+          </g>
+          <!-- bottom row: 5 boxes representing Pods being placed -->
+          <text x="240" y="100" text-anchor="middle" font-size="10" fill="#5A4F45" font-style="italic">all five issue Pods → the controller keeps them at the declared shape</text>
+          <g transform="translate(50,110)">
+            <rect width="380" height="36" rx="3" fill="#FBF7F0" stroke="#9D9389" stroke-width="0.8"/>
+            <g><rect x="8" y="6" width="22" height="22" rx="3" fill="#3F4A5E"/><text x="19" y="22" text-anchor="middle" font-size="9" fill="#FBF7F0" font-weight="700">P</text></g>
+            <g><rect x="40" y="6" width="22" height="22" rx="3" fill="#5E4A8E"/><text x="51" y="22" text-anchor="middle" font-size="9" fill="#FBF7F0" font-weight="700">P</text></g>
+            <g><rect x="72" y="6" width="22" height="22" rx="3" fill="#5A9F7A"/><text x="83" y="22" text-anchor="middle" font-size="9" fill="#FBF7F0" font-weight="700">P</text></g>
+            <g><rect x="104" y="6" width="22" height="22" rx="3" fill="#D97757"/><text x="115" y="22" text-anchor="middle" font-size="9" fill="#FBF7F0" font-weight="700">P</text></g>
+            <g><rect x="136" y="6" width="22" height="22" rx="3" fill="#E8B547"/><text x="147" y="22" text-anchor="middle" font-size="9" fill="#FBF7F0" font-weight="700">P</text></g>
+            <text x="190" y="22" text-anchor="middle" font-size="9" fill="#9D9389" font-style="italic">… each ticket reconciled forever</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 3 AM Nightmare opener -->
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>You manually create five Pods for your web app and walk away. By 3 AM, traffic doubles. The Pods can't keep up. One crashes from memory pressure. Now you have four. Nobody's awake to notice. By 8 AM, two more have crashed. You're at two Pods serving rush-hour traffic, customers are seeing timeouts, and the on-call engineer's first task of the day is figuring out what just happened. This lesson is about the abstraction that makes that whole class of pain go away — and the five flavours of it for the five shapes of work.</p>
+    </div>
+  </div>
+
+  <!-- One-sentence stamp · top placement -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Pods come and go. Workload controllers keep your apps running at the right shape — five flavours: Deployment for stateless apps, StatefulSet for apps with identity, DaemonSet for one-per-node, Job for run-once, CronJob for run-on-schedule.</p>
+  </div>
+
+  <!-- ============================== SECTION 1 — CONCEPT ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>What a workload controller is</h2>
+    <p>A <strong>Pod</strong> is the unit of work — one or more containers scheduled together. But a Pod by itself is fragile: if it crashes, nothing brings it back. If you want three copies, you have to create three Pods. If demand doubles, you create more by hand. If a node dies, every Pod on that node disappears.</p>
+    <p>A <strong>workload controller</strong> is the loop that solves this. You declare what you want — "five copies of <code>my-app:v2</code>, healthy" — and the controller compares that against what's running, and creates or deletes Pods to close the gap. Forever. If a Pod crashes, the controller notices and creates a replacement. If a node dies, the controller reschedules the missing Pods elsewhere. If you change the desired count, the controller adjusts.</p>
+    <p>Kubernetes ships with <strong>five</strong> built-in workload controllers, one for each common shape of work:</p>
+  </section>
+
+  <!-- ============================== SECTION 1.5 — THE FIVE CONTROLLERS ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · The five flavours</span>
+    <h2>One controller per shape of work</h2>
+    <p>Each controller has the same loop pattern (declare, observe, reconcile) but a different idea of what the right Pod shape looks like. Pick the one that matches the work.</p>
+
+    <div class="ctrl-grid">
+      <div class="ctrl c1">
+        <span class="ctrl-icon">🔁</span>
+        <h3 class="ctrl-name">Deployment</h3>
+        <p class="ctrl-tag">rotating shifts</p>
+        <p class="ctrl-desc">Manages a set of identical, interchangeable Pods. Rolling updates create new Pods one batch at a time and retire old ones once the new are ready. The default for stateless web apps, APIs, workers.</p>
+        <p class="ctrl-when"><strong>When:</strong> any app where Pods don't care about their own identity.</p>
+      </div>
+      <div class="ctrl c2">
+        <span class="ctrl-icon">🪑</span>
+        <h3 class="ctrl-name">StatefulSet</h3>
+        <p class="ctrl-tag">assigned seats</p>
+        <p class="ctrl-desc">Each Pod has a stable name (<code>db-0</code>, <code>db-1</code>, <code>db-2</code>) that survives restarts, plus a stable persistent volume per replica. Startup and shutdown are ordered. The right choice for databases, queues, anything that needs identity.</p>
+        <p class="ctrl-when"><strong>When:</strong> Postgres, Cassandra, MongoDB, Kafka, Elasticsearch, ZooKeeper.</p>
+      </div>
+      <div class="ctrl c3">
+        <span class="ctrl-icon">👀</span>
+        <h3 class="ctrl-name">DaemonSet</h3>
+        <p class="ctrl-tag">one-per-node watchman</p>
+        <p class="ctrl-desc">Runs exactly one Pod on every node (or every node matching a selector). Add a node, the Pod auto-deploys; remove a node, the Pod disappears. The pattern for log collectors, monitoring agents, network plugins.</p>
+        <p class="ctrl-when"><strong>When:</strong> Fluent Bit, Prometheus node-exporter, Calico CNI, kube-proxy.</p>
+      </div>
+      <div class="ctrl c4">
+        <span class="ctrl-icon">📋</span>
+        <h3 class="ctrl-name">Job</h3>
+        <p class="ctrl-tag">one-time work order</p>
+        <p class="ctrl-desc">Runs one or more Pods to completion. Once a Pod exits cleanly, the Job is done. If a Pod fails, the Job restarts it (up to a backoff limit). For batch processing, migrations, image renders, reports.</p>
+        <p class="ctrl-when"><strong>When:</strong> database migrations, video transcodes, ML training runs.</p>
+      </div>
+      <div class="ctrl c5">
+        <span class="ctrl-icon">⏰</span>
+        <h3 class="ctrl-name">CronJob</h3>
+        <p class="ctrl-tag">scheduled round</p>
+        <p class="ctrl-desc">A Job on a cron schedule. <code>0 2 * * *</code> runs the Job at 2 AM every day. The CronJob controller creates a fresh Job at each tick; the Job creates the Pod; the Pod runs to completion.</p>
+        <p class="ctrl-when"><strong>When:</strong> nightly backups, hourly cache warms, monthly reports.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 1.7 — DEPLOYMENT DEEP DIVE ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · Deployment in detail</span>
+    <h2>The most common controller — Deployment + ReplicaSet</h2>
+    <p>A Deployment is a layer above the simpler <strong>ReplicaSet</strong>. A ReplicaSet keeps N identical Pods alive — that's the simplest reconciliation loop. A Deployment manages ReplicaSets so that you can update the Pod template (e.g. change the image tag) and the cluster transitions smoothly from the old version to the new one.</p>
+    <p>The <strong>rolling update</strong> is the key trick. When you update a Deployment's image:</p>
+    <ol style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 12px">
+      <li>The Deployment creates a new ReplicaSet (with the new image) at zero replicas.</li>
+      <li>It scales the new ReplicaSet up by <code>maxSurge</code> (default 25%) and waits for the new Pods to report ready.</li>
+      <li>Once the new Pods are ready, it scales the old ReplicaSet down by <code>maxUnavailable</code> (default 25%).</li>
+      <li>Repeat until the new ReplicaSet has all replicas and the old one has zero.</li>
+    </ol>
+    <p>If a new Pod fails its readiness probe, the rollout pauses — old Pods stay up. <code>kubectl rollout undo deployment/my-app</code> reverts to the previous ReplicaSet (which still exists, just at zero replicas). Rollback is one command.</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>You'll rarely create a ReplicaSet directly — Deployments hide them. The ReplicaSet hash appears in Pod names (<code>my-app-7d4b9c-xkz2p</code>) so you can identify which version a Pod belongs to. <code>kubectl get rs</code> shows the active and historical ReplicaSets the Deployment has produced.</p>
+  </section>
+
+  <!-- ============================== SECTION 1.9 — STATEFULSET DEEP DIVE ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · StatefulSet in detail</span>
+    <h2>When Pods need a name</h2>
+    <p>A StatefulSet is a workload controller that gives each Pod a stable identity that survives restarts. It's the right choice for any workload where Pods know about each other by name — replicated databases, message queues, distributed file systems.</p>
+    <p>Three guarantees a Deployment doesn't make:</p>
+    <div class="strat-grid">
+      <div class="strat dep">
+        <h3 class="strat-name">Deployment (stateless)</h3>
+        <ul class="strat-list">
+          <li>Pods get random names (<code>app-7d4b9c-xkz2p</code>)</li>
+          <li>Restart → fresh name, fresh IP, fresh PVC</li>
+          <li>Startup order: any order, in parallel</li>
+          <li>Rolling update: replace any Pod at any time</li>
+          <li>Storage: ephemeral or shared</li>
+        </ul>
+      </div>
+      <div class="strat sts">
+        <h3 class="strat-name">StatefulSet (stateful)</h3>
+        <ul class="strat-list">
+          <li>Pods get ordinal names (<code>db-0</code>, <code>db-1</code>, <code>db-2</code>)</li>
+          <li>Restart → same name, same PVC re-attached</li>
+          <li>Startup: ordered (<code>db-0</code> before <code>db-1</code> before <code>db-2</code>)</li>
+          <li>Shutdown: reverse-ordered</li>
+          <li>Storage: <code>volumeClaimTemplates</code> creates a PVC per Pod</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:18px">The trade-off is operational rigidity. StatefulSets are slower to scale (one Pod at a time, sequentially), slower to roll out updates, and more complex to debug. Use them when identity matters — and stick with Deployments otherwise.</p>
+  </section>
+
+  <!-- Pause-and-check #1 · after Section 1 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">What's the difference between a Pod and a Deployment?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) They're the same thing with two names</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) A Pod is a single running instance; a Deployment is a controller that keeps a set of identical Pods at a declared size</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Deployments are faster than Pods</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> The Pod is what runs your container. The Deployment is the loop that creates Pods, watches them, and replaces failed ones — automatically and forever.</p>
+    </div>
+  </div>
+
+  <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>Manual Pod management vs declared workloads</h2>
+
+    <div class="ba-grid">
+      <div class="ba before">
+        <span class="ba-label">Before · raw Pods</span>
+        <p>You write five YAML files for five Pods. You apply them. One crashes — you re-apply. Demand doubles — you write five more YAML files. A node fails — you SSH in, find which Pods were on that node, recreate them on healthy nodes by hand.</p>
+        <p>Updates are surgery. To roll out a new version: stop one Pod, apply the new spec, wait, stop the next one, apply, wait. If something breaks halfway, you have a mix of old and new Pods and no clean rollback.</p>
+      </div>
+      <div class="ba after">
+        <span class="ba-label">After · workload controllers</span>
+        <p>You write one Deployment YAML with <code>replicas: 5</code>. The controller creates the five Pods. A Pod crashes — replaced in seconds. A node fails — the missing Pods are rescheduled. Demand doubles — change one number, the controller scales.</p>
+        <p>Updates are <code>kubectl set image deployment/my-app web=my-app:v2</code>. Rolling update happens automatically — new Pods come up healthy before old ones go down. Rollback is <code>kubectl rollout undo</code>. The cluster never has more than 25% unavailable during the transition.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">What didn't change: the underlying <em>desire</em>. You still want N copies of your app running. The controller turns that desire into a never-ending loop instead of a one-time imperative command.</p>
+  </section>
+
+  <!-- ============================== SECTION 3 — ANALOGY ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The K-Town Dispatch Office</h2>
+    <p>Imagine the city's <strong>Dispatch Office</strong> — a corner building near city hall, full of clipboards, ticket-takers, and a wall of work orders. Businesses send standing orders to the dispatcher: "I need five baristas at all times in the morning shift," "I need a permanent night-watchman at the Bank Vault Quarter," "We need a one-time crew to repaint the harbour fence next Tuesday."</p>
+    <p>The dispatcher reads each order, sends workers to fill the slots, and watches. If a barista calls in sick, the dispatcher sends a replacement — same role, different person. If a watchman quits, the dispatcher posts the position again. If a one-time crew finishes the harbour fence, that work order closes. New shift requirements arrive, the dispatcher adjusts headcounts.</p>
+    <p>Different businesses have different needs, so the Dispatch Office issues five kinds of standing work order. Some bring rotating shift workers (any qualified person fills the slot — like baristas); others bring assigned-seat employees (Anna at desk 0, Brian at desk 1 — like the bank's tellers); others bring the one-per-building watchman; others bring one-time crews; others bring scheduled maintenance teams. Same dispatcher, same loop, five shapes of work.</p>
+
+    <div class="translation-legend">
+      <table>
+        <thead>
+          <tr><th>In the story…</th><th>…in Kubernetes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>The Dispatch Office</td><td>A workload controller</td></tr>
+          <tr><td>A standing work order</td><td>A workload spec in YAML</td></tr>
+          <tr><td>"Rotating shift" job posting</td><td>A Deployment (interchangeable Pods)</td></tr>
+          <tr><td>"Assigned seat" employees</td><td>A StatefulSet (Pods with stable identity)</td></tr>
+          <tr><td>"One-per-building" watchman</td><td>A DaemonSet (one Pod per node)</td></tr>
+          <tr><td>One-time work order</td><td>A Job</td></tr>
+          <tr><td>Scheduled maintenance round</td><td>A CronJob</td></tr>
+          <tr><td>Headcount on each posting</td><td>The <code>replicas</code> field (desired count)</td></tr>
+          <tr><td>Sending a replacement when someone leaves</td><td>The controller creating a new Pod</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real workforce dispatch keeps the same people across shifts. Kubernetes Deployments routinely terminate and replace Pods — same role, different instances. The "shift" is permanent; the workers are not.</em></p>
+  </section>
+
+  <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Imagine you have toy soldiers and a friend who watches them for you. You tell your friend, "I want five soldiers standing on the rug at all times." If a soldier falls over, your friend stands a new one up. If you say, "I want eight now," your friend gets three more. If you say, "Switch them all to blue uniforms," your friend swaps them in one at a time. Your friend never stops watching. That's a workload controller.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>A Pod runs your app, but a single Pod is fragile — if it crashes or its node dies, nothing brings it back. A <strong>workload controller</strong> is a small program (one of five flavours) that keeps a declared number of Pods running, reconciling reality against your spec forever. Most apps use a <strong>Deployment</strong>: declare <code>replicas: 5</code> and the controller maintains exactly five healthy copies. Apps that need stable identity (databases, queues) use a <strong>StatefulSet</strong>. Workloads that should run on every node (logging, monitoring) use a <strong>DaemonSet</strong>. One-time tasks use <strong>Jobs</strong>; scheduled tasks use <strong>CronJobs</strong>. Same loop, five shapes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pause-and-check #2 · after Section 4 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Your team is running PostgreSQL with three replicas. The replicas need to find each other by stable hostname for replication. Should they use a Deployment or a StatefulSet?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Deployment — it's the default</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) StatefulSet — Postgres replicas need stable identity (db-0, db-1, db-2) and ordered startup</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Either works the same</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> StatefulSets give each Pod a stable name and a per-Pod persistent volume that survives restarts. Deployments treat Pods as interchangeable, which breaks replication.</p>
+    </div>
+  </div>
+
+  <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>Where each controller shows up</h2>
+
+    <div class="scenarios">
+      <div class="scenario">
+        <p class="scenario-name">A SaaS startup running 30 stateless services</p>
+        <p>Three engineers, weekly releases. Every service is a Deployment with 3-10 replicas. Releases are <code>kubectl set image</code>; the cluster rolls 25% at a time, never serving more than 25% old. Rollbacks happen via <code>kubectl rollout undo</code>; they happen monthly and are non-events. "We never write <code>kubectl scale</code> by hand — we change the YAML and let it reconcile."</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">A regional bank running Cassandra across three AZs</p>
+        <p>Cassandra needs each node to know its peers by stable hostname. The team uses a StatefulSet with 6 replicas spread across three availability zones (<code>cassandra-0</code> through <code>cassandra-5</code>). Each Pod's PVC is recreated on the same persistent volume during restarts, so the Cassandra cluster's state survives Pod churn. Bootstrap took planning; daily ops are quiet.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">A telecom running a metrics agent on every node</p>
+        <p>A Prometheus node-exporter scrapes per-node metrics. The team uses a DaemonSet — one agent per node, scheduled automatically when new nodes come up. Decommissioning a node automatically removes the agent. Adding a 50th node took zero ops effort; the DaemonSet noticed and deployed.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">A media company encoding videos overnight</p>
+        <p>Every night at 1 AM, a CronJob fires that creates a Job for each video uploaded the previous day. Each Job runs a Pod with FFmpeg, transcodes the video into multiple bitrates, uploads to S3, and exits. Failed transcodes retry up to three times (the Job's <code>backoffLimit</code>). The team wakes up to a queue of completed transcodes, with failures already escalated.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 6 — ANIMATED SVG ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Watch a Deployment reconcile — and roll out an update</h2>
+    <p>Three modes: steady-state with a crash recovery, a scale-out, and a rolling update. The Dispatch Office (the controller) keeps the right number and version of workers at the cluster.</p>
+
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animated Deployment reconciling: Pods getting created and replaced as state changes.">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode: steady-state with crash recovery</text>
+
+        <!-- Left: spec card -->
+        <g transform="translate(40,60)">
+          <rect width="180" height="120" rx="10" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+          <rect width="180" height="22" rx="10 10 0 0" fill="#3F4A5E"/>
+          <text x="90" y="15" text-anchor="middle" font-size="11" fill="#FFF" font-weight="600">Deployment spec</text>
+          <text x="14" y="42" font-size="13" fill="#2A2520" font-family="ui-monospace,monospace">replicas: <tspan id="anim-desired" font-weight="700">3</tspan></text>
+          <text x="14" y="62" font-size="13" fill="#2A2520" font-family="ui-monospace,monospace">image:</text>
+          <text x="22" y="78" font-size="12" fill="#2A2520" font-family="ui-monospace,monospace" id="anim-image">my-app:v1</text>
+          <text x="14" y="100" font-size="11" fill="#6B6058" font-style="italic">desired state</text>
+        </g>
+
+        <!-- Center: controller -->
+        <g transform="translate(290,120)">
+          <circle cx="0" cy="0" r="40" fill="#3F4A5E"/>
+          <text x="0" y="-4" text-anchor="middle" font-size="11" fill="#FFF" font-weight="700">Dispatch</text>
+          <text x="0" y="10" text-anchor="middle" font-size="11" fill="#FFF" font-weight="700">Office</text>
+          <text x="0" y="60" text-anchor="middle" font-size="10" fill="#3F4A5E" font-style="italic">(controller)</text>
+        </g>
+
+        <!-- Right: cluster reality (5 slots, only N filled) -->
+        <g transform="translate(420,40)">
+          <rect width="300" height="240" rx="10" fill="#FBF7F0" stroke="#5A9F7A" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <text x="150" y="18" text-anchor="middle" font-size="11" fill="#3D7857" font-weight="700">cluster · actual state</text>
+          <g id="anim-pod-1" transform="translate(20,32)" style="transition:opacity .4s">
+            <rect width="80" height="50" rx="6" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/>
+            <rect width="80" height="14" rx="6 6 0 0" fill="#5A9F7A"/>
+            <text x="40" y="10" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">pod-1</text>
+            <text x="40" y="34" text-anchor="middle" font-size="9" fill="#3D7857" font-weight="600" id="anim-img-1">my-app:v1</text>
+            <text x="40" y="46" text-anchor="middle" font-size="8" fill="#3D7857">Running</text>
+          </g>
+          <g id="anim-pod-2" transform="translate(110,32)" style="transition:opacity .4s">
+            <rect width="80" height="50" rx="6" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/>
+            <rect width="80" height="14" rx="6 6 0 0" fill="#5A9F7A"/>
+            <text x="40" y="10" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">pod-2</text>
+            <text x="40" y="34" text-anchor="middle" font-size="9" fill="#3D7857" font-weight="600" id="anim-img-2">my-app:v1</text>
+            <text x="40" y="46" text-anchor="middle" font-size="8" fill="#3D7857">Running</text>
+          </g>
+          <g id="anim-pod-3" transform="translate(200,32)" style="transition:opacity .4s">
+            <rect width="80" height="50" rx="6" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/>
+            <rect width="80" height="14" rx="6 6 0 0" fill="#5A9F7A"/>
+            <text x="40" y="10" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">pod-3</text>
+            <text x="40" y="34" text-anchor="middle" font-size="9" fill="#3D7857" font-weight="600" id="anim-img-3">my-app:v1</text>
+            <text x="40" y="46" text-anchor="middle" font-size="8" fill="#3D7857">Running</text>
+          </g>
+          <g id="anim-pod-4" transform="translate(20,100)" opacity="0" style="transition:opacity .4s">
+            <rect width="80" height="50" rx="6" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/>
+            <rect width="80" height="14" rx="6 6 0 0" fill="#5A9F7A"/>
+            <text x="40" y="10" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">pod-4</text>
+            <text x="40" y="34" text-anchor="middle" font-size="9" fill="#3D7857" font-weight="600" id="anim-img-4">my-app:v1</text>
+            <text x="40" y="46" text-anchor="middle" font-size="8" fill="#3D7857">Running</text>
+          </g>
+          <g id="anim-pod-5" transform="translate(110,100)" opacity="0" style="transition:opacity .4s">
+            <rect width="80" height="50" rx="6" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/>
+            <rect width="80" height="14" rx="6 6 0 0" fill="#5A9F7A"/>
+            <text x="40" y="10" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">pod-5</text>
+            <text x="40" y="34" text-anchor="middle" font-size="9" fill="#3D7857" font-weight="600" id="anim-img-5">my-app:v1</text>
+            <text x="40" y="46" text-anchor="middle" font-size="8" fill="#3D7857">Running</text>
+          </g>
+          <text x="150" y="200" text-anchor="middle" font-size="11" fill="#3D7857" font-style="italic" id="anim-status">3 of 3 Pods running · all match v1</text>
+        </g>
+
+        <!-- arrows -->
+        <line x1="220" y1="120" x2="250" y2="120" stroke="#9D9389" stroke-width="1.5" stroke-dasharray="3,3"/>
+        <line x1="330" y1="120" x2="410" y2="120" stroke="#9D9389" stroke-width="1.5" stroke-dasharray="3,3"/>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="steady">▶ steady-state &amp; recovery</button>
+        <button class="anim-btn" type="button" data-mode="scale">▶ scale to 5</button>
+        <button class="anim-btn" type="button" data-mode="rollout">▶ rolling update v1 → v2</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> 3 Pods running, controller at idle. Wait for the crash, then see the replacement appear.</div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 7 — MISCONCEPTIONS + FLASHCARDS + QUIZ ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>Three common misconceptions to clear up first, then the flashcards and quiz.</p>
+
+    <!-- Common Misconceptions panel -->
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Pods and Deployments are the same thing.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> A Pod is a single running instance. A Deployment is a controller that maintains a declared number of identical Pods, replacing failed ones automatically and rolling out updates safely.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> I can use a Deployment for my database.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Use a StatefulSet for stateful workloads (databases, queues, file servers). Deployments treat Pods as interchangeable; databases need stable identity, predictable startup order, and per-Pod persistent storage.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Rolling updates restart all Pods at once.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Rolling updates create new Pods one batch at a time and only retire old Pods after the new ones report ready. The cluster stays available throughout, with at most <code>maxUnavailable</code> (default 25%) gone at any moment.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a workload controller?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A small program watching forever that keeps a declared number of Pods running. You write the spec; the controller compares it against actual cluster state and creates or deletes Pods to close the gap.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Five workload controllers — what each is for?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Deployment (stateless apps, rolling updates). StatefulSet (stable identity, ordered, per-Pod PVC). DaemonSet (one Pod per node). Job (run-once). CronJob (scheduled Job).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Pod vs Deployment?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Pod = a single running instance. Deployment = controller maintaining N identical Pods. You almost never create raw Pods directly in production.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Deployment vs ReplicaSet?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">ReplicaSet keeps N Pods alive (one version). Deployment manages ReplicaSets, enabling rolling updates and rollback by transitioning between ReplicaSets.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When use StatefulSet?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">When Pods need stable identity (db-0, db-1, db-2), ordered startup/shutdown, or per-Pod persistent storage that survives restarts. Examples: Postgres, Cassandra, Kafka, Elasticsearch.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a DaemonSet?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A controller that runs exactly one Pod per node (or per matching node). Use for log collectors, monitoring agents, network plugins. Scales automatically as you add or remove nodes.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Job vs CronJob?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Job = run a Pod to completion once (with retries on failure). CronJob = create a fresh Job on a cron schedule (<code>0 2 * * *</code> = daily at 2 AM).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Rolling-update knobs?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>maxSurge</code> = max extra Pods above desired during update (default 25%). <code>maxUnavailable</code> = max Pods that can be down (default 25%). Together they bound how aggressive the rollout is.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">How do I roll back?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>kubectl rollout undo deployment/my-app</code> reverts to the previous ReplicaSet (which is kept at zero replicas after the rollout). Single command. <code>kubectl rollout history</code> shows past revisions.</div></div></div>
+    </div>
+
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card">
+        <p class="quiz-prompt">A team wants to roll out a new image version with zero downtime. They edit the Deployment's image tag and apply. What does Kubernetes do?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The Deployment creates a new ReplicaSet at zero replicas, scales it up by <code>maxSurge</code> (default 25%) — those new Pods pull <code>v2</code> and report ready. Once ready, the Deployment scales the old ReplicaSet down by <code>maxUnavailable</code> (default 25%). It alternates until the new ReplicaSet has all replicas and the old has zero. If a new Pod fails its readiness probe, the rollout pauses; the old Pods keep serving. <code>kubectl rollout status</code> shows progress; <code>kubectl rollout undo</code> reverts.</div>
+      </div>
+      <div class="quiz-card">
+        <p class="quiz-prompt">You need to run a Postgres backup every night at 1 AM. Which workload controller, and what does the spec look like at a high level?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>A <strong>CronJob</strong>. Spec carries the cron schedule (<code>0 1 * * *</code>) and a Pod template that runs <code>pg_dump</code>, uploads to S3, and exits. The CronJob controller fires at each scheduled tick by creating a Job, which creates a Pod, which runs the backup script and terminates. Set <code>backoffLimit</code> for retries on failure, <code>concurrencyPolicy: Forbid</code> if a previous run is still going, and <code>successfulJobsHistoryLimit</code> to keep recent runs visible.</div>
+      </div>
+      <div class="quiz-card cyoa-quiz">
+        <span class="cyoa-tag">🎬 Choose Your Own Adventure</span>
+        <p class="quiz-prompt">Your team uses a <strong>Deployment</strong> for their three Postgres replicas. During a rolling update at 2 PM, all three Pods get terminated and replaced with fresh ones — in random order, with fresh IPs. <strong>Click to see what happens. ▼</strong></p>
+        <button class="quiz-reveal" type="button">Show what happened</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">2 PM and 30 seconds later</span>Replication breaks. The "new primary" doesn't know who its secondaries are; the "new secondaries" can't find the old primary's IP. Reads and writes are inconsistent. Half the application dashboard shows yesterday's data. <strong>Fix:</strong> switch to a <strong>StatefulSet</strong>. Each Pod gets a stable hostname (<code>db-0</code>, <code>db-1</code>, <code>db-2</code>), startup is ordered (<code>db-0</code> comes up first as primary), each Pod's persistent volume is re-attached on restart, and rolling updates respect the order. Deployments are for stateless work; StatefulSets are for everything that has "who am I" as part of its job.</div>
+      </div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Workload controller</div><div class="gloss-def">A controller that maintains a declared number of Pods of a particular shape. Five built-in flavours: Deployment, StatefulSet, DaemonSet, Job, CronJob.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Deployment</div><div class="gloss-def">Manages a set of identical, interchangeable Pods. Default for stateless apps. Supports rolling updates and rollback.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ReplicaSet</div><div class="gloss-def">Lower-level controller that keeps N Pods of a single template alive. Deployments manage ReplicaSets; you rarely create one directly.</div></div>
+      <div class="gloss-item"><div class="gloss-name">StatefulSet</div><div class="gloss-def">Workload controller giving each Pod a stable identity (<code>name-N</code>), per-Pod PVC, and ordered startup / shutdown.</div></div>
+      <div class="gloss-item"><div class="gloss-name">DaemonSet</div><div class="gloss-def">Workload controller that runs one Pod on every node (or every matching node). Scales automatically as nodes come and go.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Job</div><div class="gloss-def">Workload controller that runs Pods to completion. Used for batch tasks. Retries failed Pods up to <code>backoffLimit</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">CronJob</div><div class="gloss-def">Creates a fresh Job on a cron schedule. Used for scheduled batch tasks (backups, reports, cache warms).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Rolling update</div><div class="gloss-def">Deployment's default update strategy: bring up new Pods in batches, retire old Pods only after new ones are ready.</div></div>
+      <div class="gloss-item"><div class="gloss-name">maxSurge / maxUnavailable</div><div class="gloss-def">Knobs on the rolling-update strategy. Surge = max extra Pods above desired during the update. Unavailable = max Pods that can be down. Both default to 25%.</div></div>
+      <div class="gloss-item"><div class="gloss-name">HorizontalPodAutoscaler</div><div class="gloss-def">A separate controller that auto-scales a Deployment's <code>replicas</code> based on CPU, memory, or custom metrics. Scales up under load, down at idle.</div></div>
+    </div>
+  </details>
+
+  <!-- One-sentence stamp · bottom placement (identical to top) -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Pods come and go. Workload controllers keep your apps running at the right shape — five flavours: Deployment for stateless apps, StatefulSet for apps with identity, DaemonSet for one-per-node, Job for run-once, CronJob for run-on-schedule.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 16 complete</span>
+    <p>Pods are the unit of work. Workload controllers keep them at the right shape, forever. Five flavours match the five common shapes of work, all running the same reconciliation loop.</p>
+    <p class="recap-next"><strong>Next — Lesson 17: Services &amp; Networking.</strong> Pods restart and get new IPs. So how do other Pods reach them? How does the outside world reach them? Four flavours of Service, plus Ingress, plus NetworkPolicy. The K-Town Switchboard.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 16 of 18 · grounded in kubernetes.io</footer>
+
+<script>
+  // theme toggle
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '☀ Light' : '🌙 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '☀ Light' : '🌙 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+
+  // flashcards
+  document.querySelectorAll('.flashcard').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('flipped'));
+  });
+
+  // quiz reveals (handles both "Show answer" and CYOA "Show what happened")
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+
+  // pause-and-check
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      });
+    });
+  });
+
+  // ====== Animation ======
+  const animModeLabel = document.getElementById('anim-mode-label');
+  const animReadout = document.getElementById('anim-readout');
+  const animDesired = document.getElementById('anim-desired');
+  const animImage = document.getElementById('anim-image');
+  const animStatus = document.getElementById('anim-status');
+  const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+  const pods = [1,2,3,4,5].map(i => ({
+    g: document.getElementById('anim-pod-' + i),
+    img: document.getElementById('anim-img-' + i),
+  }));
+  let timer = null;
+
+  function setReadout(html) { animReadout.innerHTML = html; }
+  function show(i, on) { pods[i-1].g.setAttribute('opacity', on ? '1' : '0'); }
+  function setImg(i, v) { pods[i-1].img.textContent = v; }
+  function setStatus(t) { animStatus.textContent = t; }
+
+  function clear() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    for (let i=1;i<=5;i++) { setImg(i, 'my-app:v1'); }
+  }
+
+  function steady() {
+    animModeLabel.textContent = 'Mode: steady-state with crash recovery';
+    animDesired.textContent = '3';
+    animImage.textContent = 'my-app:v1';
+    [1,2,3].forEach(i => show(i,true));
+    [4,5].forEach(i => show(i,false));
+    setStatus('3 of 3 Pods running · all match v1');
+    setReadout('<strong>Step 1.</strong> 3 Pods running, controller at idle. Wait for the crash.');
+    timer = setTimeout(() => {
+      show(2, false);
+      setStatus('2 of 3 Pods running · gap detected');
+      setReadout('<strong>Step 2.</strong> Pod-2 crashed. Controller sees actual=2, desired=3.');
+      timer = setTimeout(() => {
+        setStatus('Controller creating replacement…');
+        setReadout('<strong>Step 3.</strong> Controller fires up a replacement.');
+        timer = setTimeout(() => {
+          show(2, true);
+          setStatus('3 of 3 Pods running · gap closed');
+          setReadout('<strong>Step 4.</strong> Replacement is healthy. Loop returns to idle.');
+          timer = setTimeout(steady, 2400);
+        }, 1200);
+      }, 1200);
+    }, 1500);
+  }
+
+  function scaleUp() {
+    animModeLabel.textContent = 'Mode: scale to 5';
+    animDesired.textContent = '5';
+    animImage.textContent = 'my-app:v1';
+    [1,2,3].forEach(i => show(i,true));
+    [4,5].forEach(i => show(i,false));
+    setStatus('You changed replicas: 3 → 5');
+    setReadout('<strong>Step 1.</strong> Spec changed to 5. Actual is still 3.');
+    timer = setTimeout(() => {
+      setStatus('Controller creating 2 new Pods…');
+      setReadout('<strong>Step 2.</strong> Controller schedules pod-4 and pod-5.');
+      timer = setTimeout(() => {
+        show(4,true);
+        timer = setTimeout(() => {
+          show(5,true);
+          setStatus('5 of 5 Pods running · gap closed');
+          setReadout('<strong>Step 3.</strong> Both new Pods healthy. Steady-state at 5.');
+          timer = setTimeout(scaleUp, 2400);
+        }, 700);
+      }, 1200);
+    }, 1500);
+  }
+
+  function rollout() {
+    animModeLabel.textContent = 'Mode: rolling update v1 → v2';
+    animDesired.textContent = '3';
+    animImage.textContent = 'my-app:v1';
+    [1,2,3].forEach(i => { show(i,true); setImg(i, 'my-app:v1'); });
+    [4,5].forEach(i => show(i,false));
+    setStatus('3 Pods at v1 · steady');
+    setReadout('<strong>Step 1.</strong> All 3 Pods running v1. Wait for the rollout to start.');
+    timer = setTimeout(() => {
+      animImage.textContent = 'my-app:v2';
+      setStatus('Surge: bring up 1 new v2 Pod');
+      setReadout('<strong>Step 2.</strong> kubectl set image deployment/my-app web=my-app:v2 — controller surges 1 v2 Pod.');
+      timer = setTimeout(() => {
+        show(4, true); setImg(4, 'my-app:v2');
+        setStatus('4 Pods · 3 at v1, 1 at v2');
+        timer = setTimeout(() => {
+          show(1, false);
+          setStatus('Retire 1 v1 Pod (3 total · 2 v1, 1 v2)');
+          setReadout('<strong>Step 3.</strong> v2 Pod healthy. Old v1 Pod retired.');
+          timer = setTimeout(() => {
+            show(5, true); setImg(5, 'my-app:v2');
+            show(2, false);
+            setImg(3, 'my-app:v2');
+            setStatus('3 Pods · all at v2');
+            setReadout('<strong>Step 4.</strong> Rollout complete. New ReplicaSet has all 3; old ReplicaSet is at 0 (kept for rollback).');
+            timer = setTimeout(rollout, 2800);
+          }, 1100);
+        }, 1100);
+      }, 1100);
+    }, 1500);
+  }
+
+  function runMode(mode) {
+    clear();
+    if (mode === 'steady') steady();
+    else if (mode === 'scale') scaleUp();
+    else if (mode === 'rollout') rollout();
+  }
+
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      runMode(btn.dataset.mode);
+    });
+  });
+
+  runMode('steady');
+</script>
+</body>
+</html>
