@@ -719,3 +719,41 @@ Applied via `scripts/fix_ktown_strip_liststyle.py` to all 16 K-COM lesson files 
 **Alternatives considered:** Suppress markers via `.ktown-strip::marker { content: '' }` — rejected. `::marker` works for `display:list-item` items and is well-supported in modern Chrome / Safari / Firefox, but its handling of the bullet/number gap reservation differs across browsers (some leave the gutter visible even when the marker content is empty). `list-style: none` collapses the gutter completely and is the standard idiomatic reset, supported in every browser since the 1990s. Use `<ul>` instead of `<ol>` and rely on the smaller default bullet — rejected, the dot-strip is a *position-in-sequence* indicator (lesson 1 of 16, lesson 2 of 16, etc.), so the underlying semantic *is* an ordered list; switching to `<ul>` would be semantically wrong even if the visual is identical with the reset applied. Add the reset only inside the `@media` block — rejected, even though the strip is `display:none` above 720px and the bullets aren't visible there, putting the reset on the base rule is one source of truth that survives any future change to the strip's visibility breakpoint.
 
 **Revisit when:** Future scaffolding work refactors the dot-strip from `<ol>` to a non-list element (e.g., `<div role="list">` with `<div role="listitem">` children — semantically equivalent, ARIA-explicit, and avoids the implicit list-style problem at the root). At that point, the `list-style:none` rule becomes unnecessary and can be removed from the scaffolding CSS block. The `<ol>` choice was historical (the strip was originally drafted with `<ol>` because "ordered" matched the pedagogical intent of the lesson sequence); migrating to `role="list"` would be cleaner long-term but is not worth the one-time refactor cost on its own.
+
+---
+
+## 2026-05-02 — L01 K-Town universe intro — close the explainer gap
+
+**Context:** Browser review of Lesson 01 surfaced a real gap in the K-Town framing: every lesson references K-Town (district line, map graphic, strip label, SVG title — 7+ tokens per file) but no lesson explains *what* K-Town is to a first-time reader. The K-Town plan §7.3 only specified the map graphic and the per-lesson district line; the cast (Mayor Katie, Podrick, the Thermostat) and the universe-as-frame concept were assumed to be absorbed gradually as each lesson used them. A reader landing on Lesson 01 sees "K-Town" in the chrome but has to infer the framing from the property-manager analogy and the map. Founder asked for an explicit explainer at the top of L01.
+
+**Decision:** Add a short K-Town universe intro block to L01 only, sitting between the district line and the K-Town map graphic. ~95 words. Reading order becomes:
+
+1. District line (one-line orientation: "Today's stop in K-Town: Mayor's Office").
+2. **K-Town intro (NEW)** — names the universe, the 16-district structure, and the three recurring characters with forward pointers to where each character matures.
+3. K-Town map graphic (visual rendering of the universe).
+4. Hero (eyebrow / H1 / hero-sub / hero-illu).
+5. Nightmare opener.
+6. (rest of lesson scaffolding + body).
+
+Shipped copy:
+
+> 📍 **You're starting at the Mayor's Office** — the slate pin in the centre of the map below. Every lesson in this course visits one of K-Town's 16 districts; three characters recur across them. **Mayor Katie** runs the city — she *is* Kubernetes. **Podrick** is the unit that gets placed and moved (a *Pod* — Lesson 15 goes deep). **The Thermostat** is the wise gadget on every wall, who explains how things keep themselves running (first speaking part, Lesson 03). Same city, every lesson. Today: Katie.
+
+One new CSS class: `.ktown-intro` — soft-cream `--bg-soft` background, 1px `--line` border, `--r-soft` corner radius, max-width 680px to match the map's content rail. Theme-aware via the existing `[data-theme="dark"]` overrides.
+
+L01 only — other lessons keep just the district line + map. The intro's job is onboarding; once the reader has seen K-Town once, the per-lesson district line + map are enough.
+
+**Drafting protocol per QUALITY.md:** Three substantively different drafts generated (cast-first listy / why-first motivational / tour-guide voice), self-critiqued, synthesised into a winning Draft D. Discards saved to `notes/k8s-revision-drafts.md` with per-draft rationale for why they lost. Brief summary:
+
+- **Draft A (cast-first)** — solid but slightly listy, no map anchor.
+- **Draft B (why-first motivational)** — strongest explanation of the cognitive-tax rationale but defensive ("That's not whimsy — it's a working agreement") and assumes the reader has already seen multiple lessons.
+- **Draft C (tour-guide)** — strongest visual anchoring ("the slate pin in the centre"), tightest voice, but introduces "Pod" without a forward pointer.
+- **Draft D (synthesis, shipped)** — Draft C's voice + map anchor, Draft A's clean cast list, plus explicit forward pointers for Pod (→ Lesson 15) and the Thermostat (→ Lesson 03).
+
+**Reasoning:** The intro pays back the one-time cognitive-setup cost of K-Town for every subsequent lesson. STYLE.md "Unified analogical universe" already defines the cast and the city; this block is the prose surface that introduces them to the reader. Placing it between the district line and the map matches the reading order "orient → explain → visualize → engage" — by the time the reader scrolls into the lesson body proper, they know what K-Town is and who lives there. Restricting to L01 (rather than every lesson) keeps the framing as onboarding, not as recurring chrome — STYLE.md "Don't let the city framing crowd the actual content."
+
+The "(first speaking part, Lesson 03)" parenthetical is mildly jokey but consistent with the Thermostat's slightly-grandfatherly character per STYLE.md "Unified analogical universe — Kubernetes (K-Town)." Acceptable register risk.
+
+**Alternatives considered:** Place the intro inside L01's hero (between H1 and hero-sub) — rejected, would compete with the lesson's own opening claim ("What is Kubernetes?") for the reader's first focus. Place it inside the `.ktown-map-wrap` div as a caption *under* the map — rejected, the visual reading order "see the city, then read about it" is acceptable but the chosen "read first, then see the visual" is slightly stronger because the intro names the slate-pin-at-centre that the reader is about to look at. Make the intro a `<details>` collapsible on every lesson (collapsed by default except L01) so returning readers can refresh — rejected for now as scope expansion; can promote later if user testing wants it. Push the intro into Lesson 7.5 primer instead — rejected, L7.5 is read by readers who need a Linux primer specifically; not all L01 readers go through it.
+
+**Revisit when:** User testing surfaces that returning readers want a K-Town reminder on later lessons, OR a second domain (VMware, AWS) reaches universe parity and needs its own intro pattern. At the second-domain point, factor `.ktown-intro` into a generalised `.universe-intro` class so the same shape works for whatever the next domain's universe is named.
