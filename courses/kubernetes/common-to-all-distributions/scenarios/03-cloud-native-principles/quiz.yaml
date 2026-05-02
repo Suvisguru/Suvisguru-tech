@@ -1,37 +1,39 @@
-# Quiz — Lesson 01, How Kubernetes fixes things on its own
-# Total: 3 questions (single-concept lesson)
-# Style: pause-the-thermostat prompts (the hero widget is the animation).
+# Quiz — Lesson 03, Cloud-Native Principles
+# Total: 3 questions.
 
 questions:
   - id: 1
-    pause_widget: "thermostat"
+    pause_animation: true
     prompt: |
-      You set the dial to 23°. The room is at 18°. The furnace is firing.
-      What does the thermostat do when the room reaches 23°?
+      In the heater animation, the desired is 22° and actual is 19°. The
+      controller fires the heater, the room warms to 22°, and… then what?
     answer: |
-      It stops the furnace. The gap is closed. But it doesn't walk away —
-      it keeps reading the thermometer. As soon as the room drops below 23°
-      again, it'll fire the furnace right back up. The loop never ends.
+      The controller doesn't stop. It keeps reading the room temperature
+      forever. When the room cools again (someone opens a window, the
+      weather changes), the gap reopens and the controller fires the
+      heater again. That's the entire loop — it never finishes, it just
+      sleeps when the gap is zero.
 
   - id: 2
-    pause_widget: "thermostat"
     prompt: |
-      You walk over and open a window in the room. The dial is still at 23°.
-      What happens, and what does this teach about Kubernetes?
+      A teammate writes a 200-line bash script that "deploys our app." It
+      has lots of "if this fails, do that" branches. How would you reframe
+      this in cloud-native terms?
     answer: |
-      The room cools down. The thermostat sees the gap and fires the furnace,
-      again and again, fighting the open window. In Kubernetes terms: a
-      "node failed" or "a pod got killed by hand" is the same as opening a
-      window — the controller will keep trying to close the gap.
-      Self-healing, automatically.
+      Replace the script with a declarative YAML file that describes the
+      goal ("3 copies of web:v2 running, healthy, exposed on port 80").
+      Hand it to Kubernetes. The "if this fails, do that" logic becomes
+      the controller's job — and the controller is way better at it than
+      the script, because it never stops watching and never gets confused
+      about what state things are in.
 
   - id: 3
-    pause_widget: null
-    prompt: |
-      Why is it described as "the thermostat is the entire idea behind
-      Kubernetes"?
+    prompt: "Why is 'treat servers as cattle' a reliability strategy, not just a fashion statement?"
     answer: |
-      Because every other Kubernetes thing — pods, deployments, services,
-      jobs, autoscalers, even custom operators you might write — is just
-      another tiny thermostat watching a different number. Once you can
-      see that pattern, the rest of Kubernetes is variations on the same idea.
+      Because if every server is hand-tuned (a "pet"), losing one means
+      losing knowledge. Documentation is always incomplete. Recovery
+      means a human reverse-engineering what made that server special.
+      If servers are interchangeable cattle described declaratively,
+      losing one is a non-event — the controller starts another from
+      the same spec. Reliability scales because nothing depends on a
+      specific machine surviving.

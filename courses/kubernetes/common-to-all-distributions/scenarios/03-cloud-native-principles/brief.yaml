@@ -1,111 +1,71 @@
-# Intake brief — Lesson 01, Common to all Kubernetes distributions
-# Topic: How Kubernetes fixes things on its own (the reconciliation loop, drawn as a thermostat)
-#
-# Scope note (2026-05-02 redesign):
-#   Original brief tried to cover all of Module 1 (cloud-native principles +
-#   12-factor + when-to-use + GitOps + history) in one lesson with
-#   per-subtopic structure. Founder reviewed and called it "super super super
-#   confusing — would skip in a heartbeat — visuals mediocre."
-#
-#   This brief is the rescoped lesson. Module 1 now spans Lessons 01-05 of
-#   K-COM, each focused on one idea with deep visual treatment.
+# Intake brief — Lesson 03, K-COM
+# Topic: Cloud-Native Principles
+# Format: Standard 7-section PROJECT.md structure (mirrors approved Lessons 01-02).
 
 lesson:
-  title: "How does Kubernetes know to fix things on its own?"
-  slug: "01-cloud-native-and-kubernetes-foundations"
+  title: "Cloud-Native Principles"
+  slug: "03-cloud-native-principles"
   domain: "kubernetes"
   course_slug: "common-to-all-distributions"
-  position: 1
+  position: 3
   granularity: "concept"
   brief_drafted_on: "2026-05-02"
-  pedagogical_format: "single-concept · drawn-metaphor"
-  central_metaphor: "thermostat"
-  one_sentence_promise: |
-    Kubernetes works exactly like the thermostat in your house: you set what
-    you want, it reads what is, and it closes the gap forever. Once you see
-    that, the rest of Kubernetes is variations on the same loop.
+  central_metaphor: "thermostat (the reconciliation loop)"
 
 learner_profile:
   prerequisites:
-    - "Has used a computer professionally."
-    - "Knows that web apps run on servers."
-    - "No prior Kubernetes exposure of any kind. Has maybe heard the word."
+    - "Lesson 01: What is Kubernetes?"
+    - "Lesson 02: Virtualization vs Containerization"
   assumed_zero_knowledge_of:
-    - "Reconciliation loops, controllers, desired vs actual state."
-    - "Pets vs cattle."
+    - "Reconciliation loops, controllers."
     - "Declarative vs imperative configuration."
-    - "Pods, deployments, the entire Kubernetes API surface."
+    - "Desired vs actual state."
+    - "Pets vs cattle, immutable infrastructure, horizontal scaling, failure as normal."
 
 learning_outcomes:
-  - "Learner can explain in one sentence why Kubernetes self-heals."
-  - "Learner can name desired state, actual state, and controller — and point at the analogous parts of a thermostat."
-  - "Learner can explain pets vs cattle and declarative vs imperative without jargon."
-  - "Learner is curious about Lesson 02 (containers) instead of exhausted."
+  - "Learner can explain the reconciliation loop in plain terms (thermostat metaphor)."
+  - "Learner can name the difference between declarative and imperative configuration."
+  - "Learner can explain why pets vs cattle is a reliability strategy."
+  - "Learner understands all 7 cloud-native principles fit under one big idea: the loop."
 
-deferred_to_later_lessons:
-  - "Twelve-factor apps and microservices vs modular monoliths → Lesson 02 of Module 1 (or absorbed into Lesson 02 of K-COM Containers if scope fits)."
-  - "When Kubernetes fits / overkill → Lesson 03 of Module 1."
-  - "GitOps, platform engineering, SRE, service ownership, multi-tenancy → Lesson 04 of Module 1."
-  - "Borg → Omega → Kubernetes lineage, CNCF, releases, KEPs, feature gates → Lesson 05 of Module 1."
-
-structure:
-  hero:
-    type: "interactive thermostat widget"
-    description: |
-      Drawn round thermostat with a draggable orange-dot pointer on a 16-26°
-      dial sweep. Beside it, a house cross-section showing a living room with
-      a thermometer and a basement furnace. As the user drags the dial, the
-      furnace flames animate when there's a gap; the thermometer mercury
-      rises as the room warms; the chimney puffs subtle smoke when heating.
-      Three preset buttons (cold day 18° · cozy 23° · heat wave 26°) plus
-      "open a window" which forces actual to drop and demonstrates self-heal.
-  sections:
-    - "What just happened? — story prose, no jargon, naming the loop."
-    - "So you've used Kubernetes — translation table mapping each thermostat element to its K8s name (4 row pairs with mini-illustrations)."
-    - "Why this saves your weekend — one real-world story, vivid, ends on 'the thermostat ate the page.'"
-    - "Two more pictures — pets vs cattle (drawn pets/cattle), declarative vs imperative (recipe scroll vs photo of dish)."
-    - "Three quick checks — pause-the-thermostat questions."
-    - "Glossary — collapsible footer reference (NOT a top-of-page gate)."
-    - "Recap — one sentence + bridge to Lesson 02."
-  jargon_used_in_lesson_body:
-    - "desired state (mapped to dial)"
-    - "actual state (mapped to thermometer)"
-    - "controller (mapped to brain inside thermostat)"
-    - "pod (defined inline as 'a small box that runs your app')"
-    - "deployment (defined inline as 'YAML that says I want N copies')"
-    - "self-healing (used in the recap)"
-    - "pets vs cattle (entire mini-section)"
-    - "declarative (entire mini-section)"
-  jargon_explicitly_NOT_used_in_lesson_body:
-    - "kube-apiserver, etcd, kube-scheduler, kube-controller-manager (deferred to Lesson 03 K-COM Architecture)"
-    - "ReplicaSet, StatefulSet, DaemonSet (deferred to Lesson 06 Workloads)"
-    - "kubelet, CNI, CSI, CRI (deferred to architecture and component lessons)"
-    - "KEP, feature gate, alpha/beta/GA, conformance, CNCF (moved to Module 1 Lesson 05)"
-    - "GitOps, Argo CD, Flux, platform engineering, SRE (moved to Module 1 Lesson 04)"
-    - "Twelve-factor (moved to Module 1 Lesson 02 or K-COM Containers Lesson 02)"
+structure_per_project_md:
+  section_1_concept:
+    illustration: "The reconciliation loop diagram: desired state (left) → controller (middle, thermostat icon) → actual state (right). Arrows showing the loop never stops."
+    word_target: 240
+  section_2_before_after:
+    illustration: "Side-by-side: long imperative bash script (left) vs short declarative YAML (right). Both achieve same goal."
+    word_target_each_side: 80
+  section_3_analogy:
+    primary: "The thermostat in your house"
+    illustration: "Drawn thermostat with dial set to 22°C connected to a house with a thermometer reading 19°C; arrows showing the loop"
+  section_4_eli_pair:
+    eli5: "Thermostat with the dial. Under 100 words."
+    eli10: "Declarative spec + controller + reconciliation loop = self-healing. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "Black Friday e-commerce: HPA scales pods 3 → 40 automatically"
+      - "3 AM cloud machine failure: pods auto-reschedule, on-call sleeps through it"
+      - "Bad deployment rolling out: controller stops, rolls back, no outage"
+      - "Engineer manually edits ConfigMap: GitOps controller reverts to source of truth"
+  section_6_animated_svg:
+    modes: ["Thermostat fires heater", "Pod self-heals", "Scale up to 5"]
+    description: "Each mode shows desired/controller/actual. Mode 1: thermostat warms a cold room. Mode 2: pod dies, controller creates replacement. Mode 3: replicas changed from 2 to 5, controller starts 3 new pods."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
 
 shared_artifacts:
-  preview_page:
-    file: "/preview-kubernetes-lesson-01.html"
-    central_widget: "Interactive thermostat with house cross-section"
-    visual_style: "Hand-drawn-feeling. Warm cream backgrounds. Drawn metaphors not block diagrams."
-  diagram: { file: "diagram.svg", purpose: "Static reference of the loop, kept for the lesson folder but not embedded in preview." }
-  animation: { file: "animation.html", purpose: "K8s-specific 3-mode animation. Optionally linked but not embedded — the hero thermostat does the work." }
-  flashcards: { file: "flashcards.yaml", structure: "5 cards total." }
-  quiz: { file: "quiz.yaml", structure: "3 pause-the-thermostat questions." }
-  lesson_md: { file: "lesson.md", structure: "Single narrative — no per-subtopic blocks." }
-
-estimated_scope:
-  flashcards: 5
-  quiz_questions: 3
-  reading_time_minutes: 8
-  interactive_minutes: 5
+  preview_page: { file: "/preview-kubernetes-lesson-03.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
 
 bar:
-  - "First-timer can explain the lesson back in one sentence."
-  - "First-timer is curious about Lesson 02, not exhausted."
-  - "Visuals look like an explorable, not a textbook."
+  - "First-timer can explain the thermostat = Kubernetes mapping."
+  - "First-timer understands declarative vs imperative without jargon."
+  - "First-timer sees self-healing in action via the animation."
 
 fact_check_anchors:
-  - "kubernetes.io/docs/concepts/overview/ — what Kubernetes is"
-  - "kubernetes.io/docs/concepts/architecture/controller/ — controllers and reconciliation"
+  - "kubernetes.io/docs/concepts/architecture/controller/"
+  - "kubernetes.io/docs/concepts/overview/components/"

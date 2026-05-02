@@ -1,159 +1,145 @@
-# Lesson 01 — How does Kubernetes know to fix things on its own?
+# Lesson 03 — Cloud-Native Principles
 
 > Course: Kubernetes — Common to all distributions
-> Lesson 01 of the K-COM track. Module 1, Part 1.
-> Format: single-concept lesson, drawn-metaphor (thermostat).
-> Companion preview: `/preview-kubernetes-lesson-01.html`.
-
----
-
-## The promise
-
-Kubernetes works exactly like the thermostat in your house. You set what you
-want, it reads what is, and it closes the gap forever. Once you see that, the
-rest of Kubernetes is variations on the same loop.
+> Lesson 03 of 17 in K-COM. The big idea behind everything else.
+> Companion preview: `/preview-kubernetes-lesson-03.html`.
 
 ---
 
 ## 1. Concept
 
-A reconciliation loop is a small program that does one thing forever: it reads
-what you said you wanted, looks at what actually exists, and makes a small
-change to close the gap. Then it does it again. The thermostat in your house
-is the most familiar example — you set the dial, it reads the room, it fires
-the furnace when there's a gap, it stops when the gap is closed, and it
-keeps watching for the next gap.
+Cloud-native is a way of building software that assumes the world keeps
+breaking and changing. Servers fail. Network blips happen. Traffic goes up
+and down. Apps need to ship 50 times a day. Cloud-native software is
+designed for that — not in spite of it.
 
-Kubernetes is a building full of thermostats. The Deployment thermostat
-watches "how many copies of this app should exist." The Node thermostat
-watches "is this machine still healthy." The Job thermostat watches "did
-this batch task finish." Each one runs its own loop on its own resource,
-forever.
+Seven principles describe it, but they all stem from one idea: the
+**reconciliation loop**. A small program (called a **controller**) reads
+what you said you wanted, looks at what's actually running, and takes the
+smallest action to close the gap. Then it does it again. Forever.
+
+The seven principles:
+
+1. **Declarative config** — say what, not how.
+2. **Reconciliation loops** — controllers always watching.
+3. **Desired vs actual state** — the spec vs reality.
+4. **Immutable infrastructure** — replace, don't patch.
+5. **Pets vs cattle** — replaceable, not unique.
+6. **Horizontal scaling** — more copies, not bigger ones.
+7. **Failure as normal** — designed-in resilience.
+
+That's the whole game. Everything else in Kubernetes is a specialization
+of these.
 
 ---
 
 ## 2. Before / After
 
-**Before.** A Saturday at 3 AM. A cloud server reboots itself for maintenance
-and the app on it doesn't come back up. The on-call engineer wakes up to
-error pages, drives to a coffee shop, spends six hours bringing the system
-back. They lose the weekend.
+**Before — imperative scripts.** You write the exact steps. SSH into
+machines. Run commands in order. Hope nothing changes mid-deploy. If step 4
+fails, you don't know if you're in state 3 or state 5. Servers are "pets":
+hand-tuned, named, irreplaceable.
 
-**After.** Same time, six months later. The cloud machine rotates out at
-3 AM. The Kubernetes thermostat notices within 30 seconds that one copy is
-missing. It starts a new copy on a different machine. The on-call engineer
-wakes up to a calm Slack message: *self-healed at 3:14 AM — no action needed.*
+**After — declarative config.** You write the goal in a YAML file. The
+controller figures out the steps. If something fails halfway, the controller
+picks up where it left off. State is always either "matches the spec" or
+"actively being reconciled." Servers are "cattle": identical and
+replaceable.
 
-What did not change: things still break. Machines still die. The 3 AM event
-still happens. What changed is *who* deals with it (a tiny program watching
-forever) and how long it takes (seconds, not hours).
+What didn't change: you still need a correct spec. If the YAML says "I want
+3 copies of a broken app," you'll get 3 copies of a broken app —
+restarted forever.
 
 ---
 
-## 3. Analogy — the thermostat
+## 3. Analogy — the thermostat in your house
 
-You set the dial to 21°C. That is the desired state. The thermostat reads the
-room — say it's 18°C. That is the actual state. It computes the difference
-(a 3°C gap) and runs the heater — the controller action. It keeps reading the
-room. When the room hits 21°C, the heater stops. When the room cools again,
-the heater fires again.
+The clearest example of cloud-native thinking is something you've used a
+thousand times: the thermostat on your wall. Notice what it does and
+doesn't do.
 
-The thermostat never declares victory and walks away. That's the entire
-analogy. Kubernetes is a building full of thermostats, one per kind of
-resource.
+You don't tell the thermostat *how* to heat the room. You don't say "first
+turn on the gas valve, then ignite the burner, then run the fan for 12
+minutes." You set a number — 22°C — and walk away. The thermostat reads
+the room temperature, compares it to your dial, and makes whatever
+adjustments are needed. When the room gets cold again, it acts again. It
+never stops watching.
+
+Kubernetes works exactly the same way. Your YAML file is the dial. The
+cluster is the room. The controllers are the thermostat brain. Every
+Kubernetes object has its own controller watching it. That's it.
+
+**Mapping:**
+
+- The thermostat dial = your YAML file (desired state)
+- The room = your live cluster (actual state)
+- The thermostat brain = a controller
+- The thermometer = the cluster reporting what's running
+- The heater firing = the controller taking action
+- "Never stops watching" = the reconciliation loop
 
 ---
 
 ## 4. ELI5 / ELI10
 
-**ELI5.** A thermostat watches the room and turns the heater on when it's
-too cold and off when it's warm enough. It never stops watching. Kubernetes
-is a building full of tiny thermostats — one watches "how many copies of this
-app are running," another watches "is this computer still alive." When
-something doesn't match what you asked for, the thermostat fixes it.
+**ELI5.** You know how a thermostat in your house works? You set the dial
+to a temperature you want. The thermostat checks the room. If it's too
+cold, the heater turns on. When the room is warm enough, the heater stops.
+It never gets tired. Kubernetes works the exact same way, but with computer
+apps instead of room temperature.
 
-**ELI10.** A reconciliation loop is a small program that reads desired state,
-observes actual state, and takes the minimum action to close the gap, on
-repeat. The Deployment controller does this for replica count: if you said
-three replicas and one died, it creates a fourth pod to bring the count back
-up. The Node controller does this for node health: if a node hasn't checked
-in for a while, it marks it unschedulable and lets other controllers move
-the pods elsewhere. This is why Kubernetes survives node failures and pod
-crashes — nothing is "set up once and forgotten."
+**ELI10.** Cloud-native software is built to live in a world where things
+break — servers crash, networks blip, traffic spikes. So instead of
+writing scripts that say "do step 1, then 2, then 3," you write a
+*declarative spec* that says "I want 3 copies of my app running." A small
+program called a *controller* reads your spec, looks at what's actually
+running, and takes action to close the gap. This loop runs forever. That's
+why Kubernetes is so good at recovering from failures. Everything else —
+auto-scaling, self-healing, rolling updates, GitOps — is a specialized
+version of this same loop.
 
 ---
 
-## 5. Real-world
+## 5. Real-world scenarios
 
-A small SaaS team ran their app on a cloud VM. Every quarter they lost a
-weekend to "the VM rebooted and the app didn't come back." After moving to
-Kubernetes, that pattern stopped. The reconciliation loop replaced the
-on-call page.
+**Black Friday at an e-commerce site.** Traffic jumps from 100 requests
+per second to 8,000 in under an hour. The team set up a "horizontal pod
+autoscaler" that watches CPU usage and scales pod copies up automatically.
+By 11 AM there are 40 copies running (up from 3 normally). By 11 PM, traffic
+falls and count drops back to 3. Nobody manually scaled anything.
 
-A separate idea worth mentioning: people talk about servers two ways —
-as **pets** (named, hand-tuned, irreplaceable) or as **cattle** (identical,
-numbered, interchangeable). Kubernetes treats every machine as cattle, which
-is what makes "lose one, replace it automatically" possible. And Kubernetes
-configuration is **declarative** (here's a photo of the dish I want) instead
-of **imperative** (here are the 47 steps to make it). Both ideas exist
-specifically because the reconciliation loop demands them.
+**A cloud machine fails at 3 AM.** AWS rotates out a server. The 12 pods
+running on it die instantly. Controllers notice within seconds and
+reschedule them onto healthy servers. By the time anyone wakes up, the
+dashboard is green and Slack shows "self-healed at 03:14 — no action
+needed."
+
+**A bad deployment is rolling out.** An engineer pushes a new version. The
+new pods crash on startup (bug in the new code). The Deployment controller
+sees the failed pods, stops the rollout, and keeps the old version running.
+One-command rollback. Production never went down.
+
+**Someone manually edits a config file in production.** An engineer SSHes
+into the cluster and changes a ConfigMap by hand. The GitOps controller
+notices the cluster has drifted from Git. Within seconds, it reverts the
+change. The engineer goes put their fix in Git like everyone else.
 
 ---
 
 ## 6. Animated illustration
 
-The lesson preview's hero is an interactive thermostat. Drag the orange dot
-around the dial to set the desired temperature. Watch the furnace fire when
-there's a gap. Click "open a window" to force the room to cool — the
-thermostat keeps fighting it forever. That is the lesson, made visible.
+Three modes in the preview animation:
 
-A separate Kubernetes-specific animation lives at `animation.html` showing
-the same loop with K8s vocabulary in three modes: scale-up, self-heal on
-failure, drift correction. Use it after the thermostat lands.
+1. **Thermostat fires heater.** Desired = 22°, actual = 19°. Controller
+   compares, fires the heater, room warms to 22°, heater stops. Loop
+   continues forever.
+2. **Pod self-heals.** Desired = 3 pods, actual = 3. One pod dies. Controller
+   notices, schedules a replacement. Back to 3.
+3. **Scale up to 5.** You change replicas from 2 to 5. Controller sees the
+   gap, starts 3 new pods. Returns to steady state.
 
 ---
 
 ## 7. Flashcards and quiz
 
-See `flashcards.yaml` (5 cards) and `quiz.yaml` (3 pause-the-thermostat
-questions).
-
----
-
-## What did NOT make this lesson (deliberately)
-
-The original Module 1 outline included twelve-factor apps, microservices vs
-modular monoliths, when Kubernetes fits and when it doesn't, GitOps, platform
-engineering, SRE, service ownership, multi-tenancy, the Borg → Omega → K8s
-lineage, CNCF, release cadence, KEPs, and feature gates. All of these are
-real and worth teaching — but cramming them into Lesson 01 fails first-timers
-even when each is well-written.
-
-The redesign moves them to dedicated lessons in Module 1:
-
-- **Lesson 02:** Apps that fit pods (twelve-factor + microservices vs modular monoliths).
-- **Lesson 03:** When Kubernetes is the right tool (and when it isn't).
-- **Lesson 04:** How mature teams operate Kubernetes (GitOps + platform engineering + SRE + service ownership + multi-tenancy).
-- **Lesson 05:** Where Kubernetes came from and how it ships (Borg → Omega → K8s, CNCF, release cadence, KEPs, feature gates, conformance).
-
-Then K-COM Module 2 (Containers) opens the box on what runs inside a pod.
-
----
-
-## Self-critique notes (per QUALITY.md)
-
-- **Analogy:** Thermostat is structural. Dial = desired, thermometer = actual,
-  brain = controller, furnace firing = controller action. Survives every
-  follow-up question I can throw at it ("what's a node failure?" → "an open
-  window"; "what's a Deployment?" → "a different number on the dial").
-- **Glossary placement:** Moved to footer. Vocabulary appears inline only
-  after the metaphor lands.
-- **Visuals:** Drawn metaphors only — actual thermostat with dial, actual
-  house cross-section with furnace, actual cute pets and cattle with faces,
-  actual recipe scroll vs photo of dish. No block diagrams.
-- **Density:** ~8 sections, ~5 minute reading time + ~5 minute interactive.
-  Down from the original ~60 content blocks.
-- **First-time-learner test:** Lesson opens with a question ("how does
-  Kubernetes fix things on its own?"), interactive widget answers it
-  visually before any vocabulary. Lesson ends with the learner curious
-  about Lesson 02, not exhausted.
+See `flashcards.yaml` (8 cards) and `quiz.yaml` (3 questions).

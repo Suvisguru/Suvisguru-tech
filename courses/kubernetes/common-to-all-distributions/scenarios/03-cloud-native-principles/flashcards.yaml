@@ -1,23 +1,35 @@
-# Flashcards — Lesson 01, How Kubernetes fixes things on its own
-# Total: 5 cards (single-concept lesson, no per-subtopic blocks)
+# Flashcards — Lesson 03, Cloud-Native Principles
+# Total: 8 cards.
 
 cards:
   - id: 1
-    front: "What is a reconciliation loop?"
-    back: "A small program that reads what you wanted, observes what actually exists, takes the minimum action to close the gap, and repeats forever. The brain inside a thermostat — and inside Kubernetes."
+    front: "What is the reconciliation loop?"
+    back: "A small program (a controller) that reads desired state, observes actual state, takes the smallest action to close the gap, and repeats forever. The heart of Kubernetes."
 
   - id: 2
-    front: "Desired state vs actual state?"
-    back: "Desired state is the picture you wrote down (the thermostat dial / a YAML file). Actual state is what's running right now (the thermometer reading / the live cluster). The controller is the loop between them."
+    front: "Declarative vs imperative?"
+    back: "Imperative: 'do step 1, then step 2, then step 3.' Declarative: 'I want this end state.' Kubernetes is declarative; you write the goal, controllers figure out the steps."
 
   - id: 3
-    front: "Why does Kubernetes self-heal?"
-    back: "Because the controllers never stop watching. When something breaks, the actual state diverges from the desired state, and the controller takes action to close the gap automatically — like a thermostat firing the furnace when the room cools."
+    front: "Desired vs actual state?"
+    back: "Desired = what you said you wanted (your YAML). Actual = what's running right now (the live cluster). Controllers constantly compare them and act to close the gap."
 
   - id: 4
     front: "Pets vs cattle?"
-    back: "A pet is a hand-tuned named server you'd grieve when it dies. Cattle are identical, numbered, replaceable units. Kubernetes treats every machine as cattle — which is exactly what makes self-healing work."
+    back: "Pets: hand-tuned, named, irreplaceable servers — you'd grieve if one died. Cattle: identical, numbered, replaceable units — when one dies, you bring in another. Cloud-native treats every resource as cattle."
 
   - id: 5
-    front: "Declarative vs imperative configuration?"
-    back: "Declarative says 'here's a photo of what I want' (the goal). Imperative says 'do this, then this, then this' (the steps). Kubernetes is declarative — you hand it the photo and the controllers figure out how."
+    front: "What is immutable infrastructure?"
+    back: "You don't patch a running server — you build a new one with the new config and replace the old. No drift over time, no 'what state is this in?' mystery."
+
+  - id: 6
+    front: "Horizontal vs vertical scaling?"
+    back: "Vertical: make one machine bigger (more CPU/RAM). Horizontal: add more identical machines. Cloud-native prefers horizontal because it's resilient and limitless."
+
+  - id: 7
+    front: "Why 'failure as normal'?"
+    back: "Servers fail, networks blip, disks die — every day, at scale. Cloud-native designs for this from the start instead of trying to prevent it. The reconciliation loop is what makes failure routine instead of catastrophic."
+
+  - id: 8
+    front: "What is a controller in Kubernetes?"
+    back: "A small program that watches one type of resource (Deployments, Services, Pods, etc.) and runs the reconciliation loop for it. Kubernetes ships with dozens; you can also write your own."
