@@ -1,0 +1,35 @@
+# Flashcards — Lesson 15, Pods Deep Dive
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "What is a Pod?"
+    back: "The atomic unit of scheduling in K8s. One or more containers placed together on a node, sharing network and IPC namespaces (containers can talk via localhost). Each container has its own filesystem and PID namespace by default."
+
+  - id: 2
+    front: "What is the pause container?"
+    back: "An invisible infrastructure container in every pod. Holds the pod's network/IPC namespaces open so app containers can come and go without losing the pod's IP. You don't write YAML for it; the kubelet creates it automatically. See it with crictl ps."
+
+  - id: 3
+    front: "What is an init container?"
+    back: "A container that runs to completion BEFORE any main container starts. Sequential — multiple inits run in order. Common uses: wait for a dependency (DB, secret), copy config files into a shared volume, run a schema migration. Pod stays Pending until inits exit 0."
+
+  - id: 4
+    front: "What is a sidecar container?"
+    back: "A second container in a pod that supports the main one (log shipping, mesh proxy, metrics scraper). K8s 1.28+ has native sidecar support: declare in initContainers with restartPolicy: Always — starts before main, stays running, properly handled at shutdown."
+
+  - id: 5
+    front: "Multi-container patterns: sidecar, ambassador, adapter?"
+    back: "Sidecar = augments main (log shipper, mesh proxy). Ambassador = proxies an external service for main (e.g., DB connection pool). Adapter = transforms main's output (e.g., translates app metrics to Prometheus format)."
+
+  - id: 6
+    front: "What is an ephemeral container?"
+    back: "A container added to a running pod via 'kubectl debug -it pod --image=busybox --target=app'. Doesn't restart the pod. Critical for debugging distroless containers (no shell). Can share PID namespace with the target to inspect its processes."
+
+  - id: 7
+    front: "Resource requests vs limits?"
+    back: "request = the floor; scheduler reserves this much capacity, won't pack the node past 100% of requests. limit = the ceiling; CPU above limit is throttled, memory above limit triggers OOM kill."
+
+  - id: 8
+    front: "Three QoS classes?"
+    back: "Guaranteed (every container has request==limit for both CPU and memory; last to be evicted). Burstable (at least one container has a request, but request<limit; most production pods). BestEffort (no requests/limits; first to be evicted under node pressure)."

@@ -1,0 +1,74 @@
+# Quiz — Lesson 15, Pods Deep Dive
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      Your web app needs PostgreSQL ready before it starts, otherwise
+      it crashes on its first query. The current setup is a single
+      container with sleep loops in the entrypoint, which sometimes
+      races and crashes anyway. What's the K8s-native fix?
+    answer: |
+      Use an init container. In the pod spec, add:
+        initContainers:
+          - name: wait-db
+            image: busybox
+            command:
+              ["sh","-c","until nc -z db.svc 5432; do sleep 1; done"]
+      The kubelet runs init containers sequentially before any main
+      containers start. The pod stays in Pending phase until every
+      init exits 0. This guarantees the DB is reachable before your
+      app's first byte runs — no sleep races, no entrypoint hacks. If
+      you have multiple ordered prerequisites (wait-db, run-migration,
+      seed-data), each is its own init container in order. Bonus: the
+      app container's image stays clean — no netcat, no init logic.
+
+  - id: 2
+    prompt: |
+      Your production app uses a distroless base image (gcr.io/distroless/python3)
+      for security. It just started returning 500s and you need to
+      debug. kubectl exec -it ... bash fails with "executable file not
+      found in $PATH". What do you do?
+    answer: |
+      kubectl debug. Run:
+        kubectl debug -it broken-pod \
+          --image=busybox \
+          --target=app -- sh
+      This adds an ephemeral container to the running pod. The
+      ephemeral container is a sibling to your main "app" container,
+      sharing the pod's network namespace AND (because of --target)
+      the main container's PID namespace. You get a busybox shell that
+      can ps, ls /proc/<main-pid>/, and tcpdump as if you were inside
+      the broken container.
+      The pod doesn't restart. Once you exit, the ephemeral container
+      is gone but the rest of the pod is unchanged. This is the right
+      answer for distroless: keep the production attack surface tiny,
+      and use ephemeral debug containers when you need to investigate.
+      It's also useful for any pod where exec didn't work (different
+      tooling needs, locked-down filesystem, etc.).
+
+  - id: 3
+    prompt: |
+      A team set requests.memory: 1Gi and limits.memory: 1Gi on their
+      pod (QoS class: Guaranteed). The app legitimately spikes to
+      1.2Gi during traffic bursts and gets OOM-killed every time. They
+      thought "Guaranteed" meant "always gets memory." What's the
+      actual behavior, and what should they do?
+    answer: |
+      Guaranteed QoS does NOT mean "this pod always gets the memory it
+      asks for." It means "request == limit, AND this pod is the LAST
+      to be evicted when the NODE is under memory pressure." Within
+      the pod, the limit is still a hard cap — exceeding it = OOM
+      kill, no exceptions. Class is irrelevant.
+      Two fixes:
+      (1) Raise the limit. e.g., request: 1Gi, limit: 2Gi. Now the
+          pod is Burstable (request < limit), but it can use up to
+          2Gi when needed. Cost: it can be evicted before Guaranteed
+          pods if the node is under pressure (rare for healthy
+          clusters).
+      (2) Right-size the app. Profile peak memory and set both
+          request and limit above the observed P99. Stay Guaranteed,
+          but make the limit reflect reality.
+      Lesson: QoS is about NODE-level eviction priority, not POD-level
+      memory grants. Don't choose Guaranteed by setting limit too low;
+      that's just self-imposed OOM.

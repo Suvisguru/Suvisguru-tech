@@ -1,0 +1,96 @@
+# Intake brief — Lesson 15, K-COM
+# Topic: Pods Deep Dive — single-container basics, multi-container patterns
+#        (sidecar/ambassador/adapter), init containers, ephemeral debug
+#        containers, the pause container, resource requests/limits, QoS classes,
+#        restart policy
+# Module 3 (Architecture & API) · Lesson 3 of 5
+
+lesson:
+  title: "Pods Deep Dive · Init · Sidecars · Ephemeral · QoS"
+  slug: "15-pods-deep-dive"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 15
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "shared studio apartment with roommates — one apartment (Pod), one or more roommates (containers) sharing kitchen/bathroom (linux namespaces, network, IPC), can knock on each other's doors via localhost; handymen (init containers) finish work before move-in; helpful housemates (sidecars) run alongside; visiting plumbers (ephemeral debug containers) drop in briefly"
+  module: "Module 3 · Architecture &amp; API · Lesson 3 of 5"
+
+learner_profile:
+  prerequisites:
+    - "Lesson 14: K8s API & YAML (knows the 4 blocks)"
+    - "Lesson 12: PID 1 & lifecycle (knows pod phases)"
+  assumed_zero_knowledge_of:
+    - "What a Pod actually is (atomic unit of scheduling)."
+    - "Shared linux namespaces inside a pod (network, IPC) and what's NOT shared (filesystem/PID by default)."
+    - "Init containers and how they sequence."
+    - "Multi-container patterns: sidecar, ambassador, adapter."
+    - "Native sidecar containers (K8s 1.28+) — init containers with restartPolicy: Always."
+    - "Ephemeral debug containers and kubectl debug."
+    - "The pause container."
+    - "Resource requests and limits."
+    - "QoS classes: Guaranteed / Burstable / BestEffort."
+    - "Restart policy: Always / OnFailure / Never."
+
+learning_outcomes:
+  - "Learner can explain why a Pod is the unit of scheduling, not a container."
+  - "Learner can write a Pod with init containers and sidecars."
+  - "Learner can use kubectl debug to add an ephemeral container to a running pod."
+  - "Learner understands the difference between requests and limits."
+  - "Learner can map a pod to its QoS class."
+  - "Learner can name when to use Always vs OnFailure restart policy."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Hero: a studio apartment cutaway. Three roommates inside (containers labeled main/sidecar/init-done). Shared kitchen + bathroom in middle (shared network + IPC namespaces). Each roommate has their own bedroom (separate filesystem/PID). A handyman just walked out (init container completed). A pizza delivery person at the door (ambassador). A plumber just visiting (ephemeral debug). The apartment door is the Pod IP."
+    word_target: 320
+  section_1_5_blocks:
+    illustration: "5 tile cards: Pod basics · Init containers · Sidecars · Ephemeral debug · Pause + shared namespaces"
+  section_1_7_patterns:
+    illustration: "3 multi-container pattern cards: sidecar · ambassador · adapter — each with a tiny diagram"
+  section_1_8_resources:
+    illustration: "requests vs limits visualization: requests = the floor (always reserved), limits = the ceiling (cap before kill/throttle)"
+  section_1_9_qos:
+    illustration: "3 QoS class cards: Guaranteed (req=limit), Burstable (req&lt;limit), BestEffort (no req/limit) with eviction order"
+  section_1_10_restart:
+    illustration: "3 restart policy cards: Always · OnFailure · Never with use cases"
+  section_2_before_after:
+    illustration: "Before: scattered raw containers, no shared lifecycle, manual sidecar wiring. After: pod groups containers atomically; shared net/IPC; lifecycle is one unit."
+  section_3_analogy:
+    primary: "Shared studio apartment with roommates — shared kitchen/bath (network/IPC), separate bedrooms (filesystem), handyman = init, helpful housemate = sidecar, visiting plumber = ephemeral debug"
+    illustration: "Already in hero"
+  section_4_eli_pair:
+    eli5: "An apartment with roommates that share the kitchen. Under 100 words."
+    eli10: "Pod = atomic unit of scheduling, shared net/IPC namespaces, init/sidecars/ephemeral, QoS/restart policy. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "Init container blocked startup until the database was reachable"
+      - "Log-shipping sidecar replaced 12 different agents on each VM"
+      - "kubectl debug saved an outage when the main container had no shell (distroless)"
+      - "QoS class confusion: Guaranteed pods kept getting OOM-killed under noisy neighbors"
+  section_6_animated_svg:
+    modes: ["Pod startup with init containers (4 steps)", "Sidecar in action: log shipping (4 steps)", "kubectl debug adds an ephemeral container (4 steps)"]
+    description: "Mode 1: pause starts → init-1 runs and exits 0 → init-2 runs and exits 0 → main + sidecar start in parallel. Mode 2: main writes /var/log/app.log → sidecar tails it via shared volume → ships to backend. Mode 3: pod is broken (distroless main, no shell), kubectl debug adds an ephemeral busybox container that can ps/strace into the main."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-15.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can read a multi-container pod YAML and explain init vs sidecar vs main."
+  - "First-timer knows what the pause container is for."
+  - "First-timer can map a pod's resources to a QoS class."
+  - "First-timer knows kubectl debug exists for distroless containers."
+
+fact_check_anchors:
+  - "https://kubernetes.io/docs/concepts/workloads/pods/"
+  - "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/"
+  - "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/"
+  - "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/"
+  - "https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/"
