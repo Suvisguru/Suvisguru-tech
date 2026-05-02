@@ -640,9 +640,54 @@ def transform(L: dict) -> None:
     print(f"  {L['file']}: rewritten ({len(content):,} bytes)")
 
 
+LESSONS["L08"] = dict(
+    file="preview-kubernetes-lesson-08.html",
+    rail_key="L08", active_pin="kt-pin08", strip_key="L08",
+    district_name="Office Tower with Utility Meters",
+    strip_label_district="Office Tower",
+    strip_label_pos="lesson 8 of 16",
+    a11y_phrase="Lesson 8 of 16, Office Tower with Utility Meters.",
+    aria_label_today="K-Town district map: today we are at Office Tower with Utility Meters, Lesson 08",
+    map_title_today="K-Town district map · today: Office Tower with Utility Meters",
+    nightmare_text="Your container keeps getting killed. The logs say <code>OOMKilled</code>. You set the memory limit to 256Mi. The app reports it only uses 200MB. Why is it dying? Because the kernel — the <em>real</em> boss of the whole machine — is enforcing limits you didn't fully understand. This lesson is about the five Linux features that decide what your container can and can't do. No magic. Just plumbing.",
+    stamp_takeaway="A container is a Linux process with walls (namespaces), meters (cgroups), and rules about what it can do (capabilities, seccomp, LSM). Five kernel features, no magic.",
+    pc1_q="What stops one container from seeing another container's processes?",
+    pc1_opts=[("a) The container runtime", False), ("b) Linux namespaces — specifically the PID namespace", True), ("c) Encryption", False)],
+    pc1_feedback="<strong>Answer: b.</strong> Each container gets a private view of process IDs. Without that namespace, <code>ps</code> would show every process on the host.",
+    pc2_q="A container hits 257MB of memory; its <code>limits.memory</code> is 256Mi. What happens?",
+    pc2_opts=[("a) The container slows down", False), ("b) The kernel kills the container's PID 1 (OOM)", True), ("c) The container gets more memory automatically", False)],
+    pc2_feedback="<strong>Answer: b.</strong> cgroup memory limits aren't suggestions. The kernel enforces them with <code>OOMKilled</code>.",
+    tl_rows=[("The office building", "The host machine + Linux kernel"), ("Each office", "A container (a process or process group)"), ("Office walls and a private door", "Linux namespaces (PID, NET, MNT, UTS, IPC, USER, cgroup, time)"), ("Utility meters per office", "cgroups (CPU, memory, I/O budgets)"), ("The doorman / security guard", "capabilities + seccomp + AppArmor / SELinux"), ("Shared building utilities", "The host kernel everyone shares")],
+    analogy_stops_text="The analogy stops here: an office building has one electrical panel that one tenant can overload. The kernel can be DoS'd by a noisy container too — but cgroups make this much harder than the real-world equivalent.",
+    misconceptions=[("\"Container\" is a Linux feature.", "Containers are made by <em>combining</em> five kernel features (namespaces + cgroups + capabilities + seccomp + LSM). The runtime (Docker, containerd) bundles them. The kernel does the work."), ("Each container has its own kernel.", "All containers on a host share the host's kernel. That's the whole point — and the whole risk. A kernel exploit can break out of any container."), ("<code>limits</code> and <code>requests</code> are the same thing.", "<code>requests</code> is what the scheduler reserves (the floor). <code>limits</code> is the hard ceiling (CPU throttled, memory OOM-killed above).")],
+    cyoa_setup="A teammate adds <code>hostNetwork: true</code> to a Pod spec \"just to test something.\" <strong>Click to see what they just did. ▼</strong>",
+    cyoa_button="Show what happened",
+    cyoa_tag_text="what they just did",
+    cyoa_reveal="The container now shares the host's network stack — same IPs, same interfaces, same firewall rules. It can bind to any host port (and conflict with anything else on the host). It can sniff traffic on host interfaces. K8s Service discovery often breaks because the Pod has the host's IP, not a Pod IP. <strong>Lesson:</strong> every <code>host*</code> field (<code>hostNetwork</code>, <code>hostPID</code>, <code>hostIPC</code>) drops a namespace and gives the container access to host resources. Powerful for specific cases (CNI plugins). Footgun for normal apps.",
+    old_mapping_block='''    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>The office building</strong> = the host machine + Linux kernel</li>
+      <li><strong>Each office</strong> = a container (a process or group of processes)</li>
+      <li><strong>Office walls + private door</strong> = namespaces (PID, NET, MNT, UTS, IPC, USER, cgroup, time)</li>
+      <li><strong>Utility meters per office</strong> = cgroups (CPU, memory, I/O budgets)</li>
+      <li><strong>Doorman / security guard</strong> = capabilities + seccomp + AppArmor/SELinux</li>
+      <li><strong>Shared building utilities</strong> = the kernel everyone shares</li>
+    </ul>
+  </section>''',
+    # L08 third quiz: hostNetwork — replaced with the CYOA which covers same ground in story form
+    old_third_quiz='''      <div class="quiz-card">
+        <p class="quiz-prompt">A DevOps engineer wants to "just test something" in a container and adds <code>hostNetwork: true</code> to the pod spec. What did they just give up?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The NET namespace. The container now shares the host's network stack — same IP addresses, same interfaces, same firewall rules. It can bind to any host port (and conflict with anything else on the host using that port). It can sniff traffic on host interfaces. Service discovery via Kubernetes Services often breaks because the pod has the host's IP, not a pod IP. Powerful for specific use cases (CNI plugins, host-level monitoring) — but a security and operational footgun for normal apps. Audit hostNetwork usage regularly.</div>
+      </div>
+    </div>
+  </section>''',
+)
+
+
 # ----------- which lessons to process this run -----------
 
-ENABLED = ["L05", "L06", "L07"]
+ENABLED = ["L08"]
 
 
 def main() -> None:

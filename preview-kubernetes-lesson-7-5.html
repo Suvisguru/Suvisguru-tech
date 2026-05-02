@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 7.5 — How a Linux Computer Works in 5 Minutes · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0;
+    --bg-card: #FFFFFF;
+    --bg-soft: #F5EFE3;
+    --ink: #2A2520;
+    --ink-soft: #6B6058;
+    --ink-faint: #9D9389;
+    --line: #E8DDC8;
+    --accent: #3F4A5E;
+    --accent-soft: #ECEFF5;
+    --warm: #D97757;
+    --warm-soft: #FBE8DC;
+    --warm-deep: #A04832;
+    --cool: #4A8FA8;
+    --cool-soft: #E0EEF3;
+    --good: #5A9F7A;
+    --good-soft: #E0EFE6;
+    --gold: #E8B547;
+    --gold-soft: #FBF1D6;
+    --r-pill: 999px;
+    --r-card: 16px;
+    --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+
+  .hero{margin-bottom:32px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 16px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:18px;color:var(--ink-soft);max-width:640px;margin:0 auto;line-height:1.5}
+
+  section.s{margin:48px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:28px 32px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:22px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:24px;font-weight:700;line-height:1.25;letter-spacing:-0.3px;margin:8px 0 14px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 12px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+  .illu{margin:20px 0 4px;background:var(--bg-soft);border-radius:var(--r-soft);padding:20px;text-align:center}
+  .illu svg{display:block;width:100%;height:auto;max-width:560px;margin:0 auto}
+  .illu-caption{font-size:14px;color:var(--ink-soft);margin-top:12px;font-style:italic;line-height:1.5}
+
+  .recap{margin:48px 0 0;text-align:center;padding:30px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:18px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  .recap-next a{color:var(--accent);text-decoration:underline;font-weight:600}
+
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+
+  /* ============ LAYMAN-FIRST SCAFFOLDING (subset — primer omits Nightmare/quiz/flashcards) ============ */
+
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:16px 24px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){
+    .concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50}
+  }
+
+  .primer-note{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:14px 18px;font-size:14.5px;color:var(--ink-soft);font-style:italic;margin:0 0 16px;line-height:1.55}
+  .primer-note strong{color:var(--ink);font-weight:600}
+
+  @media (prefers-reduced-motion: reduce){
+    .ktown-map .pin .pin-circle,.ktown-strip-pin{transition:none}
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the Kubernetes course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>what Kubernetes is</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>the reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how apps should be designed</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>when K8s makes sense</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how mature teams operate it</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how the project evolves</span></div>
+  <div class="concept-rail-item current primer"><span class="concept-rail-icon">▶</span><span>Linux foundations <small>(primer)</small></span><span class="concept-rail-here">← you are here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how containers actually work</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>runtimes &amp; the OCI standard</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how images are built</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>container security</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how containers shut down</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>cluster architecture</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>Pods deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>workload controllers</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>services &amp; networking</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 7.5 (primer)</span></a>
+    <span class="progress-pill">primer · before Module 2</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Foundation Tour</strong> <em style="color:var(--ink-faint);font-style:italic">— a quick layman's loop before we dive into the technical districts.</em></p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: Foundation Tour primer, between Module 1 and Module 2">
+    <title>K-Town district map · today: Foundation Tour primer</title>
+    <desc>Stylised map of K-Town. The Foundation Tour primer pin is highlighted, the city anchor stays slate.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/>
+      </linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/>
+      </linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#3F4A5E">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer active" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+  </svg>
+
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Foundation Tour</strong> <span>· primer</span><span class="visually-hidden">Foundation Tour primer, between Lessons 07 and 08.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Lesson 7.5 · Level-0 primer</span>
+    <h1>How a Linux Computer Works in 5 Minutes</h1>
+    <p class="hero-sub">A quick primer before Module 2. Skip if you already know what a kernel is.</p>
+  </section>
+
+  <p class="primer-note">Module 2 (Lessons 08–12) explains how containers work at the Linux level. That conversation assumes you know what a process is, what an operating system is, what the kernel is, and what root means. If those words feel foggy, this 5-minute tour will make Lesson 08 land cleanly. If you already know them, skip ahead — <a href="preview-kubernetes-lesson-08.html" style="color:var(--accent);text-decoration:underline;font-style:normal;font-weight:600">go straight to Lesson 08</a>.</p>
+
+  <!-- One-sentence stamp · top placement -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> A container is a Linux process the kernel has been tricked into thinking it's alone on the machine. The next 5 minutes explain how the kernel does the trick.</p>
+  </div>
+
+  <!-- ============================== SECTION 1 — WHAT A COMPUTER ACTUALLY DOES ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · the basics</span>
+    <h2>What a computer actually does</h2>
+    <p>A computer runs <strong>programs</strong>. A running program is called a <strong>process</strong>. Your laptop, right now, has hundreds of them — your browser, the clock in the menu bar, the wifi connection, the music app, a few dozen background helpers you've never named. Every one is a process.</p>
+    <p>A process is just instructions plus the memory it uses. Most of the time, processes are doing tiny amounts of work — checking for a notification, drawing a pixel, waiting for input — and the computer juggles them so quickly that they all <em>feel</em> simultaneous.</p>
+  </section>
+
+  <!-- ============================== SECTION 2 — WHAT AN OPERATING SYSTEM IS ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · the traffic cop</span>
+    <h2>What an operating system is</h2>
+    <p>An <strong>operating system</strong> is software that decides which process gets the CPU, the memory, the disk, and when. It's the traffic cop of the machine. Linux is one. macOS is another. Windows is another. They all do the same job — share the hardware among many processes — using slightly different rules.</p>
+    <p>When you click an app icon, the operating system picks a CPU core for it, allocates some memory, gives it access to your files, and starts the process running. When the app needs to read a file or send a network packet, it asks the operating system to do it. Apps don't talk to the hardware directly; the operating system stands between them.</p>
+  </section>
+
+  <!-- ============================== SECTION 3 — WHAT THE KERNEL IS ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · the heart</span>
+    <h2>What the kernel is</h2>
+    <p>The <strong>kernel</strong> is the heart of the operating system. The part that talks to the actual hardware (CPU, RAM, network card, disk). When a regular program wants something from the hardware — read a file, allocate memory, open a network connection — it asks the kernel. That ask is called a <strong>system call</strong>, or <strong>syscall</strong> for short.</p>
+    <p>Most of an operating system is utilities, drivers, and apps that sit <em>around</em> the kernel. The kernel itself is small, fast, and trusted with everything dangerous (talking to hardware, deciding who gets memory, enforcing security). When you "talk to Linux" you're really talking to the Linux kernel through syscalls.</p>
+
+    <div class="illu">
+      <svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A simple stack diagram showing hardware at the bottom, kernel on top of it, the operating system layer above the kernel, and processes at the top">
+        <!-- Hardware -->
+        <rect x="40" y="220" width="480" height="40" rx="6" fill="#D6CFC0" stroke="#9D9389" stroke-width="1.4"/>
+        <text x="280" y="245" font-family="sans-serif" font-size="14" font-weight="700" fill="#5F5E5A" text-anchor="middle" letter-spacing="2">HARDWARE</text>
+        <text x="280" y="270" font-family="sans-serif" font-size="11" fill="#9D9389" text-anchor="middle" font-style="italic">CPU · RAM · disk · network card</text>
+
+        <!-- Kernel -->
+        <rect x="40" y="160" width="480" height="44" rx="6" fill="#3F4A5E" stroke="#1F2433" stroke-width="1.4"/>
+        <line x1="50" y1="170" x2="510" y2="170" stroke="#536179" stroke-width="0.6" opacity="0.6"/>
+        <line x1="50" y1="184" x2="510" y2="184" stroke="#536179" stroke-width="0.6" opacity="0.6"/>
+        <line x1="50" y1="198" x2="510" y2="198" stroke="#536179" stroke-width="0.6" opacity="0.6"/>
+        <text x="280" y="187" font-family="sans-serif" font-size="14" font-weight="700" fill="#E8E8E0" text-anchor="middle" letter-spacing="2">KERNEL</text>
+
+        <!-- OS userland (utilities, services, libs) -->
+        <rect x="40" y="100" width="480" height="44" rx="6" fill="#F5EFE3" stroke="#8B7355" stroke-width="1.4"/>
+        <text x="280" y="120" font-family="sans-serif" font-size="14" font-weight="700" fill="#5A4F45" text-anchor="middle" letter-spacing="2">OPERATING SYSTEM</text>
+        <text x="280" y="135" font-family="sans-serif" font-size="11" fill="#6B6058" text-anchor="middle" font-style="italic">shell, utilities, services, system libraries</text>
+
+        <!-- Processes -->
+        <g>
+          <rect x="60" y="40" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/>
+          <rect x="60" y="40" width="100" height="14" rx="6 6 0 0" fill="#5A9F7A"/>
+          <text x="110" y="50" font-family="sans-serif" font-size="9" fill="#FFF" font-weight="700" text-anchor="middle">browser</text>
+          <text x="110" y="70" font-family="sans-serif" font-size="11" fill="#3D7857" font-weight="500" text-anchor="middle">process</text>
+
+          <rect x="180" y="40" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/>
+          <rect x="180" y="40" width="100" height="14" rx="6 6 0 0" fill="#5A9F7A"/>
+          <text x="230" y="50" font-family="sans-serif" font-size="9" fill="#FFF" font-weight="700" text-anchor="middle">editor</text>
+          <text x="230" y="70" font-family="sans-serif" font-size="11" fill="#3D7857" font-weight="500" text-anchor="middle">process</text>
+
+          <rect x="300" y="40" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/>
+          <rect x="300" y="40" width="100" height="14" rx="6 6 0 0" fill="#5A9F7A"/>
+          <text x="350" y="50" font-family="sans-serif" font-size="9" fill="#FFF" font-weight="700" text-anchor="middle">music</text>
+          <text x="350" y="70" font-family="sans-serif" font-size="11" fill="#3D7857" font-weight="500" text-anchor="middle">process</text>
+
+          <rect x="420" y="40" width="100" height="44" rx="6" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <rect x="420" y="40" width="100" height="14" rx="6 6 0 0" fill="#5A9F7A"/>
+          <text x="470" y="50" font-family="sans-serif" font-size="9" fill="#FFF" font-weight="700" text-anchor="middle">your app</text>
+          <text x="470" y="70" font-family="sans-serif" font-size="11" fill="#3D7857" font-weight="500" text-anchor="middle">process</text>
+        </g>
+
+        <text x="20" y="65" font-family="sans-serif" font-size="11" font-style="italic" fill="#9D9389">processes</text>
+        <text x="14" y="125" font-family="sans-serif" font-size="11" font-style="italic" fill="#9D9389">OS layer</text>
+        <text x="22" y="184" font-family="sans-serif" font-size="11" font-style="italic" fill="#9D9389">kernel</text>
+        <text x="14" y="245" font-family="sans-serif" font-size="11" font-style="italic" fill="#9D9389">hardware</text>
+
+        <!-- Syscall arrow from process to kernel -->
+        <line x1="470" y1="84" x2="470" y2="158" stroke="#D97757" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#syscall-arrow)"/>
+        <defs>
+          <marker id="syscall-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M 0 0 L 7 3 L 0 6 Z" fill="#D97757"/>
+          </marker>
+        </defs>
+        <text x="478" y="125" font-family="sans-serif" font-size="10" fill="#A04832" font-style="italic">syscall</text>
+      </svg>
+      <div class="illu-caption">Hardware at the bottom. Kernel sits on top of it. The operating system layer (utilities, libraries, services) sits on the kernel. Processes sit on top of all of that. When a process needs something from the hardware, it asks the kernel — that ask is a syscall.</div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 4 — WHAT ROOT MEANS ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · the admin</span>
+    <h2>What "root" means</h2>
+    <p><strong>Root</strong> is the administrator account on a Linux machine. Root can do anything — read any file, change any setting, install anything, kill any process. On macOS the equivalent is "admin." On Windows it's "Administrator." Same idea.</p>
+    <p>By default, <em>most programs should NOT run as root.</em> If a regular app gets compromised — a bug, an exploit, a malicious input — and it's running as root, the attacker has the keys to the whole machine. Modern operating systems are built around the assumption that apps run as a regular user, and only specifically-trusted things run as root (and even those only briefly).</p>
+    <p>You'll hear "non-root by default" a lot in Module 2. It's exactly this idea applied to containers — a containerized app should run as a regular user, not as root, so a bug in the app can't escalate to controlling the host.</p>
+  </section>
+
+  <!-- ============================== SECTION 5 — WHY THIS MATTERS FOR CONTAINERS ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · the punchline</span>
+    <h2>Why this matters for containers</h2>
+    <p>Here's the punchline that makes Module 2 click: <strong>a container is a Linux process the kernel has been tricked into thinking it's alone on the machine.</strong></p>
+    <p>That's it. There's no special "container" thing inside Linux. The kernel takes a regular process and gives it a private view of process IDs, files, network, and memory limits. The process can still ask for things — it still makes syscalls — but the kernel makes them look like the process owns the whole computer.</p>
+    <p>Module 2 is about the five Linux features the kernel uses to do that trick: <strong>namespaces</strong> (private views), <strong>cgroups</strong> (resource budgets), <strong>capabilities</strong> (fine-grained permissions instead of all-or-nothing root), <strong>seccomp</strong> (syscall filtering), and <strong>LSM</strong> (mandatory access control like AppArmor or SELinux). They were all added to Linux over years; Docker just made them easy to use together.</p>
+    <p>If you read this far, you have everything you need for Lesson 08. Onward.</p>
+  </section>
+
+  <!-- One-sentence stamp · bottom placement (identical to top) -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> A container is a Linux process the kernel has been tricked into thinking it's alone on the machine. The next 5 minutes explain how the kernel does the trick.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Foundation Tour complete</span>
+    <p>Programs run as processes. The operating system shares hardware among them. The kernel is the heart of the OS. Root is the administrator. A container is just a process with a private view.</p>
+    <p class="recap-next"><strong>Ready for Module 2?</strong> <a href="preview-kubernetes-lesson-08.html">→ Lesson 08: Linux Namespaces · cgroups · Capabilities</a>.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Foundation Tour primer · between Module 1 and Module 2</footer>
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '☀ Light' : '🌙 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '☀ Light' : '🌙 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+</script>
+</body>
+</html>

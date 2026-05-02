@@ -172,9 +172,160 @@
   .ns{background:var(--bg-card);border:1.5px solid var(--line);border-left-width:4px;border-left-color:var(--accent);border-radius:var(--r-soft);padding:12px 14px}
   .ns-name{font-family:'ui-monospace',monospace;font-weight:700;font-size:13px;color:var(--accent);margin-bottom:4px}
   .ns-desc{font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+  /* ============ LAYMAN-FIRST SCAFFOLDING (K-Town revision Phase 2) ============ */
+
+  /* Inline code inside section paragraphs (parity with L13) */
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+  /* Visually-hidden utility for screen-reader-only content */
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* District line — single-line K-Town pin under topbar */
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+
+  /* K-Town map */
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease)}
+  .ktown-map .pin .pin-circle{fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+
+  /* Nightmare opener */
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+
+  /* One-sentence stamp */
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:19px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box{background:var(--accent-soft)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+
+  /* Translation Legend (table inside §3) */
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'…in Kubernetes · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+
+  /* Pause-and-check */
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+
+  /* Common Misconceptions panel (start of §7) */
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+
+  /* Analogy-stops-here callout */
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+
+  /* Skip-if-new pill (defined for future lessons; unused in L01) */
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+
+  /* Persistent concept rail (desktop only, ≥1240px) */
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){
+    .concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50}
+  }
+
+  /* CYOA quiz reveal */
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  .cyoa-quiz .quiz-answer pre{font-family:'ui-monospace',monospace;font-size:12px;line-height:1.45;background:var(--bg-soft);padding:10px 12px;border-radius:var(--r-soft);overflow-x:auto;margin:10px 0;color:var(--ink-soft)}
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .ktown-map .pin .pin-circle,.pause-check-opt,.ktown-strip-pin{transition:none}
+    .quiz-reveal{animation:none}
+  }
 </style>
 </head>
 <body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the Kubernetes course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>what Kubernetes is</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>the reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how apps should be designed</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>when K8s makes sense</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how mature teams operate it</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how the project evolves</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>Linux foundations <small>(primer)</small></span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>how containers actually work</span><span class="concept-rail-here">← you are here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>runtimes &amp; the OCI standard</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how images are built</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>container security</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how containers shut down</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>cluster architecture</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>Pods deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>workload controllers</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>services &amp; networking</span></div>
+</aside>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -183,6 +334,69 @@
     <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
   </div>
 </header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Office Tower with Utility Meters</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: today we are at Office Tower with Utility Meters, Lesson 08">
+    <title>K-Town district map · today: Office Tower with Utility Meters</title>
+    <desc>Stylised map of K-Town. Each Kubernetes lesson maps to one named district. Mayor's Office is the city anchor and is highlighted as the current district.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/>
+      </linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/>
+      </linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin active" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#3F4A5E">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+  </svg>
+
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Office Tower</strong> <span>· lesson 8 of 16</span><span class="visually-hidden">Lesson 8 of 16, Office Tower with Utility Meters.</span></p>
+</div>
 
 <main>
 
@@ -317,13 +531,32 @@
     </div>
   </section>
 
+  <!-- Cross-link banner to Lesson 7.5 primer (start of Module 2) -->
+  <div style="max-width:820px;margin:0 auto 8px;padding:10px 24px;font-size:14px;color:var(--ink-soft);text-align:center;font-style:italic">
+    📎 New to Linux? Take a 5-minute detour through <a href="preview-kubernetes-lesson-7-5.html" style="color:var(--accent);text-decoration:underline;font-style:normal">Lesson 7.5 — How a Linux Computer Works</a> first.
+  </div>
+
+  <!-- 3 AM Nightmare opener -->
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Your container keeps getting killed. The logs say <code>OOMKilled</code>. You set the memory limit to 256Mi. The app reports it only uses 200MB. Why is it dying? Because the kernel — the <em>real</em> boss of the whole machine — is enforcing limits you didn't fully understand. This lesson is about the five Linux features that decide what your container can and can't do. No magic. Just plumbing.</p>
+    </div>
+  </div>
+
+  <!-- One-sentence stamp · top placement -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> A container is a Linux process with walls (namespaces), meters (cgroups), and rules about what it can do (capabilities, seccomp, LSM). Five kernel features, no magic.</p>
+  </div>
+
   <!-- ============================== SECTION 1 — CONCEPT ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 1 · Concept</span>
     <h2>What's actually inside a container?</h2>
     <p>A container isn't a magical sandbox. It's a regular Linux process that the kernel <em>tricks</em> into thinking it's alone on the machine. Five Linux features make this work, and they all came from the kernel — not from Docker, not from Kubernetes. Docker just made them easy to use.</p>
     <p><strong>Namespaces</strong> give each container its own private view of system resources. Process IDs, network interfaces, mount points, hostnames, user IDs — they all look private to the container, but they're really shared kernel resources sliced into isolated views. There are 8 namespace types in modern Linux: PID, NET, MNT, UTS, IPC, USER, cgroup, and time.</p>
-    <p><strong>cgroups (control groups)</strong> are the meters. Each container gets a budget for CPU, memory, disk I/O, and network bandwidth. Try to use more than your budget, and the kernel throttles you (or kills the process for memory). Two versions exist — cgroup v1 (legacy, hierarchies per resource) and cgroup v2 (unified hierarchy, the modern default since ~2022).</p>
+    <p><strong>cgroups (control groups)</strong> are the meters. Each container gets a budget for CPU, memory, disk I/O, and network bandwidth. Try to use more than your budget, and the kernel throttles you (or kills the process for memory).</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>Two versions of cgroups exist — cgroup v1 (legacy, hierarchies per resource) and cgroup v2 (unified hierarchy, the modern default since ~2022). Kubernetes 1.25+ requires v2 for certain features (PSI-based memory pressure, the <code>memory.high</code> soft cap).</p>
     <p><strong>Capabilities</strong> chop the old "root vs not-root" model into ~40 fine-grained permissions. Instead of giving a container full root, you give it just <code>NET_BIND_SERVICE</code> (bind to port < 1024) or just <code>SYS_TIME</code> (change the clock). Containers should drop everything they don't need.</p>
     <p><strong>seccomp</strong> filters which Linux system calls a container is allowed to make. Modern container runtimes apply a default profile blocking roughly 40–65 dangerous syscalls (varies by runtime version) out of ~300 total. You can write custom profiles for tighter restriction.</p>
     <p><strong>AppArmor / SELinux</strong> are mandatory access control (MAC) systems. They define explicit policies — "this container can read these files but not those" — at a layer below normal Linux permissions. Different distros pick different ones (Ubuntu/Debian default to AppArmor; RHEL/Fedora default to SELinux).</p>
@@ -470,6 +703,20 @@
     <p style="margin-top:18px;color:var(--ink-soft);font-size:14.5px">When you create a container, the runtime calls <code>clone()</code> with flags like <code>CLONE_NEWPID | CLONE_NEWNET | CLONE_NEWNS</code> to put the new process in fresh namespaces. That single syscall is the moment a "container" comes into existence.</p>
   </section>
 
+  <!-- Pause-and-check #1 · after Section 1 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">What stops one container from seeing another container's processes?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) The container runtime</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Linux namespaces — specifically the PID namespace</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Encryption</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Each container gets a private view of process IDs. Without that namespace, <code>ps</code> would show every process on the host.</p>
+    </div>
+  </div>
+
   <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 2 · Before &amp; After</span>
@@ -551,15 +798,23 @@
     <p>The building has a utility meter for each office. Office A pays for the electricity it uses. Office B has its own meter. The landlord caps how much power each office can pull, so one office running a giant printer doesn't blow the whole building's circuit. There's a security guard at each door checking IDs to make sure only the right people get in.</p>
     <p>Linux containers work exactly the same way. Namespaces are the office walls (private views of resources). cgroups are the utility meters (resource budgets). Capabilities and seccomp and AppArmor/SELinux are the security guards (which actions are allowed). The building (the host kernel) is shared by everyone, but each container thinks it's alone.</p>
 
-    <p style="margin-top:18px"><strong>The mapping:</strong></p>
-    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
-      <li><strong>The office building</strong> = the host machine + Linux kernel</li>
-      <li><strong>Each office</strong> = a container (a process or group of processes)</li>
-      <li><strong>Office walls + private door</strong> = namespaces (PID, NET, MNT, UTS, IPC, USER, cgroup, time)</li>
-      <li><strong>Utility meters per office</strong> = cgroups (CPU, memory, I/O budgets)</li>
-      <li><strong>Doorman / security guard</strong> = capabilities + seccomp + AppArmor/SELinux</li>
-      <li><strong>Shared building utilities</strong> = the kernel everyone shares</li>
-    </ul>
+    <div class="translation-legend">
+      <table>
+        <thead>
+          <tr><th>In the story…</th><th>…in Kubernetes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>The office building</td><td>The host machine + Linux kernel</td></tr>
+          <tr><td>Each office</td><td>A container (a process or process group)</td></tr>
+          <tr><td>Office walls and a private door</td><td>Linux namespaces (PID, NET, MNT, UTS, IPC, USER, cgroup, time)</td></tr>
+          <tr><td>Utility meters per office</td><td>cgroups (CPU, memory, I/O budgets)</td></tr>
+          <tr><td>The doorman / security guard</td><td>capabilities + seccomp + AppArmor / SELinux</td></tr>
+          <tr><td>Shared building utilities</td><td>The host kernel everyone shares</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: an office building has one electrical panel that one tenant can overload. The kernel can be DoS'd by a noisy container too — but cgroups make this much harder than the real-world equivalent.</em></p>
   </section>
 
   <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
@@ -580,6 +835,20 @@
     </div>
   </section>
 
+  <!-- Pause-and-check #2 · after Section 4 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A container hits 257MB of memory; its <code>limits.memory</code> is 256Mi. What happens?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) The container slows down</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) The kernel kills the container's PID 1 (OOM)</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) The container gets more memory automatically</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> cgroup memory limits aren't suggestions. The kernel enforces them with <code>OOMKilled</code>.</p>
+    </div>
+  </div>
+
   <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
@@ -589,7 +858,7 @@
     <div class="scenarios">
       <div class="scenario">
         <p class="scenario-name">Container OOM-killed at 256 MiB</p>
-        <p>An engineer notices their pod keeps restarting. <code>kubectl describe pod</code> shows reason: <code>OOMKilled</code>. They had set memory limit to 256Mi in the pod spec. The app legitimately needed 350Mi at peak. The kernel's cgroup-v2 memory controller saw memory usage exceed the cgroup's limit and killed PID 1 in the container — exactly as designed. Fix: bump the limit. The lesson: cgroup limits aren't suggestions. The kernel will kill you.</p>
+        <p>An engineer notices their Pod keeps restarting. <code>kubectl describe Pod</code> shows reason: <code>OOMKilled</code>. They had set memory limit to 256Mi in the Pod spec. The app legitimately needed 350Mi at peak. The kernel's cgroup-v2 memory controller saw memory usage exceed the cgroup's limit and killed PID 1 in the container — exactly as designed. Fix: bump the limit. The lesson: cgroup limits aren't suggestions. The kernel will kill you.</p>
       </div>
       <div class="scenario">
         <p class="scenario-name">Container can't bind to port 80</p>
@@ -597,7 +866,7 @@
       </div>
       <div class="scenario">
         <p class="scenario-name">Container A can see container B's processes</p>
-        <p>A security audit finds container A can see container B's process list via <code>ps</code>. Investigation: someone set <code>hostPID: true</code> in container A's pod spec, sharing the host's PID namespace. This was a debugging convenience that got merged. Fix: remove <code>hostPID: true</code>. The lesson: every "host*" pod field (hostNetwork, hostPID, hostIPC) drops a namespace and gives the container access to host resources. Use sparingly, audit regularly.</p>
+        <p>A security audit finds container A can see container B's process list via <code>ps</code>. Investigation: someone set <code>hostPID: true</code> in container A's Pod spec, sharing the host's PID namespace. This was a debugging convenience that got merged. Fix: remove <code>hostPID: true</code>. The lesson: every "host*" Pod field (hostNetwork, hostPID, hostIPC) drops a namespace and gives the container access to host resources. Use sparingly, audit regularly.</p>
       </div>
       <div class="scenario">
         <p class="scenario-name">Custom seccomp profile for a sandboxed workload</p>
@@ -650,9 +919,28 @@
 
   <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
   <section class="s">
-    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
     <h2>Lock it in</h2>
-    <p>Eight flashcards on the key terms, then three quick questions.</p>
+    <p>Three common misconceptions to clear up first, then the flashcards and quiz.</p>
+
+    <!-- Common Misconceptions panel -->
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> "Container" is a Linux feature.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Containers are made by <em>combining</em> five kernel features (namespaces + cgroups + capabilities + seccomp + LSM). The runtime (Docker, containerd) bundles them. The kernel does the work.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Each container has its own kernel.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> All containers on a host share the host's kernel. That's the whole point — and the whole risk. A kernel exploit can break out of any container.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> <code>limits</code> and <code>requests</code> are the same thing.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> <code>requests</code> is what the scheduler reserves (the floor). <code>limits</code> is the hard ceiling (CPU throttled, memory OOM-killed above).</div>
+        </div>
+      </div>
+    </div>
 
     <div class="flashcard-grid">
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a container, technically?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A regular Linux process placed in fresh namespaces (private views), constrained by cgroups (resource budgets), and restricted by capabilities + seccomp + LSM (security policies). All kernel features.</div></div></div>
@@ -669,17 +957,18 @@
       <div class="quiz-card">
         <p class="quiz-prompt">A container running as non-root user keeps failing with "permission denied" when binding to port 80. What's happening, and what are two fixes?</p>
         <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Ports below 1024 require CAP_NET_BIND_SERVICE on Linux. Modern container runtimes drop this capability by default for security. Two fixes: (1) bind to port 8080+ and let your load balancer/Service map external port 80 to internal 8080 (preferred — keeps the container low-privilege). (2) Explicitly add NET_BIND_SERVICE to the container's capability set in the pod spec under securityContext.capabilities.add. The first is the cleaner pattern.</div>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Ports below 1024 require CAP_NET_BIND_SERVICE on Linux. Modern container runtimes drop this capability by default for security. Two fixes: (1) bind to port 8080+ and let your load balancer/Service map external port 80 to internal 8080 (preferred — keeps the container low-privilege). (2) Explicitly add NET_BIND_SERVICE to the container's capability set in the Pod spec under securityContext.capabilities.add. The first is the cleaner pattern.</div>
       </div>
       <div class="quiz-card">
-        <p class="quiz-prompt">A pod has memory limit 256Mi and the container keeps getting OOMKilled. The app reports it only uses ~200MB. Why might it still be OOMKilled?</p>
+        <p class="quiz-prompt">A Pod has memory limit 256Mi and the container keeps getting OOMKilled. The app reports it only uses ~200MB. Why might it still be OOMKilled?</p>
         <button class="quiz-reveal" type="button">Show answer</button>
         <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The cgroup memory accounting includes more than the app's heap: page cache, anonymous mappings, kernel memory, etc. The 256Mi limit is enforced on the cgroup's total memory.usage_in_bytes, which includes everything the container has caused the kernel to allocate. Common causes of "I only use 200MB but it's OOMKilled at 256MB": JVM/Node off-heap, large file caches, memory-mapped files. Fix: bump the limit or set memory.high (cgroup v2) for soft pressure before the hard kill.</div>
       </div>
-      <div class="quiz-card">
-        <p class="quiz-prompt">A DevOps engineer wants to "just test something" in a container and adds <code>hostNetwork: true</code> to the pod spec. What did they just give up?</p>
-        <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The NET namespace. The container now shares the host's network stack — same IP addresses, same interfaces, same firewall rules. It can bind to any host port (and conflict with anything else on the host using that port). It can sniff traffic on host interfaces. Service discovery via Kubernetes Services often breaks because the pod has the host's IP, not a pod IP. Powerful for specific use cases (CNI plugins, host-level monitoring) — but a security and operational footgun for normal apps. Audit hostNetwork usage regularly.</div>
+      <div class="quiz-card cyoa-quiz">
+        <span class="cyoa-tag">🎬 Choose Your Own Adventure</span>
+        <p class="quiz-prompt">A teammate adds <code>hostNetwork: true</code> to a Pod spec "just to test something." <strong>Click to see what they just did. ▼</strong></p>
+        <button class="quiz-reveal" type="button">Show what happened</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">what they just did</span>The container now shares the host's network stack — same IPs, same interfaces, same firewall rules. It can bind to any host port (and conflict with anything else on the host). It can sniff traffic on host interfaces. K8s Service discovery often breaks because the Pod has the host's IP, not a Pod IP. <strong>Lesson:</strong> every <code>host*</code> field (<code>hostNetwork</code>, <code>hostPID</code>, <code>hostIPC</code>) drops a namespace and gives the container access to host resources. Powerful for specific cases (CNI plugins). Footgun for normal apps.</div>
       </div>
     </div>
   </section>
@@ -698,6 +987,11 @@
       <div class="gloss-item"><div class="gloss-name">hostNetwork / hostPID / hostIPC</div><div class="gloss-def">Pod-spec fields that disable the corresponding namespace, sharing the host's. Useful for specific cases; security concern for normal workloads.</div></div>
     </div>
   </details>
+
+  <!-- One-sentence stamp · bottom placement (identical to top) -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> A container is a Linux process with walls (namespaces), meters (cgroups), and rules about what it can do (capabilities, seccomp, LSM). Five kernel features, no magic.</p>
+  </div>
 
   <!-- ============================== RECAP + COMPLETION ============================== -->
   <section class="recap">
@@ -731,12 +1025,27 @@
     card.addEventListener('click', () => card.classList.toggle('flipped'));
   });
 
-  // quiz reveals
+  // quiz reveals (handles both "Show answer" and CYOA "Show what happened")
   document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
     btn.addEventListener('click', () => {
       const ans = btn.parentElement.querySelector('.quiz-answer');
       const open = ans.classList.toggle('show');
-      btn.textContent = open ? 'Hide answer' : 'Show answer';
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+
+  // pause-and-check
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      });
     });
   });
 
@@ -890,7 +1199,7 @@
       addLayer('Security risk: process enumeration · debugging convenience', '#A04832', 130);
       addLayer('Use only when needed (host-level tools). Audit regularly.', '#FBE8DC', 170, { textFill: '#A04832' });
       animStep.textContent = '2 / 2';
-      setStatus('Lesson: every "host*" pod field drops a namespace. Audit usage.');
+      setStatus('Lesson: every "host*" Pod field drops a namespace. Audit usage.');
       setReadout('<strong>Step 2.</strong> Same pattern for hostNetwork (shares host net stack), hostIPC (shares IPC), userns: false (USER namespace not used). All powerful, all dangerous if misapplied. Audit regularly.');
     });
     later(7000, runHostPid);
