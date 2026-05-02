@@ -1,0 +1,42 @@
+# Quiz — Lesson 10, Image Building
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      Your Node.js app image is 1.2 GB and CVE scans flag 124
+      vulnerabilities (mostly in libraries you don't use). Production
+      deploys feel slow. What's the highest-leverage change?
+    answer: |
+      Refactor to multi-stage Dockerfile + distroless. Stage 1: FROM
+      node:22 with all dev dependencies, runs npm ci + build. Stage 2:
+      FROM gcr.io/distroless/nodejs22, copies /app/dist from stage 1.
+      Likely result: ~80 MB image (15× smaller), ~5-10 CVEs (90% fewer
+      because no extra OS packages). Deploys speed up dramatically. No app
+      code change required.
+
+  - id: 2
+    prompt: |
+      A CVE drops in a popular library (like the next Log4Shell). Your
+      team manages 80 services. How do you find which images include the
+      vulnerable library?
+    answer: |
+      Query your SBOM database. If you generate SBOMs (SPDX or CycloneDX)
+      for every image at build time and store them centrally (e.g., in
+      Dependency-Track or your registry's SBOM endpoint), you grep for
+      the library name in seconds. Teams without SBOMs spend days
+      manually inspecting Dockerfiles and rebuilding images to check.
+      Generate SBOMs in CI; you'll thank yourself the day a critical CVE
+      lands.
+
+  - id: 3
+    prompt: |
+      An engineer wants to use FROM ubuntu:latest as the base for a Go
+      app. Why is that wrong, and what should they use instead?
+    answer: |
+      Two issues. (1) :latest is a moving tag — pin to a specific tag
+      (ubuntu:24.04) or digest. (2) ubuntu (300 MB) is overkill for a Go
+      app. Go binaries are statically linked — they need nothing from the
+      OS. Use FROM scratch or FROM gcr.io/distroless/static in the
+      runtime stage. Final image = just the Go binary. ~5-15 MB instead
+      of 300+. Faster, safer, fewer CVEs.

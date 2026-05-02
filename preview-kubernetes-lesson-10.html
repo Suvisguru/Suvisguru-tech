@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 10 — Image Building · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:40px;font-weight:700;line-height:1.15;letter-spacing:-0.8px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:30px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:28px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+
+  .illu{margin:24px 0;background:var(--bg-soft);border-radius:var(--r-soft);padding:20px;text-align:center}
+  .illu svg{display:block;width:100%;height:auto;max-width:680px;margin:0 auto}
+  .illu-caption{font-size:14px;color:var(--ink-soft);margin-top:12px;font-style:italic;line-height:1.5}
+
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:170px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-pause-tag{display:inline-block;background:var(--gold-soft);color:var(--warm-deep);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px}
+  [data-theme="dark"] .quiz-pause-tag{color:var(--gold)}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'📚';font-size:18px}
+  .glossary summary::after{content:'›';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+
+  /* 5 topic tiles */
+  .build-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .build{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent);transition:transform .15s var(--ease),box-shadow .15s var(--ease)}
+  .build:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  .build.b1{border-top-color:#3F4A5E}
+  .build.b2{border-top-color:#5A9F7A}
+  .build.b3{border-top-color:#D97757}
+  .build.b4{border-top-color:#5E4A8E}
+  .build.b5{border-top-color:#8E2A2A}
+  .build-icon{font-size:34px;line-height:1}
+  .build-name{font-weight:700;font-size:15px;color:var(--ink);margin:0;line-height:1.3}
+  .build.b1 .build-name{color:#3F4A5E}
+  [data-theme="dark"] .build.b1 .build-name{color:var(--accent)}
+  .build.b2 .build-name{color:#3D7857}
+  [data-theme="dark"] .build.b2 .build-name{color:var(--good)}
+  .build.b3 .build-name{color:#A04832}
+  [data-theme="dark"] .build.b3 .build-name{color:var(--warm)}
+  .build.b4 .build-name{color:#5E4A8E}
+  [data-theme="dark"] .build.b4 .build-name{color:#9D8FCC}
+  .build.b5 .build-name{color:#8E2A2A}
+  [data-theme="dark"] .build.b5 .build-name{color:#E07474}
+  .build-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .build-illu{display:flex;align-items:center;justify-content:center;height:80px;background:var(--bg-soft);border-radius:var(--r-soft);margin:6px 0;overflow:hidden}
+  .build-illu svg{display:block;width:100%;height:100%;max-width:140px}
+  .build-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+
+  /* Build tools comparison */
+  .tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:20px}
+  .tool{background:var(--bg-card);border:1.5px solid var(--line);border-left-width:4px;border-left-color:var(--accent);border-radius:var(--r-soft);padding:14px}
+  .tool-name{font-family:'ui-monospace',monospace;font-weight:700;font-size:14px;color:var(--accent);margin-bottom:4px}
+  .tool-tag{font-size:11.5px;color:var(--warm-deep);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block}
+  [data-theme="dark"] .tool-tag{color:var(--warm)}
+  .tool-desc{font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+
+  /* Base image cards */
+  .base-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:18px}
+  .base{padding:16px;border-radius:var(--r-soft);border:2px solid;background:var(--bg-card)}
+  .base.huge{border-color:#A04832;background:#FBE8DC}
+  .base.slim{border-color:#E8B547;background:#FBF1D6}
+  .base.distroless{border-color:#5A9F7A;background:#E0EFE6}
+  .base.scratch{border-color:#3F4A5E;background:#ECEFF5}
+  .base-name{font-weight:700;font-size:14px;margin:0 0 4px}
+  .base.huge .base-name{color:#A04832}
+  .base.slim .base-name{color:#8B5A00}
+  .base.distroless .base-name{color:#3D7857}
+  .base.scratch .base-name{color:#3F4A5E}
+  .base-size{font-family:'ui-monospace',monospace;font-size:18px;font-weight:700;margin:4px 0}
+  .base.huge .base-size{color:#A04832}
+  .base.slim .base-size{color:#8B5A00}
+  .base.distroless .base-size{color:#3D7857}
+  .base.scratch .base-size{color:#3F4A5E}
+  .base-desc{font-size:12.5px;color:var(--ink);line-height:1.5}
+</style>
+</head>
+<body data-theme="light">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 10</span></a>
+    <span class="progress-pill">10 of 17</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================== HERO ============================== -->
+  <section class="hero">
+    <span class="eyebrow">Module 2 · Lesson 10 · how images are baked</span>
+    <h1>Image Building · Multi-Stage · Distroless · SBOM &amp; Signing</h1>
+    <p class="hero-sub">Building an image is like baking a cake. <strong>Recipe</strong> (Dockerfile) + <strong>oven</strong> (builder) + <strong>ingredients</strong> (base + layers) → a finished cake. The pros use less sugar, sign their work, and ship a list of every ingredient.</p>
+
+    <div class="hero-illu">
+      <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A bakery scene with a recipe card on the wall, a baker at the oven, and a finished layered cake on the counter with an ingredient list and signature seal">
+        <defs>
+          <linearGradient id="sky-grad-10" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FBF1D6"/>
+            <stop offset="100%" stop-color="#FBF7F0" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <rect width="680" height="200" fill="url(#sky-grad-10)"/>
+        <circle cx="600" cy="40" r="22" fill="#E8B547" opacity="0.7"/>
+
+        <!-- Title -->
+        <text x="340" y="22" font-size="13" font-weight="700" fill="#3F4A5E" text-anchor="middle" letter-spacing="1.5">RECIPE · OVEN · LAYERED CAKE · INGREDIENT LIST · SEAL</text>
+
+        <!-- LEFT: Recipe card pinned to wall -->
+        <g transform="translate(20,46)">
+          <!-- Wall background -->
+          <rect x="0" y="0" width="170" height="180" rx="4" fill="#FBF7F0" stroke="#9D9389" stroke-width="0.8" stroke-dasharray="2,2"/>
+          <!-- Recipe card -->
+          <g transform="translate(20,18)">
+            <rect width="130" height="150" rx="4" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+            <!-- Pin -->
+            <circle cx="65" cy="0" r="3" fill="#A04832"/>
+            <!-- Title -->
+            <text x="65" y="20" font-size="9" font-weight="700" fill="#3F4A5E" text-anchor="middle">Dockerfile</text>
+            <line x1="10" y1="26" x2="120" y2="26" stroke="#3F4A5E" stroke-width="0.6"/>
+            <!-- Recipe lines -->
+            <g font-family="ui-monospace,monospace" font-size="7" fill="#3F4A5E">
+              <text x="10" y="40">FROM node:22-alpine</text>
+              <text x="10" y="52">WORKDIR /app</text>
+              <text x="10" y="64">COPY package*.json ./</text>
+              <text x="10" y="76">RUN npm ci</text>
+              <text x="10" y="88">COPY . .</text>
+              <text x="10" y="100">RUN npm run build</text>
+              <text x="10" y="112" fill="#A04832">FROM gcr.io/distroless/</text>
+              <text x="10" y="124" fill="#A04832">  nodejs22</text>
+              <text x="10" y="136">COPY --from=0 /app /app</text>
+            </g>
+          </g>
+        </g>
+        <text x="105" y="240" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">RECIPE</text>
+        <text x="105" y="254" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">Dockerfile</text>
+
+        <!-- CENTER: Oven with baker -->
+        <g transform="translate(200,46)">
+          <!-- Oven body -->
+          <rect x="20" y="40" width="150" height="140" rx="4" fill="#5A6878" stroke="#2E3640" stroke-width="2"/>
+          <!-- Oven door (window) -->
+          <rect x="34" y="62" width="122" height="80" rx="3" fill="#1F2433" stroke="#3F4A5E" stroke-width="1.5"/>
+          <!-- Glow inside oven -->
+          <rect x="40" y="68" width="110" height="68" rx="2" fill="#FBF1D6" opacity="0.6"/>
+          <!-- Cake forming inside -->
+          <g transform="translate(70,90)">
+            <rect width="50" height="40" rx="3" fill="#D97757" stroke="#A04832" stroke-width="1"/>
+            <rect width="50" height="10" fill="#5E4A8E"/>
+            <rect y="30" width="50" height="10" fill="#3D7857"/>
+            <text x="25" y="26" font-size="8" fill="#FFF" text-anchor="middle" font-weight="700">image</text>
+          </g>
+          <!-- Oven controls -->
+          <circle cx="42" cy="52" r="4" fill="#9D9389" stroke="#2A2520"/>
+          <circle cx="62" cy="52" r="4" fill="#9D9389" stroke="#2A2520"/>
+          <circle cx="148" cy="52" r="4" fill="#D97757" stroke="#A04832"/>
+          <text x="120" y="56" font-size="7" fill="#FBF7F0" text-anchor="middle" font-weight="700">350°</text>
+          <!-- Heat indicator -->
+          <text x="148" y="55" font-size="8" fill="#FFF" text-anchor="middle">🔥</text>
+          <!-- Oven label -->
+          <text x="95" y="172" font-size="9" fill="#FFFFFF" text-anchor="middle" font-weight="700" letter-spacing="1.5">BUILDKIT</text>
+
+          <!-- Baker on left of oven -->
+          <g transform="translate(0,80)">
+            <ellipse cx="14" cy="16" rx="11" ry="13" fill="#FBF1D6" stroke="#2A2520" stroke-width="1.4"/>
+            <path d="M 4 4 Q 4 -10 14 -10 Q 24 -10 24 4 Z" fill="#FFFFFF" stroke="#2A2520" stroke-width="1.4"/>
+            <circle cx="11" cy="14" r="0.8" fill="#2A2520"/>
+            <circle cx="17" cy="14" r="0.8" fill="#2A2520"/>
+            <path d="M 11 19 Q 14 21 17 19" stroke="#2A2520" stroke-width="0.8" fill="none"/>
+            <!-- Body / apron -->
+            <path d="M 4 30 Q 4 70 8 80 L 20 80 Q 24 70 24 30 Z" fill="#FFFFFF" stroke="#2A2520" stroke-width="1.2"/>
+          </g>
+        </g>
+        <text x="295" y="240" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">OVEN</text>
+        <text x="295" y="254" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">BuildKit / Buildah / Kaniko</text>
+
+        <!-- RIGHT: Finished cake on counter + ingredient list + seal -->
+        <g transform="translate(420,46)">
+          <!-- Counter -->
+          <rect x="0" y="160" width="240" height="20" fill="#A06B45" stroke="#5A4F45" stroke-width="1.5"/>
+          <!-- Layered cake -->
+          <g transform="translate(20,80)">
+            <!-- Top layer -->
+            <ellipse cx="50" cy="0" rx="50" ry="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1"/>
+            <rect x="0" y="0" width="100" height="14" fill="#FBE8DC" stroke="#A04832" stroke-width="1"/>
+            <text x="50" y="11" font-size="7" fill="#A04832" text-anchor="middle" font-weight="700">app · 50 MB</text>
+            <!-- Layer 2 -->
+            <ellipse cx="50" cy="14" rx="50" ry="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1"/>
+            <rect x="0" y="14" width="100" height="14" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1"/>
+            <text x="50" y="25" font-size="7" fill="#8B5A00" text-anchor="middle" font-weight="700">deps · 80 MB</text>
+            <!-- Layer 3 -->
+            <ellipse cx="50" cy="28" rx="50" ry="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+            <rect x="0" y="28" width="100" height="14" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+            <text x="50" y="39" font-size="7" fill="#3D7857" text-anchor="middle" font-weight="700">node · 60 MB</text>
+            <!-- Layer 4 -->
+            <ellipse cx="50" cy="42" rx="50" ry="6" fill="#E0EEF3" stroke="#2D6F8C" stroke-width="1"/>
+            <rect x="0" y="42" width="100" height="14" fill="#E0EEF3" stroke="#2D6F8C" stroke-width="1"/>
+            <text x="50" y="53" font-size="7" fill="#2D6F8C" text-anchor="middle" font-weight="700">distroless · 20 MB</text>
+            <!-- Bottom (plate) -->
+            <ellipse cx="50" cy="56" rx="55" ry="7" fill="#FFFFFF" stroke="#9D9389" stroke-width="1"/>
+            <ellipse cx="50" cy="56" rx="50" ry="6" fill="#FBF7F0"/>
+            <!-- Final size label -->
+            <text x="50" y="80" font-size="11" font-weight="700" fill="#3D7857" text-anchor="middle">my-app:v2 · 210 MB</text>
+          </g>
+          <!-- Ingredient list (SBOM) -->
+          <g transform="translate(140,80)">
+            <rect width="80" height="60" rx="3" fill="#FFFFFF" stroke="#5E4A8E" stroke-width="1.5"/>
+            <text x="40" y="13" font-size="7" font-weight="700" fill="#5E4A8E" text-anchor="middle">SBOM</text>
+            <line x1="6" y1="18" x2="74" y2="18" stroke="#5E4A8E" stroke-width="0.5"/>
+            <g font-family="ui-monospace,monospace" font-size="5" fill="#5E4A8E">
+              <text x="6" y="26">node 22.3.0</text>
+              <text x="6" y="34">openssl 3.2.1</text>
+              <text x="6" y="42">libc 2.39</text>
+              <text x="6" y="50">expressjs 5.0</text>
+              <text x="6" y="58">+ 47 more</text>
+            </g>
+          </g>
+          <!-- Signature seal -->
+          <g transform="translate(170,150)">
+            <circle cx="20" cy="14" r="14" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/>
+            <text x="20" y="18" font-size="14" text-anchor="middle">✍</text>
+            <text x="20" y="40" font-size="7" fill="#8B5A00" text-anchor="middle" font-weight="700">SIGNED</text>
+          </g>
+        </g>
+        <text x="540" y="240" font-size="10" font-weight="700" fill="#3F4A5E" text-anchor="middle">FINISHED IMAGE</text>
+        <text x="540" y="254" font-size="9" fill="#6B6058" text-anchor="middle" font-style="italic">layers + SBOM + signature</text>
+
+        <!-- Bottom note -->
+        <text x="340" y="266" font-size="11" font-weight="700" fill="#3F4A5E" text-anchor="middle">Recipe + oven + ingredients = a smaller, signed, audited image.</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 1 — CONCEPT ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>How a container image actually gets built</h2>
+    <p>An image is not magic. You write a <strong>Dockerfile</strong> (or equivalent) describing the build steps, hand it to a <strong>builder</strong>, and out comes an OCI image. Each build instruction (FROM, COPY, RUN) becomes a layer. The builder hashes everything, deduplicates, and pushes to a registry.</p>
+    <p><strong>Build tools beyond Docker.</strong> Docker's BuildKit is the dominant builder, but several alternatives exist. <strong>Buildah</strong> (Red Hat) builds images without a daemon. <strong>Kaniko</strong> (Google) builds images inside a container itself, useful for CI in Kubernetes. <strong>ko</strong> builds Go images without a Dockerfile (just point it at your Go module). <strong>Cloud Native Buildpacks</strong> (Heroku/Pivotal) detect your language and build automatically — no Dockerfile.</p>
+    <p><strong>Multi-stage builds</strong> are the most important Dockerfile pattern. You have one stage that builds your app (compiler, dev dependencies, full toolchain) and another that copies <em>only the artifacts</em> into a tiny final image. The builder is huge; the runtime is small.</p>
+    <p><strong>Base image strategies.</strong> Three trade-offs: full distros like <code>ubuntu</code> (large, full shell, every tool), slim variants like <code>node:22-alpine</code> (smaller, fewer tools), <strong>distroless</strong> images (just your app + minimal runtime, no shell, no package manager), and <strong>scratch</strong> (literally empty — just your statically-linked binary). Each strip-down reduces image size and attack surface.</p>
+    <p><strong>Multi-arch with buildx.</strong> Build one image that works on both AMD64 and ARM64 with <code>docker buildx build --platform linux/amd64,linux/arm64</code>. The result is a single tag containing manifests for each architecture (we covered this in Lesson 09).</p>
+    <p><strong>Supply chain.</strong> Three concerns. <strong>CVEs</strong> — known vulnerabilities in the image's components. Tools like Trivy, Grype, Snyk scan your image and flag them. <strong>SBOM</strong> (Software Bill of Materials) — a machine-readable list of everything inside your image, in formats like SPDX or CycloneDX. <strong>Image signing</strong> — cryptographically prove the image came from your build pipeline (cosign, sigstore, Notary v2). Together they form your image supply-chain story.</p>
+  </section>
+
+  <!-- ============================== SECTION 1.5 — 5 TOPIC TILES ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · The 5 building blocks, broken down</span>
+    <h2>Each topic, one tile</h2>
+
+    <div class="build-grid">
+
+      <div class="build b1">
+        <div class="build-icon">📜</div>
+        <h3 class="build-name">1 · Dockerfile + alternatives</h3>
+        <p class="build-tag">recipes for images</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A document with build instructions">
+            <rect x="20" y="14" width="100" height="52" rx="4" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+            <text x="70" y="26" font-size="8" fill="#3F4A5E" text-anchor="middle" font-weight="700">Dockerfile</text>
+            <line x1="26" y1="32" x2="114" y2="32" stroke="#3F4A5E" stroke-width="0.5"/>
+            <g font-family="ui-monospace,monospace" font-size="6" fill="#3F4A5E">
+              <text x="26" y="42">FROM node:22</text>
+              <text x="26" y="50">COPY . .</text>
+              <text x="26" y="58">RUN npm ci</text>
+            </g>
+          </svg>
+        </div>
+        <p class="build-desc">Dockerfile is the dominant format. Alternatives: Buildah, Kaniko, ko (Go), Cloud Native Buildpacks (no Dockerfile).</p>
+      </div>
+
+      <div class="build b2">
+        <div class="build-icon">🏗️</div>
+        <h3 class="build-name">2 · Multi-stage</h3>
+        <p class="build-tag">build big, ship small</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A large builder stage on the left, a small runtime stage on the right with arrow showing copy of artifacts">
+            <rect x="6" y="22" width="50" height="44" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1.4"/>
+            <text x="31" y="38" font-size="7" fill="#A04832" text-anchor="middle" font-weight="700">BUILDER</text>
+            <text x="31" y="50" font-size="6" fill="#A04832" text-anchor="middle">1.2 GB</text>
+            <text x="31" y="58" font-size="5" fill="#A04832" text-anchor="middle">tools+deps</text>
+            <path d="M 60 44 L 80 44" stroke="#3D7857" stroke-width="1.5" marker-end="url(#arr-b2)"/>
+            <text x="70" y="38" font-size="6" fill="#3D7857" text-anchor="middle">artifacts</text>
+            <rect x="84" y="32" width="50" height="24" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.4"/>
+            <text x="109" y="44" font-size="7" fill="#3D7857" text-anchor="middle" font-weight="700">RUNTIME</text>
+            <text x="109" y="52" font-size="6" fill="#3D7857" text-anchor="middle">80 MB</text>
+            <defs><marker id="arr-b2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3D7857"/></marker></defs>
+          </svg>
+        </div>
+        <p class="build-desc">One Dockerfile, two stages. Builder has compilers + dev deps. Runtime has only the compiled artifact. 10-100× smaller final image.</p>
+      </div>
+
+      <div class="build b3">
+        <div class="build-icon">📐</div>
+        <h3 class="build-name">3 · Base images</h3>
+        <p class="build-tag">distro · alpine · distroless · scratch</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four boxes of decreasing size representing image base sizes">
+            <rect x="6" y="14" width="32" height="50" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1.4"/>
+            <text x="22" y="32" font-size="7" fill="#A04832" text-anchor="middle" font-weight="700">ubuntu</text>
+            <text x="22" y="44" font-size="6" fill="#A04832" text-anchor="middle">300MB</text>
+            <rect x="42" y="22" width="32" height="42" rx="3" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.4"/>
+            <text x="58" y="38" font-size="7" fill="#8B5A00" text-anchor="middle" font-weight="700">alpine</text>
+            <text x="58" y="50" font-size="6" fill="#8B5A00" text-anchor="middle">5MB</text>
+            <rect x="78" y="32" width="32" height="32" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.4"/>
+            <text x="94" y="46" font-size="6" fill="#3D7857" text-anchor="middle" font-weight="700">distroless</text>
+            <text x="94" y="56" font-size="6" fill="#3D7857" text-anchor="middle">20MB</text>
+            <rect x="114" y="46" width="20" height="18" rx="3" fill="#ECEFF5" stroke="#3F4A5E" stroke-width="1.4"/>
+            <text x="124" y="56" font-size="6" fill="#3F4A5E" text-anchor="middle" font-weight="700">scratch</text>
+            <text x="124" y="62" font-size="5" fill="#3F4A5E" text-anchor="middle">0KB</text>
+          </svg>
+        </div>
+        <p class="build-desc">Pick the smallest base that works. Distroless = no shell, no apt. Scratch = literally nothing. Smaller = faster + safer.</p>
+      </div>
+
+      <div class="build b4">
+        <div class="build-icon">🌍</div>
+        <h3 class="build-name">4 · Multi-arch (buildx)</h3>
+        <p class="build-tag">one image, many CPUs</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One source code icon producing two manifest variants for ARM and AMD64">
+            <rect x="50" y="14" width="40" height="20" rx="3" fill="#5E4A8E" stroke="#3D2868" stroke-width="1.4"/>
+            <text x="70" y="26" font-size="8" fill="#FFF" text-anchor="middle" font-weight="700">source</text>
+            <path d="M 60 36 L 30 50" stroke="#5E4A8E" stroke-width="1.5" marker-end="url(#arr-b4)"/>
+            <path d="M 80 36 L 110 50" stroke="#5E4A8E" stroke-width="1.5" marker-end="url(#arr-b4)"/>
+            <rect x="6" y="50" width="48" height="22" rx="3" fill="#EDE6F8" stroke="#5E4A8E" stroke-width="1.4"/>
+            <text x="30" y="64" font-size="8" fill="#5E4A8E" text-anchor="middle" font-weight="700">amd64</text>
+            <rect x="86" y="50" width="48" height="22" rx="3" fill="#EDE6F8" stroke="#5E4A8E" stroke-width="1.4"/>
+            <text x="110" y="64" font-size="8" fill="#5E4A8E" text-anchor="middle" font-weight="700">arm64</text>
+            <defs><marker id="arr-b4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5E4A8E"/></marker></defs>
+          </svg>
+        </div>
+        <p class="build-desc">docker buildx --platform linux/amd64,linux/arm64 builds one tag with two manifests. Right binary on every node automatically.</p>
+      </div>
+
+      <div class="build b5">
+        <div class="build-icon">🛡️</div>
+        <h3 class="build-name">5 · SBOM · Sign · Scan</h3>
+        <p class="build-tag">supply chain</p>
+        <div class="build-illu">
+          <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A box with a SBOM document, a signature seal, and a vulnerability scanner check mark">
+            <rect x="50" y="20" width="40" height="40" rx="3" fill="#F5E6E6" stroke="#8E2A2A" stroke-width="1.5"/>
+            <text x="70" y="42" font-size="14" text-anchor="middle">📦</text>
+            <!-- SBOM -->
+            <g transform="translate(8,18)">
+              <rect width="32" height="22" rx="2" fill="#FFFFFF" stroke="#5E4A8E" stroke-width="1"/>
+              <text x="16" y="14" font-size="7" fill="#5E4A8E" text-anchor="middle" font-weight="700">SBOM</text>
+            </g>
+            <!-- Sign seal -->
+            <g transform="translate(98,18)">
+              <circle cx="16" cy="11" r="11" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.4"/>
+              <text x="16" y="14" font-size="11" text-anchor="middle">✍</text>
+            </g>
+            <!-- Scan check -->
+            <g transform="translate(20,52)">
+              <text x="0" y="10" font-size="11" fill="#3D7857">✓</text>
+              <text x="14" y="10" font-size="7" fill="#3D7857" font-weight="700">no CVEs</text>
+            </g>
+          </svg>
+        </div>
+        <p class="build-desc">SBOM = list of every ingredient. Signing = baker's seal (cosign). Scanning = inspector finds known CVEs (Trivy, Grype).</p>
+      </div>
+
+    </div>
+
+    <p style="margin-top:24px;font-size:15px;color:var(--ink-soft);font-style:italic;text-align:center">All five compound: <strong style="color:var(--ink)">good Dockerfile + multi-stage + small base + multi-arch + signed = production-grade image.</strong></p>
+  </section>
+
+  <!-- ============================== SECTION 1.7 — BUILD TOOLS ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · The build tool landscape</span>
+    <h2>Pick the right builder for the job</h2>
+    <p>Five tools you'll see in the wild. Most teams use BuildKit (the default Docker builder) and never look further. Specialized cases use the others.</p>
+
+    <div class="tool-grid">
+      <div class="tool"><div class="tool-name">BuildKit</div><span class="tool-tag">Default · Docker</span><div class="tool-desc">Modern Docker builder. Parallelism, layer caching, secret mounts. The default behind <code>docker build</code>. Use unless you have a reason not to.</div></div>
+      <div class="tool"><div class="tool-name">Buildah</div><span class="tool-tag">Red Hat · daemonless</span><div class="tool-desc">Builds OCI images without a daemon. Doesn't need privileged container. Common on RHEL / OpenShift CI.</div></div>
+      <div class="tool"><div class="tool-name">Kaniko</div><span class="tool-tag">Google · in-cluster</span><div class="tool-desc">Builds images inside an unprivileged container. Perfect for Kubernetes-based CI (Tekton, Argo Workflows). No Docker socket needed.</div></div>
+      <div class="tool"><div class="tool-name">ko</div><span class="tool-tag">Go · no Dockerfile</span><div class="tool-desc">Builds images directly from Go modules — no Dockerfile, no Docker daemon. Tiny images. Used by major K8s projects.</div></div>
+      <div class="tool"><div class="tool-name">Buildpacks</div><span class="tool-tag">Heroku · auto-detect</span><div class="tool-desc">Cloud Native Buildpacks detect your language (Python, Node, Java, Go, etc.) and build an image automatically. No Dockerfile needed. Used by Heroku, Cloud Foundry, Cloud Run.</div></div>
+      <div class="tool"><div class="tool-name">Bazel · Nix</div><span class="tool-tag">Reproducible</span><div class="tool-desc">Bytewise-reproducible image builds. Heavy investment, big payoff for orgs that need every build to produce identical bits.</div></div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">For 90% of teams: BuildKit. For Kubernetes-based CI: Kaniko. For Go: ko. For "just build my Python app please": Buildpacks.</p>
+  </section>
+
+  <!-- ============================== SECTION 1.8 — BASE IMAGE STRATEGIES ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1.8 · Base image strategies</span>
+    <h2>Pick the smallest base that works</h2>
+    <p>Smaller base = smaller image = faster pull + smaller attack surface + fewer CVEs to track. The trade-off: less stuff to debug with.</p>
+
+    <div class="base-grid">
+      <div class="base huge">
+        <h3 class="base-name">Full distro</h3>
+        <div class="base-size">~300 MB</div>
+        <p class="base-desc">ubuntu, debian, fedora. Everything you'd expect on a real machine. Easy to debug; lots of CVEs to track.</p>
+      </div>
+      <div class="base slim">
+        <h3 class="base-name">Slim / Alpine</h3>
+        <div class="base-size">~5–80 MB</div>
+        <p class="base-desc">node:22-alpine, python:3.13-slim. Stripped-down distros. Most apps work; some musl/glibc gotchas with Alpine.</p>
+      </div>
+      <div class="base distroless">
+        <h3 class="base-name">Distroless</h3>
+        <div class="base-size">~10–50 MB</div>
+        <p class="base-desc">gcr.io/distroless/nodejs22 etc. Just your app + runtime. No shell, no package manager, no debugger. Production-grade.</p>
+      </div>
+      <div class="base scratch">
+        <h3 class="base-name">scratch</h3>
+        <div class="base-size">app size only</div>
+        <p class="base-desc">Literally empty. Only works for static binaries (Go, Rust). Image = just your binary. Tiny. Bulletproof.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Default to distroless for production runtime, slim/alpine for build stage, full distro only when you need debugging. Use scratch only for static binaries (Go, Rust, statically-linked C).</p>
+  </section>
+
+  <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>Naive build vs multi-stage + distroless</h2>
+    <p>The same Node.js app, two ways. The first is what you build the first time you write a Dockerfile. The second is what you build after one CVE scan.</p>
+
+    <div class="illu">
+      <svg viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Before: a single huge image with all build tools, deps, source code, shell. After: a tiny multi-stage image with only the artifact and minimal runtime.">
+        <!-- LEFT: bloated single-stage image -->
+        <g transform="translate(0,0)">
+          <rect width="320" height="240" rx="14" fill="#FBE8DC"/>
+          <text x="160" y="22" font-size="11" font-weight="700" fill="#A04832" text-anchor="middle" letter-spacing="1.5">NAIVE BUILD · 1.4 GB</text>
+
+          <!-- Big bloated image stack -->
+          <g transform="translate(40,46)">
+            <rect width="240" height="34" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1.4"/>
+            <text x="120" y="22" font-size="10" fill="#A04832" text-anchor="middle" font-weight="700">app source · 50 MB</text>
+            <rect width="240" height="34" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1.4" y="38"/>
+            <text x="120" y="60" font-size="10" fill="#A04832" text-anchor="middle" font-weight="700">build artifacts · 80 MB</text>
+            <rect width="240" height="34" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1.4" y="76"/>
+            <text x="120" y="98" font-size="10" fill="#A04832" text-anchor="middle" font-weight="700">npm cache · 200 MB</text>
+            <rect width="240" height="34" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1.4" y="114"/>
+            <text x="120" y="136" font-size="10" fill="#A04832" text-anchor="middle" font-weight="700">build tools (gcc, make) · 300 MB</text>
+            <rect width="240" height="34" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1.4" y="152"/>
+            <text x="120" y="174" font-size="10" fill="#A04832" text-anchor="middle" font-weight="700">ubuntu base · 770 MB</text>
+          </g>
+          <text x="160" y="226" font-size="10" fill="#A04832" text-anchor="middle" font-style="italic">slow pull · ~120 CVEs · attacker has shell + tools</text>
+        </g>
+
+        <!-- RIGHT: multi-stage + distroless -->
+        <g transform="translate(360,0)">
+          <rect width="320" height="240" rx="14" fill="#E0EFE6"/>
+          <text x="160" y="22" font-size="11" font-weight="700" fill="#3D7857" text-anchor="middle" letter-spacing="1.5">MULTI-STAGE + DISTROLESS · 80 MB</text>
+
+          <!-- Tiny final image -->
+          <g transform="translate(40,46)">
+            <rect width="240" height="34" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.4"/>
+            <text x="120" y="22" font-size="10" fill="#3D7857" text-anchor="middle" font-weight="700">app artifact · 50 MB</text>
+            <rect width="240" height="34" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.4" y="38"/>
+            <text x="120" y="60" font-size="10" fill="#3D7857" text-anchor="middle" font-weight="700">distroless nodejs · 30 MB</text>
+            <!-- empty space showing what's NOT there -->
+            <rect width="240" height="34" rx="3" fill="#FBF7F0" stroke="#9D9389" stroke-width="1" stroke-dasharray="3,3" y="76"/>
+            <text x="120" y="98" font-size="9" fill="#9D9389" text-anchor="middle" font-style="italic">(no source code)</text>
+            <rect width="240" height="34" rx="3" fill="#FBF7F0" stroke="#9D9389" stroke-width="1" stroke-dasharray="3,3" y="114"/>
+            <text x="120" y="136" font-size="9" fill="#9D9389" text-anchor="middle" font-style="italic">(no build tools)</text>
+            <rect width="240" height="34" rx="3" fill="#FBF7F0" stroke="#9D9389" stroke-width="1" stroke-dasharray="3,3" y="152"/>
+            <text x="120" y="136" font-size="9" fill="#9D9389" text-anchor="middle" font-style="italic" y="174">(no shell)</text>
+          </g>
+          <text x="160" y="226" font-size="10" fill="#3D7857" text-anchor="middle" font-style="italic">fast pull · ~5 CVEs · attacker has nothing</text>
+        </g>
+      </svg>
+      <div class="illu-caption">Same Node app. Same functionality. 17× smaller. 24× fewer CVEs. No shell for attackers.</div>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba before">
+        <span class="ba-label">Before · 1.4 GB</span>
+        <p>One-stage Dockerfile. Started <code>FROM ubuntu</code> for "familiar" feel. Ran <code>apt install</code> for build tools. Copied source code. Ran <code>npm install</code> + build. Final image contains: full ubuntu, gcc, make, source code, npm cache, build artifacts, your app.</p>
+        <p>Slow to pull, slow to push, lots of CVEs to track. An attacker who breaks in has a full shell, package manager, and your source code.</p>
+      </div>
+      <div class="ba after">
+        <span class="ba-label">After · 80 MB</span>
+        <p>Multi-stage Dockerfile. Stage 1 (builder): node:22, install deps, build app, produce <code>/app/dist</code>. Stage 2 (runtime): <code>FROM gcr.io/distroless/nodejs22</code>, copy only <code>/app/dist</code> from stage 1. Final image: distroless + your built artifact. No source code, no build tools, no shell.</p>
+        <p>17× smaller. Pulls in seconds. Far fewer CVEs. An attacker who breaks in has nothing — no shell to exec, no package manager to install tools.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">What didn't change: the app's behaviour. Multi-stage + distroless is purely operational improvement — no code change. The cost: harder to debug a running container (no shell to exec into), so you build "debug variants" with shell when needed.</p>
+  </section>
+
+  <!-- ============================== SECTION 3 — ANALOGY ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The bakery</h2>
+    <p>Building a container image is like running a bakery. You have a <strong>recipe</strong> (Dockerfile) pinned to the wall. You have an <strong>oven</strong> (BuildKit, Buildah, Kaniko — different brands of ovens, all bake the same kind of cake). You stack <strong>ingredients</strong> (base image + your code + dependencies) and out comes a layered cake (the OCI image).</p>
+    <p>The pros do three more things. They use a <strong>multi-stage process</strong>: a messy prep kitchen for chopping and mixing, a clean finishing kitchen that only handles the final cake. The customer never sees the messy prep kitchen. They use the <strong>smallest possible cake base</strong> — distroless or scratch — because customers don't want to eat the cardboard box. And they ship a <strong>complete ingredient list</strong> (SBOM) plus a <strong>baker's signature seal</strong> (image signature) so customers know what's in the cake and that it really came from the official bakery.</p>
+    <p>That's all "image building" is. Recipe → oven → cake. Add some discipline and your cake is small, audited, and signed.</p>
+
+    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>Recipe</strong> = Dockerfile (or Buildpacks descriptor, ko config, etc.)</li>
+      <li><strong>Oven</strong> = builder (BuildKit, Buildah, Kaniko, ko, Buildpacks)</li>
+      <li><strong>Multi-stage process</strong> = builder stage + runtime stage</li>
+      <li><strong>Cake base</strong> = base image (full distro vs alpine vs distroless vs scratch)</li>
+      <li><strong>Ingredient list on the side</strong> = SBOM (SPDX, CycloneDX)</li>
+      <li><strong>Baker's signature seal</strong> = image signing (cosign / sigstore)</li>
+      <li><strong>Food safety inspection</strong> = vulnerability scanning (Trivy, Grype, Snyk)</li>
+    </ul>
+  </section>
+
+  <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>A bakery. The recipe is a list of steps. The oven is the machine that bakes. You can use a small base (just a cookie) or a big base (a whole cake). Pros use the smallest base that works because nobody wants to eat the box. They also write down what's in the cake so you know what you're eating, and they sign their work so you know it came from them.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>An OCI image is built by feeding instructions (a Dockerfile) to a builder (BuildKit, Buildah, Kaniko, ko, or Buildpacks). Each instruction becomes a layer. The most important pattern is <strong>multi-stage</strong>: one stage with all the build tools and dev dependencies, a final stage that copies just the compiled artifact into a tiny base image. Common bases: full distro (300MB), alpine (~5MB), distroless (~10-50MB, no shell), scratch (literally empty, only works for static binaries). Then you scan for CVEs (Trivy/Grype), generate an SBOM (machine-readable ingredient list in SPDX or CycloneDX format), and sign the image (cosign). Together those three give you a defensible supply-chain story.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>Where image-building decisions show up</h2>
+
+    <div class="scenarios">
+      <div class="scenario">
+        <p class="scenario-name">Multi-stage cut image from 1.2 GB to 80 MB</p>
+        <p>A team's Node.js app shipped as a 1.2 GB image. Pulls took 90 seconds, deploys felt slow. They refactored to multi-stage: builder uses node:22 with all dev dependencies, final stage uses gcr.io/distroless/nodejs22 with only the built dist/ directory. Result: 80 MB image. Pulls take 6 seconds. CVE count dropped from 124 to 8. Same app behavior, 15× faster deploys.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">Distroless prevented an attacker from getting a shell</p>
+        <p>A web app got compromised through an unsanitized input vulnerability. The attacker's payload tried to <code>exec("/bin/sh")</code> to escalate. The image used <code>gcr.io/distroless/python3</code> — no shell included. The exec failed; the attacker had nothing to pivot to. The team fixed the input bug calmly during business hours. Distroless turned a "wake up at 3am" incident into a Tuesday afternoon ticket.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">SBOM sped up the Log4j response</p>
+        <p>When the Log4Shell CVE landed in December 2021, every team scrambled to find which of their hundreds of services included the vulnerable Log4j version. Teams that had been generating SBOMs (SPDX/CycloneDX) for every image had a one-line answer: grep their SBOM database for "log4j-core". Teams without SBOMs spent days inspecting Dockerfiles and rebuilding images to check. SBOMs paid for themselves in a single incident.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">Image signing caught a supply-chain attack</p>
+        <p>An attacker compromised a developer's CI credentials and pushed a malicious image to the team's registry under a legitimate tag. Production clusters had a Kyverno admission policy requiring images to be signed by the team's Cosign key. The malicious image wasn't signed (the attacker had registry creds but not the Cosign key). Kubernetes refused to admit the pod. Incident contained at the admission boundary, not after the malicious code ran.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 6 — ANIMATED SVG ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Watch a multi-stage build run</h2>
+    <p>Three modes. The first builds a multi-stage image. The second compares image sizes by base. The third runs a CVE scan + SBOM + signature.</p>
+
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animation of a multi-stage build, base image size comparison, and security pipeline">
+        <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: multi-stage build</text>
+
+        <!-- Top-right step counter -->
+        <g transform="translate(580,14)">
+          <rect width="160" height="34" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.4"/>
+          <text x="14" y="22" font-size="11" fill="#6B6058">step:</text>
+          <text x="148" y="22" font-size="14" font-weight="700" fill="#3F4A5E" text-anchor="end" font-family="ui-monospace,monospace" id="anim-step">0 / 4</text>
+        </g>
+
+        <!-- Stage area -->
+        <g id="anim-stage" transform="translate(40,60)"></g>
+
+        <!-- Status banner -->
+        <g transform="translate(40,300)">
+          <rect width="680" height="40" rx="6" fill="#FBF7F0" stroke="#3F4A5E" stroke-width="1.5"/>
+          <text x="340" y="25" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-status">Pick a mode to start.</text>
+        </g>
+      </svg>
+
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="multistage">▶ Multi-stage build</button>
+        <button class="anim-btn" type="button" data-mode="bases">▶ Base image sizes</button>
+        <button class="anim-btn" type="button" data-mode="security">▶ Scan · SBOM · sign</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a multi-stage build. Stage 1 builds (big), stage 2 packages just the artifact (small).</div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a Dockerfile?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A text file with build instructions (FROM, COPY, RUN, etc.) that a builder turns into an OCI image. Each instruction usually becomes a cached layer. Most popular image-build format; not the only one.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is multi-stage build?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A Dockerfile pattern with multiple FROM stages. Build stage has compilers + dev deps (large). Runtime stage copies only the final artifact into a tiny base. Final image is 10-100× smaller than single-stage.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is distroless?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Base images from gcr.io/distroless that contain only your app + minimal runtime — no shell, no package manager, no debugger. ~10-50 MB. Tiny attack surface; harder to debug a running container.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is scratch?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">An empty base image — literally nothing. Only works for static binaries (Go, Rust, statically-linked C). Image = just your binary. Bulletproof but no debugging.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Buildah vs Kaniko vs ko?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Buildah = daemonless OCI builder (Red Hat). Kaniko = builds inside an unprivileged container, perfect for K8s CI. ko = builds Go images without a Dockerfile, just point at the Go module.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is multi-arch with buildx?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">docker buildx --platform linux/amd64,linux/arm64 builds one image tag containing manifests for both architectures. Each node pulls the right one. Built using QEMU emulation under the hood.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is an SBOM?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Software Bill of Materials. A machine-readable list of every component inside an image (libraries, OS packages, language deps, versions). Standard formats: SPDX, CycloneDX. Critical for CVE response (e.g., Log4Shell).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is image signing?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Cryptographically prove the image was built by you and hasn't been tampered with. Tools: cosign (Sigstore project, easiest), Notary v2. Admission controllers (Kyverno, OPA) verify signatures before allowing the image to run.</div></div></div>
+    </div>
+
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card">
+        <p class="quiz-prompt">Your Node.js app image is 1.2 GB and CVE scans flag 124 vulnerabilities (mostly in libraries you don't use). Production deploys feel slow. What's the highest-leverage change?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Refactor to multi-stage Dockerfile + distroless. Stage 1: <code>FROM node:22</code> with all dev dependencies, runs npm ci + build. Stage 2: <code>FROM gcr.io/distroless/nodejs22</code>, copies <code>/app/dist</code> from stage 1. Likely result: ~80 MB image (15× smaller), ~5-10 CVEs (90% fewer because no extra OS packages). Deploys speed up dramatically. No app code change required.</div>
+      </div>
+      <div class="quiz-card">
+        <p class="quiz-prompt">A CVE drops in a popular library (like the next Log4Shell). Your team manages 80 services. How do you find which images include the vulnerable library?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Query your SBOM database. If you generate SBOMs (SPDX or CycloneDX) for every image at build time and store them centrally (e.g., in Dependency-Track or your registry's SBOM endpoint), you grep for the library name in seconds. Teams without SBOMs spend days manually inspecting Dockerfiles and rebuilding images to check. Generate SBOMs in CI; you'll thank yourself the day a critical CVE lands.</div>
+      </div>
+      <div class="quiz-card">
+        <p class="quiz-prompt">An engineer wants to use <code>FROM ubuntu:latest</code> as the base for a Go app. Why is that wrong, and what should they use instead?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Two issues. (1) <code>:latest</code> is a moving tag — pin to a specific tag (<code>ubuntu:24.04</code>) or digest. (2) ubuntu (300 MB) is overkill for a Go app. Go binaries are statically linked — they need nothing from the OS. Use <code>FROM scratch</code> or <code>FROM gcr.io/distroless/static</code> in the runtime stage. Final image = just the Go binary. ~5-15 MB instead of 300+. Faster, safer, fewer CVEs.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== GLOSSARY ============================== -->
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Dockerfile</div><div class="gloss-def">Text file with build instructions. Most popular image-build format. Each instruction becomes a layer.</div></div>
+      <div class="gloss-item"><div class="gloss-name">BuildKit</div><div class="gloss-def">Modern Docker builder. Default behind <code>docker build</code>. Parallelism, layer caching, secret mounts.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Buildah / Kaniko / ko</div><div class="gloss-def">Alternative builders. Buildah = daemonless. Kaniko = unprivileged in-container. ko = Go-specific, no Dockerfile.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Cloud Native Buildpacks</div><div class="gloss-def">Auto-detect language and build images without a Dockerfile. Used by Heroku, Cloud Foundry, Cloud Run.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Multi-stage</div><div class="gloss-def">Dockerfile pattern with multiple FROM stages. Build with full toolchain, copy only artifact to small final stage.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Distroless</div><div class="gloss-def">Google base images at gcr.io/distroless containing only app + runtime. No shell, no package manager.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SBOM</div><div class="gloss-def">Software Bill of Materials. Machine-readable list of every component in an image. Formats: SPDX, CycloneDX.</div></div>
+      <div class="gloss-item"><div class="gloss-name">cosign · Sigstore</div><div class="gloss-def">Image signing tool from the Sigstore project (CNCF). Cryptographically sign and verify container images.</div></div>
+    </div>
+  </details>
+
+  <!-- ============================== RECAP + COMPLETION ============================== -->
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 10 complete</span>
+    <p>Build small, multi-stage, distroless. Sign your work. Generate SBOMs. Scan for CVEs. That's a production-grade image.</p>
+    <p class="recap-next"><strong>Next — Lesson 11: Container Security &amp; Registries.</strong> Rootless containers, read-only filesystems, registry auth + pull policies, the security default toolkit for production.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 10 of 17 · grounded in docs.docker.com · github.com/GoogleContainerTools/distroless · sigstore.dev</footer>
+
+<script>
+  // theme
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '☀ Light' : '🌙 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '☀ Light' : '🌙 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+
+  // flashcards
+  document.querySelectorAll('.flashcard').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('flipped'));
+  });
+
+  // quiz reveals
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? 'Hide answer' : 'Show answer';
+    });
+  });
+
+  // ====== Animation ======
+  const animStage = document.getElementById('anim-stage');
+  const animModeLabel = document.getElementById('anim-mode-label');
+  const animReadout = document.getElementById('anim-readout');
+  const animStep = document.getElementById('anim-step');
+  const animStatus = document.getElementById('anim-status');
+  const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+
+  let timeouts = [];
+  function clearTimeouts() {
+    timeouts.forEach(t => clearTimeout(t));
+    timeouts = [];
+  }
+  function later(ms, fn) {
+    const t = setTimeout(fn, ms);
+    timeouts.push(t);
+    return t;
+  }
+  function clearStage() { animStage.innerHTML = ''; }
+  function setReadout(html) { animReadout.innerHTML = html; }
+  function setStatus(text) { animStatus.textContent = text; }
+
+  function svgRect(x, y, w, h, fill, stroke, label, opts = {}) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const g = document.createElementNS(ns, 'g');
+    const rect = document.createElementNS(ns, 'rect');
+    rect.setAttribute('x', x); rect.setAttribute('y', y);
+    rect.setAttribute('width', w); rect.setAttribute('height', h);
+    rect.setAttribute('rx', opts.rx || 5);
+    rect.setAttribute('fill', fill);
+    rect.setAttribute('stroke', stroke);
+    rect.setAttribute('stroke-width', 1.4);
+    g.appendChild(rect);
+    if (label) {
+      const txt = document.createElementNS(ns, 'text');
+      txt.setAttribute('x', x + w / 2); txt.setAttribute('y', y + h / 2 + 4);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('font-family', 'sans-serif');
+      txt.setAttribute('font-size', opts.fontSize || 11);
+      txt.setAttribute('font-weight', '700');
+      txt.setAttribute('fill', opts.textFill || '#FFFFFF');
+      txt.textContent = label;
+      g.appendChild(txt);
+    }
+    g.style.opacity = 0;
+    g.style.transition = 'opacity 0.3s';
+    animStage.appendChild(g);
+    requestAnimationFrame(() => g.style.opacity = 1);
+    return g;
+  }
+
+  function runMultistage() {
+    clearTimeouts(); clearStage();
+    animModeLabel.textContent = 'Mode: multi-stage build';
+    animStep.textContent = '0 / 4';
+    setStatus('Starting multi-stage build of a Node.js app.');
+    setReadout('<strong>Step 0.</strong> Two stages defined in the Dockerfile: builder (large, has tools) and runtime (small, distroless).');
+
+    later(0, () => {
+      svgRect(20, 20, 260, 200, '#FBE8DC', '#A04832', '', { rx: 8 });
+      const ns = 'http://www.w3.org/2000/svg';
+      const t = document.createElementNS(ns, 'text');
+      t.setAttribute('x', 150); t.setAttribute('y', 38); t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('font-size', 11); t.setAttribute('font-weight', '700'); t.setAttribute('fill', '#A04832');
+      t.textContent = 'STAGE 1 · BUILDER';
+      animStage.appendChild(t);
+      svgRect(420, 20, 260, 200, '#E0EFE6', '#3D7857', '', { rx: 8 });
+      const t2 = document.createElementNS(ns, 'text');
+      t2.setAttribute('x', 550); t2.setAttribute('y', 38); t2.setAttribute('text-anchor', 'middle');
+      t2.setAttribute('font-size', 11); t2.setAttribute('font-weight', '700'); t2.setAttribute('fill', '#3D7857');
+      t2.textContent = 'STAGE 2 · RUNTIME (distroless)';
+      animStage.appendChild(t2);
+    });
+    later(1000, () => {
+      animStep.textContent = '1 / 4';
+      setStatus('Stage 1: builder pulls node:22, installs all dev dependencies.');
+      setReadout('<strong>Step 1.</strong> Stage 1 starts with FROM node:22. Installs all build tools and dev dependencies (~600 MB). This stage will be discarded later.');
+      svgRect(40, 50, 220, 22, '#FBF7F0', '#A04832', 'FROM node:22 (base · 1.0 GB)', { fontSize: 9, textFill: '#A04832' });
+    });
+    later(2500, () => {
+      svgRect(40, 78, 220, 22, '#FBF7F0', '#A04832', 'RUN npm ci (install deps · 200 MB)', { fontSize: 9, textFill: '#A04832' });
+    });
+    later(3500, () => {
+      svgRect(40, 106, 220, 22, '#FBF7F0', '#A04832', 'COPY . . + npm run build (50 MB)', { fontSize: 9, textFill: '#A04832' });
+      animStep.textContent = '2 / 4';
+      setStatus('Builder produces /app/dist · ~50 MB of compiled JavaScript.');
+      setReadout('<strong>Step 2.</strong> Builder runs npm ci + npm run build. Output: /app/dist (~50 MB of compiled JS). The full builder image is now ~1.25 GB.');
+    });
+    later(5000, () => {
+      svgRect(40, 134, 220, 22, '#FBE8DC', '#A04832', '/app/dist · 50 MB ✓ ready', { fontSize: 9, textFill: '#A04832' });
+      svgRect(40, 162, 220, 22, '#FBE8DC', '#A04832', '(builder total: ~1.25 GB)', { fontSize: 9, textFill: '#A04832' });
+    });
+    later(6000, () => {
+      animStep.textContent = '3 / 4';
+      setStatus('Stage 2: copy /app/dist into a fresh distroless base.');
+      setReadout('<strong>Step 3.</strong> Stage 2 starts FRESH from gcr.io/distroless/nodejs22 (~30 MB). Copies just /app/dist from stage 1.');
+      svgRect(440, 50, 220, 22, '#FFFFFF', '#3D7857', 'FROM distroless/nodejs22 (30 MB)', { fontSize: 9, textFill: '#3D7857' });
+    });
+    later(7500, () => {
+      svgRect(440, 78, 220, 22, '#FFFFFF', '#3D7857', 'COPY --from=0 /app/dist /app', { fontSize: 9, textFill: '#3D7857' });
+      svgRect(440, 106, 220, 22, '#FFFFFF', '#3D7857', '(builder image discarded — not pushed)', { fontSize: 9, textFill: '#9D9389' });
+    });
+    later(9000, () => {
+      animStep.textContent = '4 / 4';
+      setStatus('Final image: 80 MB. 17× smaller than naive single-stage.');
+      setReadout('<strong>Step 4.</strong> Final image = distroless (30 MB) + your dist (50 MB) = 80 MB. Builder discarded. Production-ready.');
+      svgRect(440, 134, 220, 22, '#5A9F7A', '#3D7857', '✓ FINAL IMAGE · 80 MB', { fontSize: 11, textFill: '#FFFFFF' });
+      svgRect(440, 162, 220, 22, '#E0EFE6', '#3D7857', '17× smaller · ~5 CVEs · no shell', { fontSize: 9, textFill: '#3D7857' });
+    });
+    later(12000, runMultistage);
+  }
+
+  function runBases() {
+    clearTimeouts(); clearStage();
+    animModeLabel.textContent = 'Mode: base image size comparison';
+    animStep.textContent = '0 / 4';
+    setStatus('Same Node.js app, four different base images.');
+    setReadout('<strong>Step 0.</strong> Same hello-world Node.js app. Four bases. Watch the size differences.');
+
+    later(0, () => {
+      svgRect(20, 20, 680, 30, '#3F4A5E', '#1F2433', 'NODE.JS APP CODE: 50 MB (constant)', { fontSize: 11, textFill: '#FFFFFF' });
+    });
+    later(1000, () => {
+      animStep.textContent = '1 / 4';
+      setStatus('Base: ubuntu (full distro). Total: 350 MB.');
+      setReadout('<strong>Option 1.</strong> ubuntu base + node + your app = ~350 MB. Familiar but bloated.');
+      svgRect(20, 60, 660, 36, '#FBE8DC', '#A04832', 'ubuntu:24.04 + node + app · TOTAL 350 MB', { fontSize: 11, textFill: '#A04832' });
+    });
+    later(3000, () => {
+      animStep.textContent = '2 / 4';
+      setStatus('Base: node:22-alpine. Total: 90 MB. 4× smaller.');
+      setReadout('<strong>Option 2.</strong> Alpine variant + your app = 90 MB. Watch out for musl/glibc differences.');
+      svgRect(20, 104, 380, 36, '#FBF1D6', '#8B5A00', 'node:22-alpine + app · TOTAL 90 MB', { fontSize: 11, textFill: '#5A4F45' });
+    });
+    later(5000, () => {
+      animStep.textContent = '3 / 4';
+      setStatus('Base: distroless/nodejs22. Total: 80 MB. No shell.');
+      setReadout('<strong>Option 3.</strong> Distroless base + your app = 80 MB. No shell, no package manager. Production grade.');
+      svgRect(20, 148, 340, 36, '#E0EFE6', '#3D7857', 'distroless/nodejs22 + app · TOTAL 80 MB ✓', { fontSize: 11, textFill: '#3D7857' });
+    });
+    later(7000, () => {
+      animStep.textContent = '4 / 4';
+      setStatus('Base: scratch. Only works for static binaries (Go, Rust). Not for Node.');
+      setReadout('<strong>Option 4 (Go/Rust only).</strong> scratch base + static binary = ~10 MB. Bulletproof. But Node.js needs a runtime.');
+      svgRect(20, 192, 100, 36, '#ECEFF5', '#3F4A5E', 'scratch + binary · 10 MB (Go/Rust)', { fontSize: 9, textFill: '#3F4A5E' });
+    });
+    later(10000, runBases);
+  }
+
+  function runSecurity() {
+    clearTimeouts(); clearStage();
+    animModeLabel.textContent = 'Mode: scan + SBOM + sign pipeline';
+    animStep.textContent = '0 / 4';
+    setStatus('After build, three security steps before push.');
+    setReadout('<strong>Step 0.</strong> Image just built. Now run the supply-chain pipeline before pushing to registry.');
+
+    later(0, () => {
+      svgRect(280, 20, 200, 30, '#5A9F7A', '#3D7857', 'my-app:v2 (just built)', { fontSize: 11, textFill: '#FFFFFF' });
+    });
+    later(1000, () => {
+      animStep.textContent = '1 / 4';
+      setStatus('Step 1: scan for CVEs with Trivy.');
+      setReadout('<strong>Step 1.</strong> Run trivy image my-app:v2. Found 5 low-severity CVEs, 0 high. Pass threshold ✓');
+      svgRect(20, 64, 720, 36, '#E0EFE6', '#3D7857', '✓ Trivy CVE scan: 5 LOW · 0 HIGH/CRITICAL · build passes', { fontSize: 11, textFill: '#3D7857' });
+    });
+    later(3000, () => {
+      animStep.textContent = '2 / 4';
+      setStatus('Step 2: generate SBOM (SPDX format).');
+      setReadout('<strong>Step 2.</strong> Run syft my-app:v2 -o spdx > sbom.json. Lists every component (148 packages, versions, licenses).');
+      svgRect(20, 108, 720, 36, '#EDE6F8', '#5E4A8E', '✓ SBOM generated · 148 packages listed (SPDX 3.0 format)', { fontSize: 11, textFill: '#5E4A8E' });
+    });
+    later(5000, () => {
+      animStep.textContent = '3 / 4';
+      setStatus('Step 3: sign with cosign (using Sigstore keyless signing).');
+      setReadout('<strong>Step 3.</strong> cosign sign my-app:v2. Signature stored alongside image in registry. Verifiable later.');
+      svgRect(20, 152, 720, 36, '#FBF1D6', '#8B5A00', '✓ Signed with cosign · sig stored in registry · keyless via OIDC', { fontSize: 11, textFill: '#5A4F45' });
+    });
+    later(7000, () => {
+      animStep.textContent = '4 / 4';
+      setStatus('Push to registry. K8s admission verifies signature before allowing run.');
+      setReadout('<strong>Step 4.</strong> Push to registry. In production, Kyverno admission policy refuses to admit unsigned images. Supply-chain story complete.');
+      svgRect(20, 196, 720, 40, '#5A9F7A', '#3D7857', '✓ PUSHED · Kyverno admission requires signature → safe to deploy', { fontSize: 12, textFill: '#FFFFFF' });
+    });
+    later(10000, runSecurity);
+  }
+
+  function runMode(mode) {
+    clearTimeouts();
+    if (mode === 'multistage') runMultistage();
+    else if (mode === 'bases') runBases();
+    else if (mode === 'security') runSecurity();
+  }
+
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      runMode(btn.dataset.mode);
+    });
+  });
+
+  runMode('multistage');
+</script>
+</body>
+</html>

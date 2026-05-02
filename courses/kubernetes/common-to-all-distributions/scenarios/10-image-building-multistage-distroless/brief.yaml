@@ -1,0 +1,83 @@
+# Intake brief — Lesson 10, K-COM
+# Topic: Image Building — Dockerfile, BuildKit/Buildah/Kaniko/ko/Buildpacks,
+#        multi-stage, distroless/scratch, multi-arch, SBOM, signing, CVEs
+# Module 2 (Containers Comprehensive) · Lesson 3 of 5
+
+lesson:
+  title: "Image Building · Multi-Stage · Distroless · SBOM &amp; Signing"
+  slug: "10-image-building-multistage-distroless"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 10
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "bakery — recipe (Dockerfile), oven (builder), layered cake (image), ingredient list (SBOM), baker's seal (signing)"
+  module: "Module 2 · Containers (Comprehensive) · Lesson 3 of 5"
+
+learner_profile:
+  prerequisites:
+    - "Lesson 09: Container Runtimes & OCI Standard (so they know what an image IS)"
+  assumed_zero_knowledge_of:
+    - "Dockerfile syntax and behavior."
+    - "Multi-stage builds."
+    - "Base image strategies (distroless, scratch)."
+    - "Build tools (BuildKit, Buildah, Kaniko, ko, Buildpacks)."
+    - "Multi-arch with buildx."
+    - "SBOMs, image signing (cosign), CVE scanning."
+
+learning_outcomes:
+  - "Learner can write a multi-stage Dockerfile with distroless runtime."
+  - "Learner can pick the right base image (full distro / alpine / distroless / scratch) for the workload."
+  - "Learner can name 4+ alternative builders besides Docker."
+  - "Learner understands SBOM, image signing, and CVE scanning as a production pipeline."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Hero: bakery scene with recipe card on wall, baker at oven with cake forming inside, finished layered cake on counter with SBOM list and signature seal"
+    word_target: 320
+  section_1_5_blocks:
+    illustration: "5 tile cards: Dockerfile + alts · Multi-stage · Base images · Multi-arch · SBOM/Sign/Scan"
+  section_1_7_tools:
+    illustration: "6 build tool comparison cards (BuildKit, Buildah, Kaniko, ko, Buildpacks, Bazel/Nix)"
+  section_1_8_bases:
+    illustration: "4 base image cards (full distro 300MB · alpine 5-80MB · distroless 10-50MB · scratch 0KB)"
+  section_2_before_after:
+    illustration: "Naive 1.4 GB single-stage (5 bloated layers) vs multi-stage distroless 80 MB (only 2 real layers + 3 'empty' dashed layers showing what's NOT included)"
+  section_3_analogy:
+    primary: "The bakery — recipe + oven + ingredients + multi-stage + smallest base + SBOM + signature"
+    illustration: "Already shown in hero"
+  section_4_eli_pair:
+    eli5: "Bakery, smallest base, ingredient list, signature. Under 100 words."
+    eli10: "Multi-stage + base image strategy + SBOM/signing/scanning. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "Multi-stage cut image from 1.2 GB to 80 MB (15× smaller)"
+      - "Distroless prevented attacker shell access"
+      - "SBOM sped up the Log4j response (one-line answer vs days)"
+      - "Image signing caught a supply-chain attack at admission"
+  section_6_animated_svg:
+    modes: ["Multi-stage build (4 steps)", "Base image sizes (4 options)", "Scan + SBOM + sign pipeline (4 steps)"]
+    description: "Mode 1: stage 1 builds (1.25 GB), stage 2 copies just /app/dist into distroless = 80 MB final. Mode 2: same Node app on ubuntu/alpine/distroless/scratch — visualize size differences. Mode 3: trivy scan → syft SBOM → cosign sign → push, with admission verifying signature."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-10.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can recognize a multi-stage Dockerfile."
+  - "First-timer understands why distroless is preferred for production."
+  - "First-timer knows what an SBOM is and why it matters."
+
+fact_check_anchors:
+  - "https://docs.docker.com/build/buildkit/"
+  - "https://github.com/GoogleContainerTools/distroless"
+  - "https://github.com/sigstore/cosign"
+  - "https://aquasecurity.github.io/trivy/"
+  - "https://buildpacks.io/"
+  - "https://github.com/ko-build/ko"

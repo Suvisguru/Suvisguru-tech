@@ -1,0 +1,35 @@
+# Flashcards — Lesson 10, Image Building
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "What is a Dockerfile?"
+    back: "A text file with build instructions (FROM, COPY, RUN, etc.) that a builder turns into an OCI image. Each instruction usually becomes a cached layer. Most popular image-build format; not the only one."
+
+  - id: 2
+    front: "What is multi-stage build?"
+    back: "A Dockerfile pattern with multiple FROM stages. Build stage has compilers + dev deps (large). Runtime stage copies only the final artifact into a tiny base. Final image is 10-100× smaller than single-stage."
+
+  - id: 3
+    front: "What is distroless?"
+    back: "Base images from gcr.io/distroless that contain only your app + minimal runtime — no shell, no package manager, no debugger. ~10-50 MB. Tiny attack surface; harder to debug a running container."
+
+  - id: 4
+    front: "What is scratch?"
+    back: "An empty base image — literally nothing. Only works for static binaries (Go, Rust, statically-linked C). Image = just your binary. Bulletproof but no debugging."
+
+  - id: 5
+    front: "Buildah vs Kaniko vs ko?"
+    back: "Buildah = daemonless OCI builder (Red Hat). Kaniko = builds inside an unprivileged container, perfect for K8s CI. ko = builds Go images without a Dockerfile, just point at the Go module."
+
+  - id: 6
+    front: "What is multi-arch with buildx?"
+    back: "docker buildx --platform linux/amd64,linux/arm64 builds one image tag containing manifests for both architectures. Each node pulls the right one. Built using QEMU emulation under the hood."
+
+  - id: 7
+    front: "What is an SBOM?"
+    back: "Software Bill of Materials. A machine-readable list of every component inside an image (libraries, OS packages, language deps, versions). Standard formats: SPDX, CycloneDX. Critical for CVE response (e.g., Log4Shell)."
+
+  - id: 8
+    front: "What is image signing?"
+    back: "Cryptographically prove the image was built by you and hasn't been tampered with. Tools: cosign (Sigstore project, easiest), Notary v2. Admission controllers (Kyverno, OPA) verify signatures before allowing the image to run."
