@@ -1,0 +1,38 @@
+# Quiz — Lesson 02, Virtualization vs Containerization
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    pause_animation: true
+    prompt: |
+      In the VM startup animation, the timer reaches several seconds before
+      the app even appears. In the container startup animation, the timer
+      barely moves. Why?
+    answer: |
+      Because a VM has to boot a full operating system before the app can
+      start — same as a physical computer powering on. A container starts
+      as a process on an already-running OS, so there's nothing to boot.
+      That's the whole speed difference, in one picture.
+
+  - id: 2
+    prompt: |
+      A bank wants to run apps from three different competing customers on
+      the same hardware. The customers don't trust each other. Should they
+      use VMs or containers?
+    answer: |
+      VMs (or specialised sandboxed container runtimes like gVisor / Kata).
+      Plain container isolation shares the kernel — a kernel exploit in one
+      customer's container could potentially reach the others. VMs give
+      each customer their own kernel, which is a much stronger boundary.
+      The trade-off is density: you'll fit fewer customers per server.
+
+  - id: 3
+    prompt: "Why is the apartment-vs-house analogy a good fit for VMs vs containers?"
+    answer: |
+      Because it captures the real trade-off: a house duplicates everything
+      (own roof, own furnace, own plumbing) and is fully self-contained but
+      takes more space and resources. An apartment shares the building's
+      infrastructure, which makes it lighter and denser, but the shared parts
+      become a single point of failure or attack. VMs vs containers have
+      exactly the same trade-off, just with operating systems instead of
+      furnaces.

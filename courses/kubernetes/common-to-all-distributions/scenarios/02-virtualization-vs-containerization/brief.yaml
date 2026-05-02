@@ -1,0 +1,71 @@
+# Intake brief — Lesson 02, K-COM
+# Topic: Virtualization vs Containerization
+# Format: Standard 7-section PROJECT.md structure (mirrors approved Lesson 01).
+
+lesson:
+  title: "Virtualization vs Containerization"
+  slug: "02-virtualization-vs-containerization"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 2
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "houses (VMs) vs apartments (containers)"
+
+learner_profile:
+  prerequisites:
+    - "Lesson 01: What is Kubernetes?"
+  assumed_zero_knowledge_of:
+    - "What a virtual machine is."
+    - "What a container is."
+    - "Hypervisors, container runtimes, kernels."
+    - "Linux namespaces and cgroups."
+
+learning_outcomes:
+  - "Learner can describe a VM and a container in plain language."
+  - "Learner can name the size, speed, and isolation differences."
+  - "Learner can explain when each is the right pick (VMs for legacy / hostile multi-tenancy / strong isolation; containers for density / fast startup / microservices)."
+  - "Learner understands they're not opposites — most cloud K8s nodes are VMs running containers."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Side-by-side stacked layer diagram: VM stack (3 VMs each with own guest OS, on hypervisor) vs Container stack (6 containers sharing one host OS via runtime)"
+    word_target: 280
+  section_2_before_after:
+    illustration: "Same physical server twice: left holds 3 large VMs (with gaps); right holds 12 densely packed containers"
+    word_target_each_side: 80
+  section_3_analogy:
+    primary: "Houses vs apartments"
+    illustration: "Single house with own water heater + furnace + electrical panel + plumbing visible; apartment building with 6 units sharing one set of building infrastructure"
+  section_4_eli_pair:
+    eli5: "Pretend computers vs little rooms inside a big room. Under 100 words."
+    eli10: "Hypervisor + guest OS vs namespaces/cgroups + shared kernel. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - "Legacy Windows Server 2008 app (use VM)"
+      - "60-microservice SaaS (use containers)"
+      - "Multi-tenant SaaS with hostile tenants (use VMs / sandboxed runtimes)"
+      - "CI/CD running 50k jobs/day (use containers)"
+  section_6_animated_svg:
+    modes: ["VM startup", "Container startup", "Density comparison"]
+    description: "VM mode: hypervisor → guest OS booting (slow) → app appears. Container mode: host OS already running → app appears almost instantly. Density: 3 VMs vs 12 containers on same hardware."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-02.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can explain VM vs container in one sentence."
+  - "First-timer understands they aren't competitors — both are used together."
+  - "Visuals: friendly drawn houses + apartment buildings, not block diagrams."
+
+fact_check_anchors:
+  - "kubernetes.io/docs/concepts/overview/ — K8s and containers"
+  - "docs.docker.com — container runtime concepts"
+  - "Linux kernel docs — namespaces, cgroups"
