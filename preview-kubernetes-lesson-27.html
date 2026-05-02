@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 27 — RBAC & Authentication · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the K-COM course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L01 What is Kubernetes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L02 containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L03 reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L04 12-factor + monoliths</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L05 K8s fit / overkill</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L06 GitOps + SRE</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L07 history + KEPs</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>L7.5 Linux primer</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L08 namespaces &amp; cgroups</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L09 runtimes &amp; OCI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L10 image building</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L11 container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L12 PID 1 &amp; lifecycle</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L13 cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L14 K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L15 Pods deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L16 workload controllers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L17 services &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L18 storage Pt 1 — PV/PVC/SC</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L19 storage Pt 2 — CSI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L20 config &amp; secrets</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L21 service accounts &amp; certs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L22 scheduling Pt 1</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L23 scheduling Pt 2</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L24 net foundations &amp; CNI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L25 Gateway API</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L26 AdminNetworkPolicy</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>L27 RBAC &amp; Auth</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L28 admission control</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L29 policy engines</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L30 supply chain</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L31 multi-tenancy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L32 obs Pt 1 — logs/metrics</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L33 obs Pt 2 — traces/eBPF</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L34 autoscaling</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L35 reliability &amp; HA</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L36 Kustomize</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L37 Helm 3</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L38 Argo CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L39 Flux CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L40 progressive delivery</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L41 CRDs deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L42 Operators</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L43 service mesh</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L44 troubleshooting</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 27</span></a>
+    <span class="progress-pill">27 · RBAC &amp; Auth</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Watchtower — Identity & Permissions Bureau</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: lesson 27">
+    <title>K-Town district map · lesson 27</title>
+    <desc>Stylised map of K-Town. Watchtower — Identity & Permissions Bureau highlighted.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+    <g class="pin active" id="kt-pin27" transform="translate(740,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">27</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">security</text></g>
+    <g class="pin" id="kt-pin32" transform="translate(230,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">32</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">observability</text></g>
+    <g class="pin" id="kt-pin34" transform="translate(230,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">34</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Station</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scale & resilience</text></g>
+    <g class="pin" id="kt-pin36" transform="translate(410,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">36</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Print Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">delivery</text></g>
+    <g class="pin" id="kt-pin42" transform="translate(700,305)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">42</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Workshop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">operators</text></g>
+    <g class="pin" id="kt-pin44" transform="translate(770,245)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">44</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Detective's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshooting</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Watchtower — Identity & Permissions Bureau</strong> <span>· lesson 27</span><span class="visually-hidden">Lesson 27, Watchtower — Identity & Permissions Bureau.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 13 · Lesson 27 · who are you, and what can you do?</span>
+    <h1>RBAC & Authentication · Roles, Bindings, OIDC, Structured Auth</h1>
+    <p class="hero-sub">Two questions every API request answers: <strong>authentication</strong> ("who are you?") and <strong>authorisation</strong> ("can you do this?"). The first is plug-in: OIDC, certs, tokens, webhooks. The second is <strong>RBAC</strong>: a flat verb-on-resource model that's deceptively powerful. Today's lesson: both, plus the <em>structured authentication config</em> (GA in 1.32) that finally cleaned up the auth flag-soup.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Watchtower entrance: an authentication checkpoint where guards check IDs (OIDC, certs, tokens), then pass visitors to a permissions desk that consults role binders for verbs vs resources.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">WATCHTOWER · AUTHENTICATION + AUTHORISATION CHECKPOINT</text>
+  <!-- Auth checkpoint -->
+  <g transform="translate(40,55)">
+    <rect width="180" height="120" rx="8" fill="#3F4A5E" stroke="#1B1814" stroke-width="2"/>
+    <text x="90" y="18" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">AUTHENTICATION</text>
+    <text x="90" y="30" text-anchor="middle" font-size="7" fill="#FBF1D6" font-style="italic">"who are you?"</text>
+    <rect x="14" y="40" width="76" height="22" rx="3" fill="#5A9F7A"/>
+    <text x="52" y="54" text-anchor="middle" font-size="7" fill="#FFFFFF" font-weight="700">OIDC (humans)</text>
+    <rect x="94" y="40" width="72" height="22" rx="3" fill="#A04832"/>
+    <text x="130" y="54" text-anchor="middle" font-size="7" fill="#FFFFFF" font-weight="700">SA token (Pods)</text>
+    <rect x="14" y="66" width="76" height="22" rx="3" fill="#E8B547"/>
+    <text x="52" y="80" text-anchor="middle" font-size="7" fill="#5A4F45" font-weight="700">client cert</text>
+    <rect x="94" y="66" width="72" height="22" rx="3" fill="#4A8FA8"/>
+    <text x="130" y="80" text-anchor="middle" font-size="7" fill="#FFFFFF" font-weight="700">webhook</text>
+    <text x="90" y="106" text-anchor="middle" font-size="8" fill="#FBF1D6" font-style="italic">structured auth config (1.32+)</text>
+  </g>
+  <!-- Arrow -->
+  <path d="M 230 115 L 270 115" stroke="#A04832" stroke-width="3" marker-end="url(#arr)"/>
+  <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><polygon points="0 0, 8 4, 0 8" fill="#A04832"/></marker></defs>
+  <!-- AuthZ -->
+  <g transform="translate(280,40)">
+    <rect width="360" height="150" rx="8" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <text x="180" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">AUTHORISATION</text>
+    <text x="180" y="26" text-anchor="middle" font-size="7" fill="#5A4F45" font-style="italic">"can you do this?"</text>
+    <!-- Roles -->
+    <rect x="14" y="34" width="160" height="50" rx="4" fill="#E0EEF3" stroke="#4A8FA8" stroke-width="1"/>
+    <text x="20" y="48" font-size="8" font-weight="700" fill="#3F4A5E">Role / ClusterRole</text>
+    <text x="20" y="60" font-size="7" fill="#5A4F45">verbs: get, list, watch</text>
+    <text x="20" y="70" font-size="7" fill="#5A4F45">resources: pods, services</text>
+    <text x="20" y="80" font-size="7" fill="#5A4F45">resourceNames: optional</text>
+    <!-- Subjects -->
+    <rect x="186" y="34" width="160" height="50" rx="4" fill="#FBE8DC" stroke="#A04832" stroke-width="1"/>
+    <text x="192" y="48" font-size="8" font-weight="700" fill="#3F4A5E">Binding</text>
+    <text x="192" y="60" font-size="7" fill="#5A4F45">subjects:</text>
+    <text x="200" y="70" font-size="7" fill="#5A4F45">- User: alice@corp</text>
+    <text x="200" y="80" font-size="7" fill="#5A4F45">- ServiceAccount: prom</text>
+    <!-- Result -->
+    <rect x="14" y="92" width="332" height="40" rx="4" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.2"/>
+    <text x="180" y="108" text-anchor="middle" font-size="9" font-weight="700" fill="#3D7857">verb + resource + subject → ALLOW / DENY</text>
+    <text x="180" y="122" text-anchor="middle" font-size="7" fill="#5A4F45" font-style="italic">first match wins; no implicit deny rule needed</text>
+  </g>
+  <text x="340" y="217" text-anchor="middle" font-size="0" fill="#3F4A5E"></text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Friday afternoon penetration test. The pen-tester finds a Pod running with the <code>default</code> ServiceAccount in the <code>default</code> namespace. They <code>kubectl exec</code> in and check token permissions: <code>kubectl auth can-i list secrets --all-namespaces</code> returns <strong>yes</strong>. They list every Secret across the cluster and find an admin kubeconfig. Game over. Root cause: someone, three years ago, ran <code>kubectl create clusterrolebinding wide-open --clusterrole=cluster-admin --serviceaccount=default:default</code> for "a quick test" and forgot to delete it. <em>Default-deny isn't the default.</em> RBAC requires intentional design. This lesson is the design.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Two checks: <strong>authentication</strong> (who are you?) and <strong>authorisation</strong> (RBAC: verb on resource for subject). Authentication is plug-in: OIDC for humans, ServiceAccount tokens for Pods, certs/webhooks for special cases. RBAC has four objects: <strong>Role</strong> + <strong>RoleBinding</strong> (namespace-scoped), <strong>ClusterRole</strong> + <strong>ClusterRoleBinding</strong> (cluster-wide). First match wins; if no rule allows, the request is denied.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Every API request is a 4-tuple</h2>
+    <p>Every request to the kube-apiserver gets reduced to four things: <strong>subject</strong> (who is asking), <strong>verb</strong> (what they want to do — get/list/watch/create/update/patch/delete), <strong>resource</strong> (what kind of thing — pods, secrets, deployments, etc.), <strong>scope</strong> (cluster-wide or specific namespace). The API server runs each request through two stages:</p>
+    <ul>
+      <li><strong>Authentication</strong> turns the request into a subject (user identity). "Who is asking?" Plug-in: OIDC, ServiceAccount tokens (TokenRequest API), client certs, static tokens (deprecated), bootstrap tokens, webhook authenticators.</li>
+      <li><strong>Authorisation</strong> takes the subject + verb + resource + scope and asks: "is this allowed?" K8s ships with one primary authorizer: <strong>RBAC</strong> (others exist — Node, ABAC, Webhook — but RBAC is the bread and butter).</li>
+    </ul>
+    <p>If authorisation says yes, the request goes to <strong>admission</strong> (Lesson 28). If anywhere in this chain says no, the request is rejected with a clean 401/403.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · The four RBAC objects</span>
+    <h2>Roles + Bindings, namespace and cluster</h2>
+    <div class="role-grid">
+      <div class="role r1">
+        <span class="role-icon">📋</span>
+        <h3 class="role-name">Role</h3>
+        <p class="role-tag">namespace-scoped permissions</p>
+        <p class="role-desc">A list of rules: "<code>verbs: [get, list, watch]</code> on <code>resources: [pods, services]</code>." Lives in a namespace; rules apply only to that namespace's resources.</p>
+        <p class="role-who">Use for: per-team or per-app permissions inside a namespace.</p>
+      </div>
+      <div class="role r2">
+        <span class="role-icon">🔗</span>
+        <h3 class="role-name">RoleBinding</h3>
+        <p class="role-tag">grants a Role to subjects</p>
+        <p class="role-desc">Maps subjects (User, Group, ServiceAccount) to a Role. The binding lives in the same namespace as the Role; subjects can be from any namespace.</p>
+        <p class="role-who">Use for: "this team's SA gets these permissions in their namespace."</p>
+      </div>
+      <div class="role r3">
+        <span class="role-icon">🏛️</span>
+        <h3 class="role-name">ClusterRole</h3>
+        <p class="role-tag">cluster-wide permissions</p>
+        <p class="role-desc">Same shape as Role, cluster-scoped. Can list cluster-scoped resources (nodes, persistentvolumes, namespaces themselves) <em>and</em> can be referenced by RoleBindings to grant rights inside one namespace without redefining rules.</p>
+        <p class="role-who">Use for: cluster-admin roles, reusable role definitions, scraping-style permissions (read all Pods cluster-wide).</p>
+      </div>
+      <div class="role r4">
+        <span class="role-icon">🌐</span>
+        <h3 class="role-name">ClusterRoleBinding</h3>
+        <p class="role-tag">grants a ClusterRole cluster-wide</p>
+        <p class="role-desc">Maps subjects to a ClusterRole at cluster scope. Subject can do whatever the ClusterRole says, in every namespace + cluster-wide resources.</p>
+        <p class="role-who">Use for: cluster-admin grants, infra controllers, monitoring agents.</p>
+      </div>
+    </div>
+    <p style="margin-top:18px"><strong>Key principle:</strong> RBAC is purely additive. There are no Deny rules. If no Role grants the verb on the resource, the request is denied. If you want to revoke, you remove the binding (or restrict the Role's verbs).</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · Authentication mechanisms</span>
+    <h2>From flag soup to structured auth config</h2>
+    <p>K8s historically configured auth via API-server flags: <code>--oidc-issuer-url</code>, <code>--oidc-client-id</code>, <code>--oidc-username-claim</code>, … one OIDC issuer per cluster, no easy way to add a second, no way to express "if username matches X then claim Y means Z." The <strong>Structured Authentication Configuration</strong> (alpha 1.29, beta 1.30, GA 1.32) replaces all that with a YAML file.</p>
+    <p>What it gets you:</p>
+    <ul>
+      <li><strong>Multiple JWT issuers</strong> in one cluster — corp OIDC + GitHub OIDC + Google Workspace, each with its own claim mapping.</li>
+      <li><strong>CEL expressions</strong> for username and group derivation. "username = email if domain matches corp.com else email + ':external'".</li>
+      <li><strong>Audience-bound</strong> issuer validation — protect against token confusion attacks.</li>
+      <li><strong>Hot reload</strong> — change the config, API server picks it up without restart.</li>
+    </ul>
+    <p>Authentication mechanisms in 2026 (in priority of usage):</p>
+    <ul>
+      <li><strong>OIDC</strong> (humans) — corp SSO, GitHub, Google Workspace. Every CI tool integrates.</li>
+      <li><strong>ServiceAccount tokens</strong> (Pods) — projected, bound, short-lived. See Lesson 21.</li>
+      <li><strong>X.509 client certs</strong> — cluster admins, kubeadm bootstrap. CN = username; O = group.</li>
+      <li><strong>Webhook authenticator</strong> — defer to an external service. Useful for IAM-style integration.</li>
+      <li><strong>Static tokens</strong> — DEPRECATED. Don't use in new clusters.</li>
+    </ul>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A Pod's ServiceAccount is bound to a Role that grants <code>verbs: [get, list]</code> on <code>configmaps</code> in namespace <code>app</code>. The Pod tries to read a ConfigMap in namespace <code>kube-system</code>. What happens?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Allowed — the Role grants get/list on configmaps</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Denied — the Role is namespace-scoped to <code>app</code>; it doesn't apply outside that namespace</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Allowed if the kube-system ConfigMap is named the same</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Roles + RoleBindings are namespace-scoped. The Pod can read ConfigMaps in <code>app</code> only. To read ConfigMaps cluster-wide, you'd need a ClusterRole + ClusterRoleBinding. RBAC is intentionally narrow — "can I do X in Y?" not "can I do X anywhere?"</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · Practical RBAC patterns</span>
+    <h2>What good cluster RBAC looks like</h2>
+    <p>Three rules every team should follow:</p>
+    <ol>
+      <li><strong>Least privilege.</strong> A Pod that reads ConfigMaps doesn't need <code>list, watch, create, update, patch, delete</code>. It needs <code>get</code>. Audit your SA bindings; tighten them.</li>
+      <li><strong>One ServiceAccount per workload.</strong> Don't let unrelated workloads share the same SA — a bug in one becomes a permission inheritance issue for the other. The <code>default</code> SA in every namespace should be permissionless (no RoleBindings).</li>
+      <li><strong>Avoid <code>*</code> verbs.</strong> <code>verbs: ["*"]</code> means every verb K8s adds in the future automatically applies. Spell out the verbs you want.</li>
+    </ol>
+    <p>Common mis-grants to watch for:</p>
+    <ul>
+      <li><code>cluster-admin</code> grants — review every ClusterRoleBinding to <code>cluster-admin</code>. Each one is the keys to the kingdom.</li>
+      <li><code>secrets</code> read access in unexpected places. Auditors love finding controllers that have read access to all Secrets when they only need a few.</li>
+      <li><code>pods/exec</code> grants — anyone who can <code>exec</code> can effectively do whatever a Pod can do. Tight scope these.</li>
+      <li>Wildcard resource grants — <code>resources: ["*"]</code> grants access to every K8s resource, including future CRDs.</li>
+    </ul>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>Run <code>kubectl auth can-i --list --as=system:serviceaccount:foo:bar</code> to enumerate everything an SA can do. <code>rakkess</code> and <code>rbac-tool</code> are popular utilities for visualising the full RBAC graph. Most production clusters benefit from running these as part of CI on every RBAC change — the diff catches accidentally-overpermissioned bindings before they merge.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-OIDC, pre-bound-tokens era: <code>kubectl create clusterrolebinding</code> with hand-crafted ServiceAccount tokens, kubeconfigs distributed via Slack, the same cluster-admin token shared across the team. Auth flags hard-coded into kube-apiserver; one OIDC provider only. "Quick tests" granted permanent cluster-admin to default SAs. <em>The default attacker objective: find an over-permissioned default SA.</em></p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>OIDC for humans (corp SSO + audit), bound tokens for Pods, structured auth config for cleaner setup, RBAC reviewed in CI via <code>rakkess</code> and policy reports. Default SA in every namespace: permissionless. Pen-test finds nothing interesting on the default SA path.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">RBAC is the API server's most under-appreciated feature: by being purely additive (no deny rules), it's simple to reason about. The complexity is in your bindings, not in the model.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this district</h2>
+<p>Watchtower stands at the edge of K-Town: the city's identity-and-permissions bureau. Two checkpoints, in order. The <strong>identity desk</strong> verifies who you are — corp employee badge (OIDC), Pod license plate (ServiceAccount token), notarised letter of introduction (client cert), or a third-party endorsement (webhook authenticator). The <strong>permissions desk</strong> consults a binder of <em>roles</em> — each role lists "verbs you can perform on resources you can touch" — and a binder of <em>bindings</em> mapping people and Pods to roles.</p><p>Two scopes. The <strong>district binder</strong> (Role + RoleBinding) covers permissions inside one neighbourhood. The <strong>city binder</strong> (ClusterRole + ClusterRoleBinding) covers the whole city plus the city-wide registries. Permissions are <em>additive</em>: no role binder ever has a "no" rule. If your role doesn't grant the verb, the answer is no by default. If you want to revoke, the desk tears your binding out of the binder.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>The identity desk</td><td>Authentication (OIDC, SA tokens, certs, webhooks)</td></tr>
+          <tr><td>Corp employee badge</td><td>OIDC token from corp SSO</td></tr>
+          <tr><td>Pod license plate</td><td>ServiceAccount projected JWT</td></tr>
+          <tr><td>The district binder</td><td><code>Role</code> + <code>RoleBinding</code></td></tr>
+          <tr><td>The city-wide binder</td><td><code>ClusterRole</code> + <code>ClusterRoleBinding</code></td></tr>
+          <tr><td>"Verbs on resources" rule</td><td>RBAC rule: <code>verbs: [...]</code> on <code>resources: [...]</code></td></tr>
+          <tr><td>"No" rules don't exist; revoke = tear out binding</td><td>Additive-only RBAC; no Deny rules</td></tr>
+          <tr><td>"Quick test" cluster-admin grant from 3 years ago</td><td>Stale ClusterRoleBinding to cluster-admin</td></tr>
+          <tr><td>New, cleaned-up identity desk software</td><td>Structured Authentication Configuration (GA 1.32)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real RBAC is a programmatic match against verbs/resources/names — there's no human reading a binder. And authentication isn't "checking a badge"; it's cryptographic verification of a signed token, with all the implications about key rotation and replay.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Two doors. The first asks: who are you? Show your badge. The second asks: are you allowed to do this thing here? Look at the binder. If your name and the thing aren't both in the binder, sorry — you can't.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Every API request: authenticate (who?) → authorise (allowed?). Authentication is plug-in: OIDC, SA tokens (modern bound JWTs), client certs, webhooks. Authorisation is mostly RBAC: <code>Role</code> + <code>RoleBinding</code> (namespace) and <code>ClusterRole</code> + <code>ClusterRoleBinding</code> (cluster). Rules are <em>additive</em> — no Deny. First match wins. Structured Auth Config (GA 1.32) lets you configure multiple OIDC issuers and CEL-based claim mapping in one YAML file. Modern best practice: OIDC for humans, bound SA tokens for Pods, default SAs permissionless, one SA per workload, audit RBAC graphs in CI.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams use this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS using corp SSO via OIDC</p><p>Structured Auth Config maps email → user, Okta groups → K8s groups. Cluster admins are in the <code>k8s-cluster-admins</code> Okta group. Adding/removing admins is an Okta change, not a kubeconfig redistribution. Audit logs show every API call by corp username. SOC2 happy.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank running zero shared kubeconfigs</p><p>Every developer authenticates via OIDC. <code>kubectl</code> uses the OIDC client plugin; tokens last 1 hour, refreshed silently. No shared static tokens exist anywhere. When a developer leaves the org, they're removed from Okta; their cluster access ends within minutes.</p></div>
+      <div class="scenario"><p class="scenario-name">A startup that audits RBAC in CI</p><p>Every PR touching a <code>RoleBinding</code> or <code>ClusterRoleBinding</code> runs <code>rbac-tool</code> + <code>kubectl auth can-i --list</code> diff. PR description requires explaining permission additions. The platform team has caught two cluster-admin grants that would have bypassed every other security control.</p></div>
+      <div class="scenario"><p class="scenario-name">A team using webhook authn for AWS IAM identity</p><p>Webhook authenticator integrates with AWS IAM; <code>eks-iam-authenticator</code> validates an AWS-signed token and returns an identity. K8s RBAC sees "<code>arn:aws:iam::123:role/PlatformEng</code>" as a username; bindings reference it. AWS-side IAM changes propagate to K8s instantly.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> RBAC has Deny rules.</div><div class="misc-row misc-truth"><strong>Truth:</strong> It doesn't. RBAC is purely additive. Anything not explicitly allowed is denied by default. To "deny" something, you remove the binding that grants it. If you need true deny semantics (block specific operations even if other rules allow), use admission control (ValidatingAdmissionPolicy / Kyverno / OPA) — covered in Lesson 28.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> The <code>default</code> ServiceAccount in every namespace is harmless.</div><div class="misc-row misc-truth"><strong>Truth:</strong> It's harmless only if no RoleBindings reference it. By default, K8s ships <code>default</code> with no permissions. Many teams accidentally add bindings for "convenience" — these become privilege-escalation footholds. Pod Security Admission can enforce "must specify a non-default SA."</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> <code>cluster-admin</code> is a normal role.</div><div class="misc-row misc-truth"><strong>Truth:</strong> It's the highest-privilege role: <code>verbs: ["*"]</code> on <code>resources: ["*"]</code> on all <code>apiGroups: ["*"]</code>. Anyone bound to it can do anything in the cluster. Treat every <code>ClusterRoleBinding</code> to <code>cluster-admin</code> as critical infrastructure; review them quarterly.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">The 4-tuple of every API request?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Subject (who) + verb (action) + resource (what kind) + scope (cluster or namespace). The authoriser checks if any rule grants this combination.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Role vs ClusterRole?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Role: namespace-scoped, applies to namespaced resources only. ClusterRole: cluster-scoped, applies to cluster resources <em>and</em> can be referenced by RoleBinding to grant scoped access without re-defining.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">RoleBinding vs ClusterRoleBinding?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">RoleBinding: grants a Role (or ClusterRole) within one namespace. ClusterRoleBinding: grants a ClusterRole cluster-wide. The Role/Binding split is the key idea.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why is RBAC additive?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Simplicity: no precedence rules to reason about. "Is there a binding granting this verb?" If yes, allow. If no, deny. Removing access = removing bindings.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is Structured Auth Config?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">K8s 1.32 GA. YAML file replacing OIDC + token flag soup on kube-apiserver. Supports multiple JWT issuers, CEL claim mapping, hot reload.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front"><code>kubectl auth can-i</code>?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Built-in command. <code>kubectl auth can-i list secrets --all-namespaces</code> answers yes/no for the current user. With <code>--as</code> you can impersonate (if you have impersonate permission) and check anyone's access.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Common over-grant: <code>verbs: ["*"]</code>?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Means "every verb K8s adds in the future automatically applies." Avoid in production. Spell out the verbs you actually need.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is impersonate verb?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Special verb: <code>kubectl --as=user</code> requires the requesting subject to have <code>impersonate</code> on the user. Used for debugging RBAC and integration testing.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A team's monitoring controller needs to <code>list</code> all Pods cluster-wide. Two ways to grant this. Which is better, and why?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Better:</strong> create a ClusterRole with <code>verbs: [list, watch], resources: [pods]</code>, then a ClusterRoleBinding to the monitoring SA. <strong>Alternative (worse):</strong> create a RoleBinding in every namespace. Why ClusterRoleBinding is better: (1) one object, not N. (2) Automatically applies to new namespaces. (3) Clearly expresses intent: "this is cluster-wide read." The downside is wider blast radius — if the monitoring SA is compromised, the attacker can read all Pods. Mitigate by ensuring the monitoring SA can't do anything else (no exec, no get on secrets, etc.).</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A pen-tester finds a Pod with <code>kubectl auth can-i list secrets --all-namespaces</code> = yes. What's the playbook to remediate without breaking the workload?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Step 1:</strong> identify why. Is the Pod's SA bound to a ClusterRoleBinding to <code>cluster-admin</code> or similar? <code>kubectl get clusterrolebindings -o json | jq '.items[] | select(.subjects[]?.name == "&lt;sa-name&gt;")'</code>. <strong>Step 2:</strong> understand the legitimate need. Maybe the workload needs to read <em>one specific</em> Secret. Maybe nothing — it was a test that wasn't cleaned up. <strong>Step 3:</strong> replace the over-grant with a minimal Role: <code>verbs: [get], resources: [secrets], resourceNames: [the-one-it-needs]</code>. <strong>Step 4:</strong> verify the workload still works (canary deploy). <strong>Step 5:</strong> add a CI check that prevents this regression. <strong>Step 6:</strong> audit other namespaces for similar over-grants — they probably exist too.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The CISO asks: "prove that no Pod in the production cluster can list Secrets in <code>kube-system</code>." <strong>Click for the audit walkthrough. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the audit walkthrough</span><strong>(1) Enumerate all SAs:</strong> <code>kubectl get sa -A -o name | wc -l</code>. <strong>(2) For each SA, check the relevant verb:</strong> <code>kubectl auth can-i list secrets --as=system:serviceaccount:&lt;ns&gt;:&lt;sa&gt; -n kube-system</code>. Script this; expect every result to be "no". Any "yes" is the audit finding. <strong>(3) For deeper assurance:</strong> use <code>rakkess</code> or <code>kubectl-who-can list secrets --namespace kube-system</code>. The output shows every subject (User, Group, ServiceAccount) that has the permission. Compare against an allow-list of intended subjects. <strong>(4) Add to CI:</strong> store the expected allow-list in git; run the same audit on every RBAC change PR. Catch new grants at PR time, not pen-test time. <strong>(5) Defense in depth:</strong> AdminNetworkPolicy at the network layer to deny <code>kube-system</code> egress from non-system namespaces. Layered defenses make audit findings rare.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Authentication</div><div class="gloss-def">Establishing who is asking. Plug-in: OIDC, SA tokens, certs, webhooks.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Authorisation</div><div class="gloss-def">Deciding if the authenticated subject is allowed. RBAC is the standard authorizer.</div></div>
+      <div class="gloss-item"><div class="gloss-name">RBAC</div><div class="gloss-def">Role-Based Access Control. Four objects: Role, RoleBinding, ClusterRole, ClusterRoleBinding.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Role</div><div class="gloss-def">Namespace-scoped permission set: verbs on resources.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ClusterRole</div><div class="gloss-def">Cluster-scoped permission set. Reusable from RoleBindings for namespace-scoped grants.</div></div>
+      <div class="gloss-item"><div class="gloss-name">RoleBinding</div><div class="gloss-def">Maps subjects (User/Group/SA) to a Role or ClusterRole within a namespace.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ClusterRoleBinding</div><div class="gloss-def">Maps subjects to a ClusterRole cluster-wide.</div></div>
+      <div class="gloss-item"><div class="gloss-name">OIDC</div><div class="gloss-def">OpenID Connect. Standard for federated identity. The default integration for human users.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Structured Auth Config</div><div class="gloss-def">K8s 1.32 GA. YAML config replacing flag-soup; supports multiple JWT issuers + CEL claim mapping.</div></div>
+      <div class="gloss-item"><div class="gloss-name">cluster-admin</div><div class="gloss-def">Built-in ClusterRole with all verbs on all resources. The keys to the kingdom; review every binding.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubectl auth can-i</div><div class="gloss-def">Built-in command for checking permissions. With <code>--as</code> impersonate, with <code>--list</code> enumerate.</div></div>
+      <div class="gloss-item"><div class="gloss-name">rakkess / rbac-tool</div><div class="gloss-def">Community CLI tools for visualising the full RBAC graph. Useful in CI.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Two checks: <strong>authentication</strong> (who are you?) and <strong>authorisation</strong> (RBAC: verb on resource for subject). Authentication is plug-in: OIDC for humans, ServiceAccount tokens for Pods, certs/webhooks for special cases. RBAC has four objects: <strong>Role</strong> + <strong>RoleBinding</strong> (namespace-scoped), <strong>ClusterRole</strong> + <strong>ClusterRoleBinding</strong> (cluster-wide). First match wins; if no rule allows, the request is denied.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 27 complete</span>
+    <p>Authentication answers "who?"; RBAC answers "can you do this?". Four objects: Role / RoleBinding (namespace) and ClusterRole / ClusterRoleBinding (cluster). Additive only. OIDC for humans, bound SA tokens for Pods, default SAs permissionless, one SA per workload.</p>
+    <p class="recap-next"><strong>Next — Lesson 28: Admission Control.</strong> When RBAC says yes, the request goes through admission. ValidatingAdmissionPolicy (in-cluster CEL), Pod Security Admission (PSA), webhook admission, mutation. The Watchtower interior.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 27 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+</script>
+
+</body>
+</html>
