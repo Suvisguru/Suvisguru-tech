@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 01 — How Kubernetes fixes things on its own · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0;             /* warm cream */
+    --bg-card: #FFFFFF;
+    --bg-soft: #F5EFE3;
+    --ink: #2A2520;            /* warm dark, not pure black */
+    --ink-soft: #6B6058;
+    --ink-faint: #9D9389;
+    --line: #E8DDC8;
+    --accent: #3F4A5E;         /* slate */
+    --accent-soft: #ECEFF5;
+    --warm: #D97757;           /* warm coral — for problems / "before" */
+    --warm-soft: #FBE8DC;
+    --warm-deep: #A04832;
+    --cool: #4A8FA8;           /* gentle blue — for "actual" */
+    --cool-soft: #E0EEF3;
+    --good: #5A9F7A;           /* sage green — for "healthy / matches" */
+    --good-soft: #E0EFE6;
+    --gold: #E8B547;
+    --gold-soft: #FBF1D6;
+    --r-pill: 999px;
+    --r-card: 16px;
+    --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --shadow-lg: 0 16px 40px rgba(42,37,32,0.12);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814;
+    --bg-card: #25201B;
+    --bg-soft: #2D2722;
+    --ink: #F5EFE3;
+    --ink-soft: #B8AC9D;
+    --ink-faint: #8A7E70;
+    --line: #3A332C;
+    --accent: #A4B4D0;
+    --accent-soft: #2D3340;
+    --warm: #E89070;
+    --warm-soft: #3A2820;
+    --cool: #7AB3CC;
+    --cool-soft: #1F2E36;
+    --good: #7DBE9C;
+    --good-soft: #1F3328;
+    --gold: #F0C268;
+    --gold-soft: #382C18;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
+    --shadow-lg: 0 16px 40px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+
+  /* ====== topbar (minimal) ====== */
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.85)}
+  .topbar-inner{max-width:780px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+
+  main{max-width:780px;margin:0 auto;padding:48px 24px 96px}
+
+  /* ====== hero ====== */
+  .hero{margin-bottom:64px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:48px;font-weight:700;line-height:1.15;letter-spacing:-1px;margin:0 0 20px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:36px}}
+  .hero-sub{font-size:21px;color:var(--ink-soft);max-width:580px;margin:0 auto 32px;line-height:1.5}
+  .hero-sub em{color:var(--warm-deep);font-style:normal;font-weight:600}
+
+  /* ====== thermostat widget ====== */
+  .therm-stage{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px 28px;margin:24px auto;box-shadow:var(--shadow-md);max-width:720px}
+  .therm-row{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+  @media (max-width:680px){.therm-row{grid-template-columns:1fr;gap:24px}}
+  .therm-svg{display:block;width:100%;height:auto}
+  .therm-controls{display:flex;flex-direction:column;align-items:center;gap:14px;padding:8px 4px}
+  .therm-stat-row{display:flex;gap:18px;align-items:baseline;justify-content:center;width:100%}
+  .therm-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .therm-stat-num{font-size:42px;font-weight:700;line-height:1;color:var(--accent);font-family:'ui-monospace','SF Mono',Menlo,monospace}
+  .therm-stat-num.actual{color:var(--cool)}
+  .therm-stat-num.match{color:var(--good)}
+  .therm-stat-label{font-size:11px;font-weight:600;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.2px;margin-top:4px}
+  .therm-narration{font-size:14px;color:var(--ink-soft);background:var(--bg-soft);border-radius:var(--r-soft);padding:12px 16px;line-height:1.5;text-align:center;min-height:64px;display:flex;align-items:center;justify-content:center;width:100%}
+  .therm-narration strong{color:var(--ink);font-weight:600}
+  .therm-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .pill-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s var(--ease)}
+  .pill-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .pill-btn.primary{background:var(--warm);color:#fff;border-color:var(--warm);animation:btn-bob 2.4s ease-in-out infinite}
+  .pill-btn.primary:hover{background:var(--warm-deep);animation:none}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(217,119,87,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 6px rgba(217,119,87,0.12)}}
+
+  /* ====== prose sections ====== */
+  section.prose{margin:80px 0}
+  .prose h2{font-size:32px;font-weight:700;line-height:1.2;letter-spacing:-0.5px;margin:0 0 8px;color:var(--ink)}
+  .prose .lede{font-size:17px;color:var(--ink-soft);margin:0 0 28px;font-style:italic}
+  .prose p{font-size:18px;line-height:1.7;margin:0 0 18px;color:var(--ink)}
+  .prose p:last-child{margin-bottom:0}
+  .prose strong{color:var(--ink);font-weight:600}
+  .prose .term{color:var(--accent);font-weight:600;border-bottom:1.5px dotted var(--ink-faint);cursor:help;position:relative}
+  .prose .term:hover::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 14px;border-radius:8px;font-size:14px;font-weight:400;font-style:normal;width:280px;line-height:1.5;z-index:50;pointer-events:none;box-shadow:var(--shadow-md);border:none}
+  [data-theme="dark"] .prose .term:hover::after{background:var(--accent-soft);color:var(--ink)}
+
+  /* ====== visual scenes (drawn metaphors) ====== */
+  .scene{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:24px;margin:28px 0;box-shadow:var(--shadow-sm)}
+  .scene svg{display:block;width:100%;height:auto;margin:0 auto;max-width:680px}
+  .scene-cap{text-align:center;font-size:14px;color:var(--ink-soft);margin-top:14px;font-style:italic;line-height:1.5}
+
+  /* ====== translation table ====== */
+  .translation{margin:32px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:28px;box-shadow:var(--shadow-sm)}
+  .translation h3{margin:0 0 18px;font-size:16px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;text-align:center}
+  .trans-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:18px 24px;align-items:center}
+  @media (max-width:600px){.trans-grid{grid-template-columns:1fr;gap:8px 0}.trans-arrow{transform:rotate(90deg);justify-self:center;margin:6px 0 !important}.trans-row-divider{display:block;height:1px;background:var(--line);margin:8px 0}}
+  .trans-side{display:flex;align-items:center;gap:12px;font-size:16px}
+  .trans-side svg{flex-shrink:0;width:48px;height:48px}
+  .trans-arrow{font-size:22px;color:var(--ink-faint);text-align:center;line-height:1}
+  .trans-name{font-weight:600;color:var(--ink)}
+  .trans-detail{display:block;font-size:13px;color:var(--ink-soft);font-weight:400;margin-top:2px}
+
+  /* ====== story callout ====== */
+  .story{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-card) 100%);border:1px solid var(--gold);border-radius:var(--r-card);padding:28px;margin:32px 0;box-shadow:var(--shadow-sm)}
+  .story-tag{display:inline-block;background:var(--gold);color:var(--ink);padding:4px 12px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .story p{font-size:17px;line-height:1.65;margin:0 0 12px}
+  .story p:last-child{margin-bottom:0}
+  .story-end{font-style:italic;color:var(--ink-soft);font-size:15px}
+
+  /* ====== two-up cards (pets vs cattle, declarative vs imperative) ====== */
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:28px 0}
+  @media (max-width:600px){.pair{grid-template-columns:1fr}}
+  .pair-card{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:22px;text-align:center;box-shadow:var(--shadow-sm)}
+  .pair-card.warn{border-color:var(--warm);background:var(--warm-soft)}
+  .pair-card.good{border-color:var(--good);background:var(--good-soft)}
+  .pair-card svg{display:block;margin:0 auto 14px;max-width:180px;width:100%;height:auto}
+  .pair-card .pair-title{font-weight:600;font-size:17px;color:var(--ink);margin:0 0 6px}
+  .pair-card.warn .pair-title{color:var(--warm-deep)}
+  .pair-card.good .pair-title{color:#3D7857}
+  [data-theme="dark"] .pair-card.good .pair-title{color:var(--good)}
+  .pair-card .pair-desc{font-size:14px;color:var(--ink-soft);line-height:1.55;margin:0}
+
+  /* ====== quiz ====== */
+  .quiz{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:28px;margin:28px 0;box-shadow:var(--shadow-sm)}
+  .quiz h2{margin-top:0}
+  .q{padding:18px 0;border-top:1px solid var(--line)}
+  .q:first-of-type{border-top:0;padding-top:0}
+  .q-prompt{font-size:16px;font-weight:600;color:var(--ink);margin:0 0 14px;line-height:1.5}
+  .q-pause-tag{display:inline-block;background:var(--gold-soft);color:var(--warm-deep);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px}
+  .q-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .q-reveal{color:var(--bg)}
+  .q-reveal:hover{filter:brightness(1.1);animation:none}
+  .q-answer{display:none;margin-top:14px;padding:16px 18px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:15px;line-height:1.6}
+  .q-answer.show{display:block}
+  .q-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  [data-theme="dark"] .q-answer-tag{color:var(--good)}
+
+  /* ====== glossary footer ====== */
+  .glossary{margin-top:48px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'📚';font-size:18px}
+  .glossary summary::after{content:'›';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+
+  /* ====== recap + completion ====== */
+  .recap{margin:64px 0 0;text-align:center;padding:36px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:16px}
+  .recap p{font-size:21px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 12px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:15px;color:var(--ink-soft);font-weight:400;margin-top:18px}
+  .recap-next strong{color:var(--ink)}
+
+  footer{text-align:center;padding:32px 24px;color:var(--ink-faint);font-size:12px;margin-top:48px}
+</style>
+</head>
+<body data-theme="light">
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 01</span></a>
+    <span class="progress-pill">1 of 17</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<main>
+  <!-- ============================== HERO ============================== -->
+  <section class="hero">
+    <span class="eyebrow">Lesson 01 · the surprising one</span>
+    <h1>How does Kubernetes know to fix things on its own?</h1>
+    <p class="hero-sub">A surprising answer: it works <em>exactly like the thermostat in your house</em>. Once you see it, the rest of Kubernetes is just variations on the same idea.</p>
+  </section>
+
+  <!-- ============================== THERMOSTAT WIDGET ============================== -->
+  <div class="therm-stage" id="therm-stage">
+    <div class="therm-row">
+      <!-- Left: thermostat dial + house cross-section -->
+      <div>
+        <svg class="therm-svg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" id="therm-svg" role="img" aria-label="Interactive thermostat. Click and drag the dial to set the desired temperature.">
+          <defs>
+            <radialGradient id="therm-face" cx="0.35" cy="0.3">
+              <stop offset="0%" stop-color="#FFF8EE"/>
+              <stop offset="100%" stop-color="#F2E8D4"/>
+            </radialGradient>
+            <radialGradient id="therm-rim" cx="0.4" cy="0.35">
+              <stop offset="0%" stop-color="#5A6878"/>
+              <stop offset="100%" stop-color="#2E3640"/>
+            </radialGradient>
+            <filter id="therm-shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="6"/>
+              <feOffset dx="0" dy="6" result="offsetblur"/>
+              <feComponentTransfer><feFuncA type="linear" slope="0.18"/></feComponentTransfer>
+              <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Outer rim -->
+          <circle cx="160" cy="160" r="148" fill="url(#therm-rim)" filter="url(#therm-shadow)"/>
+          <!-- Inner face -->
+          <circle cx="160" cy="160" r="128" fill="url(#therm-face)"/>
+          <!-- Tick marks (every 1°C from 16 to 26, with 5°C labels) -->
+          <g id="therm-ticks"></g>
+          <!-- Big numeric display: desired temperature -->
+          <text x="160" y="156" font-family="'SF Pro Rounded',-apple-system,sans-serif" font-size="68" font-weight="700"
+                fill="#2A2520" text-anchor="middle" id="therm-desired-display">21°</text>
+          <text x="160" y="184" font-family="sans-serif" font-size="11" font-weight="600"
+                fill="#9D9389" text-anchor="middle" letter-spacing="2">DESIRED</text>
+          <!-- Current room temp small display -->
+          <text x="160" y="218" font-family="sans-serif" font-size="13" fill="#6B6058" text-anchor="middle">
+            now in the room: <tspan font-weight="700" fill="#4A8FA8" id="therm-actual-display">21°</tspan>
+          </text>
+          <!-- Heat indicator -->
+          <g id="therm-heat-indicator" opacity="0">
+            <circle cx="160" cy="248" r="14" fill="#D97757" opacity="0.25"/>
+            <circle cx="160" cy="248" r="8" fill="#D97757"/>
+            <text x="160" y="252" font-family="sans-serif" font-size="9" font-weight="700" fill="#FFF" text-anchor="middle">🔥</text>
+          </g>
+          <!-- Dial pointer (draggable area = full face) -->
+          <g id="therm-pointer">
+            <circle cx="160" cy="48" r="8" fill="#D97757" stroke="#FFF" stroke-width="2"/>
+          </g>
+          <!-- Drag-anywhere overlay -->
+          <circle cx="160" cy="160" r="148" fill="transparent" style="cursor:grab" id="therm-drag-target"/>
+        </svg>
+        <p style="text-align:center;font-size:13px;color:var(--ink-faint);margin:8px 0 0;font-style:italic">drag the dial · or click the buttons</p>
+      </div>
+
+      <!-- Right: house cross-section -->
+      <div>
+        <svg class="therm-svg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="House cross-section showing a room with a thermometer and a furnace below that lights up when heating">
+          <defs>
+            <linearGradient id="house-wall" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FBF7F0"/>
+              <stop offset="100%" stop-color="#F0E6D4"/>
+            </linearGradient>
+            <linearGradient id="furnace-glow" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FAC775"/>
+              <stop offset="100%" stop-color="#D97757"/>
+            </linearGradient>
+          </defs>
+          <!-- Roof -->
+          <path d="M 30 110 L 160 28 L 290 110 L 290 130 L 30 130 Z" fill="#8B5A3C" stroke="#5A3A22" stroke-width="2"/>
+          <!-- Roof tile lines -->
+          <line x1="30" y1="120" x2="290" y2="120" stroke="#5A3A22" stroke-width="0.8" opacity="0.5"/>
+          <!-- Chimney -->
+          <rect x="220" y="50" width="22" height="48" fill="#A8693E" stroke="#5A3A22" stroke-width="1.5"/>
+          <rect x="217" y="48" width="28" height="6" fill="#8B5A3C" stroke="#5A3A22" stroke-width="1.5"/>
+          <!-- Smoke (subtle) -->
+          <g id="house-smoke" opacity="0">
+            <circle cx="231" cy="42" r="5" fill="#D5DCE6" opacity="0.6"/>
+            <circle cx="237" cy="34" r="6" fill="#D5DCE6" opacity="0.5"/>
+            <circle cx="232" cy="24" r="7" fill="#D5DCE6" opacity="0.4"/>
+          </g>
+          <!-- House body -->
+          <rect x="50" y="130" width="220" height="160" fill="url(#house-wall)" stroke="#8B7355" stroke-width="2"/>
+          <!-- Floor between living room and basement -->
+          <line x1="50" y1="232" x2="270" y2="232" stroke="#8B7355" stroke-width="2"/>
+          <!-- Living room (top) -->
+          <text x="160" y="148" font-family="sans-serif" font-size="11" font-weight="600"
+                fill="#9D9389" text-anchor="middle" letter-spacing="1">LIVING ROOM</text>
+          <!-- Furniture suggestion: sofa -->
+          <g transform="translate(70,200)">
+            <rect width="60" height="22" rx="4" fill="#A06A4A"/>
+            <rect y="-4" width="60" height="8" rx="3" fill="#8B5A3C"/>
+            <rect x="-3" y="-4" width="6" height="22" rx="2" fill="#8B5A3C"/>
+            <rect x="57" y="-4" width="6" height="22" rx="2" fill="#8B5A3C"/>
+          </g>
+          <!-- Window -->
+          <rect x="200" y="160" width="40" height="40" fill="#B8DCE8" stroke="#8B7355" stroke-width="1.5"/>
+          <line x1="220" y1="160" x2="220" y2="200" stroke="#8B7355" stroke-width="1.2"/>
+          <line x1="200" y1="180" x2="240" y2="180" stroke="#8B7355" stroke-width="1.2"/>
+          <!-- Thermometer on the wall -->
+          <g transform="translate(150,160)">
+            <rect x="-8" y="0" width="16" height="48" rx="8" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.5"/>
+            <rect x="-5" y="6" width="10" height="38" rx="5" fill="#F0E6D4"/>
+            <rect x="-3" y="10" width="6" height="32" rx="3" fill="#E0DCD6" id="therm-mercury-bg"/>
+            <rect x="-3" y="22" width="6" height="20" rx="3" fill="#D97757" id="therm-mercury"/>
+            <circle cx="0" cy="48" r="9" fill="#D97757"/>
+          </g>
+          <!-- Basement -->
+          <text x="160" y="250" font-family="sans-serif" font-size="11" font-weight="600"
+                fill="#9D9389" text-anchor="middle" letter-spacing="1">BASEMENT</text>
+          <!-- Furnace -->
+          <g transform="translate(108,256)">
+            <rect width="60" height="32" rx="4" fill="#5A6878" stroke="#2E3640" stroke-width="1.5"/>
+            <rect x="6" y="6" width="48" height="20" rx="2" fill="#1F2433" id="furnace-window"/>
+            <!-- Flames (only show when heating) -->
+            <g id="furnace-flames" opacity="0">
+              <path d="M 16 24 Q 14 14 18 8 Q 22 14 20 24 Z" fill="url(#furnace-glow)">
+                <animate attributeName="opacity" values="1;0.6;1" dur="0.6s" repeatCount="indefinite"/>
+              </path>
+              <path d="M 28 24 Q 26 12 30 4 Q 34 12 32 24 Z" fill="url(#furnace-glow)">
+                <animate attributeName="opacity" values="0.7;1;0.7" dur="0.7s" repeatCount="indefinite"/>
+              </path>
+              <path d="M 42 24 Q 40 14 44 6 Q 48 14 46 24 Z" fill="url(#furnace-glow)">
+                <animate attributeName="opacity" values="1;0.5;1" dur="0.5s" repeatCount="indefinite"/>
+              </path>
+            </g>
+            <text x="30" y="44" font-family="sans-serif" font-size="9" font-weight="600"
+                  fill="#9D9389" text-anchor="middle">furnace</text>
+          </g>
+          <!-- Vent line from furnace up to room -->
+          <path d="M 138 256 L 138 232 L 138 220 M 178 220 L 178 232 L 178 256"
+                stroke="#9D9389" stroke-width="1.5" stroke-dasharray="3,3" fill="none" opacity="0.6"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Stat row -->
+    <div class="therm-controls" style="margin-top:24px">
+      <div class="therm-stat-row">
+        <div class="therm-stat">
+          <span class="therm-stat-num" id="hw-desired-num">21°</span>
+          <span class="therm-stat-label">you want</span>
+        </div>
+        <span style="font-size:24px;color:var(--ink-faint)">↔</span>
+        <div class="therm-stat">
+          <span class="therm-stat-num actual" id="hw-actual-num">21°</span>
+          <span class="therm-stat-label">room is</span>
+        </div>
+        <span style="font-size:24px;color:var(--ink-faint)">→</span>
+        <div class="therm-stat">
+          <span class="therm-stat-num" id="hw-action-num" style="font-size:28px;color:var(--good)">idle</span>
+          <span class="therm-stat-label">furnace</span>
+        </div>
+      </div>
+      <div class="therm-narration" id="therm-narration"><strong>Try this.</strong> Drag the orange dot around the dial. Watch the furnace fire when there's a gap.</div>
+      <div class="therm-actions">
+        <button class="pill-btn" type="button" data-set="18">cold day · 18°</button>
+        <button class="pill-btn primary" type="button" data-set="23">cozy · 23°</button>
+        <button class="pill-btn" type="button" data-set="26">heat wave · 26°</button>
+        <button class="pill-btn" type="button" id="therm-cool">❄ open a window</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== SECTION 1 — THE STORY ============================== -->
+  <section class="prose">
+    <h2>What just happened?</h2>
+    <p class="lede">A tiny machine watching one number forever.</p>
+    <p>You set a temperature you wanted. The thermostat read what the room actually was. If the room was cooler than you wanted, it turned the heater on. When the room caught up, it turned the heater off. If the room cooled down again, the heater fired again.</p>
+    <p>The thermostat doesn't make a plan and walk away. It does the same loop, over and over, forever — read what you want, read what is, close the gap, repeat. <strong>That loop is the entire idea behind Kubernetes.</strong></p>
+  </section>
+
+  <!-- ============================== SECTION 2 — THE REVEAL ============================== -->
+  <section class="prose">
+    <h2>So you've used Kubernetes. Here's the translation.</h2>
+    <p class="lede">Every part of the thermostat has a Kubernetes name.</p>
+    <p>The dial you turned to set the temperature? Kubernetes calls that the <strong>desired state</strong>. The thermometer reading the room? That's <strong>actual state</strong>. The little brain inside the thermostat that decides "fire the furnace" or "stop the furnace"? That's a <strong>controller</strong>. The furnace turning on or off? That's the controller <em>taking action</em> to close the gap.</p>
+
+    <div class="translation">
+      <h3>thermostat ↔ Kubernetes</h3>
+      <div class="trans-grid">
+        <div class="trans-side">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="28" fill="url(#mini-rim)"/><circle cx="32" cy="32" r="22" fill="#F2E8D4"/><text x="32" y="38" font-size="16" font-weight="700" fill="#2A2520" text-anchor="middle" font-family="sans-serif">21°</text><circle cx="32" cy="14" r="3" fill="#D97757"/><defs><radialGradient id="mini-rim"><stop offset="0%" stop-color="#5A6878"/><stop offset="100%" stop-color="#2E3640"/></radialGradient></defs></svg>
+          <div><span class="trans-name">The dial</span><span class="trans-detail">"I want 21°"</span></div>
+        </div>
+        <div class="trans-arrow">→</div>
+        <div class="trans-side">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="14" width="52" height="36" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/><rect x="6" y="14" width="52" height="10" rx="6 6 0 0" fill="#3F4A5E"/><text x="32" y="22" font-size="6" fill="#FFF" text-anchor="middle" font-family="sans-serif">deployment.yaml</text><text x="32" y="36" font-size="8" fill="#3F4A5E" text-anchor="middle" font-family="ui-monospace,monospace">replicas: 3</text><text x="32" y="44" font-size="6" fill="#6B6058" text-anchor="middle" font-family="sans-serif">desired state</text></svg>
+          <div><span class="trans-name">Desired state</span><span class="trans-detail">written in YAML</span></div>
+        </div>
+        <span class="trans-row-divider"></span>
+        <div class="trans-side">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect x="22" y="6" width="20" height="50" rx="10" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.5"/><rect x="26" y="14" width="12" height="40" rx="6" fill="#F0E6D4"/><rect x="28" y="32" width="8" height="20" rx="3" fill="#D97757"/><circle cx="32" cy="56" r="9" fill="#D97757"/></svg>
+          <div><span class="trans-name">The thermometer</span><span class="trans-detail">"room is actually 18°"</span></div>
+        </div>
+        <div class="trans-arrow">→</div>
+        <div class="trans-side">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="20" width="56" height="32" rx="4" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="2"/><rect x="4" y="20" width="56" height="10" rx="4 4 0 0" fill="#5A9F7A"/><text x="32" y="28" font-size="6" fill="#FFF" text-anchor="middle" font-family="sans-serif">live cluster</text><circle cx="14" cy="42" r="3" fill="#5A9F7A"/><circle cx="24" cy="42" r="3" fill="#5A9F7A"/><circle cx="34" cy="42" r="3" fill="#9D9389"/><text x="32" y="56" font-size="6" fill="#6B6058" text-anchor="middle" font-family="sans-serif">2 of 3 running</text></svg>
+          <div><span class="trans-name">Actual state</span><span class="trans-detail">what's running right now</span></div>
+        </div>
+        <span class="trans-row-divider"></span>
+        <div class="trans-side">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="20" fill="#3F4A5E"/><text x="32" y="38" font-size="14" font-weight="700" fill="#FFF" text-anchor="middle" font-family="sans-serif">🧠</text><g transform="translate(32,32)"><circle cx="0" cy="-26" r="3" fill="#5E6E89"><animate attributeName="cy" values="-26;-22;-26" dur="2s" repeatCount="indefinite"/></circle></g></svg>
+          <div><span class="trans-name">The brain</span><span class="trans-detail">decides what to do</span></div>
+        </div>
+        <div class="trans-arrow">→</div>
+        <div class="trans-side">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="22" fill="#3F4A5E"/><circle cx="32" cy="32" r="14" fill="none" stroke="#5DCAA5" stroke-width="2"/><path d="M 32 18 A 14 14 0 0 1 46 32" fill="none" stroke="#5A9F7A" stroke-width="3" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="3s" repeatCount="indefinite"/></path><text x="32" y="36" font-size="9" font-weight="700" fill="#FFF" text-anchor="middle" font-family="sans-serif">CTRL</text></svg>
+          <div><span class="trans-name">Controller</span><span class="trans-detail">a tiny program, runs forever</span></div>
+        </div>
+        <span class="trans-row-divider"></span>
+        <div class="trans-side">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="44" height="32" rx="4" fill="#5A6878" stroke="#2E3640" stroke-width="1.5"/><rect x="14" y="24" width="36" height="20" rx="2" fill="#1F2433"/><path d="M 22 42 Q 20 32 24 26 Q 28 32 26 42 Z" fill="#D97757"><animate attributeName="opacity" values="1;0.6;1" dur="0.6s" repeatCount="indefinite"/></path><path d="M 32 42 Q 30 30 34 22 Q 38 30 36 42 Z" fill="#FAC775"><animate attributeName="opacity" values="0.7;1;0.7" dur="0.7s" repeatCount="indefinite"/></path><path d="M 42 42 Q 40 32 44 26 Q 48 32 46 42 Z" fill="#D97757"><animate attributeName="opacity" values="1;0.5;1" dur="0.5s" repeatCount="indefinite"/></path></svg>
+          <div><span class="trans-name">The furnace fires</span><span class="trans-detail">closing the gap</span></div>
+        </div>
+        <div class="trans-arrow">→</div>
+        <div class="trans-side">
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g><rect x="6" y="22" width="16" height="20" rx="3" fill="#F4F4F0" stroke="#3F4A5E" stroke-width="1.5"/><rect x="6" y="22" width="16" height="6" rx="3 3 0 0" fill="#3F4A5E"/></g><g><rect x="26" y="22" width="16" height="20" rx="3" fill="#F4F4F0" stroke="#3F4A5E" stroke-width="1.5"/><rect x="26" y="22" width="16" height="6" rx="3 3 0 0" fill="#3F4A5E"/></g><g><rect x="46" y="22" width="16" height="20" rx="3" fill="#FFFCF5" stroke="#5E4A8E" stroke-width="1.5" stroke-dasharray="2,2"/><rect x="46" y="22" width="16" height="6" rx="3 3 0 0" fill="#5E4A8E"/><animate attributeName="opacity" values="0.5;1;0.5" dur="1.4s" repeatCount="indefinite"/></g><text x="32" y="56" font-size="7" fill="#6B6058" text-anchor="middle" font-family="sans-serif">creating a 3rd pod…</text></svg>
+          <div><span class="trans-name">Controller acts</span><span class="trans-detail">creates a missing pod</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p>That's it. That's Kubernetes' biggest idea, drawn in one picture. <span class="term" data-tip="A pod is just a small box that runs your app. The smallest thing Kubernetes schedules. We'll go deep on pods in Lesson 05.">Pods</span>, <span class="term" data-tip="A Deployment is the YAML file that says 'I want N copies of this app running.' One of the most-used Kubernetes objects.">Deployments</span>, <span class="term" data-tip="A Service exposes your pods to the network with a stable IP. Lesson 08 covers networking.">Services</span> — they're all just specialised thermostats, each watching a different number.</p>
+  </section>
+
+  <!-- ============================== SECTION 3 — REAL WORLD STORY ============================== -->
+  <section class="prose">
+    <h2>Why this saves your weekend</h2>
+    <div class="story">
+      <span class="story-tag">a true story (slightly fictionalised)</span>
+      <p>A small SaaS team ran their app on a cloud server. One Saturday at 3 AM, the server rebooted itself for maintenance. Their app didn't come back up automatically. Their on-call engineer woke up to a flood of error pages, drove to a coffee shop with WiFi, and spent six hours bringing the system back. They lost the weekend.</p>
+      <p>They moved to Kubernetes the next month. They wrote one YAML file that said "I want three copies of this app running." That's it. That's the whole change.</p>
+      <p>Six months later, a cloud machine rotated out at 3 AM. The Kubernetes thermostat noticed within 30 seconds that one copy was missing. It started a new copy on a different machine. The on-call engineer woke up to a calm Slack message: <em>"self-healed at 3:14 AM — no action needed."</em></p>
+      <p class="story-end">The thermostat ate the page.</p>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 4 — TWO MORE LENSES ============================== -->
+  <section class="prose">
+    <h2>Two more pictures, then we're done</h2>
+    <p class="lede">These show up everywhere in cloud-native writing. Quick visit, then on to Lesson 02.</p>
+
+    <h3 style="font-size:22px;margin:32px 0 12px;color:var(--ink)">Pets vs cattle</h3>
+    <p>People talk about servers two ways: as <strong>pets</strong> (named, hand-tuned, irreplaceable — you'd grieve when they die) or as <strong>cattle</strong> (identical, numbered, interchangeable — when one dies, you bring in another). Kubernetes treats every machine as cattle. That's why it can replace a broken one without anyone noticing.</p>
+
+    <div class="pair">
+      <div class="pair-card warn">
+        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bessie the named server with bandages">
+          <!-- Server box -->
+          <rect x="40" y="30" width="120" height="80" rx="8" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="2"/>
+          <rect x="40" y="30" width="120" height="18" rx="8 8 0 0" fill="#5F5E5A"/>
+          <text x="100" y="42" font-family="sans-serif" font-size="10" font-weight="600" fill="#FFF" text-anchor="middle">db-prod-bessie</text>
+          <!-- Big pet face -->
+          <text x="100" y="80" font-size="32" text-anchor="middle">🐕</text>
+          <text x="100" y="100" font-family="sans-serif" font-size="9" fill="#6B6058" text-anchor="middle">v 7.2.1-custom</text>
+          <!-- Bandages -->
+          <line x1="50" y1="55" x2="68" y2="68" stroke="#E24B4A" stroke-width="3" stroke-linecap="round"/>
+          <line x1="55" y1="60" x2="63" y2="63" stroke="#FFF" stroke-width="1"/>
+          <line x1="142" y1="60" x2="155" y2="68" stroke="#E24B4A" stroke-width="3" stroke-linecap="round"/>
+          <!-- Heart above (you love this server) -->
+          <text x="172" y="34" font-size="16">❤️</text>
+        </svg>
+        <p class="pair-title">Pet · "we'd grieve if it died"</p>
+        <p class="pair-desc">A unique snowflake. Patched by hand. If it dies, six hours of forensics + tribal knowledge to rebuild.</p>
+      </div>
+      <div class="pair-card good">
+        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Numbered cattle herd of identical servers">
+          <!-- Six small cow boxes in 2 rows -->
+          <g font-family="sans-serif" font-size="9">
+            <g><rect x="12" y="30" width="50" height="40" rx="5" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/><text x="37" y="42" font-size="7" fill="#5A9F7A" text-anchor="middle" font-weight="600">node-001</text><text x="37" y="62" font-size="20" text-anchor="middle">🐄</text></g>
+            <g><rect x="74" y="30" width="50" height="40" rx="5" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/><text x="99" y="42" font-size="7" fill="#5A9F7A" text-anchor="middle" font-weight="600">node-002</text><text x="99" y="62" font-size="20" text-anchor="middle">🐄</text></g>
+            <g><rect x="136" y="30" width="50" height="40" rx="5" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/><text x="161" y="42" font-size="7" fill="#5A9F7A" text-anchor="middle" font-weight="600">node-003</text><text x="161" y="62" font-size="20" text-anchor="middle">🐄</text></g>
+            <g><rect x="12" y="80" width="50" height="40" rx="5" fill="#FBE8DC" stroke="#D97757" stroke-width="1.5" stroke-dasharray="3,2"/><text x="37" y="92" font-size="7" fill="#A04832" text-anchor="middle" font-weight="600">node-004</text><text x="37" y="112" font-size="20" text-anchor="middle">💀</text></g>
+            <g><rect x="74" y="80" width="50" height="40" rx="5" fill="#FFFCF5" stroke="#E8B547" stroke-width="1.5" stroke-dasharray="3,2"><animate attributeName="opacity" values="0.5;1;0.5" dur="1.4s" repeatCount="indefinite"/></rect><text x="99" y="92" font-size="7" fill="#A07A2A" text-anchor="middle" font-weight="600">node-005</text><text x="99" y="112" font-size="18" text-anchor="middle">🐄</text></g>
+            <g><rect x="136" y="80" width="50" height="40" rx="5" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="1.5"/><text x="161" y="92" font-size="7" fill="#5A9F7A" text-anchor="middle" font-weight="600">node-006</text><text x="161" y="112" font-size="20" text-anchor="middle">🐄</text></g>
+          </g>
+        </svg>
+        <p class="pair-title">Cattle · "we just bring in another"</p>
+        <p class="pair-desc">All identical. When 004 dies, autoscaler joins 005 in seconds. Pods reschedule. Nobody loses a weekend.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size:22px;margin:36px 0 12px;color:var(--ink)">Recipe vs photo</h3>
+    <p>You can describe a meal two ways. Tell someone <strong>step-by-step instructions</strong> ("first chop the onion, then heat the pan, then…") — that's <em>imperative</em>. Or hand them a <strong>photo of the finished dish</strong> and let them figure out how — that's <em>declarative</em>. Kubernetes is the photo. You hand it the picture of what you want; the controllers figure out how.</p>
+
+    <div class="pair">
+      <div class="pair-card warn">
+        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A long step-by-step recipe scroll">
+          <!-- Scroll body -->
+          <path d="M 40 18 L 160 18 Q 168 18 168 26 L 168 122 Q 168 130 160 130 L 40 130 Q 32 130 32 122 L 32 26 Q 32 18 40 18 Z" fill="#FFF8EE" stroke="#A04832" stroke-width="1.5"/>
+          <!-- Recipe lines -->
+          <text x="50" y="34" font-family="sans-serif" font-size="9" fill="#A04832" font-weight="700">RECIPE · 47 STEPS</text>
+          <line x1="40" y1="42" x2="160" y2="42" stroke="#E8DDC8" stroke-width="0.5"/>
+          <text x="44" y="56" font-family="sans-serif" font-size="8" fill="#6B6058">1. SSH to web-01</text>
+          <text x="44" y="68" font-family="sans-serif" font-size="8" fill="#6B6058">2. apt install nginx</text>
+          <text x="44" y="80" font-family="sans-serif" font-size="8" fill="#6B6058">3. edit /etc/nginx.conf</text>
+          <text x="44" y="92" font-family="sans-serif" font-size="8" fill="#6B6058">4. systemctl restart...</text>
+          <text x="44" y="104" font-family="sans-serif" font-size="8" fill="#6B6058">5. ...</text>
+          <text x="44" y="116" font-family="sans-serif" font-size="8" fill="#9D9389" font-style="italic">(42 more steps)</text>
+        </svg>
+        <p class="pair-title">Imperative · do this, then this</p>
+        <p class="pair-desc">A long script. If any step fails or anyone skips a step, you're in an unknown state.</p>
+      </div>
+      <div class="pair-card good">
+        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A photo of the finished dish — declarative">
+          <!-- Plate -->
+          <ellipse cx="100" cy="75" rx="68" ry="50" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="2"/>
+          <ellipse cx="100" cy="75" rx="58" ry="42" fill="#FFF8EE"/>
+          <!-- Pasta swirl -->
+          <g stroke="#E8B547" stroke-width="3" fill="none" stroke-linecap="round">
+            <path d="M 70 70 Q 100 50 130 70 Q 130 90 100 90 Q 70 90 70 70 Z"/>
+            <path d="M 80 75 Q 100 60 120 75"/>
+            <path d="M 80 80 Q 100 70 120 80"/>
+          </g>
+          <!-- Tomato dots -->
+          <circle cx="86" cy="68" r="3" fill="#D97757"/>
+          <circle cx="114" cy="72" r="3" fill="#D97757"/>
+          <circle cx="100" cy="82" r="3" fill="#D97757"/>
+          <!-- Basil -->
+          <ellipse cx="105" cy="60" rx="3" ry="5" fill="#5A9F7A" transform="rotate(-20,105,60)"/>
+          <text x="100" y="130" font-family="sans-serif" font-size="9" fill="#5A9F7A" text-anchor="middle" font-weight="600">"I want THIS"</text>
+        </svg>
+        <p class="pair-title">Declarative · here's what I want</p>
+        <p class="pair-desc">A picture of the goal. The kitchen (controller) figures out how. You stay out of the steps.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== QUIZ ============================== -->
+  <section class="quiz">
+    <h2>Three quick checks</h2>
+    <p style="color:var(--ink-soft);font-size:15px;margin:0 0 18px">Pause the thermostat above on each one. Predict, then click "show answer."</p>
+
+    <div class="q">
+      <span class="q-pause-tag">⏸ pause the thermostat</span>
+      <p class="q-prompt">You set the dial to 23°. The room is at 18°. The furnace is firing. What does the thermostat do when the room reaches 23°?</p>
+      <button class="q-reveal" type="button">Show answer</button>
+      <div class="q-answer"><span class="q-answer-tag">answer</span>It stops the furnace. The gap is closed. But it doesn't walk away — it keeps reading the thermometer. As soon as the room drops below 23° again, it'll fire the furnace right back up. The loop never ends.</div>
+    </div>
+
+    <div class="q">
+      <span class="q-pause-tag">⏸ pause the thermostat</span>
+      <p class="q-prompt">You walk over and open a window in the room. The dial is still at 23°. What happens, and what does this teach about Kubernetes?</p>
+      <button class="q-reveal" type="button">Show answer</button>
+      <div class="q-answer"><span class="q-answer-tag">answer</span>The room cools down. The thermostat sees the gap and fires the furnace, again and again, fighting the open window. In Kubernetes terms: a "node failed" or "a pod got killed by hand" is the same as opening a window — the controller will keep trying to close the gap. Self-healing, automatically.</div>
+    </div>
+
+    <div class="q">
+      <p class="q-prompt">Why is it described as "the thermostat is the entire idea behind Kubernetes"?</p>
+      <button class="q-reveal" type="button">Show answer</button>
+      <div class="q-answer"><span class="q-answer-tag">answer</span>Because every other Kubernetes thing — pods, deployments, services, jobs, autoscalers, even custom operators you might write — is just another tiny thermostat watching a different number. Once you can see that pattern, the rest of Kubernetes is variations on the same idea.</div>
+    </div>
+  </section>
+
+  <!-- ============================== GLOSSARY (footer reference) ============================== -->
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Desired state</div><div class="gloss-def">The picture of what you want. In Kubernetes, written in YAML. (The thermostat dial.)</div></div>
+      <div class="gloss-item"><div class="gloss-name">Actual state</div><div class="gloss-def">What's running right now in the live cluster. (The thermometer reading.)</div></div>
+      <div class="gloss-item"><div class="gloss-name">Controller</div><div class="gloss-def">A tiny program that watches one kind of thing and runs the loop forever. (The brain inside the thermostat.)</div></div>
+      <div class="gloss-item"><div class="gloss-name">Reconciliation loop</div><div class="gloss-def">The cycle a controller runs: read desired, read actual, close the gap, repeat. The whole point of Kubernetes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Pod</div><div class="gloss-def">A small box that runs your app. The smallest thing Kubernetes schedules. Lesson 05 goes deep.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Deployment</div><div class="gloss-def">The YAML file that says "I want N copies of this app." One of the most-used Kubernetes objects.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Self-healing</div><div class="gloss-def">When the cluster fixes a broken thing on its own — a side-effect of the loop running forever.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Pets vs cattle</div><div class="gloss-def">Pets = unique servers you'd grieve. Cattle = identical replaceable units. Kubernetes treats everything as cattle.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Declarative</div><div class="gloss-def">"Here's the photo of what I want." Opposite of imperative ("do this, then this"). Kubernetes is declarative.</div></div>
+    </div>
+  </details>
+
+  <!-- ============================== RECAP ============================== -->
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 01 complete</span>
+    <p>Hold onto the thermostat. The rest of Kubernetes is variations on the same loop.</p>
+    <p class="recap-next"><strong>Next — Lesson 02: Containers.</strong> What actually runs inside a pod? We open the box.</p>
+  </section>
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 1 of 17 · grounded in kubernetes.io</footer>
+
+<script>
+  // ====== Theme toggle ======
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '☀ Light' : '🌙 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '☀ Light' : '🌙 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+
+  // ====== Quiz reveals ======
+  document.querySelectorAll('.q-reveal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.q-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? 'Hide answer' : 'Show answer';
+    });
+  });
+
+  // ====== Thermostat ticks ======
+  const ticksGroup = document.getElementById('therm-ticks');
+  const TEMP_MIN = 16, TEMP_MAX = 26;
+  const ANGLE_MIN = -135, ANGLE_MAX = 135; // dial sweep
+  function tempToAngle(t) {
+    const range = TEMP_MAX - TEMP_MIN;
+    return ANGLE_MIN + ((t - TEMP_MIN) / range) * (ANGLE_MAX - ANGLE_MIN);
+  }
+  function angleToTemp(a) {
+    // clamp angle to dial range
+    if (a < ANGLE_MIN) a = ANGLE_MIN;
+    if (a > ANGLE_MAX) a = ANGLE_MAX;
+    const range = TEMP_MAX - TEMP_MIN;
+    return Math.round(TEMP_MIN + ((a - ANGLE_MIN) / (ANGLE_MAX - ANGLE_MIN)) * range);
+  }
+  for (let t = TEMP_MIN; t <= TEMP_MAX; t++) {
+    const angle = tempToAngle(t) - 90; // -90 because 0 is at right; we want top
+    const rad = angle * Math.PI / 180;
+    const major = (t % 5 === 0);
+    const r1 = major ? 110 : 116;
+    const r2 = 122;
+    const x1 = 160 + r1 * Math.cos(rad);
+    const y1 = 160 + r1 * Math.sin(rad);
+    const x2 = 160 + r2 * Math.cos(rad);
+    const y2 = 160 + r2 * Math.sin(rad);
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', major ? '#2A2520' : '#9D9389');
+    line.setAttribute('stroke-width', major ? 2 : 1);
+    line.setAttribute('stroke-linecap', 'round');
+    ticksGroup.appendChild(line);
+    if (major) {
+      const lr = 100;
+      const lx = 160 + lr * Math.cos(rad);
+      const ly = 160 + lr * Math.sin(rad) + 4;
+      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('x', lx); txt.setAttribute('y', ly);
+      txt.setAttribute('font-family', 'sans-serif');
+      txt.setAttribute('font-size', '10');
+      txt.setAttribute('font-weight', '600');
+      txt.setAttribute('fill', '#6B6058');
+      txt.setAttribute('text-anchor', 'middle');
+      txt.textContent = t;
+      ticksGroup.appendChild(txt);
+    }
+  }
+
+  // ====== Thermostat state ======
+  let desired = 21;
+  let actual = 21;
+  let isHeating = false;
+  let isCooling = false; // window-open mode
+  let coolingTimeout = null;
+  const pointer = document.getElementById('therm-pointer');
+  const desiredDisplay = document.getElementById('therm-desired-display');
+  const actualDisplay = document.getElementById('therm-actual-display');
+  const heatIndicator = document.getElementById('therm-heat-indicator');
+  const flames = document.getElementById('furnace-flames');
+  const smoke = document.getElementById('house-smoke');
+  const mercuryFill = document.getElementById('therm-mercury');
+  const hwDesiredNum = document.getElementById('hw-desired-num');
+  const hwActualNum = document.getElementById('hw-actual-num');
+  const hwActionNum = document.getElementById('hw-action-num');
+  const narration = document.getElementById('therm-narration');
+
+  function updatePointer() {
+    const angle = tempToAngle(desired);
+    pointer.setAttribute('transform', `rotate(${angle} 160 160)`);
+  }
+  function updateMercury() {
+    // mercury height: at 16° -> 5px tall, at 26° -> 32px tall
+    const minH = 6, maxH = 32;
+    const norm = (actual - TEMP_MIN) / (TEMP_MAX - TEMP_MIN);
+    const h = minH + norm * (maxH - minH);
+    mercuryFill.setAttribute('height', h);
+    mercuryFill.setAttribute('y', 42 - h + 0); // anchor at bottom of thermometer column (y=42)
+    // actually the thermometer rect is x=-3 y=10 height=32. We want fill from bottom up.
+    // y=10 is top; y=42 is bottom. height h means y = 42 - h.
+    mercuryFill.setAttribute('y', 42 - h);
+  }
+  function updateDisplays() {
+    desiredDisplay.textContent = desired + '°';
+    actualDisplay.textContent = actual + '°';
+    hwDesiredNum.textContent = desired + '°';
+    hwActualNum.textContent = actual + '°';
+    if (desired === actual) {
+      hwActualNum.className = 'therm-stat-num match';
+    } else {
+      hwActualNum.className = 'therm-stat-num actual';
+    }
+    if (isHeating) {
+      hwActionNum.textContent = '🔥 ON';
+      hwActionNum.style.color = 'var(--warm)';
+    } else if (desired < actual) {
+      hwActionNum.textContent = 'idle';
+      hwActionNum.style.color = 'var(--good)';
+      // (we model only heating; cooling shown as idle waiting)
+    } else {
+      hwActionNum.textContent = 'idle';
+      hwActionNum.style.color = 'var(--good)';
+    }
+  }
+  function updateHeatIndicator() {
+    if (isHeating) {
+      heatIndicator.setAttribute('opacity', '1');
+      flames.setAttribute('opacity', '1');
+      smoke.setAttribute('opacity', '1');
+    } else {
+      heatIndicator.setAttribute('opacity', '0');
+      flames.setAttribute('opacity', '0');
+      smoke.setAttribute('opacity', '0');
+    }
+  }
+  function updateNarration() {
+    const gap = desired - actual;
+    if (isCooling) {
+      narration.innerHTML = '<strong>Window open!</strong> The room is cooling. The thermostat will keep firing the furnace as long as you leave it open. <em>Self-healing in action.</em>';
+    } else if (gap > 0) {
+      narration.innerHTML = `<strong>Gap = +${gap}°.</strong> The thermostat fires the furnace. Watch the room temperature rise.`;
+    } else if (gap < 0) {
+      narration.innerHTML = `<strong>Gap = ${gap}°.</strong> Room is too warm. Furnace stays off; the room cools naturally.`;
+    } else {
+      narration.innerHTML = `<strong>Match.</strong> Desired = actual = ${desired}°. The thermostat keeps watching — for the next gap.`;
+    }
+  }
+  function tick() {
+    // Move actual toward desired
+    if (actual < desired) {
+      isHeating = true;
+      actual += 1;
+    } else if (actual > desired && !isCooling) {
+      // natural cool-down (slower)
+      isHeating = false;
+      // only cool if no window open and we're warmer than desired
+      // We'll let natural cooling happen passively at slow rate
+    } else {
+      isHeating = false;
+    }
+    if (isCooling) {
+      // window open: actual drops 1° per tick regardless of heating
+      isHeating = (actual < desired); // re-evaluate
+      if (Math.random() > 0.4) actual -= 1;
+      if (actual < TEMP_MIN) actual = TEMP_MIN;
+      if (actual < desired) {
+        isHeating = true;
+        // heating still running, but cooling drops it back
+        actual += 1; // partially counteract
+      }
+    }
+    updateMercury();
+    updateDisplays();
+    updateHeatIndicator();
+    updateNarration();
+  }
+  setInterval(tick, 900);
+
+  // ====== Dial drag ======
+  const svg = document.getElementById('therm-svg');
+  const dragTarget = document.getElementById('therm-drag-target');
+  let dragging = false;
+  function svgPoint(evt) {
+    const pt = svg.createSVGPoint();
+    pt.x = evt.clientX; pt.y = evt.clientY;
+    const ctm = svg.getScreenCTM().inverse();
+    return pt.matrixTransform(ctm);
+  }
+  function setFromPointer(evt) {
+    const p = svgPoint(evt);
+    const dx = p.x - 160, dy = p.y - 160;
+    let angleDeg = Math.atan2(dy, dx) * 180 / Math.PI + 90; // normalize so 0 = top
+    if (angleDeg > 180) angleDeg -= 360;
+    if (angleDeg < -180) angleDeg += 360;
+    desired = angleToTemp(angleDeg);
+    updatePointer();
+    updateDisplays();
+    updateNarration();
+  }
+  dragTarget.addEventListener('pointerdown', e => {
+    dragging = true; dragTarget.setPointerCapture(e.pointerId);
+    setFromPointer(e); e.preventDefault();
+  });
+  dragTarget.addEventListener('pointermove', e => {
+    if (dragging) setFromPointer(e);
+  });
+  dragTarget.addEventListener('pointerup', e => { dragging = false; });
+  dragTarget.addEventListener('pointercancel', e => { dragging = false; });
+
+  // ====== Preset buttons ======
+  document.querySelectorAll('[data-set]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      desired = parseInt(btn.dataset.set, 10);
+      updatePointer(); updateDisplays(); updateNarration();
+    });
+  });
+
+  // ====== Window-open button ======
+  document.getElementById('therm-cool').addEventListener('click', () => {
+    isCooling = true;
+    if (coolingTimeout) clearTimeout(coolingTimeout);
+    coolingTimeout = setTimeout(() => {
+      isCooling = false;
+      narration.innerHTML = '<strong>Window closed.</strong> The thermostat catches up.';
+    }, 8000);
+  });
+
+  // Init
+  updatePointer();
+  updateMercury();
+  updateDisplays();
+  updateNarration();
+</script>
+</body>
+</html>
