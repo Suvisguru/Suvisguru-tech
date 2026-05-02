@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 38 — GitOps with Argo CD · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the K-COM course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L01 What is Kubernetes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L02 containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L03 reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L04 12-factor + monoliths</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L05 K8s fit / overkill</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L06 GitOps + SRE</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L07 history + KEPs</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>L7.5 Linux primer</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L08 namespaces &amp; cgroups</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L09 runtimes &amp; OCI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L10 image building</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L11 container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L12 PID 1 &amp; lifecycle</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L13 cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L14 K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L15 Pods deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L16 workload controllers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L17 services &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L18 storage Pt 1 — PV/PVC/SC</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L19 storage Pt 2 — CSI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L20 config &amp; secrets</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L21 service accounts &amp; certs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L22 scheduling Pt 1</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L23 scheduling Pt 2</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L24 net foundations &amp; CNI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L25 Gateway API</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L26 AdminNetworkPolicy</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L27 RBAC &amp; Auth</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L28 admission control</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L29 policy engines</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L30 supply chain</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L31 multi-tenancy</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L32 obs Pt 1 — logs/metrics</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L33 obs Pt 2 — traces/eBPF</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L34 autoscaling</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L35 reliability &amp; HA</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L36 Kustomize</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L37 Helm 3</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>L38 Argo CD</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L39 Flux CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L40 progressive delivery</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L41 CRDs deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L42 Operators</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L43 service mesh</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L44 troubleshooting</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 38</span></a>
+    <span class="progress-pill">38 · Argo CD</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Public Library — Argo CD Reading Room</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: lesson 38">
+    <title>K-Town district map · lesson 38</title>
+    <desc>Stylised map of K-Town. Public Library — Argo CD Reading Room highlighted.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin active" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+    <g class="pin" id="kt-pin27" transform="translate(740,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">27</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">security</text></g>
+    <g class="pin" id="kt-pin32" transform="translate(230,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">32</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">observability</text></g>
+    <g class="pin" id="kt-pin34" transform="translate(230,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">34</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Station</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scale & resilience</text></g>
+    <g class="pin" id="kt-pin36" transform="translate(410,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">36</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Print Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">delivery</text></g>
+    <g class="pin" id="kt-pin42" transform="translate(700,305)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">42</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Workshop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">operators</text></g>
+    <g class="pin" id="kt-pin44" transform="translate(770,245)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">44</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Detective's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshooting</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Public Library — Argo CD Reading Room</strong> <span>· lesson 38</span><span class="visually-hidden">Lesson 38, Public Library — Argo CD Reading Room.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 17 · Lesson 38 · git is the source of truth</span>
+    <h1>GitOps with Argo CD · Application CRD, Sync, Drift Detection</h1>
+    <p class="hero-sub">"<strong>Git is the source of truth</strong>" sounds easy until you realise: who runs <code>kubectl apply</code>? When the cluster drifts, who notices? Who handles "the manifest in git was bumped — is the cluster updated?" <strong>Argo CD</strong> automates this loop. It watches a git repo, reconciles the cluster to match, and pages you when reality diverges from intent.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Public library reading room: Argo CD librarian fetching books from a git shelf, holding an Application card, comparing the cluster's current shelf with the desired one and reconciling.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">PUBLIC LIBRARY · ARGO CD READING ROOM</text>
+  <!-- Git shelf -->
+  <g transform="translate(40,55)"><rect width="140" height="120" rx="6" fill="#3F4A5E" stroke="#1B1814" stroke-width="2"/><text x="70" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">GIT REPOSITORY</text><text x="70" y="34" text-anchor="middle" font-size="7" fill="#FBF1D6" font-style="italic">desired state</text>
+    <rect x="14" y="44" width="112" height="18" rx="2" fill="#FBF1D6"/><text x="20" y="58" font-size="8" fill="#5A4F45" font-weight="700">manifests/</text>
+    <rect x="14" y="64" width="112" height="18" rx="2" fill="#FBF1D6"/><text x="20" y="78" font-size="8" fill="#5A4F45" font-weight="700">helm/</text>
+    <rect x="14" y="84" width="112" height="18" rx="2" fill="#FBF1D6"/><text x="20" y="98" font-size="8" fill="#5A4F45" font-weight="700">kustomize/</text></g>
+  <!-- Argo CD -->
+  <g transform="translate(200,55)"><rect width="140" height="120" rx="6" fill="#A04832" stroke="#1B1814" stroke-width="2"/><text x="70" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">ARGO CD</text><text x="70" y="34" text-anchor="middle" font-size="7" fill="#FBE8DC" font-style="italic">controller + UI</text>
+    <rect x="14" y="44" width="112" height="20" rx="2" fill="#FBE8DC"/><text x="20" y="58" font-size="8" fill="#A04832" font-weight="700">watch git</text>
+    <rect x="14" y="66" width="112" height="20" rx="2" fill="#FBE8DC"/><text x="20" y="80" font-size="8" fill="#A04832" font-weight="700">diff vs cluster</text>
+    <rect x="14" y="88" width="112" height="20" rx="2" fill="#FBE8DC"/><text x="20" y="102" font-size="8" fill="#A04832" font-weight="700">sync (apply)</text></g>
+  <!-- Cluster -->
+  <g transform="translate(360,55)"><rect width="140" height="120" rx="6" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/><text x="70" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">CLUSTER</text><text x="70" y="34" text-anchor="middle" font-size="7" fill="#5A4F45" font-style="italic">live state</text>
+    <rect x="14" y="44" width="112" height="18" rx="2" fill="#5A9F7A"/><text x="20" y="58" font-size="8" fill="#FFFFFF" font-weight="700">Deployment ✓</text>
+    <rect x="14" y="64" width="112" height="18" rx="2" fill="#5A9F7A"/><text x="20" y="78" font-size="8" fill="#FFFFFF" font-weight="700">Service ✓</text>
+    <rect x="14" y="84" width="112" height="18" rx="2" fill="#FBE8DC"/><text x="20" y="98" font-size="8" fill="#A04832" font-weight="700">drift detected</text></g>
+  <!-- App CRD -->
+  <g transform="translate(520,55)"><rect width="120" height="120" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="60" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#8B5A00">Application CRD</text>
+    <text x="60" y="40" text-anchor="middle" font-size="8" fill="#5A4F45">source: git repo</text>
+    <text x="60" y="54" text-anchor="middle" font-size="8" fill="#5A4F45">path: overlays/prod</text>
+    <text x="60" y="68" text-anchor="middle" font-size="8" fill="#5A4F45">dest: cluster + ns</text>
+    <text x="60" y="82" text-anchor="middle" font-size="8" fill="#5A4F45">syncPolicy: auto</text>
+    <text x="60" y="100" text-anchor="middle" font-size="7" fill="#8B5A00" font-style="italic">one app per env</text></g>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Three engineers each made changes via <code>kubectl edit</code> over two weeks. Nobody updated the manifests in git. Cluster state and git state are now divergent. New deployments overwrite hand-tweaked configs; nobody remembers what was changed or why. <em>This is GitOps drift, and it's the original sin of pre-Argo CD K8s.</em> Argo CD watches git, applies it, and screams when somebody else touches the cluster.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Argo CD is a controller that watches a git repo + reconciles the cluster to match. Define an <strong>Application</strong> CRD pointing at a git path; Argo CD syncs (auto or manual). Drift detection is built in — if someone <code>kubectl edit</code>s a managed resource, Argo CD shows it as <em>OutOfSync</em>. Pair with <strong>Argo CD Image Updater</strong> for image-bump automation; <strong>App-of-Apps</strong> for managing many Apps at scale.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Why GitOps</h2>
+    <p>Pre-GitOps deployment models: <em>imperative push</em>. Engineer (or CI) runs <code>kubectl apply</code>; cluster state changes; nothing tracks the change. Many failure modes:</p>
+    <ul>
+      <li>Drift — someone <code>kubectl edit</code>s, cluster ≠ git.</li>
+      <li>Lost changes — git is updated; nobody applied; cluster still old.</li>
+      <li>No audit — what's in production right now? Hope your last apply was the truth.</li>
+      <li>Hard to roll back — <code>git revert</code> doesn't reach the cluster automatically.</li>
+    </ul>
+    <p>GitOps inverts the model: <em>git is the source of truth; the cluster pulls</em>. A controller (Argo CD) watches git; whenever git changes, the controller applies. Whenever the cluster drifts, the controller notices + alerts (and optionally re-applies).</p>
+    <p>The four GitOps principles (OpenGitOps spec): <strong>declarative</strong>, <strong>versioned + immutable</strong>, <strong>pulled automatically</strong>, <strong>continuously reconciled</strong>. Argo CD implements all four.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · The Application CRD</span>
+    <h2>Argo CD's primary unit</h2>
+    <p>An <strong>Application</strong> is one tracked deployment unit. Define it once; Argo CD reconciles forever.</p>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code>apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: web-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/myorg/web-app
+    targetRevision: main
+    path: overlays/prod
+    # OR for Helm:
+    # chart: web-app
+    # repoURL: oci://registry.corp/charts
+    # targetRevision: 1.2.0
+    # helm: { values: |- ... }
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: web-prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions: [CreateNamespace=true, ServerSideApply=true]</code></pre>
+    <p>Source can be plain manifests, Kustomize, Helm chart, Helm chart from OCI, or even a custom plugin. Destination is a cluster + namespace. <code>syncPolicy.automated</code>: auto-sync on git change, auto-prune deleted resources, auto-heal drift.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · Sync, drift, and self-healing</span>
+    <h2>What Argo CD actually does</h2>
+    <p>Three states an Application can be in:</p>
+    <ul>
+      <li><strong>Synced</strong> — cluster matches git.</li>
+      <li><strong>OutOfSync</strong> — cluster differs from git (because git updated, or someone hand-edited).</li>
+      <li><strong>Unknown</strong> — Argo CD can't reach git or the cluster.</li>
+    </ul>
+    <p>Two health states layered on top:</p>
+    <ul>
+      <li><strong>Healthy</strong> — resources are running as expected (Pods ready, etc.).</li>
+      <li><strong>Degraded</strong> — applied but something's wrong (CrashLoopBackOff, etc.).</li>
+    </ul>
+    <p>The Argo CD UI shows a colour-coded tree of resources: green Synced+Healthy, yellow Synced+Progressing, red Degraded. One glance per env.</p>
+    <p><strong>Self-healing</strong>: if <code>selfHeal: true</code>, Argo CD re-applies whenever drift is detected. Engineer who <code>kubectl edit</code>s gets reverted within seconds. Hard discipline; common in mature shops.</p>
+    <p><strong>Sync waves</strong> + <strong>hooks</strong>: order resource application via <code>argocd.argoproj.io/sync-wave: 0/1/2</code> annotations; run pre-sync / post-sync Jobs as hooks. Used for: install CRDs first, then operator, then operator instances.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A team's Argo CD Application is set to <code>selfHeal: true</code>. An engineer runs <code>kubectl edit deployment</code> to manually scale replicas during an incident. What happens?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) The change persists permanently</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Within seconds, Argo CD detects drift, reverts the change to match git, and the manual edit is lost</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Argo CD locks the engineer out of the deployment</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> selfHeal aggressively reverts drift. <strong>Implication for incidents:</strong> if you need an emergency hand-edit, either disable selfHeal temporarily, sync from a hotfix branch, or set <code>argocd.argoproj.io/sync-options: ApplyOutOfSyncOnly=true</code> for the relevant resource. Don't fight selfHeal — work with it.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · App-of-Apps and ApplicationSet</span>
+    <h2>Managing many Applications at scale</h2>
+    <p>One Application per microservice × per environment = 50 Applications quickly. Two patterns to manage at scale:</p>
+    <ul>
+      <li><strong>App-of-Apps</strong> — one parent Application points at a git path containing many child Application YAMLs. Argo CD syncs the parent; the parent's sync creates/updates the children. Bootstrap in one apply.</li>
+      <li><strong>ApplicationSet</strong> — modern alternative. A CRD that generates Applications from a template + a set of inputs. Inputs can be: a list, a set of git directories matching a glob, a set of clusters in Argo CD, even external sources. "For every directory under <code>apps/</code>, generate an Application targeting that directory." Eliminates boilerplate Application YAML.</li>
+    </ul>
+    <p>ApplicationSet generators in production:</p>
+    <ul>
+      <li><code>list</code> — explicit list of values.</li>
+      <li><code>git</code> — one Application per matching git path.</li>
+      <li><code>cluster</code> — one Application per registered cluster (multi-cluster GitOps).</li>
+      <li><code>matrix</code> — combinatorial: every Service × every cluster.</li>
+      <li><code>pull-request</code> — generate Application per open PR (preview environments!).</li>
+    </ul>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>The PR-based ApplicationSet generator is one of the underrated GitOps wins. Open a PR; Argo CD spins up an isolated namespace with the PR's manifests; QA tests; merge → namespace destroyed. Preview environments without bespoke tooling. Combined with Karpenter, the cost is just per-PR Pod time.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>CI runs <code>kubectl apply</code> from the build pipeline. Sometimes someone <code>kubectl edit</code>s. Drift accumulates. Engineers go to the cluster console to verify what's deployed; sometimes they're wrong. Rollbacks involve replaying old git commits through CI. "What's in production?" is a question, not an answer.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Argo CD watches git, syncs continuously. UI shows every cluster's state at a glance. Drift is impossible (selfHeal reverts it). Rollback = <code>git revert</code> + auto-sync. Audit log is the git log. "What's in production?" = "the latest commit on the prod branch."</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">GitOps via Argo CD turned K8s deployment from "a script you ran somewhere" into "a continuous reconciliation loop." The pre-GitOps days look medieval.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this district</h2>
+<p>The Public Library has a special <strong>Argo CD reading room</strong>. Every cluster is represented by a shelf. Each shelf has a librarian (Argo CD controller) who consults a master catalogue (the git repo) and ensures the shelf matches the catalogue exactly. If a visitor sneaks in and rearranges the books (<code>kubectl edit</code>), the librarian notices instantly and either flags it (notification) or restores order (selfHeal). The catalogue is the truth; the shelf reflects the catalogue. To change the shelf, you change the catalogue (commit to git); the librarian propagates within seconds.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>Master catalogue</td><td>Git repository</td></tr>
+          <tr><td>Library shelf</td><td>Cluster state</td></tr>
+          <tr><td>Librarian</td><td>Argo CD controller</td></tr>
+          <tr><td>"This shelf must match this section of the catalogue"</td><td><code>Application</code> CRD</td></tr>
+          <tr><td>"Match exactly, no extra books"</td><td><code>prune: true</code></td></tr>
+          <tr><td>"Restore order if disturbed"</td><td><code>selfHeal: true</code></td></tr>
+          <tr><td>"Build a card for every section automatically"</td><td><code>ApplicationSet</code></td></tr>
+          <tr><td>"Open a temporary shelf for every new chapter draft"</td><td>PR-based ApplicationSet generator</td></tr>
+          <tr><td>"Every shelf in every branch"</td><td>Multi-cluster GitOps via cluster generator</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: Argo CD also handles complex resource ordering (sync waves, hooks), partial drift (some resources OutOfSync, some Synced), and multi-source apps. The librarian metaphor undersells the precision.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Robot librarian. The plan is in a notebook (git). Every minute, the robot checks the shelf. If wrong, it puts the right books back. If you write in the notebook, the robot updates the shelf.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Argo CD is a GitOps controller. Define an <code>Application</code> CRD pointing at a git path; Argo CD reconciles the cluster to match. Three sync states (Synced/OutOfSync/Unknown) + two health states (Healthy/Degraded). selfHeal reverts manual drift. App-of-Apps + ApplicationSet patterns scale to many apps. PR-based ApplicationSet enables free preview environments.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams use this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS using Argo CD as the only deployment path</p><p>CI builds + signs images, pushes to OCI. Engineers update Helm values or Kustomize overlays in git via PR. Argo CD auto-syncs on merge. Zero <code>kubectl apply</code> in CI; zero <code>kubectl edit</code> in production. Engineering culture: "if it's not in git, it doesn't exist."</p></div>
+      <div class="scenario"><p class="scenario-name">A bank with multi-cluster GitOps</p><p>40 production clusters across regions. ApplicationSet with cluster generator: one Application per cluster, all from the same git path. Update once in git → all 40 clusters update on next sync. RBAC in Argo CD ensures team A can only sync apps in their projects.</p></div>
+      <div class="scenario"><p class="scenario-name">A startup with PR-based preview environments</p><p>ApplicationSet PR generator. Open PR → temporary namespace + Application created. <code>preview-pr-1234.dev.example.com</code> works. QA tests, designer reviews. Merge → namespace destroyed. Cost: $0.05/PR. Replaces a manual provisioning process that took 30 minutes per request.</p></div>
+      <div class="scenario"><p class="scenario-name">A team using selfHeal as a discipline tool</p><p>Initial pushback: "can I still kubectl edit during incidents?" Resolution: dedicated <code>incident</code> branch with hotfix manifests; ops engineers commit there during P0s; Argo CD syncs the hotfix branch immediately. After incident, hotfix gets cherry-picked to main. selfHeal stays on; cultural shift to "cluster state lives in git."</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> GitOps slows down deployment.</div><div class="misc-row misc-truth"><strong>Truth:</strong> It changes the deployment path, not the speed. Argo CD syncs on git push within seconds (or use <code>argocd app sync</code> for instant). The slowness people complain about is <em>discipline</em> (everything via PR), not technology.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> Argo CD replaces CI.</div><div class="misc-row misc-truth"><strong>Truth:</strong> No. CI builds + tests + pushes images. Argo CD deploys. The boundary: CI ends with a manifest update PR; Argo CD picks up from there. Some shops pair Argo CD Image Updater (auto-bumps tags in git) with CI; that automates the handoff.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> You need ApplicationSet for every multi-app setup.</div><div class="misc-row misc-truth"><strong>Truth:</strong> App-of-Apps is sufficient for most cases. ApplicationSet shines when generators (cluster, PR, matrix, git) replace boilerplate. Start with App-of-Apps; switch when boilerplate becomes painful.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is GitOps?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Git is source of truth; cluster reconciles to match. Four principles: declarative, versioned, pulled, continuously reconciled. Argo CD + Flux are the implementations.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Argo CD Application CRD?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">One tracked deployment unit. Source (git repo + path or Helm chart) + destination (cluster + namespace) + sync policy. Argo CD reconciles continuously.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Sync states?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Synced (cluster = git), OutOfSync (cluster ≠ git), Unknown (Argo CD can't reach git or cluster).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Health states?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Healthy (resources happy), Degraded (something failing), Progressing (rolling out), Suspended (paused), Missing (not yet applied).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">selfHeal?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>syncPolicy.automated.selfHeal: true</code> — Argo CD reverts drift. Forces "git is the only mutator" discipline.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">prune?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>syncPolicy.automated.prune: true</code> — when a resource is removed from git, Argo CD deletes it from the cluster. Without prune, deletions stay in cluster forever.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">App-of-Apps vs ApplicationSet?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">App-of-Apps: one parent App points at a path of child App YAMLs. ApplicationSet: a generator-based CRD that templates Applications from inputs (list, git dirs, clusters, PRs).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Sync wave?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>argocd.argoproj.io/sync-wave: 0/1/2</code> annotation. Argo CD applies lower waves first. Used for ordering: CRDs (-1), operators (0), operator instances (1).</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">An Argo CD Application is OutOfSync. Click "Sync" — it stays OutOfSync. What's the diagnostic path?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>(1) Argo CD UI</strong> — click on the Application; expand the Diff view. See exactly which resources are different and what fields. <strong>(2) Common causes:</strong> (a) <em>Mutating webhook</em> (Kyverno, Istio, etc.) added a field to the live resource; git doesn't have it; Argo CD diffs every sync. <em>Fix:</em> add <code>argocd.argoproj.io/sync-options: IgnoreExtraneous=true</code> on the resource, or use <code>spec.ignoreDifferences</code> on the Application. (b) <em>Server-side defaults</em>. K8s API adds defaults that aren't in git. Same fix. (c) <em>Resource managed by another controller</em>. HPA modifies replicas; ConfigMap modified by external-secrets. Either remove from git or use ServerSideApply with field manager. <strong>(3) <code>argocd app diff &lt;name&gt;</code></strong> from CLI for scriptable output. <strong>(4) <code>argocd app sync &lt;name&gt; --force</code></strong> — force re-apply. Sometimes shakes loose stuck syncs.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A team adopts Argo CD. After 2 weeks, half the engineers complain it's slowing them down. What's typically going wrong?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Common problems:</strong> (1) <em>Too many manual approvals</em>. They have selfHeal off + manual sync; every PR requires explicit Argo CD sync. <em>Fix:</em> auto-sync for non-prod; manual approval only for prod. (2) <em>OutOfSync alarms</em>. Mutating webhooks cause perpetual OutOfSync. <em>Fix:</em> ignoreDifferences. (3) <em>Slow git → cluster latency</em>. Default polling is 3 min. <em>Fix:</em> webhook setup so git pushes trigger immediate refresh, latency drops to seconds. (4) <em>Engineers used to <code>kubectl edit</code></em>. selfHeal reverts; they think Argo CD is broken. <em>Fix:</em> training + cultural shift; "kubectl edit" becomes a hotfix-branch commit. (5) <em>Argo CD UI overwhelming</em>. 200 Applications in one project. <em>Fix:</em> AppProjects per team; filter by ownership. <strong>The cultural shift takes a quarter</strong>; once it settles, deployment velocity is higher than pre-Argo CD.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The platform team wants every PR to spin up a preview environment with that PR's manifests. <strong>Click for the design. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the ApplicationSet design</span><strong>(1) ApplicationSet with PR generator:</strong> <pre style='background:#F5EFE3;padding:6px;font-size:11px'>apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+spec:
+  generators:
+  - pullRequest:
+      github:
+        owner: myorg
+        repo: web-app
+      requeueAfterSeconds: 60
+  template:
+    metadata:
+      name: 'preview-pr-{{number}}'
+    spec:
+      source:
+        repoURL: https://github.com/myorg/web-app
+        targetRevision: '{{head_sha}}'
+        path: deploy
+      destination:
+        namespace: 'pr-{{number}}'
+        server: https://kubernetes.default.svc
+      syncPolicy:
+        automated: {prune: true, selfHeal: true}
+        syncOptions: [CreateNamespace=true]</pre> <strong>(2) DNS:</strong> wildcard <code>*.pr.dev.example.com</code> → ingress controller; per-PR Ingress with hostname <code>preview-pr-1234.pr.dev.example.com</code>. <strong>(3) Cleanup:</strong> when PR is closed/merged, the generator removes the Application; namespace is deleted (prune). <strong>(4) Cost control:</strong> Karpenter scales nodes for active PRs only; cluster autoscaler returns nodes when PRs close. <strong>(5) Required permissions:</strong> Argo CD needs GitHub credentials with repo:read; AppProject permissions to create namespaces. <strong>Result:</strong> PR is opened → 90 seconds → <code>preview-pr-1234.pr.dev.example.com</code> works. PR is merged → 60 seconds → namespace gone. Total ops cost: zero per PR. This is the GitOps preview-environment pattern that replaced custom provisioning systems across the industry.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">GitOps</div><div class="gloss-def">Pattern: git is source of truth; cluster reconciles to match. Four principles in OpenGitOps spec.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Argo CD</div><div class="gloss-def">GitOps controller. CRD-driven. Watches git, reconciles cluster. CNCF graduated.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Application (CRD)</div><div class="gloss-def">One Argo CD-managed deployment unit. Source + destination + sync policy.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AppProject</div><div class="gloss-def">Argo CD scoping unit. Limits source repos, destinations, RBAC for a set of Applications.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Sync</div><div class="gloss-def">Apply git state to cluster. Manual (<code>argocd app sync</code>) or automated.</div></div>
+      <div class="gloss-item"><div class="gloss-name">prune</div><div class="gloss-def">Delete cluster resources removed from git. <code>syncPolicy.automated.prune: true</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">selfHeal</div><div class="gloss-def">Re-apply when drift detected. <code>syncPolicy.automated.selfHeal: true</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">App-of-Apps</div><div class="gloss-def">Pattern: parent Application syncs child Applications from a git path. Bootstrap many apps in one apply.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ApplicationSet</div><div class="gloss-def">Generator-based CRD producing Applications from inputs (list, git dirs, clusters, PRs, matrix).</div></div>
+      <div class="gloss-item"><div class="gloss-name">PR generator</div><div class="gloss-def">ApplicationSet generator: one Application per open PR. Enables preview environments.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Sync wave</div><div class="gloss-def"><code>argocd.argoproj.io/sync-wave</code> annotation. Order resource application.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Image Updater</div><div class="gloss-def">Argo CD companion. Watches OCI registries; updates image tags in git on new versions.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Argo CD is a controller that watches a git repo + reconciles the cluster to match. Define an <strong>Application</strong> CRD pointing at a git path; Argo CD syncs (auto or manual). Drift detection is built in — if someone <code>kubectl edit</code>s a managed resource, Argo CD shows it as <em>OutOfSync</em>. Pair with <strong>Argo CD Image Updater</strong> for image-bump automation; <strong>App-of-Apps</strong> for managing many Apps at scale.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 38 complete</span>
+    <p>Argo CD is a GitOps controller: declare Applications pointing at git, the controller reconciles continuously. selfHeal + prune make git the only mutator. App-of-Apps + ApplicationSet scale to many apps + clusters. PR-based ApplicationSet gives free preview environments.</p>
+    <p class="recap-next"><strong>Next — Lesson 39: GitOps with Flux CD.</strong> The other major GitOps tool. Same goal, different design — controllers + CRDs per concern (sources, kustomizations, helm releases). Public Library, Flux wing.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 38 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+</script>
+
+</body>
+</html>
