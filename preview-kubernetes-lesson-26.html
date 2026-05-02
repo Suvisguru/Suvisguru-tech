@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 26 — AdminNetworkPolicy & FQDN Policies · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the K-COM course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L01 What is Kubernetes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L02 containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L03 reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L04 12-factor + monoliths</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L05 K8s fit / overkill</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L06 GitOps + SRE</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L07 history + KEPs</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>L7.5 Linux primer</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L08 namespaces &amp; cgroups</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L09 runtimes &amp; OCI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L10 image building</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L11 container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L12 PID 1 &amp; lifecycle</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L13 cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L14 K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L15 Pods deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L16 workload controllers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L17 services &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L18 storage Pt 1 — PV/PVC/SC</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L19 storage Pt 2 — CSI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L20 config &amp; secrets</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L21 service accounts &amp; certs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L22 scheduling Pt 1</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L23 scheduling Pt 2</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L24 net foundations &amp; CNI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L25 Gateway API</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>L26 AdminNetworkPolicy</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L27 RBAC &amp; Auth</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L28 admission control</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L29 policy engines</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L30 supply chain</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L31 multi-tenancy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L32 obs Pt 1 — logs/metrics</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L33 obs Pt 2 — traces/eBPF</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L34 autoscaling</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L35 reliability &amp; HA</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L36 Kustomize</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L37 Helm 3</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L38 Argo CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L39 Flux CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L40 progressive delivery</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L41 CRDs deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L42 Operators</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L43 service mesh</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L44 troubleshooting</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 26</span></a>
+    <span class="progress-pill">26 · AdminNetworkPolicy</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Switchboard — Policy Wing</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: lesson 26">
+    <title>K-Town district map · lesson 26</title>
+    <desc>Stylised map of K-Town. Switchboard — Policy Wing highlighted.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin active" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+    <g class="pin" id="kt-pin27" transform="translate(740,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">27</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">security</text></g>
+    <g class="pin" id="kt-pin32" transform="translate(230,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">32</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">observability</text></g>
+    <g class="pin" id="kt-pin34" transform="translate(230,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">34</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Station</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scale & resilience</text></g>
+    <g class="pin" id="kt-pin36" transform="translate(410,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">36</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Print Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">delivery</text></g>
+    <g class="pin" id="kt-pin42" transform="translate(700,305)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">42</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Workshop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">operators</text></g>
+    <g class="pin" id="kt-pin44" transform="translate(770,245)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">44</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Detective's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshooting</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Switchboard — Policy Wing</strong> <span>· lesson 26</span><span class="visually-hidden">Lesson 26, Switchboard — Policy Wing.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 12 · Lesson 26 · the policy hierarchy NetworkPolicy never had</span>
+    <h1>AdminNetworkPolicy & FQDN-Based Egress</h1>
+    <p class="hero-sub"><code>NetworkPolicy</code> (covered in Lesson 17) is app-team-owned, additive-only, no priority. There's no way for an admin to say "absolutely no egress from this namespace." That gap is now filled by <strong>AdminNetworkPolicy</strong> (ANP) and <strong>BaselineAdminNetworkPolicy</strong> (BANP) — both reaching GA in K8s 1.32+. Plus, modern CNIs add <strong>FQDN-based policies</strong> for egress to external services.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Switchboard security wing: a hierarchy of policy panels — AdminNetworkPolicy (admin-tier hard rules), NetworkPolicy (team-tier additive), BaselineAdminNetworkPolicy (admin defaults), and a separate FQDN block listing api.openai.com, github.com, with one blocked.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">SWITCHBOARD · POLICY WING (ADMIN VS TEAM)</text>
+  <!-- ANP layer -->
+  <g transform="translate(40,55)">
+    <rect width="280" height="50" rx="6" fill="#A04832" stroke="#1B1814" stroke-width="2"/>
+    <text x="140" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">ADMIN NETWORK POLICY</text>
+    <text x="140" y="36" text-anchor="middle" font-size="8" fill="#FBE8DC">priority 100 · DENY everything to namespace X</text>
+    <text x="140" y="46" text-anchor="middle" font-size="7" fill="#FBE8DC" font-style="italic">admin can override · evaluated FIRST</text>
+  </g>
+  <!-- NP layer -->
+  <g transform="translate(40,115)">
+    <rect width="280" height="40" rx="6" fill="#5A9F7A" stroke="#3D7857" stroke-width="1.5"/>
+    <text x="140" y="18" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">NetworkPolicy (NPv1)</text>
+    <text x="140" y="32" text-anchor="middle" font-size="8" fill="#FFFFFF">team allow: from frontend → backend</text>
+  </g>
+  <!-- BANP -->
+  <g transform="translate(40,165)">
+    <rect width="280" height="35" rx="6" fill="#3F4A5E" stroke="#1B1814" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="140" y="18" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">BaselineAdminNetworkPolicy</text>
+    <text x="140" y="30" text-anchor="middle" font-size="7" fill="#FBF1D6" font-style="italic">cluster default · evaluated LAST · team can override</text>
+  </g>
+  <!-- FQDN block -->
+  <g transform="translate(360,55)">
+    <rect width="280" height="145" rx="6" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <text x="140" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">EGRESS · FQDN ALLOW LIST</text>
+    <rect x="14" y="22" width="252" height="22" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+    <text x="20" y="36" font-size="8" font-weight="700" fill="#3D7857">✓ api.openai.com</text>
+    <text x="260" y="36" text-anchor="end" font-size="7" fill="#5A4F45">443</text>
+    <rect x="14" y="48" width="252" height="22" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+    <text x="20" y="62" font-size="8" font-weight="700" fill="#3D7857">✓ github.com</text>
+    <text x="260" y="62" text-anchor="end" font-size="7" fill="#5A4F45">443</text>
+    <rect x="14" y="74" width="252" height="22" rx="2" fill="#E0EFE6" stroke="#3D7857" stroke-width="1"/>
+    <text x="20" y="88" font-size="8" font-weight="700" fill="#3D7857">✓ *.amazonaws.com</text>
+    <text x="260" y="88" text-anchor="end" font-size="7" fill="#5A4F45">443</text>
+    <rect x="14" y="100" width="252" height="22" rx="2" fill="#FBE8DC" stroke="#A04832" stroke-width="1.2"/>
+    <text x="20" y="114" font-size="8" font-weight="700" fill="#A04832">✗ pastebin.com</text>
+    <text x="260" y="114" text-anchor="end" font-size="7" fill="#A04832">DENY</text>
+    <text x="140" y="138" text-anchor="middle" font-size="7" fill="#5A4F45" font-style="italic">CIDR rules can't express this — FQDN can</text>
+  </g>
+  <text x="340" y="217" text-anchor="middle" font-size="0" fill="#3F4A5E"></text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Compliance audit. Auditor asks: "what stops a developer from running <code>kubectl exec</code> into a Pod and curling out to <code>pastebin.com</code> with customer data?" The team's answer: "we have NetworkPolicy on every namespace." The auditor follows up: "do you have a default-deny policy that the team can't accidentally remove?" Silence. <em>NetworkPolicy v1 is namespace-scoped; nothing in the spec lets a cluster admin say "this rule trumps team rules."</em> Six months later K8s 1.32 GA'd <code>AdminNetworkPolicy</code> with explicit priority and admin-only ownership. Today's lesson: how to layer admin / team policies + FQDN-based egress so the auditor goes home happy.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Three policy tiers: <strong>AdminNetworkPolicy</strong> (admin, high priority, evaluated first), <strong>NetworkPolicy</strong> (team, namespace-scoped, additive), <strong>BaselineAdminNetworkPolicy</strong> (admin default, evaluated last). For egress to external services, <strong>FQDN-based policies</strong> (CNI extension; not yet core API) match by hostname not CIDR. <code>github.com</code> instead of "some IP block on the internet."</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Why NetworkPolicy v1 wasn't enough</h2>
+    <p>The original <code>NetworkPolicy</code> (covered in Lesson 17) is namespace-scoped and additive: each policy is an allow rule for the Pods it selects. If <em>any</em> NetworkPolicy applies to a Pod, the Pod is firewalled (default-deny, only the listed allows pass). Two important properties this <em>doesn't</em> have:</p>
+    <ul>
+      <li><strong>No admin override.</strong> A cluster admin can't write a policy that takes precedence over team policies. Every NetworkPolicy in a namespace has equal weight; they're all evaluated together.</li>
+      <li><strong>No deny rules.</strong> Only allow. You can't say "block all egress to <code>1.2.3.4</code>" — you can only say "allow specific things." If a team forgets to write a policy, the namespace is wide open.</li>
+    </ul>
+    <p>The Gateway API style of layered ownership came to NetworkPolicy in K8s 1.30-1.32 with two new APIs: <strong>AdminNetworkPolicy</strong> (ANP, cluster-scoped, admin-owned, priority-ordered, supports allow/deny/pass) and <strong>BaselineAdminNetworkPolicy</strong> (BANP, cluster-scoped, admin-owned, exactly one per cluster, evaluated <em>last</em> as the default).</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · The three-tier evaluation order</span>
+    <h2>ANP → NetworkPolicy → BANP</h2>
+    <p>For every packet, the CNI evaluates rules in this order:</p>
+    <ol>
+      <li><strong>AdminNetworkPolicy</strong> (highest priority numeric value first, sort within each ANP). Each rule has an action: <code>Allow</code>, <code>Deny</code>, or <code>Pass</code>. <em>Pass</em> is special — it means "stop evaluating ANP for this packet; let NetworkPolicy decide." Allow/Deny terminate evaluation.</li>
+      <li><strong>NetworkPolicy</strong> (the original, namespace-scoped). Standard semantics: if a Pod is selected by any policy, default-deny applies; explicit allows let traffic through.</li>
+      <li><strong>BaselineAdminNetworkPolicy</strong> (the cluster's default; one per cluster). Allow / Deny only (no Pass). Catches anything not handled above.</li>
+    </ol>
+    <p>The pattern this enables:</p>
+    <ul>
+      <li><strong>ANP</strong>: "no namespace can talk to the <code>kube-system</code> namespace except via the API server" (admin override; teams can't bypass).</li>
+      <li><strong>ANP Pass</strong>: "for namespace X, defer to whatever the team's NetworkPolicy says" (admin opt-out for trusted teams).</li>
+      <li><strong>BANP</strong>: "default deny all egress except to in-cluster Services" (cluster default; teams override per-namespace via NetworkPolicy or by passing through ANP).</li>
+    </ul>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A team-managed NetworkPolicy says "allow egress to anywhere on port 443." An admin AdminNetworkPolicy at priority 100 says "deny egress to <code>1.2.3.4/32</code>." A Pod tries to send to <code>1.2.3.4:443</code>. What happens?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Allowed — team policy says 443 anywhere</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Denied — ANP is evaluated first, and its <code>Deny</code> rule terminates evaluation</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Indeterminate — depends on CNI</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> ANP is evaluated before NetworkPolicy. A <code>Deny</code> rule in ANP terminates evaluation immediately. Team policies can't override admin denies — exactly the property NetworkPolicy v1 lacked.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · FQDN-based policies</span>
+    <h2>When CIDR isn't expressive enough</h2>
+    <p>NetworkPolicy v1 lets you allow egress to a CIDR (<code>10.0.0.0/8</code>) or a Service. It can't say "allow egress to <code>api.openai.com</code>." Why this matters:</p>
+    <ul>
+      <li>External SaaS (OpenAI, Anthropic API, Stripe, GitHub) own large, dynamic IP ranges. Listing CIDRs is fragile.</li>
+      <li>Compliance often demands "list of allowed external destinations" by hostname, not by IP.</li>
+      <li>Egress filtering as exfiltration prevention needs FQDN matching (block <code>pastebin.com</code> regardless of IP).</li>
+    </ul>
+    <p><strong>FQDN-based policies</strong> aren't yet in the core NetworkPolicy / ANP spec — but every modern CNI (Cilium, Calico Cloud, Tigera, NSX-T) exposes them via vendor extensions. Cilium's <code>CiliumNetworkPolicy</code> has <code>egress.toFQDNs</code>. Calico's <code>GlobalNetworkPolicy</code> has equivalent.</p>
+    <p>How it works under the hood: the CNI hooks the Pod's DNS resolution (typically by intercepting DNS responses), records the IP it resolved a name to, and installs a short-lived per-IP allow rule. When the IP TTL expires, the rule expires too. Combined with eBPF-based enforcement, it's fast and accurate.</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>FQDN policies are intentionally vendor-specific because the implementation is non-trivial — DNS interception, IP cache management, and TTL handling. The K8s Network SIG has a working group on standardising it for ANP/BANP, expected to land in 1.36 or later. Until then, FQDN policies are CNI-specific YAML — your migration cost from one CNI to another includes rewriting these.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · A practical layered design</span>
+    <h2>What a real cluster's policy stack looks like</h2>
+    <p>A typical 2026 production cluster ships:</p>
+    <ul>
+      <li><strong>One BANP</strong>: "default deny all ingress and egress except DNS to kube-dns and traffic to kube-apiserver." Catches everything not explicitly allowed.</li>
+      <li><strong>A small ANP set</strong>: protect <code>kube-system</code> (deny ingress except from controllers); deny egress to RFC1918 from internet-facing namespaces (defence in depth); allow Pods in <code>monitoring</code> namespace to scrape any Pod.</li>
+      <li><strong>Per-namespace NetworkPolicy</strong>: app teams own their own ingress/egress allows. Most namespaces have a default-deny + one or two explicit allows.</li>
+      <li><strong>FQDN egress policies</strong> (CNI-specific): allow-list of approved external SaaS endpoints per namespace. Updated as new external integrations are approved.</li>
+    </ul>
+    <p>This stack means: a developer can't accidentally bypass cluster policies by forgetting a NetworkPolicy. The BANP catches them. They also can't override admin-set deny rules — those are in ANP at high priority. They <em>can</em> add fine-grained allows within their namespace via standard NetworkPolicy.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-ANP: admin compliance rules baked into wiki pages. Teams forget a NetworkPolicy → namespace is wide open. No way to say "kube-system is admin-only" enforceably. Egress to external services controlled by IP allow lists that go stale weekly. Pastebin? Open by default until someone notices.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>BANP at the bottom: default deny everywhere. ANP at the top: admin's non-negotiable rules. NetworkPolicy in the middle: app teams own their allows. FQDN policies: external services by name, not by ever-changing IP. Auditor asks "what stops X?" — show them the ANP. Done.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">ANP + BANP closes the longest-standing gap in K8s policy. The single-tier model lasted nearly a decade; the layered model is what production teams have always wanted.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this district</h2>
+<p>The Switchboard's policy wing has three desks, in order of authority. The <strong>City Council desk</strong> (AdminNetworkPolicy) issues binding ordinances — "no calls to City Hall except from registered businesses" — which override anything else and are enforced at the city gate. The <strong>building manager desks</strong> (NetworkPolicy) handle individual building rules — "callers from the press must use the lobby line." The <strong>default city ordinance shelf</strong> (BaselineAdminNetworkPolicy) sits at the bottom: "no calls to the city without a business reason." Building managers' rules can override the default ordinance for their tenants; the city council's ordinances cannot be overridden by anyone.</p><p>Off to the side: a separate <strong>destination registry</strong> (FQDN policies) listing every approved out-of-city number by name — <code>github.com</code>, <code>api.openai.com</code> — so phone-by-name works even when the actual phone numbers (IP addresses) change. The registry is owned by the city; building managers request additions; council approves.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>City Council ordinance</td><td><code>AdminNetworkPolicy</code></td></tr>
+          <tr><td>Building manager rule</td><td><code>NetworkPolicy</code> (v1)</td></tr>
+          <tr><td>Default city ordinance shelf</td><td><code>BaselineAdminNetworkPolicy</code></td></tr>
+          <tr><td>"Pass — defer to building manager"</td><td>ANP <code>Pass</code> action</td></tr>
+          <tr><td>"Forbidden by city, no exceptions"</td><td>ANP <code>Deny</code> at high priority</td></tr>
+          <tr><td>Destination registry by name</td><td>FQDN egress policies (CNI extension)</td></tr>
+          <tr><td>Out-of-city numbers that change weekly</td><td>External SaaS IP ranges</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real ANP/BANP enforcement happens in the kernel via eBPF or iptables, not at "the city gate." And FQDN policies depend on intercepting DNS, which works well 95% of the time but can be evaded by Pods that hard-code IPs.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Three sets of rules. The grown-up's rules go first (admin). The kid's rules go in the middle (team). The house's default rule ("don't talk to strangers") goes last. Plus a separate list of friends' names you're allowed to call (FQDN).</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p><strong>AdminNetworkPolicy (ANP)</strong>: cluster-scoped, admin-owned, priority-ordered, with Allow/Deny/Pass actions. Evaluated first. <strong>NetworkPolicy (v1)</strong>: namespace-scoped, app-team-owned, additive allows. Evaluated next. <strong>BaselineAdminNetworkPolicy (BANP)</strong>: one per cluster, admin-owned default. Evaluated last. <strong>FQDN-based policies</strong>: CNI-vendor extensions (Cilium, Calico, etc.) for matching egress by hostname. Combined: layered policy with admin override, team self-service, and hostname-aware egress.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams use this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A bank with strict compliance requirements</p><p>ANP: "no namespace except <code>infra</code> can egress to RFC1918." "All ingress to <code>finance</code> namespace must come from <code>app-frontend</code> or be denied." BANP: default deny ingress + egress. Per-namespace NP: app-team allows. FQDN policies: 14 approved external SaaS, allowed only from specific namespaces. Auditor calls these "the cleanest policy stack we've seen."</p></div>
+      <div class="scenario"><p class="scenario-name">A SaaS protecting against accidental data exfiltration</p><p>BANP default-denies egress everywhere except DNS, kube-apiserver, kube-dns. Each namespace owns an FQDN allow list (Cilium FQDN policies). New external service = a YAML PR. Pastebin / Discord / random-IP egress impossible. Catches a contractor's misbehaving build script before it can phone home.</p></div>
+      <div class="scenario"><p class="scenario-name">A platform team running multi-tenant clusters</p><p>Each tenant gets a namespace with admin-installed ANP "this namespace can't talk to other tenants' namespaces." Tenants own their NP for intra-namespace allows. ANP <code>Pass</code> for known infra namespaces (monitoring, logging) so tenant policies don't accidentally block scraping.</p></div>
+      <div class="scenario"><p class="scenario-name">A team using ANP <code>Pass</code> for delegated trust</p><p>Their <code>security-staging</code> namespace runs experimental Pods. ANP at priority 50 says "<code>Pass</code> for security-staging" — meaning: don't apply admin rules; let the team's own NetworkPolicy decide. Other namespaces get admin-enforced denies. Used for security testing without disabling protection cluster-wide.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> ANP replaces NetworkPolicy.</div><div class="misc-row misc-truth"><strong>Truth:</strong> ANP supplements NetworkPolicy. The three-tier model is intentional: admins set hard rules at the top, teams own additive allows in the middle, defaults catch the rest. Most clusters use all three.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> FQDN policies are part of NetworkPolicy v1.</div><div class="misc-row misc-truth"><strong>Truth:</strong> They're not. NP v1 only knows CIDR + Service references. FQDN matching is a CNI vendor extension (Cilium's <code>CiliumNetworkPolicy.egress.toFQDNs</code>; Calico's equivalent). The K8s Network SIG is working on standardising it for ANP.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> ANP <code>Pass</code> is the same as <code>Allow</code>.</div><div class="misc-row misc-truth"><strong>Truth:</strong> Different. <code>Allow</code> ends evaluation — packet flows. <code>Pass</code> means "skip ANP for this packet, let NetworkPolicy decide." Useful for delegating to teams selectively without admin denies blocking everything.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three tiers of K8s network policy (2026)?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">AdminNetworkPolicy (cluster-scoped, admin-owned, priority-ordered, evaluated first). NetworkPolicy v1 (namespace-scoped, team-owned, additive allows). BaselineAdminNetworkPolicy (cluster-scoped, one per cluster, admin default, evaluated last).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three ANP actions?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>Allow</code> (terminate, packet flows), <code>Deny</code> (terminate, packet dropped), <code>Pass</code> (skip ANP for this packet, defer to NetworkPolicy). Pass enables admin-delegated trust to specific namespaces.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why does ANP have priority?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">To express "this admin rule trumps that admin rule." Higher priority value wins. NetworkPolicy v1 had no priority — every rule was equal.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does BANP solve?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">The "team forgot to write a NetworkPolicy" problem. BANP is the cluster-wide default. Teams override per-namespace; cluster default applies otherwise.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is an FQDN policy?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">An egress policy matching by DNS hostname (<code>github.com</code>) instead of IP CIDR. CNI-vendor extension — Cilium <code>CiliumNetworkPolicy</code>, Calico <code>GlobalNetworkPolicy</code>, etc.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">How do FQDN policies work under the hood?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">CNI intercepts DNS responses, caches IP→name mappings, installs short-lived per-IP allow rules with TTLs matching DNS TTL. Pod-by-Pod, kept fresh as DNS records change.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Limit of FQDN policies?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Pods that hard-code IPs (skipping DNS entirely) bypass FQDN matching. Mitigation: combine FQDN policies with CIDR denies (block direct internet IPs except whitelisted ranges).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When does ANP/BANP go GA?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">ANP: GA in K8s 1.32. BANP: GA in 1.32. Cilium and Calico support both natively. CIS K8s benchmarks now reference them.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A platform team writes an ANP at priority 100: <code>action: Deny, ports: [22]</code> for all namespaces. A team writes a NetworkPolicy allowing port 22 from a specific Pod to a specific node-management Pod. The team's policy is being ignored. Why?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>ANP runs first. The Deny rule at priority 100 is hit before NetworkPolicy gets evaluated, and Deny terminates evaluation. <strong>Fix options:</strong> (1) Use <code>Pass</code> instead of <code>Deny</code> for the specific Pod — let NetworkPolicy decide. (2) Use a higher-priority ANP <code>Pass</code> rule for that namespace + port combination. (3) Restructure: deny egress to <em>most</em> things at admin level, but allow this specific flow via a more specific ANP allow rule. The right answer depends on whether the admin policy is meant to be absolute (option 3) or delegable (options 1-2).</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">Compliance asks: "prove no Pod in the production cluster can egress to <code>pastebin.com</code>." The cluster runs Cilium. What's the design + the evidence?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Design:</strong> a CiliumNetworkPolicy at the cluster level (or as a namespaced policy in every namespace via a Kyverno policy) with egress.toFQDNs allow-list excluding pastebin.com. Even better: a BANP <code>Deny all egress except DNS</code>, combined with CiliumNetworkPolicy allows for approved FQDNs only. <strong>Evidence:</strong> (1) Hubble flows showing pastebin.com queries blocked at the policy layer. (2) Kyverno policy report enforcing the FQDN-allow-list as a CRD. (3) <code>cilium policy get</code> output showing no rule allows pastebin.com. <strong>Caveat:</strong> a Pod that hard-codes pastebin's IPs bypasses FQDN matching. Pair with egress IP allow-listing or run an explicit egress proxy.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">A new namespace is created. The team forgets to write a NetworkPolicy. With BANP installed, what happens to traffic? <strong>Click for the walk-through. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the walk-through</span>The cluster has BANP <code>default deny ingress and egress</code>. (1) A Pod in the new namespace tries to call kube-apiserver — ANP at priority 5000 has <code>Allow</code> for kube-apiserver from all namespaces. Allowed. (2) Pod tries to call kube-dns — same, ANP allows. (3) Pod tries to call <code>github.com</code> — no ANP rule covers it; falls through NP (none exist); falls through to BANP "default deny egress." Dropped. (4) Pod tries to receive ingress from another namespace — same path, BANP denies. <strong>Effect:</strong> the namespace is locked down by default. The team must explicitly write NetworkPolicy to allow what they need. Worst case: their service doesn't work until they fix it. <strong>Compare with no BANP:</strong> the namespace would be wide open until someone wrote a NP. BANP turns "forgot to write a policy" into a noisy failure (service broken) instead of a silent compromise (everything allowed).</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">AdminNetworkPolicy (ANP)</div><div class="gloss-def">Cluster-scoped, admin-owned policy. Priority-ordered. Allow/Deny/Pass actions. Evaluated before NetworkPolicy. GA in K8s 1.32.</div></div>
+      <div class="gloss-item"><div class="gloss-name">BaselineAdminNetworkPolicy (BANP)</div><div class="gloss-def">One per cluster. Admin-owned default. Allow/Deny only. Evaluated last.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ANP Pass action</div><div class="gloss-def">"Skip ANP for this packet; let NetworkPolicy decide." Used to delegate trust to specific namespaces.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Priority (ANP)</div><div class="gloss-def">Integer; higher value = evaluated first. Within a tier, sort by priority.</div></div>
+      <div class="gloss-item"><div class="gloss-name">FQDN policy</div><div class="gloss-def">Egress policy matching by DNS hostname. CNI-vendor extension. Cilium <code>toFQDNs</code>, Calico <code>GlobalNetworkPolicy</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">DNS interception</div><div class="gloss-def">CNI mechanism for FQDN policies: watch DNS responses, cache name→IP, install short-lived allow rules.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Egress filtering</div><div class="gloss-def">Restricting outbound traffic from Pods. Used for compliance, exfiltration prevention, cost control.</div></div>
+      <div class="gloss-item"><div class="gloss-name">default-deny</div><div class="gloss-def">Pattern: a NetworkPolicy/BANP that selects everything but allows nothing — blocks all traffic that isn't explicitly allowed elsewhere.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Egress proxy</div><div class="gloss-def">Hardware or software proxy through which all egress flows. Provides URL-based filtering at L7. Sometimes paired with FQDN policies for defence in depth.</div></div>
+      <div class="gloss-item"><div class="gloss-name">CiliumNetworkPolicy</div><div class="gloss-def">Cilium's extended CRD with FQDN matching, L7 rules, identity-aware policy. Superset of standard NetworkPolicy.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Network Identity (Cilium)</div><div class="gloss-def">Per-Pod label-derived identity used for policy decisions in Cilium. Faster than IP-based matching.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Kyverno policy reports</div><div class="gloss-def">Auditing reports from Kyverno about which NetworkPolicies/ANPs/BANPs are present. Useful for compliance evidence.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Three policy tiers: <strong>AdminNetworkPolicy</strong> (admin, high priority, evaluated first), <strong>NetworkPolicy</strong> (team, namespace-scoped, additive), <strong>BaselineAdminNetworkPolicy</strong> (admin default, evaluated last). For egress to external services, <strong>FQDN-based policies</strong> (CNI extension; not yet core API) match by hostname not CIDR. <code>github.com</code> instead of "some IP block on the internet."</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 26 complete</span>
+    <p>ANP (admin, top priority) → NetworkPolicy (team, additive) → BANP (admin default, bottom). Three tiers, layered ownership. FQDN policies (CNI extensions) match egress by hostname. The ten-year gap in K8s network policy is closed.</p>
+    <p class="recap-next"><strong>Next — Lesson 27: RBAC & Authentication.</strong> Module 13 begins. RBAC, structured auth config, OIDC integration. The new K-Town district: Watchtower.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 26 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+</script>
+
+</body>
+</html>

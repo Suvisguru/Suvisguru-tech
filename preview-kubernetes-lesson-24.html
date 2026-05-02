@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 24 — Networking Foundations & CNI · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the K-COM course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L01 What is Kubernetes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L02 containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L03 reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L04 12-factor + monoliths</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L05 K8s fit / overkill</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L06 GitOps + SRE</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L07 history + KEPs</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>L7.5 Linux primer</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L08 namespaces &amp; cgroups</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L09 runtimes &amp; OCI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L10 image building</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L11 container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L12 PID 1 &amp; lifecycle</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L13 cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L14 K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L15 Pods deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L16 workload controllers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L17 services &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L18 storage Pt 1 — PV/PVC/SC</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L19 storage Pt 2 — CSI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L20 config &amp; secrets</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L21 service accounts &amp; certs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L22 scheduling Pt 1</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L23 scheduling Pt 2</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>L24 net foundations &amp; CNI</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L25 Gateway API</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L26 AdminNetworkPolicy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L27 RBAC &amp; Auth</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L28 admission control</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L29 policy engines</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L30 supply chain</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L31 multi-tenancy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L32 obs Pt 1 — logs/metrics</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L33 obs Pt 2 — traces/eBPF</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L34 autoscaling</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L35 reliability &amp; HA</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L36 Kustomize</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L37 Helm 3</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L38 Argo CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L39 Flux CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L40 progressive delivery</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L41 CRDs deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L42 Operators</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L43 service mesh</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L44 troubleshooting</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 24</span></a>
+    <span class="progress-pill">24 · net foundations &amp; CNI</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Switchboard — Wiring Room</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: lesson 24">
+    <title>K-Town district map · lesson 24</title>
+    <desc>Stylised map of K-Town. Switchboard — Wiring Room highlighted.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin active" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+    <g class="pin" id="kt-pin27" transform="translate(740,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">27</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">security</text></g>
+    <g class="pin" id="kt-pin32" transform="translate(230,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">32</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">observability</text></g>
+    <g class="pin" id="kt-pin34" transform="translate(230,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">34</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Station</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scale & resilience</text></g>
+    <g class="pin" id="kt-pin36" transform="translate(410,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">36</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Print Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">delivery</text></g>
+    <g class="pin" id="kt-pin42" transform="translate(700,305)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">42</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Workshop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">operators</text></g>
+    <g class="pin" id="kt-pin44" transform="translate(770,245)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">44</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Detective's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshooting</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Switchboard — Wiring Room</strong> <span>· lesson 24</span><span class="visually-hidden">Lesson 24, Switchboard — Wiring Room.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 12 · Lesson 24 · what's actually under the Service abstraction</span>
+    <h1>Networking Foundations · Linux Primitives, CNI, MTU</h1>
+    <p class="hero-sub">Lesson 17 introduced Services as if Pod IPs just exist. They don't — every Pod IP is a Linux interface plumbed through a series of primitives by a <strong>CNI plugin</strong>. Understanding that path is the difference between writing YAML and debugging real outages.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Inside the Switchboard: a network of veth pairs connecting Pods to a node bridge, the bridge plugged into a CNI router, and a node-to-node tunnel labeled VXLAN/native routing/eBPF.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">SWITCHBOARD · WIRING ROOM (CNI INSIDE)</text>
+  <!-- Node A -->
+  <g transform="translate(40,55)">
+    <rect width="220" height="120" rx="6" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <text x="110" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">node-A</text>
+    <!-- Pods with veth -->
+    <rect x="14" y="22" width="50" height="38" rx="3" fill="#5A9F7A"/>
+    <text x="39" y="42" text-anchor="middle" font-size="8" font-weight="700" fill="#FFFFFF">pod-1</text>
+    <text x="39" y="52" text-anchor="middle" font-size="6" fill="#FFFFFF">10.1.1.4</text>
+    <rect x="74" y="22" width="50" height="38" rx="3" fill="#5A9F7A"/>
+    <text x="99" y="42" text-anchor="middle" font-size="8" font-weight="700" fill="#FFFFFF">pod-2</text>
+    <text x="99" y="52" text-anchor="middle" font-size="6" fill="#FFFFFF">10.1.1.5</text>
+    <rect x="134" y="22" width="50" height="38" rx="3" fill="#5A9F7A"/>
+    <text x="159" y="42" text-anchor="middle" font-size="8" font-weight="700" fill="#FFFFFF">pod-3</text>
+    <text x="159" y="52" text-anchor="middle" font-size="6" fill="#FFFFFF">10.1.1.6</text>
+    <!-- veth pairs -->
+    <line x1="39" y1="60" x2="39" y2="74" stroke="#3F4A5E" stroke-width="1.5"/>
+    <text x="44" y="69" font-size="6" fill="#5A4F45" font-style="italic">veth</text>
+    <line x1="99" y1="60" x2="99" y2="74" stroke="#3F4A5E" stroke-width="1.5"/>
+    <line x1="159" y1="60" x2="159" y2="74" stroke="#3F4A5E" stroke-width="1.5"/>
+    <!-- Bridge -->
+    <rect x="14" y="74" width="170" height="22" rx="2" fill="#3F4A5E"/>
+    <text x="99" y="89" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">cni0 / cilium_host</text>
+    <!-- Out -->
+    <line x1="184" y1="85" x2="220" y2="85" stroke="#A04832" stroke-width="2"/>
+    <text x="100" y="113" text-anchor="middle" font-size="7" fill="#5A4F45" font-style="italic">veth pairs into a node bridge</text>
+  </g>
+  <!-- Tunnel -->
+  <g transform="translate(260,80)">
+    <text x="80" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">node ↔ node</text>
+    <line x1="0" y1="40" x2="160" y2="40" stroke="#A04832" stroke-width="2.5" stroke-dasharray="6,4"/>
+    <rect x="55" y="32" width="50" height="20" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1"/>
+    <text x="80" y="46" text-anchor="middle" font-size="7" fill="#A04832" font-weight="700">VXLAN / native</text>
+    <text x="80" y="68" text-anchor="middle" font-size="7" fill="#5A4F45" font-style="italic">CNI plugin's job</text>
+  </g>
+  <!-- Node B -->
+  <g transform="translate(420,55)">
+    <rect width="220" height="120" rx="6" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <text x="110" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">node-B</text>
+    <rect x="14" y="22" width="50" height="38" rx="3" fill="#5A9F7A"/>
+    <text x="39" y="42" text-anchor="middle" font-size="8" font-weight="700" fill="#FFFFFF">pod-4</text>
+    <text x="39" y="52" text-anchor="middle" font-size="6" fill="#FFFFFF">10.1.2.4</text>
+    <rect x="74" y="22" width="50" height="38" rx="3" fill="#5A9F7A"/>
+    <text x="99" y="42" text-anchor="middle" font-size="8" font-weight="700" fill="#FFFFFF">pod-5</text>
+    <text x="99" y="52" text-anchor="middle" font-size="6" fill="#FFFFFF">10.1.2.5</text>
+    <rect x="134" y="22" width="50" height="38" rx="3" fill="#5A9F7A"/>
+    <text x="159" y="42" text-anchor="middle" font-size="8" font-weight="700" fill="#FFFFFF">pod-6</text>
+    <text x="159" y="52" text-anchor="middle" font-size="6" fill="#FFFFFF">10.1.2.6</text>
+    <line x1="39" y1="60" x2="39" y2="74" stroke="#3F4A5E" stroke-width="1.5"/>
+    <line x1="99" y1="60" x2="99" y2="74" stroke="#3F4A5E" stroke-width="1.5"/>
+    <line x1="159" y1="60" x2="159" y2="74" stroke="#3F4A5E" stroke-width="1.5"/>
+    <rect x="14" y="74" width="170" height="22" rx="2" fill="#3F4A5E"/>
+    <text x="99" y="89" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">cni0 / cilium_host</text>
+    <line x1="0" y1="85" x2="14" y2="85" stroke="#A04832" stroke-width="2"/>
+  </g>
+  <text x="340" y="200" text-anchor="middle" font-size="11" fill="#3F4A5E" font-style="italic">Every Pod → veth → node bridge → CNI's overlay or routing → another node's bridge → another Pod. That’s K8s networking, in nine words.</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Inter-Pod traffic between Pods on different nodes is mysteriously slow — exactly 200ms tail latency. Same-node traffic is fine. SSH into a node, <code>ip link</code> shows the CNI bridge. <code>ip route</code> shows pod routes. <code>ifconfig</code> shows MTU 1500 on every interface. <em>The cluster runs VXLAN encapsulation</em> with an effective MTU of 1450. Every cross-node packet is hitting the underlay's 1500 limit, fragmenting, retransmitting. Engineer fixes by setting Pod-MTU 1450 on the CNI ConfigMap. Latency drops to 1.2ms. Lesson learned: K8s networking is just Linux networking with a million more namespaces, and MTU mismatches still kill you.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Every Pod gets a Linux <code>veth</code> pair pulled into a node bridge. The <strong>CNI plugin</strong> creates the veth, assigns the IP, and connects nodes (encapsulation or native routing). Modern CNIs (<strong>Cilium</strong>) use <strong>eBPF</strong> instead of iptables — much faster and more observable. The most common production bug: <strong>MTU mismatch</strong>.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>The Linux primitives behind every Pod</h2>
+    <p>K8s networking is not new infrastructure — it's <em>Linux networking applied at scale</em>. Each node is a regular Linux box with extra namespaces. Each Pod has its own <code>net</code> namespace (covered in Lesson 8) — its own loopback, its own routing table, its own iptables/nftables. The Pod sees a single network interface (<code>eth0</code>); the host sees its other end as a <code>veth</code> pair.</p>
+    <p>The four primitives you need:</p>
+    <ul>
+      <li><strong><code>veth</code> pair</strong> — a virtual cable. One end is in the Pod's net namespace as <code>eth0</code>; the other is on the host. Whatever's sent into one end pops out the other.</li>
+      <li><strong>Bridge</strong> (e.g., <code>cni0</code>, <code>cilium_host</code>) — a virtual L2 switch on the host. Every Pod's host-side veth plugs into it. Pods on the same node can talk to each other across the bridge with no further help.</li>
+      <li><strong>Routing table</strong> — for cross-node traffic, the host's routing table must know "Pod 10.1.2.4 is on node-B." That entry is installed by the CNI plugin (or by BGP if the CNI uses native routing).</li>
+      <li><strong>iptables / nftables / eBPF</strong> — packet rules: NAT for outbound traffic, Service load balancing (kube-proxy), NetworkPolicy enforcement.</li>
+    </ul>
+    <p>Run <code>ip link show</code>, <code>ip route show</code>, <code>iptables -t nat -L -n</code> on any K8s node and you see exactly this. K8s doesn't add anything new at the data-plane layer — it choreographs a thousand standard Linux pieces.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · CNI — the plugin contract</span>
+    <h2>One spec, many implementations</h2>
+    <p>The <strong>Container Network Interface (CNI)</strong> is a CNCF spec. Two roles: a <em>runtime</em> (the kubelet, in K8s) calls <em>plugins</em> (binaries on the node) at three lifecycle moments — ADD (set up Pod networking), DEL (tear down), CHECK (verify). The plugin's job: create the Pod's veth, assign an IP, set up routing. The runtime feeds back to K8s.</p>
+    <p>The major CNI plugins:</p>
+    <table class="data-table">
+      <thead><tr><th>Plugin</th><th>Style</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Cilium</td><td>eBPF, native routing or VXLAN</td><td>Fastest, best observability, supersedes kube-proxy. De-facto modern choice.</td></tr>
+        <tr><td>Calico</td><td>BGP routing, optional VXLAN, eBPF data plane</td><td>Mature, widely deployed in regulated environments. Strong policy support.</td></tr>
+        <tr><td>Flannel</td><td>VXLAN encapsulation</td><td>Simple, common in lab clusters. Limited policy support.</td></tr>
+        <tr><td>AWS VPC CNI</td><td>Pod gets a real ENI IP</td><td>EKS default. No encapsulation; Pods are first-class VPC citizens.</td></tr>
+        <tr><td>Azure CNI / GKE Dataplane V2</td><td>Cloud-native</td><td>GKE Dataplane V2 = Cilium-based by default in 2026.</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:18px">Two big architectural choices: <strong>encapsulation vs native routing</strong> (does each cross-node packet get wrapped in a VXLAN header, or do nodes route directly?), and <strong>iptables vs eBPF</strong> for Service load balancing (eBPF is dramatically faster at scale — kube-proxy with iptables hits perf cliffs at ~5000 Services).</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · MTU — the silent killer</span>
+    <h2>The thing that kills latency you can't explain</h2>
+    <p>The <strong>Maximum Transmission Unit (MTU)</strong> is the largest packet your interface can send without fragmentation. Standard Ethernet: 1500 bytes. VXLAN encapsulation adds 50 bytes of header. So your Pod's effective MTU on a VXLAN-overlay cluster is 1450, not 1500. <em>If the CNI hasn't told the Pod's eth0 about this</em>, the Pod thinks it can send 1500-byte packets, the host wraps them in VXLAN making 1550, the underlay rejects them, fragmentation/retransmits ensue.</p>
+    <p>Symptoms: cross-node traffic mysteriously slow, sometimes specific HTTP requests time out (the ones with bodies large enough to hit MTU), TCP throughput plateaus way below line rate. The diagnostic command:</p>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code># From inside a Pod
+ping -M do -s 1472 &lt;another-pod-ip&gt;   # 1472 + 28 (ICMP+IP) = 1500
+# If this fails with "Frag needed", you have an MTU mismatch.</code></pre>
+    <p>Modern CNIs (Cilium, Calico) auto-detect underlay MTU and configure Pod MTU accordingly. Older or hand-rolled setups: read the CNI's docs, set MTU explicitly. AWS EKS clusters: jumbo frames (MTU 9001) on most instance types — your CNI should pick this up.</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>The classic MTU bug: a cluster runs fine for months. Someone migrates from VXLAN to native routing (no encap header). They forget to bump the Pod MTU back up to 1500. Now Pods send 1450-byte packets when 1500-byte underlay is available — 3% throughput loss for no reason. Or vice versa. The fix: pin Pod MTU to <code>$UNDERLAY_MTU - $ENCAP_OVERHEAD</code> in the CNI config and forget it.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A team reports cross-node Pod traffic is 200ms slow but same-node traffic is microseconds. <code>ping -M do -s 1472</code> from inside a Pod fails with "Frag needed." What's the most likely cause?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) The CNI plugin is broken — reinstall it</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) MTU mismatch — Pods think they can send 1500-byte packets but the encap overhead makes them larger than the underlay allows</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Pod IPs are misconfigured</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Classic MTU bug. Fix: lower Pod MTU to underlay minus encap overhead (e.g., 1450 for VXLAN over 1500 underlay). Modern CNIs (Cilium, Calico) auto-detect; older or hand-rolled setups need explicit config.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · kube-proxy and its eBPF replacement</span>
+    <h2>Where Service IPs come from</h2>
+    <p>Lesson 17 covered ClusterIP from the user's view: "Service has a virtual IP that load-balances to the Pods." The implementation was <strong>kube-proxy</strong>: a per-node DaemonSet writing iptables rules. Each Service got a chain with one rule per backend Pod, randomised. It worked, it scaled to a few thousand Services, and then it didn't.</p>
+    <p>Modern alternative: <strong>eBPF-based Service routing</strong> (Cilium kube-proxy replacement, Calico eBPF data plane, GKE Dataplane V2). The kernel's eBPF programs do Service load balancing in the network stack at the socket level — no iptables chains, no per-rule overhead. At 50,000 Services Cilium beats iptables-mode kube-proxy by orders of magnitude on throughput and connection establishment time.</p>
+    <p>Beyond performance: eBPF gives you observability the iptables model couldn't. Cilium Hubble exposes per-flow visibility (which Pod is talking to which Service, what's getting denied by NetworkPolicy, where latency is). Tools like <code>tcpdump -i any</code> on a node now have a structured equivalent.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-CNI / pre-eBPF era: docker0 bridge per node, iptables for everything, kube-proxy generating thousands of rules per Service. Cross-node debugging meant <code>tcpdump -i eth0</code> on every hop. NetworkPolicy was best-effort. Service performance ceiling somewhere around 5000 Services.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Modern era: standardised CNI plugins, eBPF data plane (Cilium / Calico eBPF), per-flow observability via Hubble, NetworkPolicy enforced in kernel programs, Service performance scales linearly to 50K+ Services. The IP layer feels boring — exactly the goal.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Cilium's 2024-25 dominance pushed the rest of the industry toward eBPF. By 2026 nearly every new cluster is eBPF-based; iptables-mode kube-proxy is legacy.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this district</h2>
+<p>The Switchboard is K-Town's telephone exchange (Lesson 17 was the customer-facing front desk). Today we go behind the wall. Every apartment (Pod) has a phone (eth0) connected to a wire (one end of a <strong>veth pair</strong>) running to the building's switchboard (the node bridge). The switchboard connects every apartment in the building. To reach an apartment in <em>another</em> building, the call goes out through the building's trunk line, across town, into the other building's switchboard.</p><p>The <strong>CNI plugin</strong> is the contractor who runs all this wiring. Different contractors use different methods: Cilium uses eBPF (think: programmable junctions in the wire), Calico uses BGP (the buildings know each other's routing maps directly), Flannel uses VXLAN (every cross-building call gets wrapped in an extra envelope). All of them deliver the call. They differ on speed, observability, and how they handle policy.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>The phone in the apartment</td><td>Pod's <code>eth0</code> interface</td></tr>
+          <tr><td>The wire from phone to switchboard</td><td><code>veth</code> pair (Pod side + host side)</td></tr>
+          <tr><td>The building's switchboard</td><td>Node bridge (<code>cni0</code>, <code>cilium_host</code>)</td></tr>
+          <tr><td>The contractor who ran the wiring</td><td>CNI plugin</td></tr>
+          <tr><td>The trunk line between buildings</td><td>Inter-node tunnel (VXLAN) or direct route</td></tr>
+          <tr><td>The wrapped envelope on cross-building calls</td><td>VXLAN encapsulation header (50 bytes)</td></tr>
+          <tr><td>Wires too thin for fat envelopes</td><td>MTU mismatch (encap overhead exceeds Pod MTU)</td></tr>
+          <tr><td>Pre-eBPF: kube-proxy iptables — old-school operator boards</td><td>iptables-mode kube-proxy</td></tr>
+          <tr><td>eBPF: programmable junctions in the wire itself</td><td>Cilium / GKE Dataplane V2 / Calico eBPF</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real packets aren't "calls" — they're datagrams that can be lost, reordered, or split mid-flight. The CNI's job is harder than wiring; it has to handle live re-IPing, Pod churn, and policy enforcement in microseconds.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Every toy phone has a wire. The wire goes to a big board in the room (the bridge). The room's board connects to the room next door's board. The contractor who put in the wires is the CNI.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Each Pod has a Linux network namespace with its own <code>eth0</code>. <code>eth0</code> is one end of a <code>veth</code> pair; the other end is on the host plugged into a bridge. Cross-node traffic goes through inter-node routing or VXLAN encap. The CNI plugin is the per-node binary the kubelet calls (ADD/DEL/CHECK) on Pod lifecycle to set this up. The biggest production bug is MTU mismatch when encap overhead exceeds underlay capacity. Modern CNIs use eBPF instead of iptables for Service load balancing — much faster at scale and dramatically more observable.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams use this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS migrating from kube-proxy to Cilium</p><p>Replaced kube-proxy with Cilium's kube-proxy replacement. Service-establishment latency dropped from 50µs to 8µs. NetworkPolicy moved from iptables to eBPF; no perf cliff at high rule count. Hubble lit up with per-flow visibility — they found three policy violations they didn't know existed.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank running Calico with BGP peering</p><p>No encap. Every node BGP-peers with the top-of-rack switch. Pod IPs routable across the data center directly. No VXLAN overhead, no MTU surprises. Tradeoff: requires network team coordination and infrastructure that supports BGP.</p></div>
+      <div class="scenario"><p class="scenario-name">An EKS cluster using AWS VPC CNI</p><p>Pods get real VPC ENI IPs. Pod-to-Pod traffic goes through the VPC, no overlay, no encap. MTU = 9001 (jumbo frames). Tradeoff: ENI count limits how many Pods per node; needs careful node-type selection.</p></div>
+      <div class="scenario"><p class="scenario-name">A team debugging a 200ms latency that wasn't supposed to be there</p><p>Symptoms: only large HTTP responses slow. <code>ping -M do -s 1472</code> failed cross-node. MTU mismatch confirmed. CNI ConfigMap MTU bumped from 1500 to 1450 to account for VXLAN overhead. Latency normalised. Total fix time: 4 hours of mystery + 2 minutes of fix.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> K8s networking is its own special thing.</div><div class="misc-row misc-truth"><strong>Truth:</strong> K8s networking is Linux networking applied with namespaces and a CNI plugin. Every primitive (<code>veth</code>, bridges, routing tables, iptables) is bog-standard Linux. The novelty is automation, not the data plane.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> Encapsulation is a performance disaster.</div><div class="misc-row misc-truth"><strong>Truth:</strong> VXLAN encap costs ~5-10% throughput on most workloads. Native routing is faster but requires infrastructure cooperation (BGP-capable switches, or cloud VPC integration). For most clusters, encap is fine; chase native routing only when measured throughput matters.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> kube-proxy is required for K8s networking to work.</div><div class="misc-row misc-truth"><strong>Truth:</strong> kube-proxy implements <em>Services</em> (ClusterIP/NodePort), not Pod-to-Pod connectivity. CNIs like Cilium replace kube-proxy entirely. Pod-to-Pod just needs the CNI.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three Linux primitives behind a Pod's network?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>veth</code> pair (virtual cable, Pod end + host end), bridge (virtual L2 switch on the host), routing table + iptables/nftables/eBPF rules for forwarding/policy.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is CNI?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Container Network Interface — CNCF spec. The kubelet (runtime) calls a CNI plugin binary at Pod ADD/DEL/CHECK. Plugin sets up the Pod's networking. Vendor implementations: Cilium, Calico, Flannel, AWS VPC, Azure CNI, etc.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Encapsulation vs native routing?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Encap (VXLAN/Geneve): wrap each cross-node packet in an outer UDP header. Works on any network. Costs ~5-10% throughput + adds MTU overhead. Native routing: nodes route directly using BGP or cloud VPC integration. Faster, requires infrastructure support.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's an MTU mismatch?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Pod thinks MTU is X, but encap overhead means real maximum is X-50. Packets at X get fragmented or dropped. Symptom: cross-node tail latency spikes for large packets. Fix: pin Pod MTU below underlay minus encap overhead.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why does eBPF beat iptables for Service routing?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">iptables = linear chain of rules per Service, O(n) per packet. eBPF = compiled programs running at kernel hooks, O(1) per packet. At 5K+ Services, iptables hits a perf cliff; eBPF scales linearly to 50K+.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is Hubble?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Cilium's observability layer. Per-flow visibility: who's talking to whom, what's blocked by policy, where latency lives. Standard tool in Cilium-based clusters since 2023.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why does GKE Dataplane V2 matter?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">GKE's default data plane is Cilium-based since 2024. Means most new GKE clusters get eBPF + Hubble out of the box. AKS and EKS have similar offerings (AKS Cilium, EKS-with-Cilium addon).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's <code>kube-proxy ipvs</code> mode?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Older alternative to iptables mode. Uses Linux IPVS (in-kernel L4 LB). Better than iptables at high Service counts but less common now that eBPF-based CNIs replace kube-proxy outright.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A Pod's <code>eth0</code> is up, IP looks right, but <code>curl another-pod-ip</code> times out. Same-node Pods reach each other fine. What do you check first?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Cross-node connectivity → check the inter-node path. (1) <code>ip route</code> on the source node — does it have a route to the destination Pod's CIDR? (2) <code>iptables -L FORWARD -n -v</code> — is the FORWARD chain accepting? (3) Underlay reachability — can the source node ping the destination node? (4) MTU — try <code>ping -M do -s 1472 dest-pod-ip</code>; if it fails, MTU. (5) NetworkPolicy — is one denying? CNI logs (<code>kubectl -n kube-system logs ds/cilium</code>) usually narrow it down within minutes.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">Your team migrated from Flannel (VXLAN) to Cilium native-routing mode. After the migration, throughput went UP — but a few specific apps now get TCP resets on big payloads. What's wrong?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>MTU. Native routing has no encap overhead, so the underlay's full MTU is usable. If the new CNI config didn't bump Pod MTU back up (or worse, set it lower than the underlay), you can have either (a) Pod MTU too low — wasting capacity but otherwise fine, or (b) Pod MTU too high — packets bigger than what some intermediate hop allows, causing PMTU discovery messages that get blocked, leading to silent black-holing of large flows. Check <code>cilium config</code> for <code>mtu</code> setting; ping with DF bit set; verify ICMP-needed messages aren't being dropped by network ACLs.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">A platform team running 30K Services hits a kube-proxy perf cliff. <code>iptables-save | wc -l</code> returns 480,000 rules. They consider migrating to eBPF. <strong>Click for the migration playbook. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the migration playbook</span>Migration is non-trivial — but well-trodden. Sequence: (1) Pilot Cilium on a non-prod cluster of similar scale; verify NetworkPolicy semantics match. (2) Install Cilium alongside kube-proxy on a prod cluster (Cilium has <code>kubeProxyReplacement: false</code> mode). Cilium handles CNI; kube-proxy still handles Services. (3) Switch to <code>kubeProxyReplacement: true</code> on a node-by-node basis using node selectors. (4) Validate with Hubble that Service traffic is flowing through eBPF. (5) Drain and remove kube-proxy DaemonSet. <strong>Pitfalls:</strong> some old apps depend on iptables-visible rules (rare), some firewalls inspect iptables for compliance evidence (more common in regulated industries — Cilium has equivalents but auditors may need to be educated). <strong>Payoff:</strong> Service latency drops 5-10x at scale, NetworkPolicy enforcement gains observability, kube-proxy maintenance disappears.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">veth</div><div class="gloss-def">Virtual Ethernet pair. One end in the Pod's net namespace; the other on the host.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Bridge</div><div class="gloss-def">Virtual L2 switch on a node. Pods' host-side veths plug into it.</div></div>
+      <div class="gloss-item"><div class="gloss-name">CNI</div><div class="gloss-def">Container Network Interface — CNCF spec for K8s network plugins. Runtime calls plugin on Pod ADD/DEL/CHECK.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Cilium</div><div class="gloss-def">Modern CNI based on eBPF. De-facto choice for new clusters in 2026.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Calico</div><div class="gloss-def">Mature CNI; BGP routing, optional eBPF data plane. Strong NetworkPolicy support.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Flannel</div><div class="gloss-def">Simple VXLAN-based CNI. Common in lab clusters.</div></div>
+      <div class="gloss-item"><div class="gloss-name">VXLAN</div><div class="gloss-def">Virtual eXtensible LAN. UDP-based encapsulation; ~50-byte overhead per packet.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Native routing</div><div class="gloss-def">Cross-node traffic uses real IP routing (BGP or cloud VPC) instead of encapsulation.</div></div>
+      <div class="gloss-item"><div class="gloss-name">MTU</div><div class="gloss-def">Maximum Transmission Unit — largest packet size. Encap overhead reduces effective Pod MTU.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kube-proxy</div><div class="gloss-def">DaemonSet implementing Services via iptables, IPVS, or eBPF (replaceable by Cilium).</div></div>
+      <div class="gloss-item"><div class="gloss-name">eBPF</div><div class="gloss-def">In-kernel programmable hooks. Modern CNIs use it for data plane and observability.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Hubble</div><div class="gloss-def">Cilium's flow-level observability. Per-flow visibility into traffic and policy decisions.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Every Pod gets a Linux <code>veth</code> pair pulled into a node bridge. The <strong>CNI plugin</strong> creates the veth, assigns the IP, and connects nodes (encapsulation or native routing). Modern CNIs (<strong>Cilium</strong>) use <strong>eBPF</strong> instead of iptables — much faster and more observable. The most common production bug: <strong>MTU mismatch</strong>.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 24 complete</span>
+    <p>Pods get veth pairs into a node bridge; CNI plugin handles routing across nodes (encap or native). Modern CNIs (Cilium) use eBPF for both data plane and Service routing — much faster than iptables-mode kube-proxy. The single most common production bug is MTU mismatch.</p>
+    <p class="recap-next"><strong>Next — Lesson 25: Gateway API.</strong> The Ingress API is being retired in favour of the Gateway API across the entire ecosystem. Roles, listeners, routes, the Ingress NGINX migration story, and what changes for app teams. Switchboard, customer side.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 24 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+</script>
+
+</body>
+</html>

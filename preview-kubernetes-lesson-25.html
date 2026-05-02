@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 25 — Gateway API · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the K-COM course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L01 What is Kubernetes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L02 containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L03 reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L04 12-factor + monoliths</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L05 K8s fit / overkill</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L06 GitOps + SRE</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L07 history + KEPs</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>L7.5 Linux primer</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L08 namespaces &amp; cgroups</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L09 runtimes &amp; OCI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L10 image building</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L11 container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L12 PID 1 &amp; lifecycle</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L13 cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L14 K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L15 Pods deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L16 workload controllers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L17 services &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L18 storage Pt 1 — PV/PVC/SC</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L19 storage Pt 2 — CSI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L20 config &amp; secrets</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L21 service accounts &amp; certs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L22 scheduling Pt 1</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L23 scheduling Pt 2</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L24 net foundations &amp; CNI</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>L25 Gateway API</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L26 AdminNetworkPolicy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L27 RBAC &amp; Auth</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L28 admission control</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L29 policy engines</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L30 supply chain</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L31 multi-tenancy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L32 obs Pt 1 — logs/metrics</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L33 obs Pt 2 — traces/eBPF</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L34 autoscaling</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L35 reliability &amp; HA</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L36 Kustomize</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L37 Helm 3</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L38 Argo CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L39 Flux CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L40 progressive delivery</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L41 CRDs deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L42 Operators</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L43 service mesh</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L44 troubleshooting</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 25</span></a>
+    <span class="progress-pill">25 · Gateway API</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Switchboard — Customer Counter</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: lesson 25">
+    <title>K-Town district map · lesson 25</title>
+    <desc>Stylised map of K-Town. Switchboard — Customer Counter highlighted.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin active" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+    <g class="pin" id="kt-pin27" transform="translate(740,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">27</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">security</text></g>
+    <g class="pin" id="kt-pin32" transform="translate(230,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">32</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">observability</text></g>
+    <g class="pin" id="kt-pin34" transform="translate(230,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">34</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Station</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scale & resilience</text></g>
+    <g class="pin" id="kt-pin36" transform="translate(410,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">36</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Print Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">delivery</text></g>
+    <g class="pin" id="kt-pin42" transform="translate(700,305)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">42</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Workshop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">operators</text></g>
+    <g class="pin" id="kt-pin44" transform="translate(770,245)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">44</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Detective's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshooting</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Switchboard — Customer Counter</strong> <span>· lesson 25</span><span class="visually-hidden">Lesson 25, Switchboard — Customer Counter.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 12 · Lesson 25 · the Ingress successor</span>
+    <h1>Gateway API · Roles, Listeners, Routes, and the Ingress Sunset</h1>
+    <p class="hero-sub">Ingress was K8s's original L7 traffic API — and it stopped scaling years ago. The <strong>Gateway API</strong> (GA in K8s 1.31; v1 stable everywhere by 2026) replaces it with a <strong>three-role, three-object</strong> model that separates infrastructure, gateway, and route concerns. <strong>Ingress NGINX is officially retiring in 2026</strong>; this is the migration target.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Switchboard customer counter: GatewayClass posters on the wall, a Gateway machine with three plugged listeners, and three routes (HTTPRoute, GRPCRoute, TCPRoute) clipped to a route board.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">SWITCHBOARD · CUSTOMER COUNTER (GATEWAY API)</text>
+  <!-- GatewayClass poster -->
+  <g transform="translate(40,55)">
+    <rect width="100" height="100" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/>
+    <text x="50" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#3F4A5E">GatewayClass</text>
+    <line x1="14" y1="28" x2="86" y2="28" stroke="#9D9389" stroke-width="0.5"/>
+    <text x="50" y="44" text-anchor="middle" font-size="8" fill="#5A4F45">controller:</text>
+    <text x="50" y="56" text-anchor="middle" font-size="8" font-weight="700" fill="#3F4A5E">envoy-gw</text>
+    <text x="50" y="72" text-anchor="middle" font-size="8" fill="#5A4F45">or</text>
+    <text x="50" y="84" text-anchor="middle" font-size="8" font-weight="700" fill="#3F4A5E">cilium-gw</text>
+    <text x="50" y="120" text-anchor="middle" font-size="8" fill="#6B6058" font-style="italic">cluster-scoped recipe</text>
+  </g>
+  <!-- Gateway machine -->
+  <g transform="translate(170,40)">
+    <rect width="200" height="140" rx="6" fill="#3F4A5E" stroke="#1B1814" stroke-width="2"/>
+    <text x="100" y="18" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">GATEWAY · listener bank</text>
+    <!-- Listeners -->
+    <rect x="14" y="28" width="172" height="28" rx="3" fill="#5A9F7A"/>
+    <text x="100" y="46" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">:443 HTTPS · *.example.com</text>
+    <rect x="14" y="62" width="172" height="28" rx="3" fill="#4A8FA8"/>
+    <text x="100" y="80" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">:80 HTTP · redirect</text>
+    <rect x="14" y="96" width="172" height="28" rx="3" fill="#A04832"/>
+    <text x="100" y="114" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">:9090 gRPC · api.internal</text>
+    <text x="100" y="135" text-anchor="middle" font-size="7" fill="#FBF1D6" font-style="italic">infra team owns this</text>
+  </g>
+  <!-- Route board -->
+  <g transform="translate(400,40)">
+    <rect width="240" height="140" rx="6" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <text x="120" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">ROUTE BOARD · app-team-owned</text>
+    <rect x="10" y="22" width="220" height="30" rx="3" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.2"/>
+    <text x="14" y="36" font-size="8" font-weight="700" fill="#8B5A00">HTTPRoute</text>
+    <text x="14" y="48" font-size="7" fill="#5A4F45">/api/v1 → svc-api  |  /shop → svc-shop</text>
+    <rect x="10" y="58" width="220" height="30" rx="3" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.2"/>
+    <text x="14" y="72" font-size="8" font-weight="700" fill="#3D7857">GRPCRoute</text>
+    <text x="14" y="84" font-size="7" fill="#5A4F45">api.proto.UserService → svc-users</text>
+    <rect x="10" y="94" width="220" height="30" rx="3" fill="#FBE8DC" stroke="#A04832" stroke-width="1.2"/>
+    <text x="14" y="108" font-size="8" font-weight="700" fill="#A04832">TCPRoute / TLSRoute</text>
+    <text x="14" y="120" font-size="7" fill="#5A4F45">port 6443 → svc-postgres</text>
+  </g>
+  <text x="340" y="200" text-anchor="middle" font-size="11" fill="#3F4A5E" font-style="italic">GatewayClass = recipe · Gateway = listener bank · Route = traffic clip · Three roles, separate ownership.</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Friday morning: announcement drops that Ingress NGINX (kubernetes/ingress-nginx) will stop receiving security patches at end of 2026. The team has 47 production Ingress objects, hand-rolled annotations, and a custom ConfigMap with 200 settings. The migration target is Gateway API + a Gateway-API-conformant controller (Envoy Gateway, Cilium Gateway, etc.). The team panics. They've been ignoring Gateway API for two years. <em>The migration is doable</em> — Ingress NGINX itself ships <code>InGate</code>, a one-shot translator. But the <em>real</em> work is changing the team's mental model from "everything in one Ingress YAML" to the new role-separated structure. This lesson is that mental model.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Gateway API splits Ingress into three roles: <strong>GatewayClass</strong> (cluster recipe — infra team), <strong>Gateway</strong> (listener bank — platform team), <strong>HTTPRoute / GRPCRoute / TCPRoute / TLSRoute</strong> (traffic clips — app teams). The same logical setup as Ingress, but with cleaner ownership boundaries and far more expressiveness. Ingress NGINX is sunsetting in 2026 — start the migration now.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Why Ingress wasn't enough</h2>
+    <p>The Ingress API (in beta from 2015, finally stable in 2020) gave us "expose HTTP routes from outside the cluster." It worked. It also accumulated every limitation of a v1 API: no traffic splitting, no header manipulation, no separate concerns for infra vs apps, no good story for non-HTTP traffic, vendor-specific behavior locked behind <em>annotations</em>. Annotations on an Ingress object became the de-facto extension mechanism — and they're untyped strings that vary per controller.</p>
+    <p>The <strong>Gateway API</strong> (Kubernetes SIG-Network, work started in 2019) is the redesign. Not just "Ingress v2" — a structurally different model with three explicit roles and CRDs for each:</p>
+    <ul>
+      <li><strong>Infrastructure provider</strong> — defines a <code>GatewayClass</code>: "this controller (Envoy Gateway, Cilium Gateway, NGINX Gateway Fabric, Istio gateways) handles Gateways of this class."</li>
+      <li><strong>Cluster operator</strong> — creates <code>Gateway</code> objects: "give me a listener on :443 with these TLS certs, accepting routes from these namespaces."</li>
+      <li><strong>Application developer</strong> — creates <code>HTTPRoute</code> / <code>GRPCRoute</code> / <code>TCPRoute</code> / <code>TLSRoute</code> objects: "this hostname/path → my Service."</li>
+    </ul>
+    <p>The big change for app teams: you don't describe the listener anymore. The platform team owns the Gateway; you just attach a Route to it. The old "every team writes their own Ingress with annotations" pattern is gone.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · The three role-objects</span>
+    <h2>GatewayClass, Gateway, Route</h2>
+    <div class="role-grid">
+      <div class="role r1">
+        <span class="role-icon">🏛️</span>
+        <h3 class="role-name">GatewayClass</h3>
+        <p class="role-tag">recipe · cluster-scoped</p>
+        <p class="role-desc">Cluster-scoped: "controller X handles Gateways of class Y." Ships with the Gateway controller; cluster operators reference it. Like StorageClass.</p>
+        <p class="role-who">Owned by: infrastructure team / Gateway controller install</p>
+      </div>
+      <div class="role r2">
+        <span class="role-icon">🚪</span>
+        <h3 class="role-name">Gateway</h3>
+        <p class="role-tag">listener bank · namespace-scoped</p>
+        <p class="role-desc">A specific gateway with one or more listeners. Each listener is (port, protocol, optionally hostname, TLS config). Specifies which namespaces' Routes can attach via <code>allowedRoutes</code>.</p>
+        <p class="role-who">Owned by: platform team</p>
+      </div>
+      <div class="role r3">
+        <span class="role-icon">🛣️</span>
+        <h3 class="role-name">HTTPRoute (and friends)</h3>
+        <p class="role-tag">traffic clip · namespace-scoped</p>
+        <p class="role-desc">"Match these hostnames + paths/headers, route to these backends with these weights." Far richer than Ingress: header matching, traffic splitting, request rewriting, retries, timeouts. GRPCRoute, TCPRoute, TLSRoute, UDPRoute exist for non-HTTP.</p>
+        <p class="role-who">Owned by: app teams</p>
+      </div>
+    </div>
+    <p style="margin-top:18px">A Route attaches to a Gateway via <code>parentRefs</code>. The Gateway's <code>allowedRoutes</code> field gates which namespaces / Route kinds can attach. This is the explicit cross-tenancy model Ingress never had.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A platform team owns a Gateway listening on :443. App-team-A wants to attach an HTTPRoute matching <code>app-a.example.com</code>; app-team-B wants <code>app-b.example.com</code>. Both are in different namespaces. What does the platform team configure on the Gateway?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Nothing — Routes can attach freely from any namespace by default</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Set <code>allowedRoutes.namespaces.from: All</code> (or a selector) on the Gateway's listener so cross-namespace Routes can attach</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Create one Gateway per namespace</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> By default a Gateway's listener only accepts Routes from its own namespace (<code>from: Same</code>). To enable cross-namespace attachment, set <code>allowedRoutes.namespaces.from: All</code> or use a label selector. This is the explicit cross-tenancy model — much clearer than Ingress's free-for-all.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · What HTTPRoute can do that Ingress couldn't</span>
+    <h2>Out of annotations, into a typed schema</h2>
+    <p>Most Ingress controllers had de-facto annotations for traffic splitting (canary), header rewriting, retries. Each controller's syntax differed; cross-controller migration was painful. Gateway API moves all of this into the typed Route schema:</p>
+    <ul>
+      <li><strong>Traffic splitting:</strong> a single Route can backendRef two Services with weights (90/10 for canary).</li>
+      <li><strong>Header / path rewriting:</strong> filters on a route can rewrite request URLs and headers in-flight.</li>
+      <li><strong>Request mirroring:</strong> send a copy of every request to a debug Service while the real one is unaffected.</li>
+      <li><strong>Retries / timeouts:</strong> declarative per-route, no controller-specific annotations.</li>
+      <li><strong>Method matching:</strong> match by HTTP method (GET/POST), not just path/host.</li>
+      <li><strong>RBAC-friendly:</strong> apps can have full control of their Routes without ops worrying about port conflicts or TLS.</li>
+    </ul>
+    <p>Gateway API also has a formal <strong>conformance test suite</strong>. Controllers advertise which features they support. Switching from Envoy Gateway to NGINX Gateway Fabric means re-running conformance and fixing any unsupported features — not rewriting hundreds of annotations.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · The Ingress NGINX retirement</span>
+    <h2>What's actually happening in 2026</h2>
+    <p>The community-maintained <code>kubernetes/ingress-nginx</code> project (the de-facto Ingress controller for years) announced in March 2025 it would stop accepting new features and would EOL security patches by end of 2026. Reasons cited: limited contributor capacity, fundamental architectural debt (NGINX as a templated config), and the existence of a clearer successor (NGINX Gateway Fabric, F5's officially-supported Gateway-API-conformant controller).</p>
+    <p>The migration story:</p>
+    <ul>
+      <li><strong>Tool: <code>InGate</code></strong> — Ingress NGINX's own translator that converts existing Ingress YAML to Gateway API objects. Not perfect but covers ~80% of typical setups.</li>
+      <li><strong>Strategy:</strong> install a Gateway-API-conformant controller alongside Ingress NGINX (Envoy Gateway, NGINX Gateway Fabric, Cilium Gateway, Istio); migrate Routes incrementally with DNS cut-over per app; decommission Ingress NGINX last.</li>
+      <li><strong>Don't panic deadline:</strong> Ingress objects still work in K8s — just unmaintained Ingress controllers won't receive CVEs. You have through 2026 to migrate at sane pace.</li>
+    </ul>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>The political subtext: Ingress NGINX was always community-maintained without F5's direct backing. NGINX Gateway Fabric is F5-supported and Gateway-API-native — it's the supported successor. Other vendors saw the gap and moved their Gateway implementations earlier (Envoy Gateway, Cilium Gateway, Istio Gateway). The Gateway API itself is vendor-neutral; the choice of controller is yours. Most new clusters in 2026 are choosing Envoy Gateway or Cilium Gateway.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Old way: every team writes an <code>Ingress</code> with the controller's annotations (<code>nginx.ingress.kubernetes.io/...</code>) for canary splits, rewrites, retries. Cross-controller migration = rewrite every Ingress. Tenancy via namespace + RBAC luck. Listener config baked into Ingress objects so app teams accidentally control TLS.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Gateway API: platform team owns Gateway (listeners, TLS, allowedRoutes). App teams own HTTPRoutes with first-class fields for splits/rewrites/retries. Switching controllers = rerun conformance. Tenancy explicit via <code>allowedRoutes</code>. Same listener serves many apps without a single shared annotation soup.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Gateway API was the most-discussed K8s API of 2024-25 for good reason. It's the cleanest single API redesign in the ecosystem's history.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this district</h2>
+<p>Switchboard, customer counter side. The old setup had every business carrying a single big poster with their phone number, address, who could call them, what hours they answered, and the rules for caller ID — all stuck on one wall, written by anyone, contradicting each other. <em>Ingress, with its annotations, on a wall.</em></p><p>The new layout has three separate workstations. The infra office hangs <strong>operating-license posters</strong> (GatewayClass): "the city contracts so-and-so for this kind of switchboard." The platform team operates the <strong>main switchboard machine</strong> (Gateway): a bank of physical jacks at specific addresses (listeners), each jack with its own line and posted rules about who can plug in. App teams clip their own <strong>route slips</strong> (HTTPRoute) onto a board: "calls to this number, from this exchange, route to my building, here are the rules for split-percentage and retry." Three roles, three artefacts, no overlap.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>Operating-license poster</td><td><code>GatewayClass</code></td></tr>
+          <tr><td>The switchboard machine and its bank of jacks</td><td><code>Gateway</code> with listeners (port, protocol, hostname, TLS)</td></tr>
+          <tr><td>Posted rules for which exchanges may plug into a jack</td><td><code>allowedRoutes</code> on a listener</td></tr>
+          <tr><td>Clipped route slip on the board</td><td><code>HTTPRoute</code> (and GRPCRoute, TCPRoute, TLSRoute, UDPRoute)</td></tr>
+          <tr><td>Split-percentage rules on a slip</td><td>Backend weights for canary / blue-green</td></tr>
+          <tr><td>In-flight call edits (rewrite extension)</td><td>Filters: URLRewrite, HeaderModifier</td></tr>
+          <tr><td>The annotation soup on the old single poster</td><td>Ingress + controller-specific annotations</td></tr>
+          <tr><td>"This switchboard contractor is shutting down" notice</td><td>Ingress NGINX EOL end of 2026</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real Gateway implementations are programs (Envoy Gateway, Cilium Gateway), not switchboards. And the "three roles" are an organisational ideal — small teams may collapse them, and that's fine; the API just makes the boundaries possible.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Old way: one big sign for each store, with everything on it, half of it in code only the sign-maker understood. New way: a city sign for the road type, a building manager for the front-desk hours, and each store keeps a small slip on a shared board for "if someone asks for me, send them in."</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>The Gateway API replaces the Ingress API. Three CRDs split the concerns: GatewayClass (cluster-level recipe; infra team), Gateway (listener bank; platform team), HTTPRoute / GRPCRoute / TCPRoute / TLSRoute (traffic rules; app teams). Routes attach to Gateways via <code>parentRefs</code>; Gateways gate cross-namespace attachment via <code>allowedRoutes</code>. First-class support for traffic splitting, header rewriting, mirroring, retries, timeouts — all the things that used to be controller-specific annotations on Ingress. Ingress NGINX is EOL end of 2026; the upgrade path is Gateway API + Envoy Gateway / Cilium Gateway / NGINX Gateway Fabric.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams use this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS replacing 47 Ingress objects with Gateway API</p><p>One Gateway per cluster (managed by platform team), Routes per app team. Started with the InGate translator for the bulk migration; hand-fixed the 12 with custom annotations. Total migration: 6 weeks, including testing. End state: app teams own their HTTPRoutes, no platform-team approval needed for new routes.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank using Cilium Gateway</p><p>Cilium provides both CNI and Gateway in the same DaemonSet. Single eBPF-based data plane for cluster-internal traffic and ingress. Hubble shows per-flow visibility from external request through Routes to backend Pods. Operations team has one fewer thing to deploy.</p></div>
+      <div class="scenario"><p class="scenario-name">A startup running Envoy Gateway for richer traffic shaping</p><p>Used HTTPRoute weighted backends for canary deploys: 90% to <code>v1</code>, 10% to <code>v2</code>. Increment to 50/50, then 0/100 over a week. Pushed via GitOps; no controller annotations. Same flow gets metrics/tracing in Envoy admin endpoint.</p></div>
+      <div class="scenario"><p class="scenario-name">A team that mirrors prod traffic to staging</p><p>HTTPRoute filter <code>RequestMirror</code> sends a copy of every prod request to the staging Service. Staging gets real prod traffic shape without affecting prod responses. Used to validate the next release before promoting it.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> Gateway API is just Ingress with new YAML.</div><div class="misc-row misc-truth"><strong>Truth:</strong> It's a structural redesign with explicit role separation, first-class non-HTTP routes, conformance testing, and typed traffic-shaping fields. Migrating means reorganising who owns what, not just rewriting Ingress.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> You have to migrate to Gateway API before end of 2026.</div><div class="misc-row misc-truth"><strong>Truth:</strong> Ingress objects still work — what's EOL is the <em>kubernetes/ingress-nginx</em> controller specifically. Other Ingress controllers (NGINX Inc, Traefik, HAProxy, etc.) keep working. But the entire ecosystem is moving to Gateway API; do the migration on your terms before it becomes urgent.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> Gateway API can't do everything Ingress NGINX did.</div><div class="misc-row misc-truth"><strong>Truth:</strong> Conformance varies by controller. Most popular Gateway controllers cover the standard feature set; vendor-specific extensions (Lua scripts, ModSecurity rules) need vendor-specific extensions. Check your specific Gateway controller's feature matrix.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three Gateway API roles?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">GatewayClass (cluster, infra-team-owned, recipe). Gateway (namespace, platform-team-owned, listener bank). Route (namespace, app-team-owned, traffic clip). Roles map to organisational responsibility; small teams may collapse them.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's a listener?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A (port, protocol, optional hostname, optional TLS) tuple on a Gateway. Each listener has its own <code>allowedRoutes</code> rules about which Routes from which namespaces can attach.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">HTTPRoute vs GRPCRoute vs TCPRoute vs TLSRoute?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">HTTPRoute = full HTTP/2 features. GRPCRoute = gRPC-aware (method matching). TCPRoute = raw TCP backend selection. TLSRoute = SNI-based routing for TLS without termination.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">parentRefs?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Field on a Route specifying which Gateway(s) it attaches to. Cross-namespace by name + namespace; allowed only if the Gateway listener's <code>allowedRoutes</code> permits.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Traffic splitting in HTTPRoute?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Multiple backendRefs in a rule with weights. <code>weight: 90</code> on backend A and <code>weight: 10</code> on backend B = 90/10 split. Canary in pure declarative YAML.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Common Gateway controllers?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Envoy Gateway, NGINX Gateway Fabric (F5-supported), Cilium Gateway, Istio Gateways, Traefik, HAProxy Kubernetes Ingress (now Gateway-capable), Kong Gateway, Solo gloo. Pick by org familiarity + conformance level.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is conformance?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Formal test suite the Gateway API project ships. Controllers run conformance and publish their support level (Core / Extended / Implementation-specific). Lets you switch controllers with confidence.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When does Ingress NGINX EOL?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">End of 2026 — kubernetes/ingress-nginx specifically (not NGINX Inc.'s commercial NGINX or any other Ingress controller). Migrate to Gateway API + a conformant controller.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A team has a single Ingress with 28 hosts on it (NGINX annotations for split, retry, headers). They start a Gateway API migration. What's the right first step?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Don't convert all 28 at once. <strong>(1)</strong> Install a Gateway controller alongside Ingress NGINX (Envoy Gateway is a common choice). <strong>(2)</strong> Create a single Gateway with listeners matching the existing Ingress's TLS setup. <strong>(3)</strong> Pick one host (the lowest-stakes one), create an HTTPRoute, switch DNS for that host. Validate. <strong>(4)</strong> Repeat for the next host. <strong>(5)</strong> When all 28 hosts are on the Gateway, decommission the old Ingress. Tools like InGate help with the bulk YAML transformation; the careful per-host cutover is the safe migration sequence.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">The Gateway API has GRPCRoute, TCPRoute, TLSRoute, UDPRoute. When would you pick TLSRoute over HTTPRoute?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>TLSRoute does <em>SNI-based routing without TLS termination</em>. Use case: a Pod-managed service that wants to handle its own TLS internally (e.g., a database with mTLS, a service mesh proxy) — but you still want to use the cluster's external Gateway as a passthrough load balancer. The Gateway looks at the Server Name Indication (SNI) field in the TLS handshake to pick a backend, then passes the bytes through. HTTPRoute would terminate TLS, see the HTTP requests, and re-encrypt to the backend if needed. TLSRoute = no termination. TCPRoute = no SNI inspection at all, just a flat L4 proxy.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The platform team installs Cilium Gateway in production but app teams keep getting 503s on cross-namespace HTTPRoutes. <strong>Click for the diagnosis. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the diagnosis</span>The most common cause: the Gateway's listeners specify <code>allowedRoutes.namespaces.from: Same</code> (the default), so Routes in other namespaces are silently rejected. <strong>Diagnosis steps:</strong> (1) <code>kubectl get httproute -A</code> — for each, check <code>status.parents.conditions</code>. Routes that didn't attach show <code>Accepted=False</code> with reason <code>NotAllowedByListeners</code>. (2) <code>kubectl get gateway</code> — inspect the listeners' <code>allowedRoutes</code>. <strong>Fix:</strong> set <code>allowedRoutes.namespaces.from: All</code> (loose) or <code>Selector</code> with a namespace label match (tighter). Once the Route attaches, traffic flows. <strong>Why this is a feature, not a bug:</strong> the explicit attach model prevents app-team A from accidentally claiming app-team B's hostname — which used to happen all the time with Ingress.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Gateway API</div><div class="gloss-def">K8s SIG-Network successor to Ingress. v1 stable in K8s 1.31; broadly conformant in 2026.</div></div>
+      <div class="gloss-item"><div class="gloss-name">GatewayClass</div><div class="gloss-def">Cluster-scoped recipe linking a controller to Gateway implementations. Like StorageClass.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Gateway</div><div class="gloss-def">Namespace-scoped object representing a specific gateway with listeners. Owned by platform team.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Listener</div><div class="gloss-def">A (port, protocol, hostname, TLS) tuple on a Gateway. Has its own allowedRoutes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">HTTPRoute</div><div class="gloss-def">App-team-owned object: match HTTP requests on host/path/headers/method, route to backends with weights, apply filters.</div></div>
+      <div class="gloss-item"><div class="gloss-name">GRPCRoute</div><div class="gloss-def">gRPC-method-aware route. Backends are gRPC services; matching by RPC.</div></div>
+      <div class="gloss-item"><div class="gloss-name">TCPRoute / TLSRoute / UDPRoute</div><div class="gloss-def">Layer-4 routing CRDs. TLSRoute does SNI passthrough; TCPRoute is flat L4.</div></div>
+      <div class="gloss-item"><div class="gloss-name">parentRefs</div><div class="gloss-def">Field on Routes pointing at the Gateway(s) they attach to.</div></div>
+      <div class="gloss-item"><div class="gloss-name">allowedRoutes</div><div class="gloss-def">Field on a listener gating which namespaces / Route kinds can attach.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Conformance</div><div class="gloss-def">Formal test suite verifying a controller implements Gateway API correctly. Levels: Core, Extended, Implementation-specific.</div></div>
+      <div class="gloss-item"><div class="gloss-name">InGate</div><div class="gloss-def">Ingress NGINX's own Ingress→Gateway-API translator tool. Bulk-converts existing setups.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Ingress NGINX EOL</div><div class="gloss-def">The kubernetes/ingress-nginx project stops receiving security patches end of 2026. Migrate to Gateway API.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Gateway API splits Ingress into three roles: <strong>GatewayClass</strong> (cluster recipe — infra team), <strong>Gateway</strong> (listener bank — platform team), <strong>HTTPRoute / GRPCRoute / TCPRoute / TLSRoute</strong> (traffic clips — app teams). The same logical setup as Ingress, but with cleaner ownership boundaries and far more expressiveness. Ingress NGINX is sunsetting in 2026 — start the migration now.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 25 complete</span>
+    <p>Three roles, three CRDs: GatewayClass (cluster recipe), Gateway (listener bank), HTTPRoute/etc (app-team traffic clips). Cleaner ownership, first-class traffic shaping, conformance testing, non-HTTP support. Ingress NGINX EOL'd end of 2026 — start the migration.</p>
+    <p class="recap-next"><strong>Next — Lesson 26: AdminNetworkPolicy & FQDN policies.</strong> NetworkPolicy v1 was app-team-controlled and additive-only — there was no "admin override." The new <code>AdminNetworkPolicy</code> + <code>BaselineAdminNetworkPolicy</code> APIs give cluster admins enforceable network rules, plus FQDN-based policies for egress to external services. Switchboard, security wing.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 25 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+</script>
+
+</body>
+</html>
