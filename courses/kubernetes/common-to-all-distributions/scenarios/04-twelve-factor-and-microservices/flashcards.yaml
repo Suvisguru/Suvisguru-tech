@@ -1,0 +1,35 @@
+# Flashcards — Lesson 04, Twelve-Factor Apps + Microservices vs Monoliths
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "What is a 12-factor app?"
+    back: "An app written to twelve specific guidelines (config, dependencies, processes, port binding, logs, etc.) that make it run cleanly on dynamic platforms like Kubernetes. Coined by Heroku in 2011."
+
+  - id: 2
+    front: "Where should config live?"
+    back: "In environment variables (or platform-injected config like Kubernetes Secrets/ConfigMaps), never in code or baked-in files. Same image, different config per environment."
+
+  - id: 3
+    front: "Why must processes be stateless?"
+    back: "Because the platform can restart, move, or replace a process at any time. State stored in memory or local disk disappears with it. Put state in attached backing services (DB, Redis, S3)."
+
+  - id: 4
+    front: "What is a monolith?"
+    back: "One big deployable that does everything in one process. Simple to deploy and debug, but tightly couples teams and features."
+
+  - id: 5
+    front: "What are microservices?"
+    back: "Many small services, each owning one capability. They communicate over the network. Independent deploy, scale, and fail — at the cost of distributed-systems complexity."
+
+  - id: 6
+    front: "What is a modular monolith?"
+    back: "One deployable, but the codebase is split into modules with strict, code-enforced boundaries. Operational simplicity of a monolith + boundary discipline of microservices."
+
+  - id: 7
+    front: "Microservices trade-off?"
+    back: "+ team independence, independent scaling, blast-radius isolation. − network is now part of your app: retries, timeouts, distributed tracing, service discovery, separate dashboards, separate on-call."
+
+  - id: 8
+    front: "When to start with microservices?"
+    back: "Almost never at the start. Most teams should begin with a modular monolith and split out individual services only when team scale, deployment cadence, or technical scaling clearly demands it."

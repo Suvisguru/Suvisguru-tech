@@ -1,0 +1,42 @@
+# Quiz — Lesson 04, Twelve-Factor Apps + Microservices vs Monoliths
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A team is moving a Python app to Kubernetes. The app currently reads
+      database credentials from /etc/app/db.conf written by a Chef recipe
+      at provisioning time. Which 12-factor rule does this violate, and
+      what's the fix?
+    answer: |
+      Violates Factor 3: Config — store config in environment variables,
+      never in code or baked-in files. Fix: store the credentials as a
+      Kubernetes Secret, mount or inject them as environment variables.
+      The app reads os.environ['DB_PASSWORD']. The Chef recipe goes away.
+      The app image becomes generic — same image, different env per
+      environment.
+
+  - id: 2
+    prompt: |
+      A 6-engineer startup is debating whether to start with microservices
+      or a monolith for their new product. What would you recommend and
+      why?
+    answer: |
+      Modular monolith. Microservices push complexity from inside the
+      codebase to the network — distributed tracing, retries, idempotency,
+      service discovery, separate dashboards, separate on-call. A
+      6-engineer team rarely has the operational maturity to absorb that.
+      A modular monolith keeps clear internal boundaries with a fraction
+      of the operational tax. They can split out a single high-traffic
+      module later if scale or team boundaries justify it.
+
+  - id: 3
+    prompt: "Why is 'log to stdout' (Factor 11) a 12-factor rule rather than just a personal preference?"
+    answer: |
+      Because writing logs to a file on the pod's local disk fights the
+      platform — that disk disappears when the pod restarts, log rotation
+      needs separate cron jobs, and you've coupled your app to
+      filesystem-specific assumptions. Writing to stdout lets the platform
+      (Kubernetes, Heroku, whatever) capture logs uniformly, ship them to
+      centralized aggregation, and rotate/retain them as policy demands.
+      Your app stays generic; the platform handles log lifecycle.
