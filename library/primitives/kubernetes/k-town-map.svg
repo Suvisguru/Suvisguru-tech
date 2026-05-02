@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Primitive: k-town-map
+  Domain: kubernetes
+  Status: draft, K-Town revision Phase 2 (cross-lesson universe map).
+
+  Description: The single canonical map of K-Town, the unified analogical
+  universe for the Kubernetes course. 16 named pins — one per lesson plus
+  the Lesson 7.5 primer. The Mayor's Office (Lesson 01) is the city anchor
+  and renders larger and in slate (--accent) so it is visible across all
+  lessons; whichever lesson is currently being viewed activates that
+  lesson's pin in warm coral (--warm).
+
+  Default viewBox: 800 x 420.
+
+  Embedding pattern: each lesson inlines the SVG markup (see <symbol> body
+  below) into its own page. To highlight the current lesson, add the class
+  "active" to that lesson's pin <g>. The Mayor's Office anchor pin keeps the
+  extra class "pin-anchor"; the Lesson 7.5 primer pin keeps the extra class
+  "pin-primer" (which renders a dashed circle stroke to flag it as
+  scaffolding rather than a numbered lesson).
+
+  Highlight CSS (host page must define):
+    .ktown-map .pin .pin-circle             { fill: var(--ink-faint) }
+    .ktown-map .pin .pin-num                { fill: var(--bg) }
+    .ktown-map .pin .pin-label              { fill: var(--ink-soft) }
+    .ktown-map .pin-anchor:not(.active) .pin-circle { fill: var(--accent) }
+    .ktown-map .pin-anchor:not(.active) .pin-label  { fill: var(--accent); font-weight: 700 }
+    .ktown-map .pin.active   .pin-circle    { fill: var(--warm) }
+    .ktown-map .pin.active   .pin-label     { fill: var(--ink); font-weight: 700 }
+    .ktown-map .pin.active   .pin-halo      { fill: var(--warm); opacity: 0.18 }
+
+  Inline fills on the circles are safe defaults so this file renders
+  sensibly when opened directly. Host-page CSS overrides them at runtime
+  (presentation attributes lose to any author CSS rule).
+
+  Slot anchors / pin coordinates (cx,cy):
+    01 Mayor's Office (anchor)             (400, 200)
+    02 Residential District                ( 90, 150)
+    03 Climate Control Tower               (130,  75)
+    04 Port + Restaurant Row               (290, 340)
+    05 Industrial Kitchen Block            (220, 200)
+    06 Public Library                      (530, 145)
+    07 K-Town Rail Yard                    (380,  55)
+    7.5 Foundation Tour (primer)           ( 90, 335)
+    08 Office Tower with Utility Meters    (610, 200)
+    09 Customs Warehouse                   (660, 265)
+    10 Bakery District                     (350, 290)
+    11 K-Town Bank Vault Quarter           (700, 145)
+    12 K-Town Harbour                      (570, 340)
+    13 K-Town International Airport        (660,  65)
+    14 City Hall — Permit Office           (470, 255)
+    15 Co-Living Quarter                   (170, 255)
+
+  Background features (decorative, no semantic load):
+    - Soft cream/sand base panel inside a 760 x 380 rounded rect.
+    - Faint "K · TOWN" letter-spaced title at top center.
+    - Airport runway suggestion (dashed strip near pin 13).
+    - Rail track suggestion (dashed line near pin 07).
+    - Bay / water gradient strip at the south, hosting pins 04 and 12.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" width="800" height="420" class="ktown-map" role="img" aria-label="K-Town district map: 16 named districts spanning the Kubernetes course">
+  <title>K-Town district map</title>
+  <desc>Stylised map of K-Town, the unified analogical universe for the Kubernetes course. Each lesson maps to one named district. Mayor's Office anchors the city.</desc>
+
+  <defs>
+    <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/>
+    </linearGradient>
+    <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+
+  <symbol id="k-town-map" overflow="visible">
+
+    <!-- Map base panel -->
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+
+    <!-- Title strip -->
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+
+    <!-- Bay / water (south coastline) -->
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+
+    <!-- Airport runway suggestion -->
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+
+    <!-- Rail track suggestion -->
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+
+    <!-- ============ DISTRICT PINS ============ -->
+
+    <!-- L03 — Climate Control Tower -->
+    <g class="pin" id="kt-pin03" transform="translate(130,75)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text>
+    </g>
+
+    <!-- L07 — K-Town Rail Yard -->
+    <g class="pin" id="kt-pin07" transform="translate(380,55)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text>
+    </g>
+
+    <!-- L13 — K-Town International Airport -->
+    <g class="pin" id="kt-pin13" transform="translate(660,65)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text>
+    </g>
+
+    <!-- L02 — Residential District -->
+    <g class="pin" id="kt-pin02" transform="translate(90,150)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text>
+    </g>
+
+    <!-- L05 — Industrial Kitchen Block -->
+    <g class="pin" id="kt-pin05" transform="translate(220,200)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text>
+    </g>
+
+    <!-- L06 — Public Library -->
+    <g class="pin" id="kt-pin06" transform="translate(530,145)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text>
+    </g>
+
+    <!-- L11 — K-Town Bank Vault Quarter -->
+    <g class="pin" id="kt-pin11" transform="translate(700,145)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text>
+    </g>
+
+    <!-- L08 — Office Tower with Utility Meters -->
+    <g class="pin" id="kt-pin08" transform="translate(610,200)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text>
+    </g>
+
+    <!-- L01 — Mayor's Office (anchor) -->
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)">
+      <circle class="pin-halo" r="22" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/>
+      <text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text>
+      <text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#3F4A5E">Mayor's Office</text>
+      <text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text>
+    </g>
+
+    <!-- L15 — Co-Living Quarter -->
+    <g class="pin" id="kt-pin15" transform="translate(170,255)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text>
+    </g>
+
+    <!-- L14 — City Hall · Permit Office -->
+    <g class="pin" id="kt-pin14" transform="translate(470,255)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text>
+    </g>
+
+    <!-- L09 — Customs Warehouse -->
+    <g class="pin" id="kt-pin09" transform="translate(660,265)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text>
+    </g>
+
+    <!-- L10 — Bakery District -->
+    <g class="pin" id="kt-pin10" transform="translate(350,290)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text>
+    </g>
+
+    <!-- L7.5 — Foundation Tour (primer) -->
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text>
+      <text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">primer</text>
+    </g>
+
+    <!-- L04 — Port + Restaurant Row -->
+    <g class="pin" id="kt-pin04" transform="translate(290,340)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text>
+    </g>
+
+    <!-- L12 — K-Town Harbour -->
+    <g class="pin" id="kt-pin12" transform="translate(570,340)">
+      <circle class="pin-halo" r="18" fill="#D97757" opacity="0"/>
+      <circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/>
+      <text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text>
+      <text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text>
+    </g>
+
+  </symbol>
+
+  <use href="#k-town-map"/>
+</svg>
