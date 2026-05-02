@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 03 — Cloud-Native Principles · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:44px;font-weight:700;line-height:1.15;letter-spacing:-0.8px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:34px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:28px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+
+  .illu{margin:24px 0;background:var(--bg-soft);border-radius:var(--r-soft);padding:20px;text-align:center}
+  .illu svg{display:block;width:100%;height:auto;max-width:680px;margin:0 auto}
+  .illu-caption{font-size:14px;color:var(--ink-soft);margin-top:12px;font-style:italic;line-height:1.5}
+
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:170px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-pause-tag{display:inline-block;background:var(--gold-soft);color:var(--warm-deep);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px}
+  [data-theme="dark"] .quiz-pause-tag{color:var(--gold)}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'📚';font-size:18px}
+  .glossary summary::after{content:'›';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+</style>
+</head>
+<body data-theme="light">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 03</span></a>
+    <span class="progress-pill">3 of 17</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================== HERO ============================== -->
+  <section class="hero">
+    <span class="eyebrow">Lesson 03 · the big idea</span>
+    <h1>Cloud-Native Principles</h1>
+    <p class="hero-sub">Kubernetes works like a <strong>thermostat</strong>. You set what you want; it watches the room forever and fixes anything that doesn't match. Once you see this one idea, the rest of Kubernetes is just variations on it.</p>
+
+    <div class="hero-illu">
+      <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A friendly illustration of a thermostat watching a house — set the desired temperature, the thermostat watches the room and fires the heater when needed">
+        <defs>
+          <radialGradient id="dial-grad" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stop-color="#FBF7F0"/>
+            <stop offset="100%" stop-color="#E8DDC8"/>
+          </radialGradient>
+          <linearGradient id="sky-grad-3" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FBF1D6"/>
+            <stop offset="100%" stop-color="#FBF7F0" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- Soft sky -->
+        <rect width="680" height="200" fill="url(#sky-grad-3)"/>
+
+        <!-- LEFT: Thermostat -->
+        <text x="170" y="22" font-size="13" font-weight="700" fill="#3F4A5E" text-anchor="middle" letter-spacing="1.5">THE THERMOSTAT</text>
+        <g transform="translate(170,140)">
+          <!-- Outer ring -->
+          <circle cx="0" cy="0" r="74" fill="#5A6878" stroke="#2E3640" stroke-width="2"/>
+          <!-- Inner face -->
+          <circle cx="0" cy="0" r="62" fill="url(#dial-grad)" stroke="#9D9389" stroke-width="1"/>
+          <!-- Tick marks at 6 positions (16, 18, 20, 22, 24, 26) -->
+          <g stroke="#5A4F45" stroke-width="2" stroke-linecap="round">
+            <line x1="0" y1="-58" x2="0" y2="-50"/>
+            <line x1="50" y1="-29" x2="43" y2="-25"/>
+            <line x1="50" y1="29" x2="43" y2="25"/>
+            <line x1="0" y1="58" x2="0" y2="50"/>
+            <line x1="-50" y1="29" x2="-43" y2="25"/>
+            <line x1="-50" y1="-29" x2="-43" y2="-25"/>
+          </g>
+          <!-- Temperature labels -->
+          <g font-family="sans-serif" font-size="9" fill="#5A4F45" text-anchor="middle">
+            <text x="0" y="-62">22°</text>
+            <text x="55" y="-30">24°</text>
+            <text x="55" y="35">26°</text>
+            <text x="0" y="68">—</text>
+            <text x="-55" y="35">18°</text>
+            <text x="-55" y="-30">20°</text>
+          </g>
+          <!-- Big center number (desired temp) -->
+          <text x="0" y="6" font-family="sans-serif" font-size="28" font-weight="700" fill="#3F4A5E" text-anchor="middle">22°</text>
+          <text x="0" y="22" font-family="sans-serif" font-size="9" font-weight="600" fill="#6B6058" text-anchor="middle" letter-spacing="1.5">DESIRED</text>
+          <!-- Dial pointer (pointing at 22°) -->
+          <path d="M 0 -54 L -3 -40 L 3 -40 Z" fill="#D97757" stroke="#A04832" stroke-width="1"/>
+          <!-- Center dot -->
+          <circle cx="0" cy="0" r="4" fill="#3F4A5E"/>
+        </g>
+
+        <!-- RIGHT: House with thermometer in the room -->
+        <text x="510" y="22" font-size="13" font-weight="700" fill="#5A9F7A" text-anchor="middle" letter-spacing="1.5">THE ROOM (ACTUAL)</text>
+        <g transform="translate(380,46)">
+          <!-- Roof -->
+          <path d="M 0 50 L 130 14 L 260 50 Z" fill="#A04832"/>
+          <!-- Body -->
+          <rect x="10" y="50" width="240" height="150" fill="#F5EFE3" stroke="#8B7355" stroke-width="2"/>
+          <!-- Door -->
+          <rect x="110" y="138" width="40" height="62" fill="#A04832"/>
+          <circle cx="142" cy="170" r="1.5" fill="#FBF1D6"/>
+          <!-- Window with thermometer inside -->
+          <rect x="40" y="74" width="50" height="50" fill="#B8DCE8" stroke="#8B7355" stroke-width="1.4"/>
+          <line x1="65" y1="74" x2="65" y2="124" stroke="#8B7355"/>
+          <line x1="40" y1="99" x2="90" y2="99" stroke="#8B7355"/>
+          <!-- Smiley in window -->
+          <circle cx="65" cy="99" r="7" fill="#FBF1D6"/>
+          <circle cx="62" cy="98" r="0.9" fill="#2A2520"/>
+          <circle cx="68" cy="98" r="0.9" fill="#2A2520"/>
+          <path d="M 60 102 Q 65 105 70 102" stroke="#2A2520" stroke-width="0.8" fill="none"/>
+          <!-- Thermometer mounted on wall -->
+          <g transform="translate(180,84)">
+            <rect x="-8" y="0" width="16" height="50" rx="8" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.5"/>
+            <rect x="-5" y="6" width="10" height="40" rx="5" fill="#F0E6D4"/>
+            <!-- Mercury showing 19° (lower) -->
+            <rect x="-3" y="22" width="6" height="22" rx="3" fill="#D97757"/>
+            <circle cx="0" cy="50" r="9" fill="#D97757"/>
+            <!-- Tick marks -->
+            <line x1="6" y1="14" x2="9" y2="14" stroke="#5F5E5A"/>
+            <line x1="6" y1="22" x2="9" y2="22" stroke="#5F5E5A"/>
+            <line x1="6" y1="30" x2="9" y2="30" stroke="#5F5E5A"/>
+            <line x1="6" y1="38" x2="9" y2="38" stroke="#5F5E5A"/>
+          </g>
+          <!-- Temperature reading label -->
+          <text x="195" y="146" font-family="sans-serif" font-size="14" font-weight="700" fill="#A04832" text-anchor="middle">19°</text>
+          <text x="195" y="160" font-family="sans-serif" font-size="9" font-weight="600" fill="#6B6058" text-anchor="middle" letter-spacing="1">ACTUAL</text>
+          <!-- Chimney -->
+          <rect x="200" y="20" width="14" height="34" fill="#8B5A3C" stroke="#5A3A22"/>
+          <g opacity="0.5">
+            <circle cx="207" cy="14" r="3" fill="#9D9389"/>
+            <circle cx="211" cy="6" r="4" fill="#9D9389"/>
+          </g>
+        </g>
+
+        <!-- Captions below -->
+        <text x="170" y="240" font-family="sans-serif" font-size="11" fill="#3F4A5E" text-anchor="middle">you set this · "I want 22°"</text>
+        <text x="510" y="240" font-family="sans-serif" font-size="11" fill="#5A9F7A" text-anchor="middle">it watches this · "actually 19°"</text>
+        <text x="340" y="262" font-family="sans-serif" font-size="12" font-weight="700" fill="#D97757" text-anchor="middle">Gap of 3° → fire the heater. Repeat forever.</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 1 — CONCEPT ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>What "cloud-native" actually means</h2>
+    <p><strong>Cloud-native</strong> is a way of building software that assumes the world keeps breaking and changing. Servers fail. Network blips happen. Traffic goes up and down. Apps need to ship 50 times a day. Cloud-native software is designed for that — not in spite of it.</p>
+    <p>Seven principles describe it. They sound like a long list, but they all stem from one idea: <strong>the reconciliation loop</strong>. A small program (called a <strong>controller</strong>) reads what you said you wanted, looks at what's actually running, and takes the smallest action to close the gap. Then it does it again. Forever. That's the whole game.</p>
+    <p>The seven principles: <strong>1. Declarative config</strong> — you say what, not how. <strong>2. Reconciliation loops</strong> — controllers always watching. <strong>3. Desired vs actual state</strong> — the spec vs reality. <strong>4. Immutable infrastructure</strong> — replace, don't patch. <strong>5. Pets vs cattle</strong> — replaceable, not unique. <strong>6. Horizontal scaling</strong> — more copies, not bigger ones. <strong>7. Failure as normal</strong> — designed-in resilience.</p>
+
+    <div class="illu">
+      <svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The reconciliation loop: desired state on the left, actual state on the right, controller in the middle reading both and taking action to close the gap, with arrows showing the loop never stops">
+        <defs>
+          <marker id="arr-loop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3F4A5E"/>
+          </marker>
+        </defs>
+
+        <text x="340" y="24" font-size="14" font-weight="700" fill="#3F4A5E" text-anchor="middle" letter-spacing="1.5">THE RECONCILIATION LOOP</text>
+
+        <!-- LEFT: Desired State -->
+        <g transform="translate(40,70)">
+          <rect width="160" height="120" rx="12" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+          <rect width="160" height="28" rx="12 12 0 0" fill="#3F4A5E"/>
+          <text x="80" y="20" font-size="11" font-weight="600" fill="#FFF" text-anchor="middle" letter-spacing="1">DESIRED STATE</text>
+          <text x="80" y="58" font-size="36" text-anchor="middle">📋</text>
+          <text x="80" y="86" font-size="12" fill="#3F4A5E" text-anchor="middle">"I want 3 copies"</text>
+          <text x="80" y="104" font-size="11" fill="#6B6058" text-anchor="middle" font-style="italic">(your YAML file)</text>
+        </g>
+
+        <!-- CENTER: Controller (the thermostat brain) -->
+        <g transform="translate(280,70)">
+          <rect width="120" height="120" rx="60" fill="#D97757" stroke="#A04832" stroke-width="2"/>
+          <text x="60" y="44" font-size="32" text-anchor="middle">🌡️</text>
+          <text x="60" y="78" font-size="11" font-weight="700" fill="#FFF" text-anchor="middle" letter-spacing="1">CONTROLLER</text>
+          <text x="60" y="94" font-size="9" fill="#FFF" text-anchor="middle" font-style="italic">never stops watching</text>
+        </g>
+
+        <!-- RIGHT: Actual State -->
+        <g transform="translate(480,70)">
+          <rect width="160" height="120" rx="12" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="2"/>
+          <rect width="160" height="28" rx="12 12 0 0" fill="#5A9F7A"/>
+          <text x="80" y="20" font-size="11" font-weight="600" fill="#FFF" text-anchor="middle" letter-spacing="1">ACTUAL STATE</text>
+          <text x="80" y="58" font-size="32" text-anchor="middle">🌐</text>
+          <text x="80" y="86" font-size="12" fill="#3D7857" text-anchor="middle">"only 2 running"</text>
+          <text x="80" y="104" font-size="11" fill="#6B6058" text-anchor="middle" font-style="italic">(the live cluster)</text>
+        </g>
+
+        <!-- Arrows: desired → controller (top) -->
+        <path d="M 200 110 L 280 110" stroke="#3F4A5E" stroke-width="2" fill="none" marker-end="url(#arr-loop)"/>
+        <text x="240" y="100" font-size="10" fill="#3F4A5E" text-anchor="middle" font-weight="600">reads</text>
+
+        <!-- Arrow: controller → actual (top) -->
+        <path d="M 400 110 L 480 110" stroke="#3F4A5E" stroke-width="2" fill="none" marker-end="url(#arr-loop)"/>
+        <text x="440" y="100" font-size="10" fill="#3F4A5E" text-anchor="middle" font-weight="600">reads</text>
+
+        <!-- Arrow: actual → controller (bottom, returning) -->
+        <path d="M 480 158 L 400 158" stroke="#5A9F7A" stroke-width="2" fill="none" marker-end="url(#arr-loop)"/>
+        <text x="440" y="174" font-size="10" fill="#5A9F7A" text-anchor="middle" font-weight="600">observes</text>
+
+        <!-- Arrow: controller → action (loops back to right side, showing it takes action) -->
+        <path d="M 340 200 Q 340 250 480 220" stroke="#D97757" stroke-width="2" fill="none" marker-end="url(#arr-loop)"/>
+        <text x="400" y="262" font-size="11" font-style="italic" fill="#D97757" text-anchor="middle">acts: creates a 3rd copy</text>
+
+        <!-- Bottom note: the loop never stops -->
+        <text x="340" y="296" font-size="13" font-weight="700" fill="#3F4A5E" text-anchor="middle">↻ this loop never stops</text>
+      </svg>
+      <div class="illu-caption">Three pieces. The desired state (what you said), the actual state (what's running), and a controller that closes the gap. Forever.</div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>Imperative scripts vs declarative config</h2>
+    <p>The biggest shift: you stopped writing the steps. You started writing the <em>goal</em>. The system figures out the steps.</p>
+
+    <div class="illu">
+      <svg viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Side by side: a long imperative script on the left (do this then this then this) versus a short declarative YAML on the right (I want 3 copies running)">
+        <!-- LEFT: Imperative (long script) -->
+        <g transform="translate(0,0)">
+          <rect width="320" height="260" rx="14" fill="#FBE8DC"/>
+          <text x="160" y="24" font-size="11" font-weight="700" fill="#A04832" text-anchor="middle" letter-spacing="1.5">IMPERATIVE · "DO THIS THEN THIS"</text>
+
+          <!-- Script lines -->
+          <g transform="translate(30,46)" font-family="ui-monospace,monospace" font-size="11">
+            <rect width="260" height="180" rx="6" fill="#FFFFFF" stroke="#A04832" stroke-width="1.5"/>
+            <text x="14" y="22" fill="#6B6058">$ ssh server-a</text>
+            <text x="14" y="40" fill="#6B6058">$ docker pull web:v2</text>
+            <text x="14" y="58" fill="#6B6058">$ docker stop web</text>
+            <text x="14" y="76" fill="#6B6058">$ docker rm web</text>
+            <text x="14" y="94" fill="#6B6058">$ docker run -d web:v2</text>
+            <text x="14" y="112" fill="#6B6058">$ ssh server-b</text>
+            <text x="14" y="130" fill="#6B6058">$ docker pull web:v2</text>
+            <text x="14" y="148" fill="#6B6058">$ ... repeat for 30 servers</text>
+            <text x="14" y="166" fill="#A04832" font-style="italic">$ pray nothing breaks</text>
+          </g>
+
+          <text x="160" y="244" font-size="11" fill="#A04832" text-anchor="middle" font-style="italic">if step 4 fails, who knows what state you're in</text>
+        </g>
+
+        <!-- RIGHT: Declarative (short YAML) -->
+        <g transform="translate(360,0)">
+          <rect width="320" height="260" rx="14" fill="#E0EFE6"/>
+          <text x="160" y="24" font-size="11" font-weight="700" fill="#3D7857" text-anchor="middle" letter-spacing="1.5">DECLARATIVE · "I WANT THIS"</text>
+
+          <!-- YAML file -->
+          <g transform="translate(30,46)" font-family="ui-monospace,monospace" font-size="11">
+            <rect width="260" height="180" rx="6" fill="#FFFFFF" stroke="#3D7857" stroke-width="1.5"/>
+            <text x="14" y="22" fill="#3D7857">apiVersion: apps/v1</text>
+            <text x="14" y="40" fill="#3D7857">kind: Deployment</text>
+            <text x="14" y="58" fill="#3D7857">spec:</text>
+            <text x="28" y="76" fill="#3D7857" font-weight="700">replicas: 3</text>
+            <text x="28" y="94" fill="#3D7857">image: web:v2</text>
+            <text x="14" y="124" fill="#6B6058" font-style="italic">// done.</text>
+            <text x="14" y="148" fill="#6B6058" font-style="italic">// kubernetes</text>
+            <text x="14" y="166" fill="#6B6058" font-style="italic">// figures out the rest</text>
+          </g>
+
+          <text x="160" y="244" font-size="11" fill="#3D7857" text-anchor="middle" font-style="italic">if anything fails, the controller retries automatically</text>
+        </g>
+      </svg>
+      <div class="illu-caption">Same goal: run web:v2 on 3 servers. Left side is fragile. Right side is robust.</div>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba before">
+        <span class="ba-label">Before · imperative</span>
+        <p>You write the exact steps. SSH into machines. Run commands in order. Hope nothing changes mid-deploy. If step 4 fails, you don't know if you're in state 3 or state 5. Recovery is detective work.</p>
+        <p>"Pets" — each server is hand-tuned. You'd grieve if one died because it had unique configuration nobody documented.</p>
+      </div>
+      <div class="ba after">
+        <span class="ba-label">After · declarative</span>
+        <p>You write the goal. The controller figures out the steps. If something fails halfway, the controller picks up where it left off. State is always either "matches the spec" or "actively being reconciled."</p>
+        <p>"Cattle" — every server is identical and replaceable. Lose one, the controller starts another. No one notices.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">What didn't change: you still need to write a correct spec. If the YAML says "I want 3 copies of a broken app," you'll get 3 copies of a broken app — restarted forever.</p>
+  </section>
+
+  <!-- ============================== SECTION 3 — ANALOGY ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The thermostat in your house</h2>
+    <p>The clearest example of cloud-native thinking is something you've used a thousand times: the thermostat on your wall. Notice what it does and doesn't do.</p>
+    <p>You don't tell the thermostat <em>how</em> to heat the room. You don't say "first turn on the gas valve, then ignite the burner, then run the fan for 12 minutes." You set a number — 22°C — and walk away. The thermostat reads the room temperature, compares it to your dial, and makes whatever adjustments are needed. When the room gets cold again, it acts again. It never stops watching.</p>
+    <p>Kubernetes works exactly the same way. Your YAML file is the dial. The cluster is the room. The controllers are the thermostat brain. Every Kubernetes object — a Deployment, a Service, a Job, a ConfigMap — has its own controller watching it. That's it. That's the entire model.</p>
+
+    <div class="illu">
+      <svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A drawn thermostat connected to a house, showing the loop: read desired, read actual, fire heater, repeat">
+        <rect width="680" height="320" rx="12" fill="#FBF7F0"/>
+
+        <!-- Title -->
+        <text x="340" y="24" font-size="13" font-weight="700" fill="#3F4A5E" text-anchor="middle" letter-spacing="1.5">THE THERMOSTAT LOOP · CLOUD-NATIVE IN ONE PICTURE</text>
+
+        <!-- Thermostat (big, on the left) -->
+        <g transform="translate(120,160)">
+          <!-- Outer ring -->
+          <circle cx="0" cy="0" r="80" fill="#5A6878" stroke="#2E3640" stroke-width="2"/>
+          <!-- Inner face -->
+          <circle cx="0" cy="0" r="68" fill="#FBF7F0" stroke="#9D9389" stroke-width="1"/>
+          <!-- Tick marks -->
+          <g stroke="#5A4F45" stroke-width="2" stroke-linecap="round">
+            <line x1="0" y1="-62" x2="0" y2="-54"/>
+            <line x1="54" y1="-31" x2="47" y2="-27"/>
+            <line x1="54" y1="31" x2="47" y2="27"/>
+            <line x1="0" y1="62" x2="0" y2="54"/>
+            <line x1="-54" y1="31" x2="-47" y2="27"/>
+            <line x1="-54" y1="-31" x2="-47" y2="-27"/>
+          </g>
+          <!-- Big number -->
+          <text x="0" y="6" font-size="32" font-weight="700" fill="#3F4A5E" text-anchor="middle">22°</text>
+          <text x="0" y="24" font-size="9" font-weight="600" fill="#6B6058" text-anchor="middle" letter-spacing="1.5">DESIRED</text>
+          <!-- Dial pointer -->
+          <path d="M 0 -58 L -3 -44 L 3 -44 Z" fill="#D97757" stroke="#A04832" stroke-width="1"/>
+          <!-- Center dot -->
+          <circle cx="0" cy="0" r="5" fill="#3F4A5E"/>
+        </g>
+        <text x="120" y="270" font-size="11" font-weight="700" fill="#3F4A5E" text-anchor="middle">YOU SET THIS</text>
+        <text x="120" y="286" font-size="10" fill="#6B6058" text-anchor="middle" font-style="italic">= your YAML file</text>
+
+        <!-- Arrows in middle (loop) -->
+        <g transform="translate(280,160)">
+          <!-- Top arrow: thermostat reads room -->
+          <path d="M 0 -30 L 130 -30" stroke="#3F4A5E" stroke-width="2" fill="none" marker-end="url(#arr-loop3)"/>
+          <text x="65" y="-40" font-size="10" fill="#3F4A5E" text-anchor="middle" font-weight="600">reads</text>
+          <!-- Middle: comparison -->
+          <text x="65" y="6" font-size="13" fill="#D97757" text-anchor="middle" font-weight="700">19° &lt; 22°</text>
+          <text x="65" y="22" font-size="10" fill="#D97757" text-anchor="middle" font-style="italic">gap of 3°</text>
+          <!-- Bottom arrow: thermostat acts on room -->
+          <path d="M 0 50 L 130 50" stroke="#D97757" stroke-width="2" fill="none" marker-end="url(#arr-loop3-warm)"/>
+          <text x="65" y="68" font-size="10" fill="#D97757" text-anchor="middle" font-weight="600">fires heater</text>
+        </g>
+        <defs>
+          <marker id="arr-loop3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3F4A5E"/>
+          </marker>
+          <marker id="arr-loop3-warm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#D97757"/>
+          </marker>
+        </defs>
+
+        <!-- House (right side) -->
+        <g transform="translate(440,80)">
+          <!-- Roof -->
+          <path d="M 0 50 L 100 14 L 200 50 Z" fill="#A04832"/>
+          <!-- Body -->
+          <rect x="10" y="50" width="180" height="120" fill="#F5EFE3" stroke="#8B7355" stroke-width="2"/>
+          <!-- Door -->
+          <rect x="84" y="118" width="32" height="52" fill="#A04832"/>
+          <circle cx="111" cy="146" r="1.2" fill="#FBF1D6"/>
+          <!-- Window -->
+          <rect x="30" y="68" width="40" height="40" fill="#B8DCE8" stroke="#8B7355" stroke-width="1.4"/>
+          <line x1="50" y1="68" x2="50" y2="108" stroke="#8B7355"/>
+          <line x1="30" y1="88" x2="70" y2="88" stroke="#8B7355"/>
+          <!-- Thermometer on wall -->
+          <g transform="translate(140,70)">
+            <rect x="-7" y="0" width="14" height="42" rx="7" fill="#FFFFFF" stroke="#5F5E5A" stroke-width="1.4"/>
+            <rect x="-4" y="6" width="8" height="34" rx="4" fill="#F0E6D4"/>
+            <!-- Mercury showing 19° (lower) -->
+            <rect x="-2" y="22" width="4" height="18" rx="2" fill="#D97757"/>
+            <circle cx="0" cy="42" r="7" fill="#D97757"/>
+          </g>
+          <!-- Temp reading -->
+          <text x="140" y="130" font-size="16" font-weight="700" fill="#A04832" text-anchor="middle">19°</text>
+          <!-- Chimney -->
+          <rect x="155" y="20" width="14" height="34" fill="#8B5A3C" stroke="#5A3A22"/>
+          <g opacity="0.5">
+            <circle cx="162" cy="14" r="3" fill="#9D9389"/>
+            <circle cx="166" cy="6" r="4" fill="#9D9389"/>
+          </g>
+        </g>
+        <text x="540" y="270" font-size="11" font-weight="700" fill="#5A9F7A" text-anchor="middle">THE ROOM</text>
+        <text x="540" y="286" font-size="10" fill="#6B6058" text-anchor="middle" font-style="italic">= your live cluster</text>
+
+        <!-- Bottom narration -->
+        <text x="340" y="306" font-size="11" font-weight="700" fill="#3F4A5E" text-anchor="middle">↻ check, compare, act, repeat — forever</text>
+      </svg>
+      <div class="illu-caption">A thermostat is the perfect cloud-native system. So is Kubernetes.</div>
+    </div>
+
+    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>The thermostat dial</strong> = your YAML file (desired state)</li>
+      <li><strong>The room</strong> = your live cluster (actual state)</li>
+      <li><strong>The thermostat brain</strong> = a controller (the small program watching forever)</li>
+      <li><strong>The thermometer</strong> = the cluster reporting what's running</li>
+      <li><strong>The heater firing</strong> = the controller taking action (start a pod, scale up, restart)</li>
+      <li><strong>"Never stops watching"</strong> = the reconciliation loop (the heart of Kubernetes)</li>
+    </ul>
+  </section>
+
+  <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <p>The same idea at two depths.</p>
+
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>You know how a thermostat in your house works? You set the dial to a temperature you want. The thermostat checks the room. If it's too cold, the heater turns on. When the room is warm enough, the heater stops. It never gets tired. Kubernetes works the exact same way, but with computer apps instead of room temperature.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Cloud-native software is built to live in a world where things break — servers crash, networks blip, traffic spikes. So instead of writing scripts that say "do step 1, then 2, then 3," you write a <strong>declarative spec</strong> that says "I want 3 copies of my app running." A small program called a <strong>controller</strong> reads your spec, looks at what's actually running, and takes action to close the gap. This loop runs forever — that's why Kubernetes is so good at recovering from failures. Everything else (auto-scaling, self-healing, rolling updates) is just specialized versions of this same loop.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>Where the loop saves the day</h2>
+    <p>Four moments where you'd notice cloud-native principles in action.</p>
+
+    <div class="scenarios">
+      <div class="scenario">
+        <p class="scenario-name">Black Friday at an e-commerce site</p>
+        <p>Traffic jumps from 100 requests per second to 8,000 in under an hour. The team set up a "horizontal pod autoscaler" that watches CPU usage and scales the number of app copies up when it gets busy. By 11 AM there are 40 copies of the app running across the cluster (up from 3 normally). By 11 PM, traffic falls and the count drops back to 3. The team watched on the dashboard. Nobody manually scaled anything.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">A cloud machine fails at 3 AM</p>
+        <p>AWS rotates out a server for maintenance. The 12 pods running on it all die instantly. The controllers notice within seconds and reschedule them onto other healthy servers. By the time anyone wakes up, the dashboard shows everything green and a Slack message saying "self-healed at 03:14 — no action needed." The on-call engineer doesn't even know about it until standup.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">A bad deployment is rolling out</p>
+        <p>An engineer pushes a new version. The Deployment controller starts replacing pods one at a time. The new pods crash on startup (bug in the new code). The controller sees the failed pods, stops the rollout, and keeps the old version running. The engineer rolls back with a single command. Production never went down.</p>
+      </div>
+      <div class="scenario">
+        <p class="scenario-name">Someone manually edits a config file in production</p>
+        <p>An engineer SSHes into the cluster and changes a ConfigMap by hand to "fix something quickly." The GitOps controller (which watches Git as the source of truth) notices the cluster has drifted from the Git version. Within seconds, it reverts the change. The engineer gets a Slack notification: "drift detected, reconciled to git/main." They go put their fix in Git like everyone else.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 6 — ANIMATED SVG ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Watch the reconciliation loop run</h2>
+    <p>Three modes. Same loop. Different scenario.</p>
+
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animated reconciliation loop showing the thermostat firing the heater, then a pod self-healing, then scaling up">
+        <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: thermostat fires the heater</text>
+
+        <!-- Top-right: cycle counter (kept clear of stack content) -->
+        <g transform="translate(580,14)">
+          <rect width="140" height="34" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.4"/>
+          <text x="14" y="22" font-size="11" fill="#6B6058">cycle:</text>
+          <text x="128" y="22" font-size="14" font-weight="700" fill="#3F4A5E" text-anchor="end" font-family="ui-monospace,monospace" id="anim-cycle">0</text>
+        </g>
+
+        <!-- Three boxes: desired, controller, actual -->
+        <!-- Desired (left) -->
+        <g transform="translate(40,80)">
+          <rect width="180" height="180" rx="12" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="2"/>
+          <rect width="180" height="28" rx="12 12 0 0" fill="#3F4A5E"/>
+          <text x="90" y="20" font-size="11" font-weight="600" fill="#FFF" text-anchor="middle" letter-spacing="1">DESIRED</text>
+          <text x="90" y="80" font-size="40" text-anchor="middle" id="anim-desired-icon">📋</text>
+          <text x="90" y="120" font-size="14" font-weight="700" fill="#3F4A5E" text-anchor="middle" id="anim-desired-text">22°</text>
+          <text x="90" y="142" font-size="11" fill="#6B6058" text-anchor="middle" id="anim-desired-sub">target temperature</text>
+        </g>
+
+        <!-- Controller (center) -->
+        <g transform="translate(280,100)">
+          <circle cx="100" cy="80" r="64" fill="#D97757" stroke="#A04832" stroke-width="2" id="anim-ctrl-circle"/>
+          <text x="100" y="62" font-size="32" text-anchor="middle">🌡️</text>
+          <text x="100" y="100" font-size="11" font-weight="700" fill="#FFF" text-anchor="middle" letter-spacing="1">CONTROLLER</text>
+          <text x="100" y="118" font-size="10" fill="#FFF" text-anchor="middle" id="anim-ctrl-status">comparing…</text>
+        </g>
+
+        <!-- Actual (right) -->
+        <g transform="translate(540,80)">
+          <rect width="180" height="180" rx="12" fill="#FFFFFF" stroke="#5A9F7A" stroke-width="2"/>
+          <rect width="180" height="28" rx="12 12 0 0" fill="#5A9F7A"/>
+          <text x="90" y="20" font-size="11" font-weight="600" fill="#FFF" text-anchor="middle" letter-spacing="1">ACTUAL</text>
+          <text x="90" y="80" font-size="40" text-anchor="middle" id="anim-actual-icon">🌡️</text>
+          <text x="90" y="120" font-size="14" font-weight="700" fill="#5A9F7A" text-anchor="middle" id="anim-actual-text">19°</text>
+          <text x="90" y="142" font-size="11" fill="#6B6058" text-anchor="middle" id="anim-actual-sub">current room</text>
+        </g>
+
+        <!-- Connecting arrows (drawn but kept above hardware base for clarity) -->
+        <path d="M 220 170 L 280 170" stroke="#3F4A5E" stroke-width="2" fill="none" marker-end="url(#arr-anim)"/>
+        <path d="M 540 170 L 480 170" stroke="#5A9F7A" stroke-width="2" fill="none" marker-end="url(#arr-anim-g)"/>
+        <defs>
+          <marker id="arr-anim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3F4A5E"/>
+          </marker>
+          <marker id="arr-anim-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#5A9F7A"/>
+          </marker>
+          <marker id="arr-anim-w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#D97757"/>
+          </marker>
+        </defs>
+
+        <!-- Action arrow (controller → actual): visible only when acting -->
+        <path d="M 380 240 Q 440 280 540 220" stroke="#D97757" stroke-width="2.5" fill="none" marker-end="url(#arr-anim-w)" id="anim-action-arrow" opacity="0"/>
+
+        <!-- Status banner at the very bottom -->
+        <g transform="translate(40,300)">
+          <rect width="680" height="40" rx="6" fill="#FBF7F0" stroke="#3F4A5E" stroke-width="1.5"/>
+          <text x="340" y="25" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-status">Reading desired and actual… preparing to act.</text>
+        </g>
+      </svg>
+
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="heat">▶ Thermostat fires heater</button>
+        <button class="anim-btn" type="button" data-mode="heal">▶ Pod self-heals</button>
+        <button class="anim-btn" type="button" data-mode="scale">▶ Scale up to 5</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> the controller reads desired (22°) and actual (19°), sees a gap, fires the heater. Loop continues.</div>
+    </div>
+  </section>
+
+  <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>Eight flashcards on the key terms, then three quick questions.</p>
+
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is the reconciliation loop?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A small program (a controller) that reads desired state, observes actual state, takes the smallest action to close the gap, and repeats forever. The heart of Kubernetes.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Declarative vs imperative?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Imperative: "do step 1, then step 2, then step 3." Declarative: "I want this end state." Kubernetes is declarative; you write the goal, controllers figure out the steps.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Desired vs actual state?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Desired = what you said you wanted (your YAML). Actual = what's running right now (the live cluster). Controllers constantly compare them and act to close the gap.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Pets vs cattle?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Pets: hand-tuned, named, irreplaceable servers — you'd grieve if one died. Cattle: identical, numbered, replaceable units — when one dies, you bring in another. Cloud-native treats every resource as cattle.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is immutable infrastructure?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">You don't patch a running server — you build a new one with the new config and replace the old. No drift over time, no "what state is this in?" mystery.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Horizontal vs vertical scaling?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Vertical: make one machine bigger (more CPU/RAM). Horizontal: add more identical machines. Cloud-native prefers horizontal because it's resilient and limitless.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why "failure as normal"?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Servers fail, networks blip, disks die — every day, at scale. Cloud-native designs for this from the start instead of trying to prevent it. The reconciliation loop is what makes failure routine instead of catastrophic.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a controller in Kubernetes?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A small program that watches one type of resource (Deployments, Services, Pods, etc.) and runs the reconciliation loop for it. Kubernetes ships with dozens; you can also write your own.</div></div></div>
+    </div>
+
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card">
+        <span class="quiz-pause-tag">⏸ pause the animation</span>
+        <p class="quiz-prompt">In the heater animation, the desired is 22° and actual is 19°. The controller fires the heater, the room warms to 22°, and… then what?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The controller doesn't stop. It keeps reading the room temperature forever. When the room cools again (someone opens a window, the weather changes), the gap reopens and the controller fires the heater again. That's the entire loop — it never finishes, it just sleeps when the gap is zero.</div>
+      </div>
+      <div class="quiz-card">
+        <p class="quiz-prompt">A teammate writes a 200-line bash script that "deploys our app." It has lots of "if this fails, do that" branches. How would you reframe this in cloud-native terms?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Replace the script with a declarative YAML file that describes the goal ("3 copies of web:v2 running, healthy, exposed on port 80"). Hand it to Kubernetes. The "if this fails, do that" logic becomes the controller's job — and the controller is way better at it than the script, because it never stops watching and never gets confused about what state things are in.</div>
+      </div>
+      <div class="quiz-card">
+        <p class="quiz-prompt">Why is "treat servers as cattle" a reliability strategy, not just a fashion statement?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Because if every server is hand-tuned (a "pet"), losing one means losing knowledge. Documentation is always incomplete. Recovery means a human reverse-engineering what made that server special. If servers are interchangeable cattle described declaratively, losing one is a non-event — the controller starts another from the same spec. Reliability scales because nothing depends on a specific machine surviving.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== GLOSSARY ============================== -->
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Cloud-native</div><div class="gloss-def">A way of building software that assumes dynamic infrastructure, treats failure as normal, and uses declarative reconciliation loops.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Declarative</div><div class="gloss-def">You describe the end state ("I want X"), not the steps to get there. The opposite of imperative.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Reconciliation loop</div><div class="gloss-def">A controller program that constantly reads desired and actual state and acts to close the gap. The core idea behind Kubernetes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Desired state</div><div class="gloss-def">What you said you wanted. Lives in your YAML files (and gets stored in the cluster's database, etcd).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Actual state</div><div class="gloss-def">What's actually running right now in the cluster. Reported back by the kubelet on each node.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Controller</div><div class="gloss-def">A small program that runs the reconciliation loop for one type of resource. Many controllers run inside Kubernetes; some are custom.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Pets vs cattle</div><div class="gloss-def">Pets are hand-tuned, irreplaceable servers. Cattle are identical, replaceable units. Cloud-native treats everything as cattle.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Immutable infrastructure</div><div class="gloss-def">Servers and containers are never modified after deployment. To change them, you replace them with a new version. Eliminates configuration drift.</div></div>
+    </div>
+  </details>
+
+  <!-- ============================== RECAP + COMPLETION ============================== -->
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 03 complete</span>
+    <p>Kubernetes is a thermostat. You set the dial; controllers watch forever; gaps close automatically. Everything else is just specialized versions of this loop.</p>
+    <p class="recap-next"><strong>Next — Lesson 04: Twelve-Factor Apps + Microservices vs Modular Monoliths.</strong> Now that you understand the loop, we'll talk about how apps need to be designed to live in this world.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 3 of 17 · grounded in kubernetes.io · cncf.io</footer>
+
+<script>
+  // theme
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '☀ Light' : '🌙 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '☀ Light' : '🌙 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+
+  // flashcards
+  document.querySelectorAll('.flashcard').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('flipped'));
+  });
+
+  // quiz reveals
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? 'Hide answer' : 'Show answer';
+    });
+  });
+
+  // ====== Animation ======
+  const animModeLabel = document.getElementById('anim-mode-label');
+  const animReadout = document.getElementById('anim-readout');
+  const animCycle = document.getElementById('anim-cycle');
+  const animStatus = document.getElementById('anim-status');
+  const animDesiredIcon = document.getElementById('anim-desired-icon');
+  const animDesiredText = document.getElementById('anim-desired-text');
+  const animDesiredSub = document.getElementById('anim-desired-sub');
+  const animActualIcon = document.getElementById('anim-actual-icon');
+  const animActualText = document.getElementById('anim-actual-text');
+  const animActualSub = document.getElementById('anim-actual-sub');
+  const animCtrlStatus = document.getElementById('anim-ctrl-status');
+  const animCtrlCircle = document.getElementById('anim-ctrl-circle');
+  const animActionArrow = document.getElementById('anim-action-arrow');
+  const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+
+  let cycleCount = 0;
+  let timeouts = [];
+  function clearTimeouts() {
+    timeouts.forEach(t => clearTimeout(t));
+    timeouts = [];
+  }
+  function later(ms, fn) {
+    const t = setTimeout(fn, ms);
+    timeouts.push(t);
+    return t;
+  }
+  function setReadout(html) { animReadout.innerHTML = html; }
+  function setStatus(text) { animStatus.textContent = text; }
+  function flashAction() {
+    animActionArrow.setAttribute('opacity', '1');
+    animCtrlCircle.setAttribute('fill', '#5A9F7A');
+    later(800, () => {
+      animActionArrow.setAttribute('opacity', '0');
+      animCtrlCircle.setAttribute('fill', '#D97757');
+    });
+  }
+
+  function runHeat() {
+    clearTimeouts();
+    animModeLabel.textContent = 'Mode: thermostat fires the heater';
+    animDesiredIcon.textContent = '📋';
+    animDesiredText.textContent = '22°';
+    animDesiredSub.textContent = 'target temperature';
+    animActualIcon.textContent = '🌡️';
+    animActualText.textContent = '19°';
+    animActualSub.textContent = 'current room';
+    animCtrlStatus.textContent = 'comparing…';
+    setStatus('Desired = 22°, actual = 19°. Gap of 3°.');
+    setReadout('<strong>Step 1.</strong> Controller reads both states and sees a gap.');
+
+    later(1500, () => {
+      animCtrlStatus.textContent = 'firing heater!';
+      flashAction();
+      setStatus('Gap detected. Controller fires the heater.');
+      setReadout('<strong>Step 2.</strong> Controller fires the heater. Room starts warming up.');
+    });
+    later(3000, () => {
+      animActualText.textContent = '20°';
+      setStatus('Heating… room is now 20°.');
+    });
+    later(4000, () => {
+      animActualText.textContent = '21°';
+      setStatus('Heating… room is now 21°.');
+    });
+    later(5000, () => {
+      animActualText.textContent = '22°';
+      animCtrlStatus.textContent = 'in sync ✓';
+      setStatus('Match! Desired = actual = 22°. Heater stops.');
+      setReadout('<strong>Step 3.</strong> Room reached 22°. Controller stops the heater. But it keeps watching forever.');
+    });
+    later(6500, () => {
+      cycleCount++;
+      animCycle.textContent = cycleCount;
+      animActualText.textContent = '19°';
+      animCtrlStatus.textContent = 'comparing…';
+      setReadout('<strong>Step 4.</strong> Window opened, room cooled. Loop starts over.');
+      setStatus('Cycle complete. Room cooled. Loop starts again…');
+    });
+    later(8000, runHeat);
+  }
+
+  function runHeal() {
+    clearTimeouts();
+    animModeLabel.textContent = 'Mode: pod self-heals after failure';
+    animDesiredIcon.textContent = '📋';
+    animDesiredText.textContent = '3 pods';
+    animDesiredSub.textContent = 'replicas: 3';
+    animActualIcon.textContent = '🟢🟢🟢';
+    animActualText.textContent = '3 / 3';
+    animActualSub.textContent = 'all healthy';
+    animCtrlStatus.textContent = 'in sync ✓';
+    setStatus('Desired = 3 pods, actual = 3 pods. All matches.');
+    setReadout('<strong>Step 1.</strong> Steady state. Three pods running. The loop is idle.');
+
+    later(2000, () => {
+      animActualIcon.textContent = '🟢🟢💀';
+      animActualText.textContent = '2 / 3';
+      animActualSub.textContent = 'one died!';
+      animCtrlStatus.textContent = 'gap detected!';
+      setStatus('A pod died. Actual = 2, desired = 3. Gap detected.');
+      setReadout('<strong>Step 2.</strong> One pod died. Actual dropped to 2. Controller notices.');
+    });
+    later(3500, () => {
+      animCtrlStatus.textContent = 'creating pod…';
+      flashAction();
+      setStatus('Controller creates a replacement pod.');
+      setReadout('<strong>Step 3.</strong> Controller schedules a replacement pod on a healthy node.');
+    });
+    later(5000, () => {
+      animActualIcon.textContent = '🟢🟢🟢';
+      animActualText.textContent = '3 / 3';
+      animActualSub.textContent = 'self-healed';
+      animCtrlStatus.textContent = 'in sync ✓';
+      setStatus('Self-healed. Back to 3 / 3. No human action needed.');
+      setReadout('<strong>Step 4.</strong> New pod is running. Self-healed in seconds. The on-call engineer slept through it.');
+    });
+    later(7000, () => {
+      cycleCount++;
+      animCycle.textContent = cycleCount;
+    });
+    later(8000, runHeal);
+  }
+
+  function runScale() {
+    clearTimeouts();
+    animModeLabel.textContent = 'Mode: scale up to 5 copies';
+    animDesiredIcon.textContent = '📋';
+    animDesiredText.textContent = '2 pods';
+    animDesiredSub.textContent = 'replicas: 2';
+    animActualIcon.textContent = '🟢🟢';
+    animActualText.textContent = '2 / 2';
+    animActualSub.textContent = 'all healthy';
+    animCtrlStatus.textContent = 'in sync ✓';
+    setStatus('Desired = 2, actual = 2. All matches.');
+    setReadout('<strong>Step 1.</strong> Steady state. Two pods running.');
+
+    later(2000, () => {
+      animDesiredText.textContent = '5 pods';
+      animDesiredSub.textContent = 'replicas: 5';
+      animCtrlStatus.textContent = 'gap detected!';
+      setStatus('You changed the spec to 5. Actual is still 2. Gap of 3.');
+      setReadout('<strong>Step 2.</strong> You edited the YAML to "replicas: 5". Controller sees the gap.');
+    });
+    later(3500, () => {
+      animActualIcon.textContent = '🟢🟢🟡🟡🟡';
+      animActualText.textContent = '2 / 5';
+      animActualSub.textContent = '3 starting…';
+      animCtrlStatus.textContent = 'starting pods…';
+      flashAction();
+      setStatus('Controller starts 3 new pods.');
+      setReadout('<strong>Step 3.</strong> Controller schedules 3 new pods. They start up.');
+    });
+    later(5500, () => {
+      animActualIcon.textContent = '🟢🟢🟢🟢🟢';
+      animActualText.textContent = '5 / 5';
+      animActualSub.textContent = 'all healthy';
+      animCtrlStatus.textContent = 'in sync ✓';
+      setStatus('All 5 pods healthy. Desired = actual.');
+      setReadout('<strong>Step 4.</strong> Scaled. 5 pods running. Loop returns to steady state.');
+    });
+    later(7000, () => {
+      cycleCount++;
+      animCycle.textContent = cycleCount;
+    });
+    later(8000, runScale);
+  }
+
+  function runMode(mode) {
+    clearTimeouts();
+    cycleCount = 0;
+    animCycle.textContent = '0';
+    if (mode === 'heat') runHeat();
+    else if (mode === 'heal') runHeal();
+    else if (mode === 'scale') runScale();
+  }
+
+  modeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      runMode(btn.dataset.mode);
+    });
+  });
+
+  runMode('heat');
+</script>
+</body>
+</html>
