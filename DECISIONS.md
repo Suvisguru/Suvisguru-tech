@@ -288,3 +288,130 @@ Other K8s components (etcd cylinder, scheduler icon, separate api-server icon) a
 **Alternatives considered:** One pedagogical block per lesson regardless of subtopic count (the original PROJECT.md interpretation; produces uneven coverage when subtopics diverge). One block per lesson plus inline mini-recaps per subtopic (lighter, but doesn't give each subtopic its own analogy / quick-check, which is what hooks first-timers). Per-subtopic blocks but shared analogy across all subtopics (rejected — different concepts often want different analogies).
 
 **Revisit when:** User testing reveals that per-subtopic blocks fatigue learners on long lessons (10+ subtopics). At that point, consider a "compact" per-subtopic block that omits the ELI5/ELI10 pair and rolls up flashcards/quiz to lesson level for subtopics 6+.
+---
+
+## 2026-05-02 — Layman-first scaffolding components added across the lesson preview structure
+
+**Context:** First-time-learner testing of the Kubernetes course revealed that even well-researched lessons fail when read by someone with no infrastructure background. Specific failures: pain (the "why should I care") arrives too late or implicitly; technical jargon and analogies are interleaved in the same sentence ("the captain (PID 1) hears the lighthouse (kubelet)"), triggering impostor syndrome; the seven existing sections give no mid-lesson comprehension checkpoints; predictable beginner misconceptions ("a container has its own OS") are never explicitly called out; the persistent left-rail showing "where am I in the journey" is missing.
+
+**Decision:** Introduce a fixed set of layman-first scaffolding components that every lesson preview must include. These wrap and frame the seven content sections rather than replacing them:
+
+- **Nightmare opener** — 2-3 sentence pain-first hook below the H1.
+- **One-sentence stamp** — boxed irreducible takeaway, repeated at top and bottom.
+- **District line** — one-line pin into the domain's unified analogical universe.
+- **Pause-and-check (×2)** — 30-second multiple-choice comprehension pulses, mid-lesson at fixed positions.
+- **Translation Legend** — story → tech mapping table inside Section 3 (replaces the bare "mapping" bullet list).
+- **Common Misconceptions panel** — exactly three myth/truth pairs at the start of Section 7.
+- **Analogy-stops-here callout** — inline ⚠️ note inside Section 3 where the analogy has a known cliff.
+- **Skip-if-new tag** — muted pill marking advanced paragraphs as optional reading for beginners.
+- **Persistent concept rail** — fixed left-rail showing the lesson's place in the course's journey.
+- **CYOA quiz reveal** — one of the existing quiz questions per lesson is reframed as a story-style failure reveal.
+
+The Common Misconceptions block is content; everything else is chrome. The Misconceptions block is folded into Section 7 (which is renamed in PROJECT.md from "Flashcards & Quiz" to "Common Misconceptions, Flashcards & Quiz") rather than added as an eighth section. This preserves the seven-section invariant established by the 2026-04-29 decision.
+
+Component visual specs in STYLE.md "Layman-first scaffolding components." Quality bar for each component in QUALITY.md "What 'good' means, by scaffolding component." Both files are updated in the same commit as this decision.
+
+**Reasoning:** The brand promise is that anyone willing to learn — including a layman — can understand the material. The seven content sections do not, on their own, deliver that promise. Each scaffolding component addresses a specific layman failure mode observed in testing. They are all hard gates because each one, missed, breaks the promise.
+
+The decision to fold Misconceptions into Section 7 (rather than create Section 8) is deliberate: the seven-section structure is foundational per the original 2026-04-29 decision, and the misconceptions content belongs adjacent to flashcards and quiz (assessment cluster). Adding an eighth section would force a structural change with cascading review implications across all existing lessons.
+
+**Alternatives considered:** Add Misconceptions as a new Section 8 — rejected, breaks the foundational seven-section invariant. Treat all scaffolding as fully optional — rejected, makes the brand promise probabilistic instead of guaranteed. Apply only to new lessons, not retroactively — rejected for the Kubernetes course since the existing 15 lessons have already been through layman testing and need the fixes.
+
+**Revisit when:** User testing reveals that one of the scaffolding components is consistently skipped, ignored, or harmful for a specific kind of topic. At that point, demote the component to optional or remove it.
+
+---
+
+## 2026-05-02 — Unified analogical universe per domain — pattern established
+
+**Context:** The Kubernetes course as written through Lesson 15 contains 13+ distinct analogies (property manager, apartments, thermostat, shipping containers, restaurants, industrial kitchen, library, trains, office buildings, warehouses, bakery, bank, ship, airport, permit office, shared apartment). Each lesson asks the reader to spin up a fresh mental model. First-time-learner testing surfaced this as a real cognitive tax — readers reported "fatigue from learning each new metaphor" and one direct collision (apartment = container in Lesson 02 vs apartment = Pod in Lesson 15).
+
+**Decision:** Each domain may establish a single unified analogical universe within which every lesson's analogy lives as a *district* of that universe. The pattern, when applied to a domain:
+
+- Name the universe (e.g., a city, a port, a garden).
+- Establish a recurring cast of 2-4 named characters that appear across lessons.
+- Map each lesson's analogy to a specific district within the universe, recorded in STYLE.md.
+- Add a small map graphic — a single SVG of the universe — that appears once per lesson with the current district highlighted.
+- Open every lesson with a one-line district pin.
+
+This is a non-trivial choice for any domain — log it in DECISIONS.md before applying. The current Kubernetes universe (K-Town) is established in a separate decision (2026-05-02 — Kubernetes domain — K-Town as the unified universe). VMware does not yet have a designated universe; do not invent one without an approved DECISIONS entry.
+
+**Reasoning:** Beginners build mental maps by accumulating familiarity with one consistent world. Each fresh analogy demands fresh mental setup before any technical learning can land. A unified universe converts that one-time tax (learning the city) into compounding return (every subsequent lesson reuses the city's vocabulary, characters, and geography). The cost is a one-time domain-wide commitment to the universe's vocabulary; the benefit is every subsequent lesson.
+
+The pattern is per-domain rather than global because different domains map naturally to different worlds (Kubernetes maps to a city; storage might map to a port; ML pipelines might map to a factory). Forcing one universe across all domains would dilute each.
+
+**Alternatives considered:** Continue with per-lesson analogies (the existing approach) — rejected, fatigues beginners and produces collisions. One global universe across all domains — rejected, no single metaphor stretches that far without becoming abstract. Apply the unified universe only at course level rather than domain level — rejected, multiple courses within a domain (e.g., Kubernetes fundamentals, Kubernetes networking, Kubernetes operators) benefit from sharing the same world.
+
+**Revisit when:** A second domain establishes its own universe and we have evidence of how the pattern generalizes. At that point, formalize cross-domain conventions (e.g., "every domain's universe has a recurring 'system' character analogous to Mayor Katie").
+
+---
+
+## 2026-05-02 — Kubernetes domain — K-Town as the unified universe
+
+**Context:** Per the same-day decision establishing the unified-analogical-universe pattern, the Kubernetes domain needs a specific universe instance. The existing analogies across the 15 written lessons cluster naturally around urban infrastructure (apartments, libraries, banks, airports, harbors, permit offices, etc.).
+
+**Decision:** Kubernetes lessons are set in **K-Town**, a stylised city. Each existing lesson analogy is mapped to a named district. Three recurring characters anchor the cast:
+
+- **Mayor Katie** — personifies Kubernetes as the property manager / city manager. Appears in Lesson 01.
+- **Podrick** — the unit/box/parcel that gets placed and moved. Personifies a Pod / workload.
+- **The Thermostat** — the wise old gadget explaining control loops. Appears in Lesson 03 and reappears whenever a new reconciliation loop is introduced.
+
+Two optional supporting characters appear sparingly: Captain Tini (Lesson 12, harbour district) and Inspector Pause (Lesson 15, co-living quarter). Additional characters require their own DECISIONS entry.
+
+The 15 districts are mapped lesson-by-lesson in STYLE.md "Unified analogical universe — Kubernetes (K-Town)." Lesson 7.5 (a new Level 0 primer — see separate decision) gets its own district: Foundation Tour. Apartment metaphor collision is resolved by giving Lesson 02 the Residential District (apartment = container) and Lesson 15 the Co-Living Quarter (co-living unit = Pod). Apartment is no longer used to mean Pod anywhere.
+
+**Reasoning:** A city naturally houses every existing analogy in the course (residential, commercial, civic, transportation, industrial). The cast members are minimal (three regulars) but each carries strong load — Katie embodies Kubernetes as an actor, Podrick gives workloads a face, the Thermostat is the recurring oracle for the reconciliation loop. Co-living unit resolves the apartment collision without inventing a new metaphor for Pods.
+
+**Alternatives considered:** A "Megaport" framing as the universe — rejected, doesn't naturally house the thermostat (the most important analogy in the course, Lesson 03), nor the bakery (Lesson 10), nor the permit office (Lesson 14). A more abstract "Cluster Cosmos" with planets per concept — rejected, abstract metaphors don't anchor in everyday experience. No universe at all (keep per-lesson analogies) — rejected per the unified-universe decision above.
+
+**Revisit when:** The course expands beyond ~30 lessons and the city map becomes too dense to read. At that point, consider K-Town districts as nested sub-cities (the K-Town Industrial Quarter has its own internal districts).
+
+---
+
+## 2026-05-02 — Vocabulary canonicalization — Kubernetes canon list
+
+**Context:** Across the 15 Kubernetes lessons as written, multiple synonyms drift for the same concept, sometimes within a single lesson. Examples: "desired state" / "what you want" / "the spec" / "your declared intent" all referring to the same thing; "controller" / "the loop" / "the reconciler" / "small program watching forever" likewise. Beginners learning the field through these lessons get repeatedly re-introduced to the same idea under different labels.
+
+**Decision:** Each domain maintains a canonical-term list. Lessons use canonical terms throughout body text and quiz answers; "acceptable on first mention" terms may appear once in parentheses as a gloss on the canonical term, never as the standalone term in subsequent uses.
+
+The Kubernetes canon list (full table in STYLE.md "Vocabulary canonicalization"):
+
+- desired state (canonical) — "what you want" (gloss only)
+- actual state (canonical) — "what's running" (gloss only)
+- controller (canonical) — "the small program watching forever" (gloss only)
+- reconciliation loop (canonical) — "the loop" (only after first mention in a lesson)
+- Pod (capitalised, canonical) — never lowercase pod
+- the kubelet (canonical) — "the node agent" (gloss only)
+- the API server (canonical) — never "the K8s API"
+
+VMware, AWS, and other domain canon lists will be added as those courses develop a long-tail of synonym drift.
+
+**Reasoning:** Synonyms make a lesson feel writerly to the author and confusing to the beginner. The canonical-vs-gloss distinction preserves rhythmic prose (the gloss adds variety once) without paying the comprehension cost (the canonical term carries the meaning everywhere else). The cost is editorial discipline; the benefit is every beginner builds the same mental anchor for the same concept.
+
+**Alternatives considered:** Allow synonyms freely (the existing approach) — rejected, surfaces the drift problem we're trying to solve. Forbid all synonyms entirely (no glosses) — rejected, makes prose mechanical and removes the first-mention scaffolding that helps beginners. Maintain a global canon across domains — rejected, the same word can mean different things across domains (e.g., "controller" in Kubernetes vs ML-Ops).
+
+**Revisit when:** A new term enters circulation that has multiple existing variants in the wild and we need to pick one for the canon. At that point, append to the relevant domain table rather than re-deciding the policy.
+
+---
+
+## 2026-05-02 — Prerequisite primers — the Lesson N.5 pattern
+
+**Context:** Module 2 of the Kubernetes course (Lessons 08-12) silently assumes the reader knows what a process is, what an operating system is, what a kernel is, and what root means. Most laymen don't. Layman-test feedback on Lesson 08 was uniformly negative — the lesson is technically correct and beautifully written but lands hard for anyone without prior Linux exposure.
+
+**Decision:** When a content module assumes prior knowledge a layman won't have, a short interstitial primer at `N.5` is the established pattern. The first instance is **Lesson 7.5 — How a Linux Computer Works in 5 Minutes**, sitting between Lesson 07 (end of Module 1) and Lesson 08 (start of Module 2).
+
+Primer specifications:
+
+- 5 short sections, ~5 minutes total reading time.
+- Plain prose only. No quiz, no flashcards, no animation.
+- One simple diagram acceptable but not required.
+- Tone matches Lesson 01 — friendly, no jargon beyond what the primer itself defines.
+- Footer link: "Ready for Module N? → Lesson NN."
+- Cross-link from the dependent lesson at the very top: "*New to [topic]? Take a 5-minute detour through Lesson N.5 — [Title].*"
+
+Primers are first-class lesson files (`preview-{domain}-lesson-N-5.html`) and inherit the same scaffolding as full lessons (Nightmare opener may be omitted if the primer's purpose is purely scaffolding; district line and concept rail still apply).
+
+**Reasoning:** A primer is cheaper than rewriting the dependent lesson to define every prerequisite term inline (which would balloon Lesson 08 by 60%). It's also more honest — laymen who already know the prerequisites can skip; those who don't get explicit help. Numbering as N.5 rather than re-numbering the entire course preserves existing cross-references.
+
+**Alternatives considered:** Define every prerequisite term inline in the dependent lesson — rejected, dilutes the lesson's actual content and signals "this lesson is hard" instead of "you can do this with a 5-minute warm-up." Maintain a separate glossary appendix — rejected, requires the learner to leave the flow. Renumber lessons (so "Lesson 08" becomes "Lesson 09" and the primer is "Lesson 08") — rejected, breaks every existing cross-reference and makes future renumbering tempting (which it shouldn't be).
+
+**Revisit when:** A primer becomes long enough to warrant its own first-time-learner test (>1500 words). At that point, promote it to a full lesson and re-number, accepting the cross-reference cost.

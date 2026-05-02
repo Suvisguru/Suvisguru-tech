@@ -212,6 +212,123 @@ After the section that introduces the most counterintuitive idea (for lesson 01,
 
 This is not a quiz at the end. It's a 30-second confidence check at the moment the learner most needs one.
 
+### Layman-first scaffolding components
+
+The components in this subsection wrap and frame the seven content sections. Their purpose is to earn a layman's attention before the content tries to teach. Every lesson preview must include each of them.
+
+#### Nightmare opener
+
+The first element below the lesson H1, before the existing intro paragraph.
+
+- Header label: "🚨 The 3 AM Nightmare" — 13px caps, weight 500, warm coral accent (uses the existing warn coral, not failure red `#E24B4A`).
+- Body: 2-3 sentence scenario in second person. Sensory and time-anchored.
+- Closing line: "This lesson is about why that happens — and the [N-line] fix that prevents it."
+- Visual treatment: subtle warm-amber background tint, 1px border in the warm coral family, slightly distinct from regular section panels but not garish.
+- Width: same as body prose. Padding: same scale as the existing callout.
+
+#### One-sentence stamp
+
+Boxed single-sentence takeaway, repeated in two placements:
+
+- **Top placement:** immediately under the Nightmare opener.
+- **Bottom placement:** immediately above the recap card.
+
+Specs:
+
+- A bolded boxed line with a strong border colour from the slate accent palette.
+- Center-aligned text, 19-20px (slightly larger than body).
+- Leading icon `🎯` and a "If you remember nothing else:" lead-in.
+- Identical text at both placements. Repetition is the point.
+- Contains zero parenthetical jargon — see QUALITY.md.
+
+#### District line
+
+A single line just under the breadcrumb header (above the Nightmare opener), placing the lesson in the domain's unified analogical universe.
+
+- Format: `📍 Today's stop in [Universe]: **[District Name]**.`
+- 14-15px, regular weight on the prefix, weight 500 on the district name.
+- Subtle muted color until the district name, which uses the lesson's subtopic accent colour if present.
+- One line, no exposition.
+
+#### Translation Legend
+
+A two-column table inside Section 3 (Analogy), placed after the prose narrative and before the existing analogy mapping bullet list (which it replaces).
+
+- Two columns. Headers: "In the story…" and "…in [Domain] (e.g., …in Kubernetes)".
+- Vertical divider rule between columns at 0.5px slate.
+- Left-column entries are jargon-free — things the reader can picture.
+- Right-column entries use the canonical technical vocabulary (see "Vocabulary canonicalization" below).
+- 5-10 rows. Fewer feels thin; more is overload.
+
+#### Pause-and-check
+
+A short multiple-choice comprehension check, inserted twice mid-lesson:
+
+- **Position 1:** between Section 1 (Concept) and Section 2 (Before/after).
+- **Position 2:** between Section 4 (ELI5/ELI10) and Section 5 (Real-world scenarios).
+
+Specs:
+
+- Header: "⏸ Pause and check" — 14px, slate accent.
+- A single multiple-choice question with 2-3 options. Click any option for inline reveal.
+- Reveal includes the correct answer plus a one-sentence "why" that surfaces the mental model.
+- Lighter visual weight than the existing inline knowledge check — these are confidence pulses, not gates.
+- Tested per QUALITY.md: would the immediately preceding paragraph equip the reader to answer correctly?
+
+#### Common Misconceptions panel
+
+Inserted at the start of Section 7, immediately before the flashcards.
+
+- Header: "Common Misconceptions" — same heading style as other section sub-headings.
+- Three myth/truth pairs per lesson. Exactly three. No more, no less.
+- Each pair is a small card with two rows:
+  - **Myth row:** red/strike accent (uses the existing failure red family at reduced saturation), prefix "**Myth:**", one sentence.
+  - **Truth row:** green/check accent (uses the existing success green family), prefix "**Truth:**", one sentence.
+- Three cards stack vertically and should fit within one screen on desktop.
+
+#### Analogy-stops-here callout
+
+Inline within Section 3 (Analogy), immediately after the analogy is fully introduced, used only when the analogy has a known cliff.
+
+- Format: `⚠️ *The analogy stops here: [one-sentence cliff].*`
+- Italic, narrower than full-section panels (same width as a body paragraph).
+- Yellow/warn-coral accent, low saturation. Subtle, not loud.
+- One sentence, no paragraph.
+- Used selectively. Not every lesson needs one — a generic disclaimer dilutes the warning when it matters.
+
+#### Skip-if-new tag
+
+A pill at the start of paragraphs that are correct and useful but unnecessary for absolute beginners (e.g., cgroup v1 vs v2 details, Raft consensus internals, hydrophone vs sonobuoy).
+
+- Pill content: `[ deep dive — skip if new ]`.
+- Muted/grey pill (existing inactive `#5F5E5A` family), small, inline at start of paragraph.
+- The tagged paragraph itself renders at slightly reduced opacity (0.85) so a beginner's eye glides past.
+- Applied at paragraph or sub-section granularity, not sentence level. 1-3 per lesson maximum, only in Module-2-and-deeper lessons.
+
+#### Persistent concept rail
+
+A floating left rail visible while scrolling on desktop.
+
+- Width: 180-220px. Position: fixed-left.
+- Vertical list of concept-mastery items (one per lesson in the course), each a single short label describing concepts mastered (not lesson titles).
+- Three states with status icons:
+  - `✓` (success green) — completed
+  - `▶` (slate accent, current) — current lesson, with "← you are here" suffix
+  - `○` (muted gray) — future
+- Each item is text + icon only, no boxes.
+- Behaviour below 720px width: collapses to a horizontal progress bar at top of the page.
+- Hard-coded per lesson. No state persistence — the rail reflects "this lesson's position in the journey," not actual user progress.
+
+#### CYOA quiz reveal
+
+Variant of the existing quiz reveal pattern. One CYOA question per lesson; the other quiz questions remain factual.
+
+- Framing line above the reveal trigger: "🎬 Choose Your Own Adventure".
+- Story-style scenario (1-2 sentences) ending with "**Click to see what happens. ▼**".
+- Reveal can include a small ASCII/text graphic for the failure case — a tiny pixel illustration of the disaster (a sinking ship, an OOM-killed pod, an empty replica counter). The visual lands the moment of failure.
+- Reveal can be longer than other quiz answers — this is the *memorable* one.
+- The technical lesson must be inferable from the reveal alone. No separate "and the lesson is…" tag.
+
 ### Hover-to-define for technical terms
 
 Every technical term that a first-time learner could trip on gets a dotted-underline + tooltip on its **first prominent appearance** in the prose. Subsequent appearances are bare text — a learner sees the underline once, learns the meaning, reads bare text after.
@@ -248,6 +365,36 @@ Color variables are CSS custom properties on `:root`, shadowed under `[data-them
 - Mobile-first responsive layout. Test below 720px width.
 - Dark mode and scroll-progress bar are standard chrome.
 - The recap card is the closing pattern, not "you're done."
+- The Nightmare opener appears below the H1 before any other content.
+- The one-sentence stamp appears at top and bottom, identical at both placements.
+- The district line appears at the top tying the lesson to its domain's unified analogical universe.
+- Two pause-and-checks appear mid-lesson at the prescribed positions.
+- A Translation Legend table replaces the bare "mapping" bullet list inside Section 3.
+- A Common Misconceptions panel (exactly three myth/truth pairs) opens Section 7.
+- An "analogy stops here" callout appears inside Section 3 when the analogy has a known cliff.
+- "Skip if new" tags mark advanced paragraphs in Module-2-and-deeper lessons.
+- A persistent left-rail concept map renders the lesson's place in the journey.
+- One quiz question per lesson is a CYOA-style story reveal; the others remain factual.
+
+## Vocabulary canonicalization
+
+Across lessons within a domain, multiple synonyms for the same concept create drift and confuse beginners. Each domain maintains a canonical-term list. Lessons use canonical terms throughout body text and quiz answers; "acceptable on first mention" terms may appear once in parentheses as a gloss on the canonical term, never as the standalone term in subsequent uses.
+
+When in doubt, search the existing course for the term and align with the predominant usage rather than introduce a new variant.
+
+### Kubernetes canonical vocabulary
+
+| Canonical | Acceptable on first mention only (parenthetical gloss) | Avoid |
+|---|---|---|
+| **desired state** | "what you want" | "the spec", "your declared intent", "what you said" — as standalone terms |
+| **actual state** | "what's running" | "current state", "live state", "reality" |
+| **controller** | "the small program watching forever" | "the loop", "the reconciler" — as the standalone term |
+| **reconciliation loop** | "the loop" *(only after first mention in a lesson)* | "the reconcile cycle", "the watch loop" |
+| **Pod** *(capitalised)* | — | "pod" (lowercase) when referring to the K8s object |
+| **the kubelet** | "the node agent" | "the agent" — ambiguous |
+| **the API server** | "the only door in" | "the K8s API" — implies the protocol, not the component |
+
+VMware, AWS, and other domain canon lists will be added as those courses develop a long-tail of synonym drift.
 
 ## Kubernetes-specific conventions
 
@@ -285,6 +432,64 @@ Same palette is used for the hero "journey" station numbers so the journey color
 
 VMware previews use `preview-lesson-NN.html` (existing series). Kubernetes previews use `preview-kubernetes-lesson-NN.html` so the two domain sequences don't collide at the repo root. Future domains follow the same pattern: `preview-{domain}-lesson-NN.html`.
 
+### Unified analogical universe — Kubernetes (K-Town)
+
+Every Kubernetes lesson is set in a single shared world: **K-Town**. Each lesson zooms into one *district* of the city. This solves the problem of beginners burning cognitive energy learning a fresh analogy every lesson. The cast and the city map persist; the lesson-specific analogy is a district within the city.
+
+**The cast (recurring across all lessons)**
+
+- **Mayor Katie.** The city's manager. Personifies Kubernetes itself. Appears in Lesson 01 ("the property manager") and is name-dropped in any lesson that needs a "Kubernetes did this" actor.
+- **Podrick.** The unit/box/parcel that gets placed, moved, packed, deployed. Personifies the Pod and, by extension, a workload. Has a face on the small character illustration.
+- **The Thermostat.** The wise old gadget, slightly grandfatherly, who explains control loops. Lives on the wall in every building of K-Town. Speaks in Lesson 03 and reappears as a knowing wink whenever a new reconciliation loop is introduced (Lessons 06, 13, 14).
+
+Optional supporting characters used sparingly:
+
+- **Captain Tini** (Lesson 12 — the well-trained ship captain in the harbour district).
+- **Inspector Pause** (Lesson 15 — the silent guard at the door of every co-living unit).
+
+These characters do not need fully drawn art on every page. A small recurring icon (silhouette) in the margins is enough.
+
+**District map graphic**
+
+A single SVG of K-Town renders once per lesson, just under the breadcrumb header, showing all 15 districts as pins on a stylised city map. Only the highlighted pin changes per lesson.
+
+**District-to-lesson mapping**
+
+| Lesson | District / Setting |
+|---|---|
+| 01 | **Mayor's Office** (Katie running the city) |
+| 02 | **Residential District** (houses vs apartment buildings) |
+| 03 | **Climate Control Tower** (every building has thermostats — featured here) |
+| 04 | **Port + Restaurant Row** (standard shipping containers + food courts) |
+| 05 | **Industrial Kitchen Block** (vs a single toaster on someone's counter) |
+| 06 | **Public Library** |
+| 07 | **K-Town Rail Yard** (alpha branch line → main intercity) |
+| 7.5 | **Foundation Tour** (Level 0 primer — a brief layman's intro to processes/OS/kernel) |
+| 08 | **Office Tower with Utility Meters** |
+| 09 | **Customs Warehouse** (forklifts moving standard containers) |
+| 10 | **Bakery District** (recipes, ovens, cakes, ingredient lists, baker's seal) |
+| 11 | **K-Town Bank Vault Quarter** |
+| 12 | **K-Town Harbour** (lighthouse + ship + captain) |
+| 13 | **K-Town International Airport** (control tower + terminals) |
+| 14 | **City Hall — Permit Office** |
+| 15 | **Co-Living Quarter** (Pod = co-living unit, NOT apartment — apartment is reserved for Lesson 02's container metaphor) |
+
+**Crucial collision to avoid:** Lesson 02 uses "apartment = container." Lesson 15 must NOT also use "apartment = Pod" — they collide. Lesson 15 uses "co-living unit / shared studio loft = Pod" instead.
+
+**Implementation rules**
+
+- Every lesson opens with a one-line district pin in the format `📍 Today's stop in K-Town: **[District Name]**.`
+- Every lesson includes the K-Town map graphic with the current district highlighted.
+- Existing per-lesson analogies (the property manager, the apartments, the thermostat, etc.) are *retained* — the K-Town framing nests them, not replaces them.
+- Do not introduce new districts without an approved DECISIONS.md entry.
+- Do not introduce new recurring cast members without an approved DECISIONS.md entry.
+
+**What NOT to do**
+
+- Do not rewrite the existing analogies. Each one stays as is. K-Town is the wrapper.
+- Do not exceed three recurring characters in regular use. Beyond Katie, Podrick, and the Thermostat, every additional character is overhead.
+- Do not let the city framing crowd the actual content. It's a frame, not the lesson.
+
 ## What never changes
 
 - The packet/request motion track follows the visible cable/connection trajectory exactly. No exceptions.
@@ -292,4 +497,6 @@ VMware previews use `preview-lesson-NN.html` (existing series). Kubernetes previ
 - Every lesson has all seven sections in fixed order.
 - The analogy in section 3 is referenced consistently in ELI5 and ELI10.
 - Every lesson ships with flashcards and a quiz.
+- Every lesson ships with the layman-first scaffolding (Nightmare, stamp, district line, pause-and-checks, Translation Legend, Misconceptions, concept rail).
+- Every Kubernetes lesson lives inside K-Town and uses its assigned district.
 - The 800th lesson must look like the 1st.
