@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 21 — ServiceAccounts & Certificates · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the K-COM course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L01 What is Kubernetes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L02 containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L03 reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L04 12-factor + monoliths</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L05 K8s fit / overkill</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L06 GitOps + SRE</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L07 history + KEPs</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>L7.5 Linux primer</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L08 namespaces &amp; cgroups</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L09 runtimes &amp; OCI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L10 image building</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L11 container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L12 PID 1 &amp; lifecycle</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L13 cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L14 K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L15 Pods deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L16 workload controllers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L17 services &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L18 storage Pt 1 — PV/PVC/SC</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L19 storage Pt 2 — CSI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L20 config &amp; secrets</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>L21 service accounts &amp; certs</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L22 scheduling Pt 1</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L23 scheduling Pt 2</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L24 net foundations &amp; CNI</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L25 Gateway API</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L26 AdminNetworkPolicy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L27 RBAC &amp; Auth</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L28 admission control</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L29 policy engines</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L30 supply chain</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L31 multi-tenancy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L32 obs Pt 1 — logs/metrics</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L33 obs Pt 2 — traces/eBPF</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L34 autoscaling</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L35 reliability &amp; HA</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L36 Kustomize</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L37 Helm 3</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L38 Argo CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L39 Flux CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L40 progressive delivery</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L41 CRDs deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L42 Operators</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L43 service mesh</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L44 troubleshooting</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 21</span></a>
+    <span class="progress-pill">21 · ServiceAccounts &amp; certs</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Permit Office — Identity Bureau</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: lesson 21">
+    <title>K-Town district map · lesson 21</title>
+    <desc>Stylised map of K-Town. Permit Office — Identity Bureau highlighted.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin active" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+    <g class="pin" id="kt-pin27" transform="translate(740,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">27</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">security</text></g>
+    <g class="pin" id="kt-pin32" transform="translate(230,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">32</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">observability</text></g>
+    <g class="pin" id="kt-pin34" transform="translate(230,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">34</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Station</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scale & resilience</text></g>
+    <g class="pin" id="kt-pin36" transform="translate(410,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">36</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Print Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">delivery</text></g>
+    <g class="pin" id="kt-pin42" transform="translate(700,305)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">42</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Workshop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">operators</text></g>
+    <g class="pin" id="kt-pin44" transform="translate(770,245)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">44</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Detective's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshooting</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Permit Office — Identity Bureau</strong> <span>· lesson 21</span><span class="visually-hidden">Lesson 21, Permit Office — Identity Bureau.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 10 · Lesson 21 · workload identity and cluster PKI</span>
+    <h1>ServiceAccounts & Certificates · Tokens, Projected JWTs, cert-manager, Cluster PKI</h1>
+    <p class="hero-sub">Every Pod has an identity (its <strong>ServiceAccount</strong>) and a credential proving that identity (a <strong>token</strong>). Every TLS connection between cluster components is backed by a <strong>certificate</strong>. This lesson is about the <em>tokens</em> the cluster issues and the <em>PKI</em> that makes them trustable.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Permit Office credentials counter: a clerk hands out a passport (ServiceAccount) and a stamped travel pass (projected token), while behind a partition cert-manager prints time-limited certificates from a PKI press.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">PERMIT OFFICE · IDENTITY &amp; CERTIFICATES BUREAU</text>
+  <!-- Passport (ServiceAccount) -->
+  <g transform="translate(40,55)">
+    <rect width="86" height="100" rx="6" fill="#3F4A5E" stroke="#1B1814" stroke-width="2"/>
+    <text x="43" y="20" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">PERMIT</text>
+    <text x="43" y="32" text-anchor="middle" font-size="6" fill="#FBF1D6">PERMIT</text>
+    <circle cx="43" cy="56" r="14" fill="#FBF1D6" stroke="#FBF7F0" stroke-width="1"/>
+    <circle cx="40" cy="54" r="1.2" fill="#2A2520"/><circle cx="46" cy="54" r="1.2" fill="#2A2520"/>
+    <path d="M 39 60 Q 43 62 47 60" stroke="#2A2520" stroke-width="1" fill="none"/>
+    <text x="43" y="86" text-anchor="middle" font-size="8" font-weight="700" fill="#FBF1D6">app-x</text>
+    <text x="43" y="118" text-anchor="middle" font-size="9" font-weight="700" fill="#3F4A5E">ServiceAccount</text>
+    <text x="43" y="131" text-anchor="middle" font-size="8" fill="#6B6058" font-style="italic">the app's identity</text>
+  </g>
+  <!-- Token (travel pass) -->
+  <g transform="translate(160,80)">
+    <rect width="120" height="40" rx="4" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/>
+    <text x="60" y="14" text-anchor="middle" font-size="7" font-weight="700" fill="#8B5A00">PROJECTED TOKEN</text>
+    <line x1="6" y1="18" x2="114" y2="18" stroke="#8B5A00" stroke-width="0.5"/>
+    <text x="6" y="27" font-size="6" fill="#5A4F45">aud: api.cluster</text>
+    <text x="6" y="34" font-size="6" fill="#5A4F45">exp: 1h</text>
+    <text x="60" y="34" text-anchor="middle" font-size="6" font-weight="700" fill="#A04832">SHORT-LIVED</text>
+    <text x="60" y="60" text-anchor="middle" font-size="9" font-weight="700" fill="#8B5A00">JWT · Bound</text>
+    <text x="60" y="73" text-anchor="middle" font-size="8" fill="#6B6058" font-style="italic">refreshed by kubelet</text>
+  </g>
+  <!-- cert-manager press -->
+  <g transform="translate(310,40)">
+    <rect width="160" height="120" rx="8" fill="#3F4A5E" stroke="#1B1814" stroke-width="2"/>
+    <rect x="14" y="14" width="132" height="66" rx="3" fill="#5A4F45"/>
+    <rect x="22" y="22" width="116" height="50" rx="2" fill="#FBF7F0"/>
+    <line x1="32" y1="32" x2="128" y2="32" stroke="#9D9389" stroke-width="0.5"/>
+    <line x1="32" y1="42" x2="128" y2="42" stroke="#9D9389" stroke-width="0.5"/>
+    <line x1="32" y1="52" x2="128" y2="52" stroke="#9D9389" stroke-width="0.5"/>
+    <line x1="32" y1="62" x2="100" y2="62" stroke="#9D9389" stroke-width="0.5"/>
+    <circle cx="120" cy="62" r="6" fill="#A04832"/>
+    <text x="120" y="65" text-anchor="middle" font-size="6" fill="#FFFFFF" font-weight="700">CA</text>
+    <text x="80" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">cert-manager</text>
+    <text x="80" y="111" text-anchor="middle" font-size="8" fill="#FBF1D6" font-style="italic">issues + rotates X.509</text>
+  </g>
+  <!-- PKI tree -->
+  <g transform="translate(500,55)">
+    <text x="75" y="14" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">CLUSTER PKI</text>
+    <rect x="55" y="22" width="40" height="24" rx="3" fill="#3F4A5E"/>
+    <text x="75" y="38" text-anchor="middle" font-size="8" font-weight="700" fill="#FBF1D6">cluster CA</text>
+    <line x1="75" y1="46" x2="30" y2="68" stroke="#5A4F45" stroke-width="1.2"/>
+    <line x1="75" y1="46" x2="75" y2="68" stroke="#5A4F45" stroke-width="1.2"/>
+    <line x1="75" y1="46" x2="120" y2="68" stroke="#5A4F45" stroke-width="1.2"/>
+    <rect x="6" y="68" width="48" height="22" rx="3" fill="#5A9F7A"/>
+    <text x="30" y="82" text-anchor="middle" font-size="7" font-weight="700" fill="#FFFFFF">apiserver</text>
+    <rect x="55" y="68" width="40" height="22" rx="3" fill="#A04832"/>
+    <text x="75" y="82" text-anchor="middle" font-size="7" font-weight="700" fill="#FFFFFF">kubelet</text>
+    <rect x="100" y="68" width="44" height="22" rx="3" fill="#E8B547"/>
+    <text x="122" y="82" text-anchor="middle" font-size="7" font-weight="700" fill="#5A4F45">app TLS</text>
+    <text x="75" y="115" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">all signed by the same root</text>
+  </g>
+  <text x="340" y="200" text-anchor="middle" font-size="11" fill="#3F4A5E" font-style="italic">Identity for Pods · short-lived tokens · automated cert rotation. None of this should be hand-rolled.</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Pod was running fine for 18 months — until a Friday at 17:42 when its TLS connections to the API server start failing. Logs show <code>x509: certificate has expired</code>. The on-call engineer SSHs in, runs <code>openssl x509 -enddate</code>, and sees the cert expired today. Nobody on the team had ever rotated a certificate manually. Turns out kubeadm rotates kubelet certs but the team had also issued a long-lived service account token in 2024 (the old default), pinned in a Secret, never refreshed. The fix is moving to <strong>projected service account tokens</strong> (kubelet auto-refreshes them) and putting <strong>cert-manager</strong> in front of every TLS endpoint. This lesson is the toolkit.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Every Pod has a <strong>ServiceAccount</strong> (its workload identity). Modern clusters use <strong>projected, short-lived, audience-bound JWTs</strong> — <em>not</em> the legacy long-lived Secret tokens. For TLS certs (Ingress, webhooks, mTLS), use <strong>cert-manager</strong> — never hand-roll OpenSSL.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Workload identity vs human identity</h2>
+    <p>Two kinds of identity in K8s. <strong>Users</strong> are humans (or external CI systems) authenticated through OIDC, certificates, or static tokens — they're <em>not</em> a K8s API object; they're a string the API server accepts. <strong>ServiceAccounts</strong> are workload identities — actual API objects in a namespace, used by Pods to talk to the API server (or to any other identity-aware service).</p>
+    <p>Every Pod runs as a ServiceAccount. If you don't specify one, it's <code>default</code>. The kubelet projects a JWT into the Pod (under <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code>); any process in the Pod can read it and use it as a Bearer token to talk to the API server.</p>
+    <p>The big shift between K8s 1.21 and today: tokens are now <strong>short-lived (1h default), audience-bound (a JWT <code>aud</code> claim), and auto-refreshed</strong> by the kubelet. Pre-1.21, tokens were stored in long-lived Secrets and never expired — a leak was a permanent compromise. Modern clusters: a leaked token is useful for at most an hour.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · The token model</span>
+    <h2>Projected vs legacy ServiceAccount tokens</h2>
+    <table class="data-table">
+      <thead>
+        <tr><th></th><th>Legacy (pre-1.24)</th><th>Projected / Bound (modern)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Lifetime</td><td>Forever</td><td>1 hour default; refreshed at 80%</td></tr>
+        <tr><td>Storage</td><td>Long-lived <code>Secret</code> object</td><td>Read from kubelet's mount; never touches etcd</td></tr>
+        <tr><td>Audience</td><td>Implicit (API server only)</td><td>Explicit <code>aud</code> claim</td></tr>
+        <tr><td>On Pod delete</td><td>Token still valid</td><td>Token bound to Pod UID — invalid the moment Pod dies</td></tr>
+        <tr><td>Created by</td><td>K8s auto-created a Secret per SA</td><td>You ask for one explicitly via <code>TokenRequest</code> API or volume projection</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:18px">Default behaviour in 1.24+: K8s no longer auto-creates a long-lived Secret per ServiceAccount. The Pod gets a projected token via the <code>serviceAccountToken</code> volume projection. <em>If you find a long-lived SA token Secret in a modern cluster, it was created intentionally — typically as an integration credential for an external system that can't refresh.</em></p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A team has a Pod with no <code>serviceAccountName</code> set. Which identity does it run as?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) <code>system:anonymous</code> — no identity at all</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) The <code>default</code> ServiceAccount in the Pod's namespace, automatically</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) A randomly generated identity per Pod</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Every namespace gets a <code>default</code> ServiceAccount auto-created. Pods that don't specify one inherit it. This is convenient but means a default SA's RBAC bindings affect <em>every</em> Pod in the namespace — keep <code>default</code> minimally permissioned and create explicit SAs per workload.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · The cluster's PKI</span>
+    <h2>Why every K8s component has a certificate</h2>
+    <p>Every TLS connection between cluster components — API server ↔ kubelet, kubelet ↔ apiserver, etcd ↔ etcd, controller-manager ↔ apiserver — is mTLS-authenticated with X.509 certificates. The default tooling (kubeadm, the major distros, the cloud-managed control planes) sets up a small PKI:</p>
+    <ul>
+      <li><strong>Cluster CA</strong> — the root that signs everything. Lives in <code>/etc/kubernetes/pki/ca.crt</code> on a kubeadm-managed control plane.</li>
+      <li><strong>API server cert</strong> — signed by the CA; presented when clients talk to <code>kubernetes.default.svc</code>.</li>
+      <li><strong>kubelet certs</strong> — one per node; signed by the CA via the <strong>kubelet-bootstrap</strong> flow at node join. Auto-rotated.</li>
+      <li><strong>etcd peer + client certs</strong> — internal to etcd; signed by a separate etcd CA usually.</li>
+      <li><strong>Front-proxy CA</strong> — separate CA used for aggregated API servers (extension API servers, metrics-server).</li>
+    </ul>
+    <p>For application-level TLS (Ingress endpoints, webhook configurations, app-to-app mTLS), don't extend the cluster CA — that's its job, not yours. Stand up <strong>cert-manager</strong> for app-level certs; it's a CRD-driven controller that integrates with Let's Encrypt, Vault, your cluster's CA, or any other ACME-compatible issuer.</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>The OIDC discovery endpoint at <code>/.well-known/openid-configuration</code> on the API server publishes the cluster's JWT verification keys. This is what lets external systems (AWS IAM Roles for Service Accounts, GCP Workload Identity Federation, Vault) <em>verify</em> a projected SA token without contacting the API server. The token itself is a standards-compliant OIDC JWT — that's the whole basis for cluster-to-cloud workload identity.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · cert-manager — the practical tool</span>
+    <h2>Three CRDs you actually use</h2>
+    <div class="role-grid">
+      <div class="role r1">
+        <span class="role-icon">📜</span>
+        <h3 class="role-name">Issuer / ClusterIssuer</h3>
+        <p class="role-tag">where certs come from</p>
+        <p class="role-desc">Defines a CA source: Let's Encrypt (HTTP-01 or DNS-01 ACME), Vault PKI, an internal CA, or a self-signed root. <code>Issuer</code> is namespace-scoped; <code>ClusterIssuer</code> is cluster-wide.</p>
+        <p class="role-who">Set up once per environment.</p>
+      </div>
+      <div class="role r2">
+        <span class="role-icon">🪪</span>
+        <h3 class="role-name">Certificate</h3>
+        <p class="role-tag">a specific cert request</p>
+        <p class="role-desc">"Issue a cert for these DNS names, valid for X days, store the result in this Secret named Y." cert-manager renews it before expiry (default at 2/3 of lifetime).</p>
+        <p class="role-who">One per app / Ingress / mTLS endpoint.</p>
+      </div>
+      <div class="role r3">
+        <span class="role-icon">🎫</span>
+        <h3 class="role-name">CertificateRequest / Order</h3>
+        <p class="role-tag">internal accounting</p>
+        <p class="role-desc">CRs and Orders are intermediate objects cert-manager creates while talking to the issuer. You don't write them; they're useful for debugging stuck issuance.</p>
+        <p class="role-who">Read-only for users.</p>
+      </div>
+    </div>
+    <p style="margin-top:18px">A typical Ingress with TLS: define a <code>ClusterIssuer</code> for Let's Encrypt prod, then add the <code>cert-manager.io/cluster-issuer</code> annotation on your Ingress. cert-manager creates the <code>Certificate</code>, runs the ACME flow, stores the result in a <code>kubernetes.io/tls</code> Secret, and the Ingress controller picks it up. Renewals happen automatically. Total Ops touch: zero after setup.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-1.24 era: every ServiceAccount had a permanent <code>Secret</code> token. Leak = permanent compromise. Cluster certs renewed by writing a runbook and praying a junior engineer remembered to run it before the cert expired. Application TLS = OpenSSL commands in a wiki page, last updated three years ago.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Modern cluster: projected tokens are short-lived (1h), audience-bound, auto-refreshed. Cluster control-plane certs auto-rotated via kubeadm or the managed control plane. Application TLS via <code>cert-manager</code> + a <code>ClusterIssuer</code>; you write a <code>Certificate</code> and forget about it forever. The runbook is gone — replaced by declarative resources.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">The single most under-appreciated migration in K8s history was bound service account tokens. Pre-2022 most clusters had thousands of permanent credentials lying around. Post-2024, virtually none.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this district</h2>
+<p>The Permit Office issues two kinds of paperwork. The <strong>passport</strong> (ServiceAccount) is the identity itself: it says "this is app-x, vouched for by the city." The <strong>travel pass</strong> (token) is what app-x actually presents at every checkpoint: it's a stamped, time-limited document the kid courier carries in their pocket. Old K-Town used to issue passes that never expired — a lost pass meant someone could impersonate you forever. New K-Town issues passes that expire in an hour and are auto-refreshed by the courier office (the kubelet).</p><p>Behind another counter: the <strong>certificate press</strong>. cert-manager runs the press: it talks to a recognised authority (Let's Encrypt, Vault, the city CA), gets a sealed certificate, hands it to whoever asked, and pre-emptively reprints it before it expires. Nobody hand-cuts certificates anymore in modern K-Town.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>The passport with the holder's photo</td><td><code>ServiceAccount</code> object</td></tr>
+          <tr><td>The stamped travel pass</td><td>Projected JWT (1h, audience-bound, refreshed by kubelet)</td></tr>
+          <tr><td>Travel passes that never expired (old)</td><td>Legacy long-lived SA token Secrets (pre-1.24 default)</td></tr>
+          <tr><td>The city's seal of authenticity</td><td>Cluster CA cert (signs API server, kubelet, etcd certs)</td></tr>
+          <tr><td>The certificate press</td><td>cert-manager controller</td></tr>
+          <tr><td>A standing relationship with a cert authority</td><td><code>ClusterIssuer</code> (e.g., Let's Encrypt, Vault PKI)</td></tr>
+          <tr><td>Today's certificate request slip</td><td><code>Certificate</code> object</td></tr>
+          <tr><td>The seal-checking machine at the customs line</td><td>API server's TLS chain validation</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real K8s tokens are JWTs, signed cryptographically — the whole stack of trust depends on whether the cluster's signing key is protected. "The city CA" is one private key on disk; lose it and the whole metaphor collapses.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Every Pod gets a name badge (ServiceAccount) and a paper hall pass (the token). The hall pass expires in an hour and the front desk (kubelet) gives you a new one before it runs out. Long ago hall passes never expired and that was a problem.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Every Pod runs as a <code>ServiceAccount</code> — a workload identity. The kubelet projects a short-lived (1h), audience-bound JWT into the Pod at <code>/var/run/secrets/kubernetes.io/serviceaccount/token</code>. The Pod presents it as a Bearer token. Lost or leaked = useful for at most an hour. Cluster components (apiserver, kubelet, etcd) authenticate to each other with X.509 certs from a small per-cluster PKI. For application-layer TLS, run <code>cert-manager</code> + a <code>ClusterIssuer</code> and let it handle issuance + rotation declaratively.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams use this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS using IAM Roles for ServiceAccounts (IRSA) on EKS</p><p>The Pod's projected JWT has audience <code>sts.amazonaws.com</code>. STS verifies it by hitting EKS's OIDC endpoint, returns AWS credentials. The Pod authenticates to AWS without ever holding an AWS access key. Rotation: kubelet refreshes the JWT every 50 minutes; AWS creds get re-issued in turn.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank running mTLS between every microservice</p><p>cert-manager has a Vault PKI ClusterIssuer. Every Deployment has a Certificate sidecar that issues a 24h cert. Service mesh (Linkerd, in this case) consumes the cert. Hard mTLS everywhere. Vault rotates the intermediate CA quarterly; cert-manager re-issues on the next renewal.</p></div>
+      <div class="scenario"><p class="scenario-name">A startup with a Let's Encrypt setup that took 5 minutes</p><p>Install cert-manager → apply a <code>ClusterIssuer</code> for Let's Encrypt → add <code>cert-manager.io/cluster-issuer: letsencrypt-prod</code> annotation on the Ingress. cert-manager runs the HTTP-01 challenge, gets a cert, stores it in a Secret, the Ingress controller picks it up. Renewals are silent.</p></div>
+      <div class="scenario"><p class="scenario-name">A team that audited their old long-lived tokens</p><p>Found 47 ServiceAccount Secrets created pre-1.21 that nobody remembered. Half were unused; the other half belonged to integrations they could migrate to bound tokens. The cleanup deleted 38 of them, replaced 9 with bound tokens or workload-identity flows. Surface area for credential theft dropped by an order of magnitude.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> <code>kubectl create token</code> is just for testing.</div><div class="misc-row misc-truth"><strong>Truth:</strong> It's the recommended way to mint a one-off token for an external integration in 2026. The legacy way (create a Secret of type <code>kubernetes.io/service-account-token</code>) still works but is discouraged. <code>kubectl create token sa-name --duration=1h --audience=foo</code> issues a bound token via the TokenRequest API.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> cert-manager can manage the cluster's control-plane certs.</div><div class="misc-row misc-truth"><strong>Truth:</strong> No. Control-plane PKI (apiserver, kubelet, etcd) is managed by kubeadm, the distro (kops, k3s, RKE2), or the managed cloud control plane. cert-manager is for <em>application-layer</em> certs (Ingress, webhooks, mTLS). Mixing the two will break things.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> The default ServiceAccount is fine.</div><div class="misc-row misc-truth"><strong>Truth:</strong> It's fine until you grant it a Role and forget that <em>every</em> Pod in that namespace inherits it. Treat <code>default</code> as no-permissions; create per-workload SAs and bind RBAC to them. Pod Security Admission can enforce "every Pod must specify a non-default SA."</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">ServiceAccount vs User?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">ServiceAccount = workload identity, namespaced API object, used by Pods. User = human (or external system) identity, not a K8s object — just a string the API server's authenticator returns from OIDC/cert/token.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's in a projected SA token?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A signed JWT with claims: <code>iss</code> (cluster URL), <code>sub</code> (the SA), <code>aud</code> (target audience), <code>exp</code> (1h), and Pod / Node binding info. kubelet refreshes at 80% lifetime.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why are tokens "bound"?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Bound to a specific Pod's UID. The moment the Pod is deleted, the token is invalid for API server auth. Reduces blast radius of leaked credentials.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is IRSA / Workload Identity?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">AWS IRSA + GCP Workload Identity + Azure Workload Identity Federation: cluster's projected JWT is verified by the cloud's STS using K8s's OIDC discovery endpoint. Pod gets cloud credentials without static keys.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Cluster CA vs front-proxy CA?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Cluster CA: signs API server, kubelet, controller-manager, scheduler, etcd certs (typical kubeadm setup uses one root). Front-proxy CA: separate root used by aggregated/extension API servers (metrics-server, custom AAs).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">cert-manager: Issuer vs ClusterIssuer?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Issuer = namespace-scoped (one per team/env). ClusterIssuer = cluster-wide. Same fields. Use ClusterIssuer when one cert source serves many namespaces (e.g., Let's Encrypt prod).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">HTTP-01 vs DNS-01 ACME?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">HTTP-01: challenge served from a temporary URL on the host (cert-manager spins up a Pod + Ingress rule). DNS-01: challenge served as a TXT record (cert-manager updates DNS via a provider). DNS-01 supports wildcards; HTTP-01 doesn't.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When should you NOT use cert-manager?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">For control-plane PKI — those are managed by kubeadm/distro/cloud control plane. cert-manager is application-layer.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A Pod's token works fine when the Pod is running, but a CronJob script tries to capture the token and use it later. The captured token is rejected after a few minutes. Why?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Bound tokens. The token includes the Pod's UID and node binding; the API server validates these on every request. When the Pod terminates (or even just rolls), the binding becomes invalid. <strong>Fix:</strong> use the TokenRequest API directly to mint a longer-lived (but still bounded) token if the use case is legitimate, or restructure so the work happens inside the Pod's lifetime. There's no "token forever" option in modern K8s, by design.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A team needs to migrate an old integration from a static <code>kubernetes.io/service-account-token</code> Secret to bound tokens. The integration is a third-party SaaS that needs to authenticate to the cluster's API server. What's the modern approach?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Three options ranked best-first: (1) <strong>OIDC federation</strong>: configure the SaaS to trust the cluster's OIDC endpoint and present projected JWTs from a sidecar workload — zero static credentials. (2) <strong>kubectl create token</strong>: issue a longer-lived (e.g., 24h) bound token on a refresh schedule via a CronJob; the SaaS gets rotating creds. (3) <strong>Long-lived SA Secret</strong>: only if (1) and (2) are impossible — and ensure the Secret is in a tightly-RBAC'd namespace and rotated manually. Most modern SaaS integrations support (1) or (2).</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">On Friday at 5 PM your Ingress starts returning <code>x509: certificate has expired</code>. cert-manager is installed but the Certificate object hasn't renewed. <strong>Click for the diagnostic walk. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the diagnostic walk</span>Check in this order: (1) <code>kubectl describe certificate</code> — look at the <code>Status.Conditions</code> and <code>Events</code>. The most common cause is <code>Renewal Failed</code> with an issuer error. (2) <code>kubectl describe issuer / clusterissuer</code> — is the issuer reachable? Let's Encrypt rate-limited? Vault token expired? DNS-01 provider misconfigured? (3) <code>kubectl get certificaterequest -A</code> + describe the most recent — what error is the issuer returning? (4) Common causes: ACME rate limit hit (5 certs/week per registered domain), DNS provider creds rotated, Vault PKI role expired, ClusterIssuer's signing CA actually expired (this is the big one for self-signed roots — they're not magic, they expire too). <strong>Lesson:</strong> set up an alert on <code>cert-manager.io/certificate-expiry</code> with 14-day lead time. Do not learn this on Friday at 5 PM.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">ServiceAccount (SA)</div><div class="gloss-def">Namespaced API object representing a workload identity. Every Pod runs as one (defaults to <code>default</code>).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Bound / projected token</div><div class="gloss-def">Short-lived (1h), audience-bound JWT issued by the API server's TokenRequest API and projected into Pods by the kubelet.</div></div>
+      <div class="gloss-item"><div class="gloss-name">TokenRequest API</div><div class="gloss-def">API server endpoint for minting bound tokens. Used by kubelet, also by <code>kubectl create token</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">OIDC discovery endpoint</div><div class="gloss-def"><code>/.well-known/openid-configuration</code> on the apiserver. Publishes verification keys so external systems can validate cluster JWTs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">IRSA / Workload Identity</div><div class="gloss-def">Cloud-side flow that exchanges a projected K8s JWT for cloud credentials. AWS, GCP, Azure all support it.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Cluster CA</div><div class="gloss-def">Root certificate authority signing the cluster's control-plane certs. Lives at <code>/etc/kubernetes/pki/ca.crt</code> on kubeadm clusters.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Front-proxy CA</div><div class="gloss-def">Separate CA for aggregated API servers (metrics-server, extension APIs).</div></div>
+      <div class="gloss-item"><div class="gloss-name">cert-manager</div><div class="gloss-def">K8s-native CRD-driven controller for issuing and rotating X.509 certs. De-facto standard for app-layer TLS.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Issuer / ClusterIssuer</div><div class="gloss-def">cert-manager CRD pointing at a cert source (Let's Encrypt, Vault PKI, internal CA).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Certificate (cert-manager CRD)</div><div class="gloss-def">"Issue a cert for these DNSNames, store in Secret X, renew before expiry."</div></div>
+      <div class="gloss-item"><div class="gloss-name">ACME HTTP-01 / DNS-01</div><div class="gloss-def">Two challenge methods Let's Encrypt uses to verify domain control. cert-manager automates both.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubernetes.io/tls</div><div class="gloss-def">Built-in Secret type carrying a TLS cert + key. Consumed by Ingresses, Gateways, webhooks.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Every Pod has a <strong>ServiceAccount</strong> (its workload identity). Modern clusters use <strong>projected, short-lived, audience-bound JWTs</strong> — <em>not</em> the legacy long-lived Secret tokens. For TLS certs (Ingress, webhooks, mTLS), use <strong>cert-manager</strong> — never hand-roll OpenSSL.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 21 complete</span>
+    <p>Pods get an identity (ServiceAccount) and a short-lived, bound token (projected JWT). Cluster components trust each other via a small PKI. App-level TLS is cert-manager + a ClusterIssuer; never hand-roll OpenSSL.</p>
+    <p class="recap-next"><strong>Next — Lesson 22: Scheduling Part 1.</strong> How K8s decides which node a Pod lands on. Affinity and anti-affinity, taints and tolerations, topology-spread constraints. Dispatch Office routes the trucks.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 21 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+</script>
+
+</body>
+</html>

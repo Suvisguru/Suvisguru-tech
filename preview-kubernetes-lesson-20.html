@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 20 — Configuration & Secrets · K-COM</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the K-COM course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L01 What is Kubernetes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L02 containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L03 reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L04 12-factor + monoliths</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L05 K8s fit / overkill</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L06 GitOps + SRE</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L07 history + KEPs</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>L7.5 Linux primer</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L08 namespaces &amp; cgroups</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L09 runtimes &amp; OCI</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L10 image building</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L11 container security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L12 PID 1 &amp; lifecycle</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L13 cluster architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L14 K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L15 Pods deep dive</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L16 workload controllers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L17 services &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L18 storage Pt 1 — PV/PVC/SC</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>L19 storage Pt 2 — CSI</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>L20 config &amp; secrets</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L21 service accounts &amp; certs</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L22 scheduling Pt 1</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L23 scheduling Pt 2</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L24 net foundations &amp; CNI</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L25 Gateway API</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L26 AdminNetworkPolicy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L27 RBAC &amp; Auth</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L28 admission control</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L29 policy engines</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L30 supply chain</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L31 multi-tenancy</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L32 obs Pt 1 — logs/metrics</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L33 obs Pt 2 — traces/eBPF</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L34 autoscaling</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L35 reliability &amp; HA</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L36 Kustomize</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L37 Helm 3</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L38 Argo CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L39 Flux CD</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L40 progressive delivery</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L41 CRDs deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L42 Operators</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L43 service mesh</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>L44 troubleshooting</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-COM · Lesson 20</span></a>
+    <span class="progress-pill">20 · config &amp; secrets</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>Permit Office — Configuration Window</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: lesson 20">
+    <title>K-Town district map · lesson 20</title>
+    <desc>Stylised map of K-Town. Permit Office — Configuration Window highlighted.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin active" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+    <g class="pin" id="kt-pin16" transform="translate(295,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">16</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Dispatch Office</text></g>
+    <g class="pin" id="kt-pin17" transform="translate(530,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">17</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Switchboard</text></g>
+    <g class="pin" id="kt-pin27" transform="translate(740,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">27</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">security</text></g>
+    <g class="pin" id="kt-pin32" transform="translate(230,105)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">32</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">observability</text></g>
+    <g class="pin" id="kt-pin34" transform="translate(230,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">34</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Station</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scale & resilience</text></g>
+    <g class="pin" id="kt-pin36" transform="translate(410,295)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">36</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Print Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">delivery</text></g>
+    <g class="pin" id="kt-pin42" transform="translate(700,305)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">42</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Workshop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">operators</text></g>
+    <g class="pin" id="kt-pin44" transform="translate(770,245)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">44</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Detective's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshooting</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Permit Office — Configuration Window</strong> <span>· lesson 20</span><span class="visually-hidden">Lesson 20, Permit Office — Configuration Window.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module 10 · Lesson 20 · separating code from config</span>
+    <h1>Configuration & Secrets · ConfigMap, Secret, KMS, External Secrets Operator</h1>
+    <p class="hero-sub">Twelve-factor said it: <strong>configuration belongs out of the image</strong>. K8s gives you two boxes for that — <code>ConfigMap</code> for non-secret values, <code>Secret</code> for credentials. Then a third question: how do you make <code>Secret</code> actually secret?</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Permit Office: a clerk hands out non-secret rate cards (ConfigMaps), seals confidential envelopes (Secrets), and behind a vault door an external broker (KMS / ESO) signs in to bring fresh credentials.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">PERMIT OFFICE · CONFIG &amp; CREDENTIALS WINDOW</text>
+  <!-- Counter clerk -->
+  <g transform="translate(40,55)">
+    <rect x="0" y="80" width="120" height="20" rx="4" fill="#A06B45" stroke="#5A4F45" stroke-width="1"/>
+    <circle cx="60" cy="20" r="14" fill="#FBF1D6" stroke="#2A2520" stroke-width="1.4"/>
+    <circle cx="56" cy="18" r="1.4" fill="#2A2520"/><circle cx="64" cy="18" r="1.4" fill="#2A2520"/>
+    <path d="M 54 24 Q 60 28 66 24" stroke="#2A2520" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M 48 34 Q 48 80 54 80 L 66 80 Q 72 80 72 34 Z" fill="#3F4A5E"/>
+    <text x="60" y="120" text-anchor="middle" font-size="9" font-weight="700" fill="#3F4A5E">clerk</text>
+    <text x="60" y="133" text-anchor="middle" font-size="8" fill="#6B6058" font-style="italic">issues paperwork</text>
+  </g>
+  <!-- ConfigMap (rate card) -->
+  <g transform="translate(180,55)">
+    <rect width="100" height="80" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.4"/>
+    <text x="50" y="20" text-anchor="middle" font-size="10" font-weight="700" fill="#3F4A5E">RATE CARD</text>
+    <line x1="14" y1="32" x2="86" y2="32" stroke="#9D9389" stroke-width="0.6"/>
+    <text x="14" y="44" font-size="8" fill="#6B6058">log_level: info</text>
+    <text x="14" y="56" font-size="8" fill="#6B6058">timeout: 30s</text>
+    <text x="14" y="68" font-size="8" fill="#6B6058">region: us-east-1</text>
+    <text x="50" y="100" text-anchor="middle" font-size="10" font-weight="700" fill="#3F4A5E">ConfigMap</text>
+    <text x="50" y="113" text-anchor="middle" font-size="8" fill="#6B6058" font-style="italic">non-secret config</text>
+  </g>
+  <!-- Secret (sealed envelope) -->
+  <g transform="translate(310,55)">
+    <rect width="100" height="80" rx="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1.5"/>
+    <path d="M 0 0 L 50 36 L 100 0" fill="none" stroke="#A04832" stroke-width="1.5"/>
+    <circle cx="50" cy="50" r="12" fill="#A04832"/>
+    <text x="50" y="54" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">🔒</text>
+    <text x="50" y="100" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">Secret</text>
+    <text x="50" y="113" text-anchor="middle" font-size="8" fill="#6B6058" font-style="italic">base64 (NOT encrypted)</text>
+  </g>
+  <!-- KMS vault -->
+  <g transform="translate(440,40)">
+    <rect width="100" height="110" rx="8" fill="#3F4A5E" stroke="#1B1814" stroke-width="2"/>
+    <circle cx="50" cy="40" r="20" fill="#5A4F45" stroke="#FBF7F0" stroke-width="1.5"/>
+    <line x1="50" y1="20" x2="50" y2="40" stroke="#FBF7F0" stroke-width="2"/>
+    <line x1="33" y1="35" x2="50" y2="40" stroke="#FBF7F0" stroke-width="2"/>
+    <circle cx="50" cy="40" r="3" fill="#FBF7F0"/>
+    <text x="50" y="80" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF7F0">KMS vault</text>
+    <text x="50" y="93" text-anchor="middle" font-size="7" fill="#FBF7F0" font-style="italic">encrypts secrets</text>
+    <text x="50" y="103" text-anchor="middle" font-size="7" fill="#FBF7F0" font-style="italic">at rest in etcd</text>
+  </g>
+  <!-- External Secrets Operator (broker) -->
+  <g transform="translate(560,55)">
+    <rect width="90" height="80" rx="6" fill="#E0EFE6" stroke="#5A9F7A" stroke-width="1.4"/>
+    <text x="45" y="18" text-anchor="middle" font-size="8" font-weight="700" fill="#3D7857">EXTERNAL</text>
+    <text x="45" y="29" text-anchor="middle" font-size="8" font-weight="700" fill="#3D7857">BROKER</text>
+    <circle cx="20" cy="50" r="6" fill="#5A9F7A"/>
+    <text x="20" y="53" text-anchor="middle" font-size="8" fill="#FFFFFF" font-weight="700">V</text>
+    <text x="32" y="52" font-size="7" fill="#3D7857">Vault</text>
+    <circle cx="20" cy="65" r="6" fill="#3F4A5E"/>
+    <text x="20" y="68" text-anchor="middle" font-size="7" fill="#FFFFFF" font-weight="700">A</text>
+    <text x="32" y="67" font-size="7" fill="#3F4A5E">AWS SM</text>
+    <text x="45" y="100" text-anchor="middle" font-size="9" font-weight="700" fill="#3D7857">ESO</text>
+    <text x="45" y="113" text-anchor="middle" font-size="8" fill="#6B6058" font-style="italic">syncs to Secrets</text>
+  </g>
+  <text x="340" y="200" text-anchor="middle" font-size="11" fill="#3F4A5E" font-style="italic">Rate cards travel openly. Confidential envelopes need an actual lock — not just a label.</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>A junior engineer ships a config change. The Pod restarts and crashes — turns out a <code>DATABASE_URL</code> Secret was missing. Easy fix, says the senior. They paste the connection string into Slack to share with the on-call engineer. Three hours later: a contractor's GitHub bot scrapes the channel, finds the credential, opens a connection. Half a million customer rows leak before anyone notices. Two lessons here. <em>One:</em> Secrets must never live in chat or git. <em>Two:</em> a K8s <code>Secret</code> stored in <code>etcd</code> with no KMS provider is just <em>base64-encoded plaintext</em> — it's not actually encrypted. This lesson is how to do this right.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <code>ConfigMap</code> for non-sensitive values; <code>Secret</code> for credentials. By default Secrets are stored in <strong>etcd as plaintext</strong> (base64 ≠ encryption) — wire up a <strong>KMS provider</strong> for encryption-at-rest. For credentials managed outside the cluster (Vault, AWS SM, GCP SM), use the <strong>External Secrets Operator</strong> to sync them in.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Why config and secrets are separate from your image</h2>
+    <p>The 12-factor app rule: <em>config that varies between deployments belongs in the environment, not the image</em>. The same image runs in dev, staging, and production — only the config differs. K8s implements this with two API objects: <code>ConfigMap</code> and <code>Secret</code>.</p>
+    <p>Both are <strong>namespace-scoped</strong> key/value stores. Both can be projected into a Pod two ways: as <strong>environment variables</strong> (read once at Pod start) or as a <strong>mounted volume</strong> (file-per-key, can hot-reload). The split between ConfigMap and Secret is purely <em>convention plus a few ergonomic differences</em> — they're not technically very different objects. The big difference is that you should treat Secrets with extra care, and the cluster should be configured to encrypt them at rest.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · ConfigMap vs Secret</span>
+    <h2>Two objects, similar shape, different intent</h2>
+    <table class="data-table">
+      <thead>
+        <tr><th></th><th>ConfigMap</th><th>Secret</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Intent</td><td>Non-sensitive values</td><td>Credentials, tokens, certs</td></tr>
+        <tr><td>Stored as</td><td>Plain UTF-8 in etcd</td><td>Base64-encoded in etcd (<em>not encrypted unless KMS is on</em>)</td></tr>
+        <tr><td>Size limit</td><td>1 MiB</td><td>1 MiB</td></tr>
+        <tr><td>Mount</td><td>env vars or files</td><td>env vars or files (RAM-backed <code>tmpfs</code>)</td></tr>
+        <tr><td>RBAC</td><td>Standard verbs</td><td>Same verbs, but admins typically restrict <code>get/list</code> to fewer Roles</td></tr>
+        <tr><td>Audit</td><td>Often unrestricted</td><td>Should be audited (<code>Audit-Policy</code>)</td></tr>
+        <tr><td>Special types</td><td>None</td><td><code>kubernetes.io/dockerconfigjson</code>, <code>kubernetes.io/tls</code>, <code>kubernetes.io/service-account-token</code></td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:18px"><strong>Critical:</strong> by default, Secrets are stored in etcd in <em>base64</em>, not encrypted. Anyone with etcd read access (admins, backup processes, a compromised etcd backup) sees plaintext after a one-step decode. Always enable <strong>encryption-at-rest</strong> with a KMS provider in production.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A teammate opens a Secret YAML and sees the password decoded as <code>cGFzc3dvcmQ=</code>. They say "oh, it's already encrypted, we're fine." What's the issue?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) That's not the right encryption — should be SHA-256</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) <code>cGFzc3dvcmQ=</code> is just base64 of <code>password</code> — it's encoded, not encrypted. Anyone with read access decodes it instantly.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Nothing — base64 is the K8s standard for secrets</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Base64 is an encoding, not encryption. <code>echo cGFzc3dvcmQ= | base64 -d</code> gives <code>password</code>. The protection mechanism is encryption-at-rest in etcd via KMS, not the base64 wrapping.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · Encryption-at-rest with a KMS provider</span>
+    <h2>Making Secrets actually secret</h2>
+    <p>K8s ships an <code>EncryptionConfiguration</code> mechanism for the API server. You point it at a key source — and from then on, the API server encrypts Secrets (and any other resources you list) before writing to etcd, and decrypts on read.</p>
+    <p>Two flavours:</p>
+    <ul>
+      <li><strong>Static AES key</strong> in a file on the API server's disk. Better than nothing, but the key sits next to the data; not great if the API server host is compromised.</li>
+      <li><strong>KMS provider</strong> — the API server delegates the actual encryption operation to an external KMS (AWS KMS, GCP KMS, Azure Key Vault, HashiCorp Vault, an on-prem HSM). The DEK (data encryption key) lives encrypted in etcd; the KEK (key-encryption key) lives only in the KMS. Compromising etcd alone is not enough.</li>
+    </ul>
+    <p>K8s 1.31 GA'd <strong>KMS v2</strong>, which adds key rotation, batched operations, and a new health-check API. Always use v2 in new clusters.</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>The actual encryption is envelope encryption: the API server generates a per-Secret DEK (data encryption key), encrypts the Secret payload with the DEK, then asks the KMS to encrypt the DEK with the KEK (key-encryption key). The encrypted DEK + ciphertext both go to etcd. Reads pull the encrypted DEK, ask the KMS to decrypt it (one fast call), then decrypt the Secret locally. Cost: one KMS call per Secret read. KMS v2 batches these for performance.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · External Secrets Operator (ESO)</span>
+    <h2>When the source of truth lives outside K8s</h2>
+    <p>Most large orgs already have a credential store: HashiCorp Vault, AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, 1Password, Doppler. They don't want a copy of every credential pasted into K8s manifests. They want K8s to <em>fetch</em> from the source of truth and refresh on rotation.</p>
+    <p>The <strong>External Secrets Operator</strong> (ESO) is a CRD-driven controller that does exactly this. You write an <code>ExternalSecret</code> YAML pointing at a remote path; ESO syncs it into a K8s <code>Secret</code> on a refresh interval (default 1 hour). Rotation in Vault → propagated to K8s → ConfigMap-style refresh in your Pod (or Pod restart, depending on how you mount).</p>
+    <p>Three CRD objects:</p>
+    <ul>
+      <li><code>SecretStore</code> / <code>ClusterSecretStore</code> — points at the backend (Vault address, AWS account, etc.) and how to authenticate.</li>
+      <li><code>ExternalSecret</code> — the request: "here's the remote key, here's the K8s Secret name, here's the refresh interval."</li>
+      <li><code>PushSecret</code> (newer) — the reverse direction. Push a K8s-managed Secret to the external store.</li>
+    </ul>
+    <p>ESO is the de-facto standard. If you're running EKS/GKE/AKS in 2026 and have Vault or cloud SM, install ESO. Trying to manage everything by raw <code>Secret</code> YAML in production gets painful fast.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Configuration baked into the image: <code>FROM nginx</code> + a custom config file. New environment = new image build = re-tag + redeploy. Secrets in env vars in YAML in git. Rotation means a code change. <em>One pasted Slack message away from a credential leak.</em></p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Configuration in <code>ConfigMap</code>, mounted as files or env vars. Same image runs in every environment. Secrets in <code>Secret</code> objects, encrypted at rest in etcd via KMS, sourced from Vault via ExternalSecretsOperator. Rotation in Vault → automatic resync → app restart (or hot reload). <em>The image never knew the credential.</em></p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">12-factor: code that varies between environments belongs in the environment. K8s makes this not just possible but ergonomic.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this district</h2>
+<p>The Permit Office in K-Town is where every business in the city goes for paperwork. Two windows, side by side. The <strong>rate card window</strong> hands out today's prices, hours, posted policies — anyone can see them, the clerk reads them off a printout. The <strong>credential window</strong> hands out keys to vaults and signing rights — those are slipped across the counter in <em>sealed envelopes</em>, the clerk's name is logged, the keys themselves are minted in a back room nobody else enters.</p><p>The mistake every new business owner makes: they treat the two windows the same way. They photograph their vault key and pin it to the office bulletin board "for convenience." That's a Secret in plain etcd. The fix is to insist on <strong>actual encryption at rest</strong> (a KMS provider) and to source long-lived credentials from a dedicated vault outside K-Town (Vault / AWS SM / etc., synced via ESO).</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>The rate card window</td><td><code>ConfigMap</code></td></tr>
+          <tr><td>The credential window</td><td><code>Secret</code></td></tr>
+          <tr><td>Photographing the vault key for the bulletin board</td><td>Secret stored in etcd as base64 (no KMS provider)</td></tr>
+          <tr><td>The back-room key minter</td><td>KMS provider doing envelope encryption</td></tr>
+          <tr><td>A bonded courier from a dedicated vault company</td><td>External Secrets Operator (ESO)</td></tr>
+          <tr><td>The vault company's address book</td><td><code>SecretStore</code> / <code>ClusterSecretStore</code></td></tr>
+          <tr><td>A request slip filled out by an app team</td><td><code>ExternalSecret</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real K8s Secrets aren't envelopes — they're records in a database. The protection is cryptographic, not physical, and it depends entirely on whether your cluster operator wired up a KMS provider.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>There are two boxes on the desk. One is full of stickers — anyone can grab one (that's <strong>ConfigMap</strong>: regular settings). The other is full of house keys — only specific people get those, and they're locked in a real safe, not just a wooden box (that's <strong>Secret</strong> + <strong>KMS</strong>).</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p><strong>ConfigMap</strong> = key/value store for non-sensitive config (log levels, feature flags, region names). <strong>Secret</strong> = same shape but for credentials. By default Secrets are <em>base64 in etcd</em>, not encrypted — wire up a KMS provider via <code>EncryptionConfiguration</code> for real at-rest encryption. For long-lived credentials managed by Vault or cloud SM, use the External Secrets Operator (ESO) to sync them into K8s automatically. Mount as env vars (read-once) or files (auto-refresh).</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams use this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS using GitOps + Sealed Secrets</p><p>They commit YAML to git but never plain Secrets. Every Secret is sealed via Bitnami's Sealed Secrets controller — encrypted with a per-cluster public key, only the cluster's controller can decrypt. Git history is safe to share. Workflow stays declarative.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank running Vault + ESO</p><p>Vault is the source of truth. Every K8s Secret is created from an <code>ExternalSecret</code> manifest. Rotation in Vault propagates within 1 hour. Audit log shows who synced what when. App teams never touch raw secrets — they just reference a SecretStore path.</p></div>
+      <div class="scenario"><p class="scenario-name">A startup hot-reloading config without restart</p><p>Their app watches <code>/etc/config/log_level</code> with inotify. ConfigMap mounted as a volume; K8s auto-syncs the file when the ConfigMap changes (~60s). They flip log level from <code>info</code> to <code>debug</code> in production with a <code>kubectl edit configmap</code>, no Pod restart, no rollout.</p></div>
+      <div class="scenario"><p class="scenario-name">A team that learned the hard way</p><p>Pre-2024 cluster, no KMS. Routine etcd backup landed on a misconfigured S3 bucket. A penetration test found the bucket; auditor decoded every Secret in 30 seconds. They had a long week. New cluster has KMS v2 + audit policy + access reviews. The mantra: "if you write a Secret, assume it leaks unless KMS says otherwise."</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> K8s Secrets are encrypted by default.</div><div class="misc-row misc-truth"><strong>Truth:</strong> They are <em>base64-encoded</em> by default. Encryption-at-rest only kicks in when you configure an <code>EncryptionConfiguration</code> with a provider (KMS or static key). Without that, an etcd dump = plaintext after one base64 decode.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> Mounting a Secret as a file is more secure than env vars.</div><div class="misc-row misc-truth"><strong>Truth:</strong> Both have tradeoffs. Env vars: visible to <code>/proc/&lt;pid&gt;/environ</code> for any process the Pod runs as; one-shot at start (no refresh). File mount: visible only to the process inside the Pod's mount namespace; hot-refreshes when the Secret changes. File mount is the better default, but neither is secret <em>from a privileged attacker on the node</em>.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> ConfigMap and Secret can be 10 MB if you compress.</div><div class="misc-row misc-truth"><strong>Truth:</strong> Both have a 1 MiB hard limit (etcd's default value-size cap). For larger config (e.g., model weights, large certs), use a PVC or pull from object storage at runtime. Keep ConfigMap/Secret for small key/value pairs.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">ConfigMap vs Secret — are they technically different?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Mostly the same shape (key/value, namespace-scoped, env-var or file mount). Real difference is <em>intent</em> + <em>ergonomic guardrails</em>: Secrets get RBAC scrutiny, are stored on tmpfs (RAM) when mounted, and benefit from KMS encryption-at-rest. ConfigMaps usually don't.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Are K8s Secrets encrypted at rest?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Only if you configure encryption. By default they're base64 in etcd. Wire up an <code>EncryptionConfiguration</code> with a KMS provider (v2 in K8s 1.31+) for real encryption.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Two ways to project a ConfigMap into a Pod?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">(1) <code>envFrom: configMapRef</code> or per-key <code>env: valueFrom: configMapKeyRef</code> — read once at Pod start. (2) <code>volumes: configMap</code> with a <code>volumeMounts</code> entry — file per key; ~60s auto-sync when ConfigMap changes.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's KMS v2?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">K8s 1.31 GA. Replaces KMS v1: adds key rotation without API server restart, batched encrypt/decrypt for performance, and a health-check API. Always use v2 in new clusters.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is the External Secrets Operator?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A CRD-driven controller that syncs credentials from external sources (Vault, AWS SM, GCP SM, Azure KV, 1Password) into K8s Secrets on a refresh interval. De-facto standard since ~2023. Three core CRDs: SecretStore, ExternalSecret, PushSecret.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Sealed Secrets vs ESO?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Sealed Secrets: encrypts a Secret with a cluster-public-key so the encrypted form can be committed to git; cluster controller decrypts on apply. ESO: pulls from an external secret store at runtime; nothing in git. Different threat models — both common in GitOps shops.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's <code>kubernetes.io/tls</code>?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A Secret type carrying <code>tls.crt</code> and <code>tls.key</code>. Used by Ingresses, Gateways, and webhook configurations. cert-manager creates these automatically from issued certificates.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Hot-reload of mounted Secret/ConfigMap?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Mounted as a volume → kubelet rewrites the file when the Secret changes (delay ~60s by default; controlled by sync period). Mounted as env var → no refresh; needs Pod restart. App must watch the file (inotify) to pick up the change.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A team mounts a <code>Secret</code> as both an env var <em>and</em> a volume. They rotate the underlying credential in the Secret. What happens?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The volume-mounted file gets the new value within ~60 seconds (the kubelet sync period). The env var <strong>does not change</strong> — env vars are populated once at Pod start. Result: the same Pod has two versions of the credential at the same time. Fix: pick one method (file mount is generally preferred for rotation) and have the app re-read the file on a watch.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">Your security team asks: "is it safe for an engineer to <code>kubectl describe secret/db-creds</code> in prod?" What's the answer?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Mostly safe — <code>describe</code> shows metadata and key names but not values. <code>kubectl get secret -o yaml</code> <em>does</em> show base64-encoded values, which is plaintext after one decode. Lock down <code>get</code> verb on Secrets to a small set of subjects via RBAC; allow <code>list</code> + <code>describe</code> for ops users. Add an audit policy entry that logs all Secret reads at <code>RequestResponse</code> level.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">Production etcd backup ends up on an exposed S3 bucket. Cluster has no KMS configured. Storage class admin asks: "how exposed are we?" <strong>Click for the assessment. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the post-incident assessment</span>Catastrophically. With no <code>EncryptionConfiguration</code>, every Secret in etcd is base64-encoded plaintext. <code>etcdctl get --prefix /registry/secrets/ --print-value-only | base64 -d</code> reveals every credential the cluster has — DB passwords, API tokens, TLS keys, service account tokens, image-pull credentials. The blast radius is the union of every Secret across every namespace. <strong>Action items:</strong> (1) treat every Secret as compromised — rotate all of them. (2) Enable KMS v2 on the new cluster before re-creating Secrets. (3) Audit etcd backup access policies. (4) Add a runtime detection rule: alert if any process other than kube-apiserver reads etcd. KMS doesn't make backups invincible (the KMS could be compromised too) but it raises the bar from "one S3 leak compromises everything" to "attacker needs both the etcd dump <em>and</em> KMS access."</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this lesson · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">ConfigMap</div><div class="gloss-def">Namespace-scoped key/value object for non-sensitive configuration. Mounted as env vars or files.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Secret</div><div class="gloss-def">Namespace-scoped key/value object for credentials. Base64 in etcd by default; encrypted-at-rest only with KMS.</div></div>
+      <div class="gloss-item"><div class="gloss-name">EncryptionConfiguration</div><div class="gloss-def">API-server-level config that enables encryption-at-rest. Lists which resources to encrypt and which provider (identity, aescbc, secretbox, kms).</div></div>
+      <div class="gloss-item"><div class="gloss-name">KMS provider</div><div class="gloss-def">External key management service that holds the KEK. K8s API server calls it to encrypt/decrypt DEKs. Examples: AWS KMS, GCP KMS, Azure KV, Vault Transit.</div></div>
+      <div class="gloss-item"><div class="gloss-name">KMS v2</div><div class="gloss-def">K8s 1.31 GA. Modern KMS protocol with rotation, batching, health checks. Use this for new clusters.</div></div>
+      <div class="gloss-item"><div class="gloss-name">External Secrets Operator (ESO)</div><div class="gloss-def">CRD-driven controller syncing external secrets into K8s. De-facto standard for Vault / cloud SM integration.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SecretStore / ClusterSecretStore</div><div class="gloss-def">ESO CRD pointing at a backend (Vault address, AWS account) plus auth method.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ExternalSecret</div><div class="gloss-def">ESO CRD: "sync remote path X to K8s Secret Y, refresh every Z minutes."</div></div>
+      <div class="gloss-item"><div class="gloss-name">Sealed Secrets</div><div class="gloss-def">Bitnami project: encrypts a Secret with a cluster public key so the encrypted form can live in git. Distinct from ESO.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubernetes.io/tls</div><div class="gloss-def">Secret type carrying <code>tls.crt</code> + <code>tls.key</code>. Used by Ingress, Gateway, webhooks.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Envelope encryption</div><div class="gloss-def">DEK encrypts data, KEK encrypts DEK, only the encrypted DEK + ciphertext go to storage. Compromising etcd ≠ compromising data.</div></div>
+      <div class="gloss-item"><div class="gloss-name">tmpfs mount</div><div class="gloss-def">When a Secret is mounted as a volume, the kubelet uses tmpfs (RAM-backed) so it never hits the node's disk.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <code>ConfigMap</code> for non-sensitive values; <code>Secret</code> for credentials. By default Secrets are stored in <strong>etcd as plaintext</strong> (base64 ≠ encryption) — wire up a <strong>KMS provider</strong> for encryption-at-rest. For credentials managed outside the cluster (Vault, AWS SM, GCP SM), use the <strong>External Secrets Operator</strong> to sync them in.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Lesson 20 complete</span>
+    <p>Two boxes: ConfigMap for plain config, Secret for credentials. "Secret" only means "secret" if you wire up KMS encryption-at-rest. For long-lived credentials managed elsewhere, sync them in with the External Secrets Operator.</p>
+    <p class="recap-next"><strong>Next — Lesson 21: ServiceAccounts & Certificates.</strong> The other half of the credential story — what tokens K8s itself hands out, projected service account tokens (the modern way), cert-manager, and how the cluster's own PKI works.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-COM · Lesson 20 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+</script>
+
+</body>
+</html>
