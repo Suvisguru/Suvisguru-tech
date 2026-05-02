@@ -121,6 +121,22 @@ def main() -> None:
 .course-toc li.primer{font-style:italic;color:var(--ink-soft)}
 .course-toc li.primer::marker{color:var(--gold)}
 
+/* Left sidebar — fixed list of all 16 lessons, visible at >=1240px */
+.course-sidebar{display:none;font-family:inherit}
+.course-sidebar h3{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin:0 0 10px}
+.course-sidebar ol{list-style:none;padding:0;margin:0}
+.course-sidebar li{margin:1px 0}
+.course-sidebar a{display:flex;gap:8px;padding:5px 10px;color:var(--ink-soft);text-decoration:none;border-radius:var(--r-soft);border-left:2px solid transparent;font-size:12.5px;line-height:1.45;transition:background .15s var(--ease),color .15s var(--ease)}
+.course-sidebar a:hover{color:var(--ink);background:var(--bg-soft)}
+.course-sidebar a.current{color:var(--ink);font-weight:600;border-left-color:var(--warm);background:var(--bg-soft)}
+.course-sidebar .num{color:var(--ink-faint);font-weight:700;min-width:26px;flex:0 0 auto}
+.course-sidebar a.current .num{color:var(--accent)}
+.course-sidebar li.primer a{font-style:italic;color:var(--ink-faint)}
+.course-sidebar li.primer a.current{color:var(--ink);font-style:italic}
+@media (min-width:1240px){
+  .course-sidebar{display:block;position:fixed;top:76px;left:max(16px,calc(50vw - 600px));width:180px;max-height:calc(100vh - 96px);overflow-y:auto;z-index:80;padding:14px 8px 14px 0}
+}
+
 .course-section{border-top:6px solid var(--accent);margin-top:80px;scroll-margin-top:72px}
 .course-section:first-of-type{border-top:0;margin-top:0}
 .course-section .concept-rail{display:none!important}
@@ -156,6 +172,20 @@ def main() -> None:
     out.append("  </select>")
     out.append('  <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>')
     out.append("</header>")
+
+    # --- Left sidebar (visible at >=1240px) ---
+    out.append('<aside class="course-sidebar" aria-label="Course lesson navigation">')
+    out.append('  <h3>The 16 lessons</h3>')
+    out.append('  <ol>')
+    for b in bundles:
+        cls = ' class="primer"' if 'primer' in b['title'].lower() else ''
+        # Shortened display title for sidebar so it fits 180px width
+        short = b['title'].split(' (primer)')[0]
+        # Aggressively shorten common long forms
+        short = short.replace('Cloud-Native ', '').replace('Multi-stage · Distroless · SBOM', '· Distroless · SBOM').replace('· KEPs · Feature Gates', '· KEPs')
+        out.append(f'    <li{cls}><a href="#lesson-{b["num"]}"><span class="num">{b["num"]}</span><span>{short}</span></a></li>')
+    out.append('  </ol>')
+    out.append('</aside>')
 
     # --- Course TOC ---
     out.append('<section class="course-toc" id="course-toc">')
@@ -246,6 +276,41 @@ document.querySelectorAll('.pause-check-box').forEach(box => {
     });
   });
 });
+
+// Sidebar scroll-spy — highlight the current lesson as the reader scrolls
+(function() {
+  const sidebarLinks = document.querySelectorAll('.course-sidebar a');
+  const linkByHash = {};
+  sidebarLinks.forEach(a => { linkByHash[a.getAttribute('href')] = a; });
+  const sections = document.querySelectorAll('.course-section');
+  if (!sections.length || !sidebarLinks.length) return;
+
+  function setCurrent(id) {
+    sidebarLinks.forEach(a => a.classList.remove('current'));
+    const a = linkByHash['#' + id];
+    if (a) a.classList.add('current');
+  }
+
+  // IntersectionObserver — fires when a section enters the trigger zone
+  // (top 30% of viewport). The most-recent intersecting section is "current."
+  let lastIntersecting = null;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        lastIntersecting = entry.target.id;
+        setCurrent(entry.target.id);
+      }
+    });
+  }, { rootMargin: '-72px 0px -60% 0px', threshold: 0 });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Also respond to clicks on sidebar links — set immediately rather than
+  // waiting for the scroll to land.
+  sidebarLinks.forEach(a => {
+    a.addEventListener('click', () => setCurrent(a.getAttribute('href').slice(1)));
+  });
+})();
 """)
     out.append("</script>")
     out.append("</body>")

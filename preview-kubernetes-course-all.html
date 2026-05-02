@@ -4922,6 +4922,22 @@
 .course-toc li.primer{font-style:italic;color:var(--ink-soft)}
 .course-toc li.primer::marker{color:var(--gold)}
 
+/* Left sidebar — fixed list of all 16 lessons, visible at >=1240px */
+.course-sidebar{display:none;font-family:inherit}
+.course-sidebar h3{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin:0 0 10px}
+.course-sidebar ol{list-style:none;padding:0;margin:0}
+.course-sidebar li{margin:1px 0}
+.course-sidebar a{display:flex;gap:8px;padding:5px 10px;color:var(--ink-soft);text-decoration:none;border-radius:var(--r-soft);border-left:2px solid transparent;font-size:12.5px;line-height:1.45;transition:background .15s var(--ease),color .15s var(--ease)}
+.course-sidebar a:hover{color:var(--ink);background:var(--bg-soft)}
+.course-sidebar a.current{color:var(--ink);font-weight:600;border-left-color:var(--warm);background:var(--bg-soft)}
+.course-sidebar .num{color:var(--ink-faint);font-weight:700;min-width:26px;flex:0 0 auto}
+.course-sidebar a.current .num{color:var(--accent)}
+.course-sidebar li.primer a{font-style:italic;color:var(--ink-faint)}
+.course-sidebar li.primer a.current{color:var(--ink);font-style:italic}
+@media (min-width:1240px){
+  .course-sidebar{display:block;position:fixed;top:76px;left:max(16px,calc(50vw - 600px));width:180px;max-height:calc(100vh - 96px);overflow-y:auto;z-index:80;padding:14px 8px 14px 0}
+}
+
 .course-section{border-top:6px solid var(--accent);margin-top:80px;scroll-margin-top:72px}
 .course-section:first-of-type{border-top:0;margin-top:0}
 .course-section .concept-rail{display:none!important}
@@ -4965,6 +4981,27 @@
   </select>
   <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
 </header>
+<aside class="course-sidebar" aria-label="Course lesson navigation">
+  <h3>The 16 lessons</h3>
+  <ol>
+    <li><a href="#lesson-01"><span class="num">01</span><span>What is Kubernetes?</span></a></li>
+    <li><a href="#lesson-02"><span class="num">02</span><span>Virtualization vs Containerization</span></a></li>
+    <li><a href="#lesson-03"><span class="num">03</span><span>Principles</span></a></li>
+    <li><a href="#lesson-04"><span class="num">04</span><span>12-Factor + Microservices vs Monoliths</span></a></li>
+    <li><a href="#lesson-05"><span class="num">05</span><span>When K8s Fits / Overkill</span></a></li>
+    <li><a href="#lesson-06"><span class="num">06</span><span>GitOps · Platform Eng · SRE · Multi-Tenancy</span></a></li>
+    <li><a href="#lesson-07"><span class="num">07</span><span>History · CNCF · Releases · KEPs</span></a></li>
+    <li class="primer"><a href="#lesson-7-5"><span class="num">7-5</span><span>How a Linux Computer Works in 5 Minutes</span></a></li>
+    <li><a href="#lesson-08"><span class="num">08</span><span>Linux Namespaces · cgroups · Capabilities</span></a></li>
+    <li><a href="#lesson-09"><span class="num">09</span><span>Container Runtimes & OCI</span></a></li>
+    <li><a href="#lesson-10"><span class="num">10</span><span>Image Building · · Distroless · SBOM</span></a></li>
+    <li><a href="#lesson-11"><span class="num">11</span><span>Container Security & Registries</span></a></li>
+    <li><a href="#lesson-12"><span class="num">12</span><span>PID 1 & Container Lifecycle</span></a></li>
+    <li><a href="#lesson-13"><span class="num">13</span><span>Cluster Architecture</span></a></li>
+    <li><a href="#lesson-14"><span class="num">14</span><span>The K8s API & YAML</span></a></li>
+    <li><a href="#lesson-15"><span class="num">15</span><span>Pods Deep Dive</span></a></li>
+  </ol>
+</aside>
 <section class="course-toc" id="course-toc">
   <h2>K-COM — the whole course in one page</h2>
   <p class="toc-sub">All 16 K-COM lessons concatenated into one scrollable document. Use the dropdown in the top bar to jump between lessons, or click a lesson title below.</p>
@@ -16350,6 +16387,41 @@ document.querySelectorAll('.pause-check-box').forEach(box => {
     });
   });
 });
+
+// Sidebar scroll-spy — highlight the current lesson as the reader scrolls
+(function() {
+  const sidebarLinks = document.querySelectorAll('.course-sidebar a');
+  const linkByHash = {};
+  sidebarLinks.forEach(a => { linkByHash[a.getAttribute('href')] = a; });
+  const sections = document.querySelectorAll('.course-section');
+  if (!sections.length || !sidebarLinks.length) return;
+
+  function setCurrent(id) {
+    sidebarLinks.forEach(a => a.classList.remove('current'));
+    const a = linkByHash['#' + id];
+    if (a) a.classList.add('current');
+  }
+
+  // IntersectionObserver — fires when a section enters the trigger zone
+  // (top 30% of viewport). The most-recent intersecting section is "current."
+  let lastIntersecting = null;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        lastIntersecting = entry.target.id;
+        setCurrent(entry.target.id);
+      }
+    });
+  }, { rootMargin: '-72px 0px -60% 0px', threshold: 0 });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Also respond to clicks on sidebar links — set immediately rather than
+  // waiting for the scroll to land.
+  sidebarLinks.forEach(a => {
+    a.addEventListener('click', () => setCurrent(a.getAttribute('href').slice(1)));
+  });
+})();
 
 </script>
 </body>
