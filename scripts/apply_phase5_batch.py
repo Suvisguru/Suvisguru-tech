@@ -548,7 +548,7 @@ SECTION7_INTRO_PATTERN = re.compile(
     r'  <section class="s">\n'
     r'    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>\n'
     r'    <h2>([^<]+)</h2>\n'
-    r'    <p>([^<]+)</p>\n'
+    r'(?:    <p>([^<]+)</p>\n)?'
     r'\n'
     r'    <div class="flashcard-grid">'
 )
@@ -685,9 +685,146 @@ LESSONS["L08"] = dict(
 )
 
 
+LESSONS["L09"] = dict(
+    file="preview-kubernetes-lesson-09.html",
+    rail_key="L09", active_pin="kt-pin09", strip_key="L09",
+    district_name="Customs Warehouse",
+    strip_label_district="Customs Warehouse",
+    strip_label_pos="lesson 9 of 16",
+    a11y_phrase="Lesson 9 of 16, Customs Warehouse.",
+    aria_label_today="K-Town district map: today we are at Customs Warehouse, Lesson 09",
+    map_title_today="K-Town district map · today: Customs Warehouse",
+    nightmare_text="Your team built an app on an ARM Mac (M-series). You deploy to AMD64 nodes in EKS. The Pod crashes immediately: <code>exec format error</code>. You can't tell from the message that the binary is the wrong architecture. You stare at logs for an hour. This lesson is about the format that makes containers portable — and the standard that lets one image work on every CPU and every cloud.",
+    stamp_takeaway="OCI is the standard. Runtimes are forklifts. Layers stack. Tags move; digests don't. Pin to digests in production.",
+    pc1_q="What does \"OCI\" stand for?",
+    pc1_opts=[("a) Open Container Image", False), ("b) Open Container Initiative — Linux Foundation standards body since 2015", True), ("c) Operating Container Index", False)],
+    pc1_feedback="<strong>Answer: b.</strong> Three specs (image, runtime, distribution). The contract that lets any runtime work with any registry.",
+    pc2_q="You see <code>nginx:1.27</code> and <code>nginx@sha256:abc…</code>. Which is safe to use in production?",
+    pc2_opts=[("a) The tag — it's friendlier", False), ("b) The digest — it's immutable", True), ("c) Either, doesn't matter", False)],
+    pc2_feedback="<strong>Answer: b.</strong> Tags can be moved by the publisher. Digests are SHA-256 of the manifest — same content always = same digest. Pin to digests for reproducibility.",
+    tl_rows=[("A standard ISO shipping container", "An OCI image (the format)"), ("Layers stacked inside the container", "Image layers (each a tarball with its own SHA-256)"), ("The packing list on the door", "The image manifest (JSON describing the layers)"), ("A friendly label on the outside", "A tag (mutable — can be moved by the publisher)"), ("The unique tracking number", "The digest (immutable SHA-256 hash of the manifest)"), ("The warehouse", "A container registry (Docker Hub, GHCR, ECR, GCR, ACR, Harbor, Quay)"), ("The forklifts that move boxes", "Container runtimes (containerd / CRI-O at high level; runc / crun / youki at low level)")],
+    analogy_stops_text="The analogy stops here: a real shipping container has fixed dimensions. A software image is whatever size the layers add up to. The \"standard\" is the format, not the size.",
+    misconceptions=[("Docker is the only container runtime.", "Modern Kubernetes runs <code>containerd</code> or <code>CRI-O</code> by default. Docker is a higher-level platform that uses <code>containerd</code> underneath."), ("<code>:latest</code> is fine for production.", "<code>:latest</code> is the worst tag offender. It's mutable. Two Pods with the same <code>:latest</code> tag can run different code on different nodes after a re-push. Pin to a digest."), ("An image works on any CPU.", "Only if it was built multi-arch (<code>docker buildx --platform linux/amd64,linux/arm64</code>). Otherwise an ARM build will not run on AMD64 nodes.")],
+    cyoa_setup="Your team uses <code>image: my-app:latest</code> in production \"so we always get the newest version.\" <strong>Click to see what happens on Friday at 6 PM. ▼</strong>",
+    cyoa_button="Show what happened",
+    cyoa_tag_text="by Saturday morning",
+    cyoa_reveal="Someone pushes a new <code>latest</code> with a bad migration. Pods restarting through the night pick up the new image. Half the Pods are on the bad image and half on the old — depending on when each Pod last restarted. You can't even reproduce the issue locally because <code>latest</code> is whatever it is right now. <strong>Fix:</strong> pin to a digest. Use Renovate to bump digests via PR with tests. Reproducibility AND staying current.",
+    old_mapping_block='''    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>Standard shipping container</strong> = OCI image format</li>
+      <li><strong>Layers stacked inside</strong> = image layers (each a tarball with its own SHA256)</li>
+      <li><strong>Packing list</strong> = manifest (JSON describing the layers)</li>
+      <li><strong>Friendly label</strong> = tag (mutable, can be moved)</li>
+      <li><strong>Unique tracking number</strong> = digest (immutable SHA256 hash)</li>
+      <li><strong>Warehouses</strong> = registries (Docker Hub, GHCR, ECR, GCR, ACR, Harbor, Quay)</li>
+      <li><strong>Forklifts</strong> = container runtimes (containerd / CRI-O at high level; runc / crun / youki at low level)</li>
+    </ul>
+  </section>''',
+    old_third_quiz='''      <div class="quiz-card">
+        <p class="quiz-prompt">A team builds their image on an ARM Mac (M-series). When they deploy to AMD64 nodes in EKS, the pod crashes with "exec format error". What happened?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The image was built only for the host's architecture (linux/arm64). The AMD64 nodes can't run an ARM binary. Fix: build a multi-arch image with <code>docker buildx build --platform linux/amd64,linux/arm64 -t my-app:v1 --push .</code> The result is a single tag containing manifests for both architectures. EKS nodes will pick the right one automatically.</div>
+      </div>
+    </div>
+  </section>''',
+)
+
+LESSONS["L10"] = dict(
+    file="preview-kubernetes-lesson-10.html",
+    rail_key="L10", active_pin="kt-pin10", strip_key="L10",
+    district_name="Bakery District",
+    strip_label_district="Bakery District",
+    strip_label_pos="lesson 10 of 16",
+    a11y_phrase="Lesson 10 of 16, Bakery District.",
+    aria_label_today="K-Town district map: today we are at Bakery District, Lesson 10",
+    map_title_today="K-Town district map · today: Bakery District",
+    nightmare_text="Your Node.js image is 1.2 GB. CVE scans flag 124 vulnerabilities, mostly in libraries you don't even use. Production pulls take 90 seconds — that's 90 seconds of extra outage every time something restarts. Your security team is asking pointed questions. This lesson is about the changes that take that image from 1.2 GB to 80 MB and from 124 CVEs to 8 — without touching your app code.",
+    stamp_takeaway="Build small (multi-stage), ship smaller (distroless), sign your work, generate an SBOM, scan for CVEs. That's a production-grade image.",
+    pc1_q="A multi-stage Dockerfile has:",
+    pc1_opts=[("a) Multiple Dockerfiles in one repo", False), ("b) Multiple <code>FROM</code> statements — a \"build\" stage with full toolchain, a \"runtime\" stage with only the artifact", True), ("c) Multiple containers running in parallel", False)],
+    pc1_feedback="<strong>Answer: b.</strong> Final image is 10–100× smaller because the runtime stage doesn't carry compilers, source code, or dev dependencies.",
+    pc2_q="What's an SBOM?",
+    pc2_opts=[("a) \"Service Bound Object Metadata\"", False), ("b) Software Bill of Materials — machine-readable list of every component in your image", True), ("c) A type of container", False)],
+    pc2_feedback="<strong>Answer: b.</strong> When the next Log4Shell drops, an SBOM database lets you grep for the vulnerable library across hundreds of services in seconds. Without one, days.",
+    tl_rows=[("The recipe", "The Dockerfile (or Buildpacks descriptor, ko config, etc.)"), ("The oven", "The image builder (BuildKit, Buildah, Kaniko, ko, Buildpacks)"), ("Multi-stage baking", "A multi-stage Dockerfile (build stage + runtime stage)"), ("The cake base", "The base image (full distro vs alpine vs distroless vs scratch)"), ("Ingredient list on the side", "The SBOM (SPDX or CycloneDX)"), ("The baker's signature seal", "Image signing (cosign / sigstore)"), ("Food safety inspection", "Vulnerability scanning (Trivy, Grype, Snyk)")],
+    analogy_stops_text="The analogy stops here: a real cake gets baked once and eaten. A container image gets pulled millions of times. Optimisation matters here in a way it doesn't for cakes.",
+    misconceptions=[("Distroless means \"no Linux.\"", "Distroless images include just enough Linux to run your app — and nothing else (no shell, no package manager, no debugger). The runtime is still Linux underneath."), ("Smaller image = always better.", "Distroless and <code>scratch</code> are harder to debug. The right answer is \"smallest base that runs your app <em>and</em> lets you investigate when needed\" — sometimes that's a slim variant, not scratch."), ("Image signing prevents bugs.", "Signing prevents <em>tampering</em>. It tells you the image was built by your pipeline and hasn't been swapped. It says nothing about whether the code is correct.")],
+    cyoa_setup="An attacker compromises your CI credentials and pushes a malicious image to your registry under a legitimate tag. Your prod has a Kyverno admission policy requiring images to be signed by your team's Cosign key. <strong>Click to see what happens. ▼</strong>",
+    cyoa_button="Show what happened",
+    cyoa_tag_text="at admission",
+    cyoa_reveal="The malicious image isn't signed — the attacker had registry creds but not the Cosign key. Kubernetes refuses to admit the Pod. The incident is contained at the admission boundary, before any malicious code ran. Your incident retrospective is about why the CI creds were compromised, not about a breached cluster. <strong>Lesson:</strong> image signing turns a tag-swap from a breach into a denied admission.",
+    old_mapping_block='''    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>Recipe</strong> = Dockerfile (or Buildpacks descriptor, ko config, etc.)</li>
+      <li><strong>Oven</strong> = builder (BuildKit, Buildah, Kaniko, ko, Buildpacks)</li>
+      <li><strong>Multi-stage process</strong> = builder stage + runtime stage</li>
+      <li><strong>Cake base</strong> = base image (full distro vs alpine vs distroless vs scratch)</li>
+      <li><strong>Ingredient list on the side</strong> = SBOM (SPDX, CycloneDX)</li>
+      <li><strong>Baker's signature seal</strong> = image signing (cosign / sigstore)</li>
+      <li><strong>Food safety inspection</strong> = vulnerability scanning (Trivy, Grype, Snyk)</li>
+    </ul>
+  </section>''',
+    old_third_quiz='''      <div class="quiz-card">
+        <p class="quiz-prompt">An engineer wants to use <code>FROM ubuntu:latest</code> as the base for a Go app. Why is that wrong, and what should they use instead?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Two issues. (1) <code>:latest</code> is a moving tag — pin to a specific tag (<code>ubuntu:24.04</code>) or digest. (2) ubuntu (300 MB) is overkill for a Go app. Go binaries are statically linked — they need nothing from the OS. Use <code>FROM scratch</code> or <code>FROM gcr.io/distroless/static</code> in the runtime stage. Final image = just the Go binary. ~5-15 MB instead of 300+. Faster, safer, fewer CVEs.</div>
+      </div>
+    </div>
+  </section>''',
+)
+
+LESSONS["L11"] = dict(
+    file="preview-kubernetes-lesson-11.html",
+    rail_key="L11", active_pin="kt-pin11", strip_key="L11",
+    district_name="K-Town Bank Vault Quarter",
+    strip_label_district="Bank Vault Quarter",
+    strip_label_pos="lesson 11 of 16",
+    a11y_phrase="Lesson 11 of 16, Bank Vault Quarter.",
+    aria_label_today="K-Town district map: today we are at Bank Vault Quarter, Lesson 11",
+    map_title_today="K-Town district map · today: K-Town Bank Vault Quarter",
+    nightmare_text="Your web app gets compromised through an unsanitised input. The attacker gets a shell <em>as root</em> inside the container. They write a webshell to disk, escalate via a kernel CVE, pivot to the host, then to other Pods. By morning, your cluster is gone. The same bug, on a hardened Pod, is a Tuesday afternoon ticket. This lesson is the 12 lines of YAML that change which one happens.",
+    stamp_takeaway="Where the image came from (auth + pull policy) plus how it runs (non-root, read-only, drop caps, seccomp) shrinks blast radius 10×.",
+    pc1_q="Your image is in a private registry. Your Pod can't pull it (<code>ImagePullBackOff</code>). What's missing?",
+    pc1_opts=[("a) The cluster doesn't have internet", False), ("b) An <code>imagePullSecret</code> with the registry credentials", True), ("c) The image doesn't exist", False)],
+    pc1_feedback="<strong>Answer: b.</strong> The kubelet needs credentials to pull from private registries. Create a <code>kubernetes.io/dockerconfigjson</code> secret and reference it in the Pod spec via <code>imagePullSecrets</code>.",
+    pc2_q="Pick the safest of these settings for a production Pod:",
+    pc2_opts=[("a) Run as root, all capabilities, writable filesystem", False), ("b) Run as non-root (UID 1000), drop ALL caps, read-only filesystem, seccomp RuntimeDefault", True), ("c) Run as root, drop ALL caps", False)],
+    pc2_feedback="<strong>Answer: b.</strong> Each of those settings shrinks the blast radius of a bug. Together they match the Pod Security Standards \"Restricted\" profile.",
+    tl_rows=[("The bank vault", "The container registry (Docker Hub, GHCR, ECR, GCR, ACR, Harbor)"), ("The vault door", "Registry authentication"), ("The teller window", "The kubelet pulling on behalf of the Pod"), ("The customer's credentials", "<code>imagePullSecrets</code>"), ("The glass inspection booth", "The container runtime sandbox"), ("The visitor wristband", "Non-root user (<code>runAsUser: 1000</code>)"), ("The \"no tools allowed\" sign", "<code>capabilities.drop: [ALL]</code> + <code>allowPrivilegeEscalation: false</code>"), ("The sealed glass display case", "<code>readOnlyRootFilesystem: true</code>"), ("The security camera", "The seccomp profile (<code>RuntimeDefault</code>)"), ("The bank's security manager", "Pod Security Standards (Privileged / Baseline / Restricted)")],
+    analogy_stops_text="The analogy stops here: a bank vault has one combination. A container has dozens of independent locks (each <code>securityContext</code> field). Skipping any one is leaving a door cracked.",
+    misconceptions=[("Running as root inside a container is safe because the container is isolated.", "Container root + a kernel exploit = host root. Run as a non-root UID by default."), ("<code>imagePullPolicy: Always</code> is overkill.", "For mutable tags it's the only safe policy. For digest-pinned images, the question is moot — same digest, same content, every time."), ("Pod Security Standards are something you have to install.", "They're built into the Kubernetes API server (since 1.25). Apply via namespace labels — no third-party admission needed.")],
+    cyoa_setup="A new dev tries to deploy a Pod with <code>securityContext: { privileged: true }</code> \"for easier debugging.\" Your namespace is labeled <code>pod-security.kubernetes.io/enforce: restricted</code>. <strong>Click to see what happens. ▼</strong>",
+    cyoa_button="Show what happened",
+    cyoa_tag_text="at admission",
+    cyoa_reveal="The API server rejects the Pod at admission with a clear message: <code>violates PodSecurity 'restricted:latest' — privileged is not allowed</code>. The conversation moves from \"let's just allow it\" to \"let's fix the actual debugging tooling.\" Defaults won. <strong>Lesson:</strong> opt-in security is opt-out reality. Set the namespace policy and let the API server hold the line.",
+    old_mapping_block='''    <p style="margin-top:18px"><strong>The mapping:</strong></p>
+    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
+      <li><strong>Vault</strong> = container registry (Docker Hub, GHCR, ECR, GCR, ACR, Harbor)</li>
+      <li><strong>Vault door</strong> = registry authentication</li>
+      <li><strong>Teller window</strong> = kubelet pulling on behalf of the pod</li>
+      <li><strong>Customer credentials</strong> = imagePullSecrets</li>
+      <li><strong>Inspection booth</strong> = container runtime sandbox</li>
+      <li><strong>Visitor wristband</strong> = non-root user (UID 1000)</li>
+      <li><strong>"No tools allowed" sign</strong> = drop ALL capabilities, allowPrivilegeEscalation: false</li>
+      <li><strong>Glass display case</strong> = readOnlyRootFilesystem: true</li>
+      <li><strong>Security camera</strong> = seccomp profile (RuntimeDefault)</li>
+      <li><strong>Bank security manager</strong> = Pod Security Standards (Privileged / Baseline / Restricted)</li>
+      <li><strong>Vendor seal on the box</strong> = image signing (cosign — Lesson 10)</li>
+    </ul>
+  </section>''',
+    old_third_quiz='''      <div class="quiz-card">
+        <p class="quiz-prompt">A team uses <code>image: my-app:v2</code> with <code>imagePullPolicy: IfNotPresent</code>. They re-push <code>v2</code> with a hotfix. Most pods keep running the OLD image. Why? What's the right fix going forward?</p>
+        <button class="quiz-reveal" type="button">Show answer</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span><code>IfNotPresent</code> means "if the node already has an image with this tag locally cached, use it — don't re-pull." Most nodes had <code>v2</code> cached from earlier deploys, so they kept the old binary; only brand-new nodes pulled the hotfix. Two fixes: (1) Never re-push tags. Cut a fresh tag (<code>v2.1</code>) per change. (2) Pin to digest: <code>image: my-app@sha256:abc...</code> — digests are immutable. If you absolutely must mutate a tag, set <code>imagePullPolicy: Always</code> so every pod start re-validates against the registry.</div>
+      </div>
+    </div>
+  </section>''',
+)
+
+
 # ----------- which lessons to process this run -----------
 
-ENABLED = ["L08"]
+ENABLED = ["L10", "L11"]
 
 
 def main() -> None:

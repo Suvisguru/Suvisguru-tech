@@ -215,9 +215,160 @@
   .pss.rest .pss-name{color:#3D7857}
   .pss-desc{font-size:13px;color:var(--ink);line-height:1.5;margin:4px 0 0}
   .pss-use{font-size:12px;color:var(--ink-soft);line-height:1.5;font-style:italic;margin:auto 0 0}
+  /* ============ LAYMAN-FIRST SCAFFOLDING (K-Town revision Phase 2) ============ */
+
+  /* Inline code inside section paragraphs (parity with L13) */
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+
+  /* Visually-hidden utility for screen-reader-only content */
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  /* District line — single-line K-Town pin under topbar */
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+
+  /* K-Town map */
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease)}
+  .ktown-map .pin .pin-circle{fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+
+  /* Nightmare opener */
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+
+  /* One-sentence stamp */
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:19px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box{background:var(--accent-soft)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+
+  /* Translation Legend (table inside §3) */
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'…in Kubernetes · ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+
+  /* Pause-and-check */
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+
+  /* Common Misconceptions panel (start of §7) */
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+
+  /* Analogy-stops-here callout */
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+
+  /* Skip-if-new pill (defined for future lessons; unused in L01) */
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+
+  /* Persistent concept rail (desktop only, ≥1240px) */
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){
+    .concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50}
+  }
+
+  /* CYOA quiz reveal */
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  .cyoa-quiz .quiz-answer pre{font-family:'ui-monospace',monospace;font-size:12px;line-height:1.45;background:var(--bg-soft);padding:10px 12px;border-radius:var(--r-soft);overflow-x:auto;margin:10px 0;color:var(--ink-soft)}
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .ktown-map .pin .pin-circle,.pause-check-opt,.ktown-strip-pin{transition:none}
+    .quiz-reveal{animation:none}
+  }
 </style>
 </head>
 <body data-theme="light">
+
+<aside class="concept-rail" aria-label="Concept journey through the Kubernetes course">
+  <span class="concept-rail-title">Concept journey</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>what Kubernetes is</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>containers vs VMs</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>the reconciliation loop</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how apps should be designed</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>when K8s makes sense</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how mature teams operate it</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how the project evolves</span></div>
+  <div class="concept-rail-item done primer"><span class="concept-rail-icon">✓</span><span>Linux foundations <small>(primer)</small></span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how containers actually work</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>runtimes &amp; the OCI standard</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>how images are built</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>container security</span><span class="concept-rail-here">← you are here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>how containers shut down</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>cluster architecture</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>K8s API &amp; YAML</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>Pods deep dive</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>workload controllers</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>services &amp; networking</span></div>
+</aside>
 
 <header class="topbar">
   <div class="topbar-inner">
@@ -226,6 +377,69 @@
     <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
   </div>
 </header>
+
+<p class="district-line">📍 Today's stop in K-Town: <strong>K-Town Bank Vault Quarter</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: today we are at Bank Vault Quarter, Lesson 11">
+    <title>K-Town district map · today: K-Town Bank Vault Quarter</title>
+    <desc>Stylised map of K-Town. Each Kubernetes lesson maps to one named district. Mayor's Office is the city anchor and is highlighted as the current district.</desc>
+    <defs>
+      <linearGradient id="kt-water" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/>
+      </linearGradient>
+      <linearGradient id="kt-base" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/>
+      </linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#kt-base)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · TOWN</text>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365 L 780 400 L 20 400 Z" fill="url(#kt-water)"/>
+    <path d="M 20 365 Q 200 358 400 363 T 780 365" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="392" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— bay —</text>
+    <rect x="615" y="76" width="140" height="9" rx="1" fill="#C9BFAE" opacity="0.5"/>
+    <line x1="625" y1="80.5" x2="750" y2="80.5" stroke="#FBF7F0" stroke-width="0.7" stroke-dasharray="6,4" opacity="0.7"/>
+    <line x1="320" y1="35" x2="450" y2="35" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.45"/>
+    <g class="pin" id="kt-pin03" transform="translate(130,75)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">03</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Climate Tower</text></g>
+    <g class="pin" id="kt-pin07" transform="translate(380,55)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">07</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rail Yard</text></g>
+    <g class="pin" id="kt-pin13" transform="translate(660,65)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Airport</text></g>
+    <g class="pin" id="kt-pin02" transform="translate(90,150)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">02</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Residential</text></g>
+    <g class="pin" id="kt-pin05" transform="translate(220,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">05</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Industrial Kitchen</text></g>
+    <g class="pin" id="kt-pin06" transform="translate(530,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">06</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Public Library</text></g>
+    <g class="pin active" id="kt-pin11" transform="translate(700,145)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bank Vault</text></g>
+    <g class="pin" id="kt-pin08" transform="translate(610,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">08</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Office Tower</text></g>
+    <g class="pin pin-anchor" id="kt-pin01" transform="translate(400,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">01</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="700" fill="#3F4A5E">Mayor's Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">city anchor</text></g>
+    <g class="pin" id="kt-pin15" transform="translate(170,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">15</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Co-Living</text></g>
+    <g class="pin" id="kt-pin14" transform="translate(470,255)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">14</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Permit Office</text></g>
+    <g class="pin" id="kt-pin09" transform="translate(660,265)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">09</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs Warehouse</text></g>
+    <g class="pin" id="kt-pin10" transform="translate(350,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bakery District</text></g>
+    <g class="pin pin-primer" id="kt-pin7-5" transform="translate(90,335)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2" stroke-dasharray="2,1.5"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="8" font-weight="700" fill="#FBF7F0">7·5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Foundation Tour</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">primer</text></g>
+    <g class="pin" id="kt-pin04" transform="translate(290,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">04</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Port + Restaurants</text></g>
+    <g class="pin" id="kt-pin12" transform="translate(570,340)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harbour</text></g>
+  </svg>
+
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Bank Vault Quarter</strong> <span>· lesson 11 of 16</span><span class="visually-hidden">Lesson 11 of 16, Bank Vault Quarter.</span></p>
+</div>
 
 <main>
 
@@ -383,13 +597,26 @@
     </div>
   </section>
 
+  <!-- 3 AM Nightmare opener -->
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Your web app gets compromised through an unsanitised input. The attacker gets a shell <em>as root</em> inside the container. They write a webshell to disk, escalate via a kernel CVE, pivot to the host, then to other Pods. By morning, your cluster is gone. The same bug, on a hardened Pod, is a Tuesday afternoon ticket. This lesson is the 12 lines of YAML that change which one happens.</p>
+    </div>
+  </div>
+
+  <!-- One-sentence stamp · top placement -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Where the image came from (auth + pull policy) plus how it runs (non-root, read-only, drop caps, seccomp) shrinks blast radius 10×.</p>
+  </div>
+
   <!-- ============================== SECTION 1 — CONCEPT ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 1 · Concept</span>
     <h2>Two halves: where it came from, how it runs</h2>
     <p>A container image alone is not secure. The runtime configuration around it decides whether a single bug becomes a breached cluster or a contained ticket. There are two halves to this story.</p>
     <p><strong>Half one — where the image came from.</strong> Public images on Docker Hub pull anonymously. Private images need credentials, supplied via an <code>imagePullSecret</code>. The kubelet uses that secret to authenticate to your private registry (ECR, GCR, ACR, Harbor, etc.). Without the secret, you get <code>ImagePullBackOff</code>. The <code>imagePullPolicy</code> then decides whether the kubelet re-pulls every start (<code>Always</code> — right for mutable tags), uses the cache if present (<code>IfNotPresent</code> — default for tagged images), or refuses to pull and uses only what's already on the node (<code>Never</code>).</p>
-    <p><strong>Half two — how it runs.</strong> The pod's <code>securityContext</code> decides what the container can do. <strong>runAsNonRoot</strong> refuses to run as UID 0. <strong>runAsUser</strong> pins a specific non-root UID. <strong>capabilities.drop: [ALL]</strong> strips Linux superpowers; add only what you need. <strong>readOnlyRootFilesystem</strong> makes the container's disk immutable. <strong>allowPrivilegeEscalation: false</strong> blocks setuid binaries from regaining privilege. <strong>seccompProfile: RuntimeDefault</strong> filters dangerous syscalls. Apply <strong>Pod Security Standards</strong> (Privileged / Baseline / Restricted) per namespace and let the API server enforce these defaults at admission, instead of relying on every developer to remember them.</p>
+    <p><strong>Half two — how it runs.</strong> The Pod's <code>securityContext</code> decides what the container can do. <strong>runAsNonRoot</strong> refuses to run as UID 0. <strong>runAsUser</strong> pins a specific non-root UID. <strong>capabilities.drop: [ALL]</strong> strips Linux superpowers; add only what you need. <strong>readOnlyRootFilesystem</strong> makes the container's disk immutable. <strong>allowPrivilegeEscalation: false</strong> blocks setuid binaries from regaining privilege. <strong>seccompProfile: RuntimeDefault</strong> filters dangerous syscalls. Apply <strong>Pod Security Standards</strong> (Privileged / Baseline / Restricted) per namespace and let the API server enforce these defaults at admission, instead of relying on every developer to remember them.</p>
     <p>The two halves compose. A signed image (Lesson 10) pulled with credentials (this lesson) running with a hardened securityContext (this lesson) is the production-grade story. Skip any half and you've left a door open.</p>
   </section>
 
@@ -558,14 +785,14 @@
 
     </div>
 
-    <p style="margin-top:24px;font-size:15px;color:var(--ink-soft);font-style:italic;text-align:center">All five compound: <strong style="color:var(--ink)">non-root + read-only + drop-caps + private-registry + pinned-tag = production-grade pod.</strong></p>
+    <p style="margin-top:24px;font-size:15px;color:var(--ink-soft);font-style:italic;text-align:center">All five compound: <strong style="color:var(--ink)">non-root + read-only + drop-caps + private-registry + pinned-tag = production-grade Pod.</strong></p>
   </section>
 
   <!-- ============================== SECTION 1.7 — securityContext SPEC ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 1.7 · The securityContext spec</span>
     <h2>Six fields. Six locks.</h2>
-    <p>The six fields you'll set on every production pod, what each one means, and what it prevents.</p>
+    <p>The six fields you'll set on every production Pod, what each one means, and what it prevents.</p>
 
     <div class="ctx-grid">
       <div class="ctx">
@@ -618,7 +845,7 @@
     <div class="pull-grid">
       <div class="pull always">
         <h3 class="pull-name">Always</h3>
-        <p class="pull-when"><strong>What:</strong> Kubelet checks the registry on every pod start. If the digest changed, re-pull.</p>
+        <p class="pull-when"><strong>What:</strong> Kubelet checks the registry on every Pod start. If the digest changed, re-pull.</p>
         <p class="pull-use">Default for <code>:latest</code> and tags without an explicit version. Right when you genuinely want the freshest image.</p>
       </div>
       <div class="pull cache">
@@ -647,7 +874,7 @@
         <span class="pss-tier">Privileged</span>
         <h3 class="pss-name">No restrictions</h3>
         <p class="pss-desc">Anything goes. <code>hostNetwork</code>, <code>privileged: true</code>, root user — all allowed. The "I trust this workload completely" tier.</p>
-        <p class="pss-use">Use for: system pods (CNI, CSI, node-exporter, kube-proxy). Almost never for app workloads.</p>
+        <p class="pss-use">Use for: system Pods (CNI, CSI, node-exporter, kube-proxy). Almost never for app workloads.</p>
       </div>
       <div class="pss base">
         <span class="pss-tier">Baseline</span>
@@ -663,18 +890,32 @@
       </div>
     </div>
 
-    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Apply with <code>kubectl label namespace prod pod-security.kubernetes.io/enforce=restricted</code>. Use <code>warn</code> and <code>audit</code> levels first to find existing violations before flipping to <code>enforce</code>.</p>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Apply with <code>kubectl label namespace prod Pod-security.kubernetes.io/enforce=restricted</code>. Use <code>warn</code> and <code>audit</code> levels first to find existing violations before flipping to <code>enforce</code>.</p>
   </section>
+
+  <!-- Pause-and-check #1 · after Section 1 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Your image is in a private registry. Your Pod can't pull it (<code>ImagePullBackOff</code>). What's missing?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) The cluster doesn't have internet</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) An <code>imagePullSecret</code> with the registry credentials</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) The image doesn't exist</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> The kubelet needs credentials to pull from private registries. Create a <code>kubernetes.io/dockerconfigjson</code> secret and reference it in the Pod spec via <code>imagePullSecrets</code>.</p>
+    </div>
+  </div>
 
   <!-- ============================== SECTION 2 — BEFORE / AFTER ============================== -->
   <section class="s">
     <span class="s-eyebrow">Section 2 · Before &amp; After</span>
-    <h2>Naive pod vs hardened pod</h2>
+    <h2>Naive Pod vs hardened Pod</h2>
     <p>Same container. Same workload. Five settings change. The blast radius of a bug shrinks 10×.</p>
 
     <div class="illu">
-      <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two pod cards side by side: naive (root, full caps, writable, public registry, latest tag) and hardened (non-root, drop ALL, read-only, private registry, pinned digest)">
-        <!-- LEFT: naive pod -->
+      <svg viewBox="0 0 680 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two Pod cards side by side: naive (root, full caps, writable, public registry, latest tag) and hardened (non-root, drop ALL, read-only, private registry, pinned digest)">
+        <!-- LEFT: naive Pod -->
         <g transform="translate(0,0)">
           <rect width="320" height="280" rx="14" fill="#FBE8DC"/>
           <text x="160" y="22" font-size="11" font-weight="700" fill="#A04832" text-anchor="middle" letter-spacing="1.5">NAIVE POD · WIDE OPEN</text>
@@ -704,7 +945,7 @@
           <text x="160" y="266" font-size="10" fill="#A04832" text-anchor="middle" font-style="italic">SSRF → root shell → host compromise</text>
         </g>
 
-        <!-- RIGHT: hardened pod -->
+        <!-- RIGHT: hardened Pod -->
         <g transform="translate(360,0)">
           <rect width="320" height="280" rx="14" fill="#E0EFE6"/>
           <text x="160" y="22" font-size="11" font-weight="700" fill="#3D7857" text-anchor="middle" letter-spacing="1.5">HARDENED POD · LOCKED DOWN</text>
@@ -730,7 +971,7 @@
             <text x="14" y="192" font-size="9" font-weight="700" fill="#3D7857">pullPolicy</text>
             <text x="14" y="206" font-family="ui-monospace,monospace" font-size="11" font-weight="700" fill="#3D7857">IfNotPresent · digest pinned</text>
           </g>
-          <text x="160" y="266" font-size="10" fill="#3D7857" text-anchor="middle" font-style="italic">SSRF → contained · pod replaced · ticket</text>
+          <text x="160" y="266" font-size="10" fill="#3D7857" text-anchor="middle" font-style="italic">SSRF → contained · Pod replaced · ticket</text>
         </g>
       </svg>
       <div class="illu-caption">Same workload. Five settings change. The same SSRF that takes out the cluster on the left becomes a Tuesday afternoon ticket on the right.</div>
@@ -744,7 +985,7 @@
       </div>
       <div class="ba after">
         <span class="ba-label">After · locked down</span>
-        <p>Six-field <code>securityContext</code>: <code>runAsNonRoot</code>, <code>runAsUser: 1000</code>, <code>drop: [ALL]</code>, <code>readOnlyRootFilesystem: true</code>, <code>allowPrivilegeEscalation: false</code>, <code>seccompProfile: RuntimeDefault</code>. Image pinned to digest from a private registry, pulled with an <code>imagePullSecret</code>. Namespace labeled <code>pod-security.kubernetes.io/enforce: restricted</code>.</p>
+        <p>Six-field <code>securityContext</code>: <code>runAsNonRoot</code>, <code>runAsUser: 1000</code>, <code>drop: [ALL]</code>, <code>readOnlyRootFilesystem: true</code>, <code>allowPrivilegeEscalation: false</code>, <code>seccompProfile: RuntimeDefault</code>. Image pinned to digest from a private registry, pulled with an <code>imagePullSecret</code>. Namespace labeled <code>Pod-security.kubernetes.io/enforce: restricted</code>.</p>
         <p>The same SSRF lands in a process that's UID 1000, can't write to disk, can't escalate, can't make dangerous syscalls. Pod gets killed; deploy gets hot-fixed.</p>
       </div>
     </div>
@@ -759,20 +1000,27 @@
     <p>A container registry is like a <strong>bank vault</strong>. Images are the safety deposit boxes; the vault door (registry auth) decides who gets to take one out. The <strong>teller window</strong> is the kubelet asking the registry, "I'm node-3, here are my credentials, give me image X." Without credentials, the teller turns you away — that's <code>ImagePullBackOff</code>.</p>
     <p>Once the box is out, the visitor doesn't get to roam the bank. They go to a <strong>glass inspection booth</strong> — that's the container runtime. The booth has rules: non-root visitor (<code>runAsNonRoot</code>), no tools allowed (<code>drop: [ALL]</code> capabilities), the display case is sealed glass (<code>readOnlyRootFilesystem</code>), and a security camera overhead records every move (<code>seccompProfile: RuntimeDefault</code>). The bank's overall <strong>security manager</strong> sets which rules apply to which booths — that's Pod Security Standards.</p>
 
-    <p style="margin-top:18px"><strong>The mapping:</strong></p>
-    <ul style="font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 0">
-      <li><strong>Vault</strong> = container registry (Docker Hub, GHCR, ECR, GCR, ACR, Harbor)</li>
-      <li><strong>Vault door</strong> = registry authentication</li>
-      <li><strong>Teller window</strong> = kubelet pulling on behalf of the pod</li>
-      <li><strong>Customer credentials</strong> = imagePullSecrets</li>
-      <li><strong>Inspection booth</strong> = container runtime sandbox</li>
-      <li><strong>Visitor wristband</strong> = non-root user (UID 1000)</li>
-      <li><strong>"No tools allowed" sign</strong> = drop ALL capabilities, allowPrivilegeEscalation: false</li>
-      <li><strong>Glass display case</strong> = readOnlyRootFilesystem: true</li>
-      <li><strong>Security camera</strong> = seccomp profile (RuntimeDefault)</li>
-      <li><strong>Bank security manager</strong> = Pod Security Standards (Privileged / Baseline / Restricted)</li>
-      <li><strong>Vendor seal on the box</strong> = image signing (cosign — Lesson 10)</li>
-    </ul>
+    <div class="translation-legend">
+      <table>
+        <thead>
+          <tr><th>In the story…</th><th>…in Kubernetes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>The bank vault</td><td>The container registry (Docker Hub, GHCR, ECR, GCR, ACR, Harbor)</td></tr>
+          <tr><td>The vault door</td><td>Registry authentication</td></tr>
+          <tr><td>The teller window</td><td>The kubelet pulling on behalf of the Pod</td></tr>
+          <tr><td>The customer's credentials</td><td><code>imagePullSecrets</code></td></tr>
+          <tr><td>The glass inspection booth</td><td>The container runtime sandbox</td></tr>
+          <tr><td>The visitor wristband</td><td>Non-root user (<code>runAsUser: 1000</code>)</td></tr>
+          <tr><td>The "no tools allowed" sign</td><td><code>capabilities.drop: [ALL]</code> + <code>allowPrivilegeEscalation: false</code></td></tr>
+          <tr><td>The sealed glass display case</td><td><code>readOnlyRootFilesystem: true</code></td></tr>
+          <tr><td>The security camera</td><td>The seccomp profile (<code>RuntimeDefault</code>)</td></tr>
+          <tr><td>The bank's security manager</td><td>Pod Security Standards (Privileged / Baseline / Restricted)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: a bank vault has one combination. A container has dozens of independent locks (each <code>securityContext</code> field). Skipping any one is leaving a door cracked.</em></p>
   </section>
 
   <!-- ============================== SECTION 4 — ELI5 / ELI10 ============================== -->
@@ -787,10 +1035,24 @@
       </div>
       <div class="eli-card">
         <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
-        <p>Container security has two layers. First, where did the image come from? You set <code>imagePullSecrets</code> so the kubelet can authenticate to your private registry, and you set <code>imagePullPolicy</code> so it knows when to re-fetch (<code>Always</code> for mutable tags, <code>IfNotPresent</code> for pinned versions). Second, how does it run? The pod's <code>securityContext</code> decides: <code>runAsNonRoot</code>, <code>runAsUser: 1000</code>, <code>capabilities.drop: [ALL]</code>, <code>readOnlyRootFilesystem</code>, <code>allowPrivilegeEscalation: false</code>, <code>seccompProfile: RuntimeDefault</code>. All together, this matches the Pod Security Standards "Restricted" profile. A bug in your app can no longer become a host-level compromise.</p>
+        <p>Container security has two layers. First, where did the image come from? You set <code>imagePullSecrets</code> so the kubelet can authenticate to your private registry, and you set <code>imagePullPolicy</code> so it knows when to re-fetch (<code>Always</code> for mutable tags, <code>IfNotPresent</code> for pinned versions). Second, how does it run? The Pod's <code>securityContext</code> decides: <code>runAsNonRoot</code>, <code>runAsUser: 1000</code>, <code>capabilities.drop: [ALL]</code>, <code>readOnlyRootFilesystem</code>, <code>allowPrivilegeEscalation: false</code>, <code>seccompProfile: RuntimeDefault</code>. All together, this matches the Pod Security Standards "Restricted" profile. A bug in your app can no longer become a host-level compromise.</p>
       </div>
     </div>
   </section>
+
+  <!-- Pause-and-check #2 · after Section 4 -->
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Pick the safest of these settings for a production Pod:</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Run as root, all capabilities, writable filesystem</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Run as non-root (UID 1000), drop ALL caps, read-only filesystem, seccomp RuntimeDefault</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Run as root, drop ALL caps</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Each of those settings shrinks the blast radius of a bug. Together they match the Pod Security Standards "Restricted" profile.</p>
+    </div>
+  </div>
 
   <!-- ============================== SECTION 5 — REAL-WORLD ============================== -->
   <section class="s">
@@ -800,19 +1062,19 @@
     <div class="scenarios">
       <div class="scenario">
         <p class="scenario-name">Container escape blocked by readOnly + non-root</p>
-        <p>A SaaS company's web app had an SSRF leading to RCE. The attacker landed inside the container as UID 1000 with a read-only filesystem and ALL capabilities dropped. They couldn't write a malicious binary, couldn't escalate to root, couldn't pivot to the host. The pod was deleted; the deploy was hot-fixed by lunch. Same bug class in 2018 took out their staging cluster for a week.</p>
+        <p>A SaaS company's web app had an SSRF leading to RCE. The attacker landed inside the container as UID 1000 with a read-only filesystem and ALL capabilities dropped. They couldn't write a malicious binary, couldn't escalate to root, couldn't pivot to the host. The Pod was deleted; the deploy was hot-fixed by lunch. Same bug class in 2018 took out their staging cluster for a week.</p>
       </div>
       <div class="scenario">
         <p class="scenario-name">Private registry pull failed silently — fixed with imagePullSecret</p>
-        <p>A team migrated images from Docker Hub to their company's private Harbor registry. Pods went into <code>ImagePullBackOff</code>. The kubelet logs said "401 Unauthorized." Fix: create a <code>kubernetes.io/dockerconfigjson</code> secret with Harbor credentials and add <code>imagePullSecrets: [name: harbor-creds]</code> to the pod spec — or better, attach the secret to the namespace's default ServiceAccount so every pod inherits it. Pods rolled out cleanly.</p>
+        <p>A team migrated images from Docker Hub to their company's private Harbor registry. Pods went into <code>ImagePullBackOff</code>. The kubelet logs said "401 Unauthorized." Fix: create a <code>kubernetes.io/dockerconfigjson</code> secret with Harbor credentials and add <code>imagePullSecrets: [name: harbor-creds]</code> to the Pod spec — or better, attach the secret to the namespace's default ServiceAccount so every Pod inherits it. Pods rolled out cleanly.</p>
       </div>
       <div class="scenario">
         <p class="scenario-name">Pull policy bug: re-pushing a tag silently kept old code running</p>
-        <p>A team used <code>image: my-app:v2</code> and <code>imagePullPolicy: IfNotPresent</code>. They re-pushed <code>v2</code> with a hotfix instead of cutting <code>v2.1</code>. Most nodes still had the old <code>v2</code> cached and never re-pulled — pods kept running the old binary on those nodes and the new one on freshly-scaled nodes. Lesson: never re-push a tag. Cut a fresh version, or pin to <code>@sha256:digest</code>.</p>
+        <p>A team used <code>image: my-app:v2</code> and <code>imagePullPolicy: IfNotPresent</code>. They re-pushed <code>v2</code> with a hotfix instead of cutting <code>v2.1</code>. Most nodes still had the old <code>v2</code> cached and never re-pulled — Pods kept running the old binary on those nodes and the new one on freshly-scaled nodes. Lesson: never re-push a tag. Cut a fresh version, or pin to <code>@sha256:digest</code>.</p>
       </div>
       <div class="scenario">
-        <p class="scenario-name">Pod Security Standards "Restricted" caught a privileged pod attempt</p>
-        <p>A new dev tried to deploy a pod with <code>securityContext: { privileged: true }</code> for "easier debugging." The namespace was labeled <code>pod-security.kubernetes.io/enforce: restricted</code>. The API server rejected the pod at admission with a clear message: "violates PodSecurity 'restricted:latest' — privileged is not allowed." Conversation moved from "let's just allow it" to "let's fix the actual debugging tooling." Defaults won.</p>
+        <p class="scenario-name">Pod Security Standards "Restricted" caught a privileged Pod attempt</p>
+        <p>A new dev tried to deploy a Pod with <code>securityContext: { privileged: true }</code> for "easier debugging." The namespace was labeled <code>Pod-security.kubernetes.io/enforce: restricted</code>. The API server rejected the Pod at admission with a clear message: "violates PodSecurity 'restricted:latest' — privileged is not allowed." Conversation moved from "let's just allow it" to "let's fix the actual debugging tooling." Defaults won.</p>
       </div>
     </div>
   </section>
@@ -821,11 +1083,11 @@
   <section class="s">
     <span class="s-eyebrow">Section 6 · Animation</span>
     <h2>Watch admission, pull, and policy in motion</h2>
-    <p>Three modes. The first runs a pod through admission with security checks. The second pulls from a private registry. The third compares pull policies side-by-side.</p>
+    <p>Three modes. The first runs a Pod through admission with security checks. The second pulls from a private registry. The third compares pull policies side-by-side.</p>
 
     <div class="anim-wrap">
-      <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animation of pod admission, registry pull, and pull policy comparison">
-        <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: pod admission</text>
+      <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img" aria-label="Animation of Pod admission, registry pull, and pull policy comparison">
+        <text x="380" y="22" font-size="13" font-weight="600" fill="#3F4A5E" text-anchor="middle" id="anim-mode-label">Mode: Pod admission</text>
 
         <!-- Top-right step counter -->
         <g transform="translate(580,14)">
@@ -849,20 +1111,40 @@
         <button class="anim-btn" type="button" data-mode="pull">▶ Private-registry pull</button>
         <button class="anim-btn" type="button" data-mode="policy">▶ Pull policies side-by-side</button>
       </div>
-      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a pod manifest with hardened securityContext arriving at the API server.</div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a Pod manifest with hardened securityContext arriving at the API server.</div>
     </div>
   </section>
 
   <!-- ============================== SECTION 7 — FLASHCARDS + QUIZ ============================== -->
   <section class="s">
-    <span class="s-eyebrow">Section 7 · Flashcards &amp; quiz</span>
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
     <h2>Lock it in</h2>
+    <p>Three common misconceptions to clear up first, then the flashcards and quiz.</p>
+
+    <!-- Common Misconceptions panel -->
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Running as root inside a container is safe because the container is isolated.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> Container root + a kernel exploit = host root. Run as a non-root UID by default.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> <code>imagePullPolicy: Always</code> is overkill.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> For mutable tags it's the only safe policy. For digest-pinned images, the question is moot — same digest, same content, every time.</div>
+        </div>
+        <div class="misc-card">
+          <div class="misc-row misc-myth"><strong>Myth:</strong> Pod Security Standards are something you have to install.</div>
+          <div class="misc-row misc-truth"><strong>Truth:</strong> They're built into the Kubernetes API server (since 1.25). Apply via namespace labels — no third-party admission needed.</div>
+        </div>
+      </div>
+    </div>
 
     <div class="flashcard-grid">
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does runAsNonRoot: true do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Tells the kubelet to refuse the pod if the image's USER is root (UID 0). Forces non-root execution. Pair with runAsUser: 1000 to pin a UID. The image's Dockerfile must include a USER directive that's non-root.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does runAsNonRoot: true do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Tells the kubelet to refuse the Pod if the image's USER is root (UID 0). Forces non-root execution. Pair with runAsUser: 1000 to pin a UID. The image's Dockerfile must include a USER directive that's non-root.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does readOnlyRootFilesystem: true do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Makes the container's root filesystem immutable at runtime. An attacker can't drop binaries or tamper with code. Mount an emptyDir at any path that needs writes (logs, /tmp).</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Linux capabilities — best practice in a pod?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">drop: ["ALL"], then add only the specific capabilities your app needs (e.g., NET_BIND_SERVICE for ports under 1024). Default of "inherit all root powers" is dangerous.</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is an imagePullSecret?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A K8s secret of type kubernetes.io/dockerconfigjson holding registry credentials. Referenced from a pod's imagePullSecrets list (or attached to a ServiceAccount). Without it, kubelet can't pull from private registries — pod stuck in ImagePullBackOff.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Linux capabilities — best practice in a Pod?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">drop: ["ALL"], then add only the specific capabilities your app needs (e.g., NET_BIND_SERVICE for ports under 1024). Default of "inherit all root powers" is dangerous.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is an imagePullSecret?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A K8s secret of type kubernetes.io/dockerconfigjson holding registry credentials. Referenced from a Pod's imagePullSecrets list (or attached to a ServiceAccount). Without it, kubelet can't pull from private registries — Pod stuck in ImagePullBackOff.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three imagePullPolicy values?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Always — re-checks registry every start (right for :latest). IfNotPresent — use cache if present (default for tagged images). Never — must already be on the node (air-gapped, dev).</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is seccompProfile RuntimeDefault?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A built-in syscall filter that blocks roughly 40–65 dangerous syscalls (kexec, ptrace certain modes, etc.; varies by runtime version) while allowing what normal apps need. Cheap, effective hardening default.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three Pod Security Standards levels?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Privileged (no restrictions). Baseline (block known-bad: hostNetwork, hostPath, privileged). Restricted (production-grade: non-root, drop caps, no privilege escalation, seccomp). Apply per namespace via labels.</div></div></div>
@@ -876,14 +1158,15 @@
         <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) <code>runAsNonRoot: true</code> + <code>runAsUser: 1000</code> — prevents root inside the container, which is one host-kernel-bug away from root on the node. (2) <code>capabilities.drop: [ALL]</code> + <code>allowPrivilegeEscalation: false</code> — strips the ~40 Linux superpowers and prevents setuid binaries from regaining them. (3) <code>readOnlyRootFilesystem: true</code> with an <code>emptyDir</code> mounted at <code>/var/log/myapp</code> so the app can still write logs — prevents an attacker from dropping malware on disk. Add <code>seccompProfile: RuntimeDefault</code> for free syscall hardening. The image's Dockerfile may need a <code>USER 1000</code> directive added.</div>
       </div>
       <div class="quiz-card">
-        <p class="quiz-prompt">Your pod is stuck in <code>ImagePullBackOff</code>. The image is at <code>private-registry.company.com/team/api:v3.2</code>. You can pull it from your laptop with <code>docker login</code>. Why does the pod fail and what's the fix?</p>
+        <p class="quiz-prompt">Your Pod is stuck in <code>ImagePullBackOff</code>. The image is at <code>private-registry.company.com/team/api:v3.2</code>. You can pull it from your laptop with <code>docker login</code>. Why does the Pod fail and what's the fix?</p>
         <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Your laptop has a local docker config with credentials; the cluster does not. The kubelet can't authenticate to your private registry. Fix: create a Kubernetes secret of type <code>kubernetes.io/dockerconfigjson</code> with <code>kubectl create secret docker-registry registry-creds --docker-server=… --docker-username=… --docker-password=…</code>, then reference it from the pod via <code>imagePullSecrets: [{ name: registry-creds }]</code>. For convenience, attach the secret to the default ServiceAccount in that namespace so every pod inherits it automatically.</div>
+        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Your laptop has a local docker config with credentials; the cluster does not. The kubelet can't authenticate to your private registry. Fix: create a Kubernetes secret of type <code>kubernetes.io/dockerconfigjson</code> with <code>kubectl create secret docker-registry registry-creds --docker-server=… --docker-username=… --docker-password=…</code>, then reference it from the Pod via <code>imagePullSecrets: [{ name: registry-creds }]</code>. For convenience, attach the secret to the default ServiceAccount in that namespace so every Pod inherits it automatically.</div>
       </div>
-      <div class="quiz-card">
-        <p class="quiz-prompt">A team uses <code>image: my-app:v2</code> with <code>imagePullPolicy: IfNotPresent</code>. They re-push <code>v2</code> with a hotfix. Most pods keep running the OLD image. Why? What's the right fix going forward?</p>
-        <button class="quiz-reveal" type="button">Show answer</button>
-        <div class="quiz-answer"><span class="quiz-answer-tag">answer</span><code>IfNotPresent</code> means "if the node already has an image with this tag locally cached, use it — don't re-pull." Most nodes had <code>v2</code> cached from earlier deploys, so they kept the old binary; only brand-new nodes pulled the hotfix. Two fixes: (1) Never re-push tags. Cut a fresh tag (<code>v2.1</code>) per change. (2) Pin to digest: <code>image: my-app@sha256:abc...</code> — digests are immutable. If you absolutely must mutate a tag, set <code>imagePullPolicy: Always</code> so every pod start re-validates against the registry.</div>
+      <div class="quiz-card cyoa-quiz">
+        <span class="cyoa-tag">🎬 Choose Your Own Adventure</span>
+        <p class="quiz-prompt">A new dev tries to deploy a Pod with <code>securityContext: { privileged: true }</code> "for easier debugging." Your namespace is labeled <code>Pod-security.kubernetes.io/enforce: restricted</code>. <strong>Click to see what happens. ▼</strong></p>
+        <button class="quiz-reveal" type="button">Show what happened</button>
+        <div class="quiz-answer"><span class="quiz-answer-tag">at admission</span>The API server rejects the Pod at admission with a clear message: <code>violates PodSecurity 'restricted:latest' — privileged is not allowed</code>. The conversation moves from "let's just allow it" to "let's fix the actual debugging tooling." Defaults won. <strong>Lesson:</strong> opt-in security is opt-out reality. Set the namespace policy and let the API server hold the line.</div>
       </div>
     </div>
   </section>
@@ -897,13 +1180,18 @@
       <div class="gloss-item"><div class="gloss-name">readOnlyRootFilesystem</div><div class="gloss-def">Mounts the container's rootfs read-only. Block attacker writes; mount <code>emptyDir</code> for paths that need writes.</div></div>
       <div class="gloss-item"><div class="gloss-name">capabilities</div><div class="gloss-def">Linux feature splitting root power into ~40 pieces. Best practice: <code>drop: [ALL]</code>, add only what's needed.</div></div>
       <div class="gloss-item"><div class="gloss-name">seccomp</div><div class="gloss-def">Linux syscall filter. Pod field <code>seccompProfile.type: RuntimeDefault</code> uses the runtime's curated default — blocks roughly 40–65 dangerous syscalls (varies by runtime version).</div></div>
-      <div class="gloss-item"><div class="gloss-name">imagePullSecret</div><div class="gloss-def">K8s secret of type <code>kubernetes.io/dockerconfigjson</code> holding registry credentials. Referenced by pod or ServiceAccount.</div></div>
+      <div class="gloss-item"><div class="gloss-name">imagePullSecret</div><div class="gloss-def">K8s secret of type <code>kubernetes.io/dockerconfigjson</code> holding registry credentials. Referenced by Pod or ServiceAccount.</div></div>
       <div class="gloss-item"><div class="gloss-name">imagePullPolicy</div><div class="gloss-def">Pod field controlling when the kubelet contacts the registry: <code>Always</code>, <code>IfNotPresent</code>, <code>Never</code>.</div></div>
       <div class="gloss-item"><div class="gloss-name">Pod Security Standards</div><div class="gloss-def">Built-in K8s admission tiers: Privileged (anything), Baseline (block known-bad), Restricted (production-grade). Apply per namespace.</div></div>
       <div class="gloss-item"><div class="gloss-name">ImagePullBackOff</div><div class="gloss-def">Pod status meaning the kubelet failed to pull the image and is backing off retries. Almost always: missing/wrong imagePullSecret or wrong tag.</div></div>
       <div class="gloss-item"><div class="gloss-name">image digest</div><div class="gloss-def">Immutable SHA-256 of the image manifest (<code>@sha256:abc...</code>). Pinning to digest defeats tag mutation.</div></div>
     </div>
   </details>
+
+  <!-- One-sentence stamp · bottom placement (identical to top) -->
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Where the image came from (auth + pull policy) plus how it runs (non-root, read-only, drop caps, seccomp) shrinks blast radius 10×.</p>
+  </div>
 
   <!-- ============================== RECAP + COMPLETION ============================== -->
   <section class="recap">
@@ -914,7 +1202,7 @@
 
 </main>
 
-<footer>Suvis Guru · K-COM · Lesson 11 of 17 · grounded in kubernetes.io/docs · pod-security-standards · imagePullSecrets</footer>
+<footer>Suvis Guru · K-COM · Lesson 11 of 17 · grounded in kubernetes.io/docs · Pod-security-standards · imagePullSecrets</footer>
 
 <script>
   // theme
@@ -937,12 +1225,27 @@
     card.addEventListener('click', () => card.classList.toggle('flipped'));
   });
 
-  // quiz reveals
+  // quiz reveals (handles both "Show answer" and CYOA "Show what happened")
   document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
     btn.addEventListener('click', () => {
       const ans = btn.parentElement.querySelector('.quiz-answer');
       const open = ans.classList.toggle('show');
-      btn.textContent = open ? 'Hide answer' : 'Show answer';
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+
+  // pause-and-check
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      });
     });
   });
 
@@ -1014,17 +1317,17 @@
 
   function runAdmission() {
     clearTimeouts(); clearStage();
-    animModeLabel.textContent = 'Mode: pod admission';
+    animModeLabel.textContent = 'Mode: Pod admission';
     animStep.textContent = '0 / 4';
-    setStatus('A pod manifest arrives at the API server.');
-    setReadout('<strong>Step 0.</strong> Two pods incoming: a hardened one and a privileged one. The PodSecurity admission controller checks each.');
+    setStatus('A Pod manifest arrives at the API server.');
+    setReadout('<strong>Step 0.</strong> Two Pods incoming: a hardened one and a privileged one. The PodSecurity admission controller checks each.');
 
     later(0, () => {
-      // Hardened pod card
+      // Hardened Pod card
       svgRect(20, 30, 280, 100, '#E0EFE6', '#3D7857', '', { rx: 8 });
       svgText(160, 50, 'POD A · hardened', { fontSize: 11, fill: '#3D7857' });
       svgText(160, 68, 'runAsNonRoot · drop ALL · readOnly', { fontSize: 9, weight: '600', fill: '#3D7857', font: 'ui-monospace,monospace' });
-      // Privileged pod card
+      // Privileged Pod card
       svgRect(420, 30, 280, 100, '#FBE8DC', '#A04832', '', { rx: 8 });
       svgText(560, 50, 'POD B · privileged', { fontSize: 11, fill: '#A04832' });
       svgText(560, 68, 'privileged: true · root', { fontSize: 9, weight: '600', fill: '#A04832', font: 'ui-monospace,monospace' });
@@ -1067,7 +1370,7 @@
     animModeLabel.textContent = 'Mode: private-registry pull';
     animStep.textContent = '0 / 4';
     setStatus('Pod scheduled to node-3 with image from private registry.');
-    setReadout('<strong>Step 0.</strong> kubelet on node-3 sees a pod referencing private-registry.company.com/api:v3.');
+    setReadout('<strong>Step 0.</strong> kubelet on node-3 sees a Pod referencing private-registry.company.com/api:v3.');
 
     later(0, () => {
       // kubelet on left
@@ -1083,8 +1386,8 @@
     });
     later(1200, () => {
       animStep.textContent = '1 / 4';
-      setStatus('Step 1: kubelet looks up the pod\'s imagePullSecret in the API server.');
-      setReadout('<strong>Step 1.</strong> kubelet queries the cluster for the pod\'s imagePullSecret named "harbor-creds".');
+      setStatus('Step 1: kubelet looks up the Pod\'s imagePullSecret in the API server.');
+      setReadout('<strong>Step 1.</strong> kubelet queries the cluster for the Pod\'s imagePullSecret named "harbor-creds".');
       svgRect(170, 110, 360, 26, '#FBF1D6', '#8B5A00', 'GET secret/harbor-creds (kubernetes.io/dockerconfigjson)', { fontSize: 10, textFill: '#5A4F45' });
     });
     later(2800, () => {
@@ -1105,8 +1408,8 @@
     later(6400, () => {
       animStep.textContent = '4 / 4';
       setStatus('Step 4: container starts. Pod transitions to Running.');
-      setReadout('<strong>Step 4.</strong> All layers present. containerd creates the container; kubelet marks pod Running.');
-      svgRect(20, 230, 680, 40, '#5A9F7A', '#3D7857', '✓ image pulled · container started · pod Running', { fontSize: 13, textFill: '#FFFFFF' });
+      setReadout('<strong>Step 4.</strong> All layers present. containerd creates the container; kubelet marks Pod Running.');
+      svgRect(20, 230, 680, 40, '#5A9F7A', '#3D7857', '✓ image pulled · container started · Pod Running', { fontSize: 13, textFill: '#FFFFFF' });
     });
     later(10000, runPull);
   }
@@ -1115,11 +1418,11 @@
     clearTimeouts(); clearStage();
     animModeLabel.textContent = 'Mode: pull policy comparison';
     animStep.textContent = '0 / 4';
-    setStatus('Three pods. Same image my-app:v2. Different pullPolicy values.');
-    setReadout('<strong>Step 0.</strong> All three nodes already have my-app:v2 cached. We start each pod and watch what happens.');
+    setStatus('Three Pods. Same image my-app:v2. Different pullPolicy values.');
+    setReadout('<strong>Step 0.</strong> All three nodes already have my-app:v2 cached. We start each Pod and watch what happens.');
 
     later(0, () => {
-      // Three pod cards across the top
+      // Three Pod cards across the top
       svgRect(20, 30, 215, 60, '#FBE8DC', '#A04832', '', { rx: 6 });
       svgText(127, 50, 'POD 1 · Always', { fontSize: 11, fill: '#A04832' });
       svgText(127, 70, 'image: my-app:v2', { fontSize: 9, weight: '600', fill: '#A04832', font: 'ui-monospace,monospace' });
@@ -1147,7 +1450,7 @@
     later(4500, () => {
       animStep.textContent = '3 / 4';
       setStatus('Step 3: POD 3 starts. Never = use cache or fail.');
-      setReadout('<strong>Step 3.</strong> POD 3 (Never) checks local cache: image present → start. If absent, pod would fail with ErrImageNeverPull.');
+      setReadout('<strong>Step 3.</strong> POD 3 (Never) checks local cache: image present → start. If absent, Pod would fail with ErrImageNeverPull.');
       svgRect(490, 105, 215, 32, '#FFFFFF', '#3F4A5E', '✓ cache hit · no registry call', { fontSize: 9.5, textFill: '#3F4A5E' });
     });
     later(6200, () => {

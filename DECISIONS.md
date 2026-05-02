@@ -565,3 +565,31 @@ The user's other explicit caution — "L07 already has the InPlacePodVerticalSca
 **Alternatives considered:** Run the scaffolding script on the primer and post-process — rejected, the primer's structure (5 short prose sections, one diagram, no §-named blocks) doesn't match the script's anchors and would force fragile workarounds. Tag the entire cgroup paragraph as skip-block — rejected, beginners genuinely need to know cgroups exist; only the v1/v2 history is the optional bit. Add a shared `.primer-banner` class to L01's CSS — rejected, single-use class would bloat the scaffolding block; promote later if needed. Capitalise `pod` only outside `<code>` blocks — rejected for now, would require per-line edits across the file; the global is faster and the CLI-Pod-vs-pod ambiguity is small.
 
 **Revisit when:** A second primer is needed (e.g., a hypothetical "Networking primer" between Lessons 16 and 17). At that point, factor the primer-specific CSS subset and the `.primer-note` class into a shared snippet so the second primer doesn't repeat L7.5's bespoke styling.
+
+---
+
+## 2026-05-02 — K-Town revision Phase 5 batch 4 — L09–L11 scaffolding + canon sweep
+
+**Context:** Phase 5 batch 4 propagates the layman-first scaffolding family to L09 (Container Runtimes & OCI — Customs Warehouse), L10 (Image Building · Multi-stage · Distroless · SBOM — Bakery District), and L11 (Container Security & Registries — K-Town Bank Vault Quarter). All three are Module 2 lessons (after L08), so each receives at least one `skip-if-new` tag where the K-Town plan §8.NN calls for it.
+
+**Decision:** Three sub-decisions:
+
+**Sub-decision A — Section 7 intro pattern made flexible.** L10 was the first lesson to ship without a `<p>` intro paragraph between its §7 H2 and the flashcard grid (`<h2>Lock it in</h2>` → straight into `<div class="flashcard-grid">`). The script's regex `SECTION7_INTRO_PATTERN` required the intro `<p>`. Updated to make the `<p>([^<]+)</p>` group optional (`(?:    <p>([^<]+)</p>\n)?`) so future lessons missing an intro paragraph don't fail. The replacement text always emits the canonical intro phrase ("Three common misconceptions to clear up first, then the flashcards and quiz.") so output is uniform across all lessons regardless of whether the original had one. Caught and fixed mid-batch — re-ran with L10 + L11 after the regex update; L09 was already done before the issue surfaced.
+
+**Sub-decision B — Skip-if-new tags applied per K-Town plan.**
+
+- **L09:** the §1 Concept paragraph describing the high-level vs low-level container runtime split (`runc` / `crun` / `youki`) wraps in `<p class="skip-block">` with the `[ deep dive — skip if new ]` pill. Justified per plan §8.9 — beginners need to know that "container runtime" exists; the runc-vs-crun-vs-youki history is correct, useful, and unnecessary for the first read.
+- **L10:** the §1 Concept paragraph on `docker buildx --platform` multi-arch builds wraps in `skip-block`. Plan §8.10 calls this paragraph "buildx multi-arch internals." Beginners don't need cross-architecture build details on the first read; they encounter the symptom (wrong-arch crash) in L09's CYOA, then the fix shows up here for the curious.
+- **L11:** no skip-if-new tag added in this batch. Plan §8.11 calls only for the seccomp count Phase 1 fix (already shipped in commit `e55069b` and verified preserved across L11's prevents-row, flashcard, and glossary entries). No other §8.11 paragraph is "advanced enough to skip"; L11's content is core hardening practice that beginners should engage with.
+
+**Sub-decision C — Canon sweep results.**
+
+- **L09:** 10 lowercase pod hits, all in body prose and flashcard backs (Pods stuck in ImagePullBackOff, etc.). Capitalised via global. Includes one `<code>kubectl describe pod</code>` → `<code>kubectl describe Pod</code>` per the batch-3 precedent.
+- **L10:** 1 lowercase pod hit (a "drop into a Pod" body reference). Capitalised via global. No prose drift on other Avoid-terms.
+- **L11:** 46 lowercase pod hits — the highest count of any lesson in the revision. Reasonably so, since L11 is about hardening Pods specifically. All capitalised via global. Phase 1's seccomp count fix is preserved across all three of its locations (L11 prevents-row, flashcard, glossary). The Translation Legend has 10 rows (one row dropped from the original 11, since the "vendor seal on the box → image signing (cosign — Lesson 10)" row was a back-reference to L10's content rather than a native L11 mapping; preserving it here would have made the legend redundant). All other rows preserved structurally.
+
+**Reasoning:** The Section 7 regex flexibility caught a real lesson-shape variant; making the intro paragraph optional (rather than requiring it) means the script keeps working as future lessons drift toward terser §7 intros. The two skip-if-new placements (L09 runtimes, L10 buildx) follow plan §8.NN exactly — no judgment call on placement, just execution. The L11 Translation Legend's 10-row trim is the only meaningful editorial call: dropping the cosign back-reference row keeps the legend honest about *this lesson's* analogy load and avoids creating apparent contradictions if a reader has skipped L10 (the cross-reference would dangle).
+
+**Alternatives considered:** Hand-edit L10 to add a stub `<p>` intro to satisfy the original regex — rejected, the regex flexibility is the right fix and benefits future lessons. Add skip-if-new to L11 (e.g., on the Pod Security Standards version-history paragraph) — rejected, the plan §8.11 doesn't call for it and L11's content is genuinely production-relevant for beginners. Preserve the L11 cosign back-reference row in the Translation Legend — rejected, the row creates a hanging cross-reference that's confusing if read alone.
+
+**Revisit when:** A future lesson uses a non-standard §7 structure the regex still doesn't match (e.g., §7 nested inside a `<div>` wrapper). At that point, refactor the §7 detection to walk the DOM rather than regex-match the surface text. Or: a future lesson's existing mapping list has rows that genuinely shouldn't be in the Translation Legend (cross-references, decorative entries) and the script should expose a `tl_drop_rows` field per lesson rather than requiring per-lesson hand editing.
