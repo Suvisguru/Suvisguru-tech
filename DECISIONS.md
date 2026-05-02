@@ -659,3 +659,38 @@ The Translation Legend uses 10 native co-living rows (per K-Town plan §4.3 pres
 ## 2026-05-02 — K-Town revision Phase 5 complete
 
 **Status:** All 16 K-COM lesson files (L01 reference + L02–L15 + L7.5 primer) carry the full layman-first scaffolding family. Apartment→co-living rewrite complete in L15. Phase 1 fixes preserved across L07 (Gateway API), L08 (seccomp), L11 (seccomp), L13 (GKE pricing). Vocabulary canon sweep applied across all lessons. STYLE.md and DECISIONS.md kept in sync. The next step is Phase 6 verification: open each lesson in light + dark mode at desktop and mobile widths, confirm no regressions in animations, and run the cross-lesson consistency checklist from `tasks/k8s-course-revision-plan.md` §9.
+
+---
+
+## 2026-05-02 — K-Town revision Phase 6 — automated verification clean
+
+**Context:** Phase 6 cross-lesson verification per K-Town plan §9. Automated checks (§9.1 cross-lesson consistency, §9.2 accuracy spot-checks, §9.3 vocabulary canon spot-checks) run via grep across all 16 lesson files. Visual / reading spot-checks (§9.4 / §9.5) require browser review and remain for the founder.
+
+**Decision:** Two minor canon-polish fixes surfaced during the verification grep, applied as a finalization commit:
+
+1. **L13 line 992** — kubelet first-mention gloss `(the agent that runs your Pods)` → `(the node agent that runs your Pods)`. Per STYLE.md vocab canon: `the kubelet (canonical) — "the node agent" (gloss only)`. Strict reading: bare "the agent" is in the Avoid column as ambiguous; "the node agent" is the acceptable parenthetical gloss form. The change is a one-word polish.
+2. **L07 line 1074** — recap-next text `what's actually inside a pod` → `what's actually inside a Pod`. Slipped through the batch-2 sweep because the recap card content was added to L07 in Phase 5 with lowercase pod and the batch-2 grep ran before the scaffolding insertion. One-character polish.
+
+**Verification results:**
+
+| Check | Status |
+|---|---|
+| Cross-lesson scaffolding (15 regular lessons + L7.5 primer) | ✅ uniform 1/1/1/1/1/2/2/1/1/3/1 across all regular lessons; primer correctly omits Nightmare/pause-checks/TL/analogy-stops/misc/CYOA |
+| Seccomp count canonical phrasing in L08 (×6) and L11 (×3) | ✅ |
+| L07 Phase 1 Gateway API edit preserved, no InPlacePod | ✅ |
+| L13 Phase 1 GKE pricing footnote preserved | ✅ |
+| L08 cross-link to L7.5 present | ✅ |
+| L15 apartment→co-living rewrite complete | ✅ 0 apartment hits, 20 co-living references |
+| Vocabulary canon — Avoid terms across all 16 lessons | ✅ 0 hits for `the spec` (real), `your declared intent`, `what you said`, `live state`, `the reconcile cycle`, `the watch loop`, `the K8s API`, `the agent` (after polish) |
+| Lowercase pod across all 16 lessons | ✅ 0 hits (after L07 polish) |
+
+False-positive notes: grep for "the spec" caught "the specific machine" (L04) and "the specific capabilities" (L11) — substring matches; not vocab violations. L13 has two literal `Pod.spec` field references ("kubelet reads the spec" in the request-trace; "controller WATCH picks up the spec" in the animation) — these refer to the literal `spec:` field of the Pod resource, not the abstract concept of desired state, so they stay.
+
+**Reasoning:** The two polish fixes are too small to defer to a separate batch; both are one-token edits and both are clearly canon hits the earlier sweeps missed (L13's "the agent" was added to the Translation Legend's neighborhood, not the body prose batch-1/batch-2 sweep targeted; L07's lowercase pod entered via the Phase 5 recap-next which postdated the canon grep). Bundling them with the Phase 6 verification commit is cheaper than a separate fix-up commit.
+
+**Phase 6 follow-ups for the founder (not automated):**
+
+- **§9.4 Visual spot-check:** open L01, L08, L13 in a browser. Confirm new components match existing visual language. Toggle light/dark. Resize to <720px (mobile) and confirm the K-Town map collapses to the dot-strip with the correct active position.
+- **§9.5 Reading spot-check:** read L08 (Module 2 entry) end-to-end as a layman, paying attention to whether the L7.5 cross-link banner lands clearly. Read L12 (PID 1) for the CYOA harbour-clock ASCII reveal — confirm the visual lands the failure moment.
+
+**Revisit when:** A future user testing pass surfaces a different class of canon hit the grep didn't catch (e.g., conjugated forms like "agentless" or "speccing"). At that point, expand the canon-grep regex set rather than re-do the sweep.
