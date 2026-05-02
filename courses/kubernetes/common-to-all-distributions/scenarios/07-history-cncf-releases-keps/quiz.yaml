@@ -1,0 +1,41 @@
+# Quiz — Lesson 07, History · CNCF · Releases · KEPs · Feature Gates
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: "Why is 'we use a feature only after it goes GA' usually the right operational rule?"
+    answer: |
+      Because GA carries the strongest compatibility guarantee Kubernetes
+      offers — backward-compatible behaviour, multi-release deprecation if
+      it's ever removed, on by default. Beta APIs can still change shape;
+      alpha can vanish. Operating production on GA features means upgrades
+      won't surprise you; operating on beta or alpha means you accept
+      upgrade-time refactoring as a routine cost.
+
+  - id: 2
+    prompt: |
+      A vendor's distribution says it's "Kubernetes-compatible" but not
+      "Certified Kubernetes." What does this difference signal?
+    answer: |
+      Certified Kubernetes is a CNCF program with a specific test suite
+      (run via hydrophone, historically sonobuoy) that the distribution has
+      passed. "Kubernetes-compatible" is not a defined term — it might
+      mean the distribution implements most of the Kubernetes API but has
+      skipped or modified parts of it. The practical risk is portability:
+      your manifests may work, or they may hit an unimplemented API and
+      break in a way that wouldn't happen on a certified cluster. Prefer
+      Certified Kubernetes when portability matters.
+
+  - id: 3
+    prompt: |
+      Why does Kubernetes ship features through alpha → beta → GA instead
+      of just shipping them as 'stable' right away?
+    answer: |
+      Same reason railways test new signals on quiet branch lines first.
+      Once a feature is GA, its API is locked — you can't change it
+      without a multi-release deprecation cycle. So Kubernetes wants the
+      API design to be tested in real workloads BEFORE it commits to
+      backward compatibility forever. Alpha gives a small group of brave
+      users a chance to try it and report problems. Beta opens it to a
+      wider audience for shape refinement. By the time it goes GA, the
+      API has had real usage feedback baked in.
