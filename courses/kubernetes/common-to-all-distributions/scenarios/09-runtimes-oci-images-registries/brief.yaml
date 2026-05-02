@@ -1,0 +1,82 @@
+# Intake brief — Lesson 09, K-COM
+# Topic: Container Runtimes, OCI Standard, Image Layers, Tags vs Digests, Registries
+# Module 2 (Containers Comprehensive) · Lesson 2 of 5
+
+lesson:
+  title: "Container Runtimes & the OCI Standard"
+  slug: "09-runtimes-oci-images-registries"
+  domain: "kubernetes"
+  course_slug: "common-to-all-distributions"
+  position: 9
+  granularity: "concept"
+  brief_drafted_on: "2026-05-02"
+  central_metaphor: "standardized warehouse + forklift delivery — OCI = standard container size · runtimes = forklifts · registries = warehouses"
+  module: "Module 2 · Containers (Comprehensive) · Lesson 2 of 5"
+
+learner_profile:
+  prerequisites:
+    - "Lesson 08: How containers actually work (Linux namespaces + cgroups)"
+  assumed_zero_knowledge_of:
+    - "OCI specs (image, runtime, distribution)."
+    - "containerd, CRI-O, runc, crun, youki."
+    - "Image layers, manifests, multi-arch images."
+    - "Tags vs digests."
+    - "Registries (Docker Hub, GHCR, ECR, GCR, ACR, Harbor)."
+
+learning_outcomes:
+  - "Learner can name the 3 OCI specs and what each defines."
+  - "Learner can distinguish high-level vs low-level runtimes (containerd vs runc)."
+  - "Learner can explain what's inside an OCI image (layers + manifest + config)."
+  - "Learner understands tag vs digest and why production should pin to digests."
+  - "Learner can name 5+ registries and how to authenticate to private ones."
+
+structure_per_project_md:
+  section_1_concept:
+    illustration: "Hero: warehouse with shelves of labeled package boxes (registry) + forklift carrying a my-app:v2.4 box (runtime) + delivered container with visible layers"
+    word_target: 320
+  section_1_5_pieces:
+    illustration: "5 tile cards: OCI specs (3 docs) · Runtimes (stack diagram) · Layers (stacked layers) · Tag vs Digest (movable arrow) · Registries (6 brand boxes)"
+  section_1_7_runtimes:
+    illustration: "6 runtime mini-cards comparing containerd, CRI-O, runc, crun, youki, gVisor/Kata"
+  section_1_8_tags_digests:
+    illustration: "Side-by-side tag (mutable) vs digest (immutable) cards with monospace examples"
+  section_2_before_after:
+    illustration: "Pre-OCI fragmentation (6 incompatible formats) vs OCI standard (one image format works with any runtime/registry)"
+  section_3_analogy:
+    primary: "Standardized shipping warehouses + forklifts"
+    illustration: "Already shown in hero"
+  section_4_eli_pair:
+    eli5: "Warehouses with same-shape boxes, forklifts pick any box. Under 100 words."
+    eli10: "OCI 3 specs + high-level/low-level runtimes + layers/manifest + tag/digest. 150-250 words."
+  section_5_real_world:
+    count: 4
+    examples:
+      - ":latest broke production (need to pin to digests)"
+      - "Multi-arch image build (one tag, two architectures)"
+      - "Switched runc to crun for performance gains"
+      - "ImagePullBackOff (private registry auth missing)"
+  section_6_animated_svg:
+    modes: ["Pull & run image (4 steps)", "Tag mutation (3 days)", "Runtime stack (kubelet to kernel)"]
+    description: "Mode 1: registry → manifest fetch → parallel layer pull → unified rootfs → container running. Mode 2: same tag pointing at 3 different digests over 60 days; solution is pinning to digest. Mode 3: 4-layer stack from kubelet (top) to kernel (bottom)."
+  section_7_flashcards_quiz:
+    flashcards: 8
+    quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: "/preview-kubernetes-lesson-09.html" }
+  lesson_md: { file: "lesson.md" }
+  flashcards: { file: "flashcards.yaml", count: 8 }
+  quiz: { file: "quiz.yaml", count: 3 }
+
+bar:
+  - "First-timer can explain the difference between containerd and runc."
+  - "First-timer understands why :latest is dangerous in production."
+  - "First-timer can recognize ImagePullBackOff causes."
+
+fact_check_anchors:
+  - "https://opencontainers.org/ — OCI specs"
+  - "https://github.com/opencontainers/image-spec"
+  - "https://github.com/opencontainers/runtime-spec"
+  - "https://github.com/opencontainers/distribution-spec"
+  - "https://containerd.io/ · https://cri-o.io/"
+  - "https://github.com/opencontainers/runc · https://github.com/containers/crun · https://github.com/containers/youki"

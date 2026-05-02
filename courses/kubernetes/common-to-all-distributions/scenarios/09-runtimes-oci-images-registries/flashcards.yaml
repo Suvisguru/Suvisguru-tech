@@ -1,0 +1,35 @@
+# Flashcards — Lesson 09, Container Runtimes & OCI Standard
+# Total: 8 cards.
+
+cards:
+  - id: 1
+    front: "What does OCI stand for and what does it do?"
+    back: "Open Container Initiative — Linux Foundation project (2015) that defines three specs: image format, runtime behavior, and distribution protocol. The contract that lets any runtime + any registry work together."
+
+  - id: 2
+    front: "High-level vs low-level runtime?"
+    back: "High-level (containerd, CRI-O): handles image pulling, container lifecycle, talks to Kubernetes via CRI. Low-level (runc, crun, youki): does the actual kernel calls — clone(), cgroups, capabilities, seccomp."
+
+  - id: 3
+    front: "runc vs crun vs youki?"
+    back: "runc = original Go reference implementation. crun = Red Hat C rewrite, smaller and faster. youki = Rust rewrite, memory-safe, newer. All OCI-compliant drop-in replacements."
+
+  - id: 4
+    front: "What's inside an OCI image?"
+    back: "A stack of layers (read-only filesystem snapshots, each a tarball with its own SHA256), a manifest (JSON listing layers and their digests), and a config (how to run: command, env, ports, user)."
+
+  - id: 5
+    front: "Tag vs digest?"
+    back: "Tag (nginx:1.27) = mutable friendly name. Can be moved by the publisher. Digest (sha256:abc...) = immutable cryptographic fingerprint. Same content always = same digest. For reproducibility, pin to digests in production."
+
+  - id: 6
+    front: "What is multi-arch?"
+    back: "A single image tag containing multiple manifests — one per architecture (linux/amd64, linux/arm64, etc.). When pulled, the runtime picks the right one for the host. Built with docker buildx --platform."
+
+  - id: 7
+    front: "Name 5 registries"
+    back: "Public: Docker Hub, GitHub Container Registry (GHCR). Cloud: AWS ECR, Google Artifact Registry (GCR/AR), Azure Container Registry (ACR). Self-host: Harbor, Quay. All OCI-compliant."
+
+  - id: 8
+    front: "What is ImagePullBackOff?"
+    back: "Kubernetes pod state when the kubelet repeatedly fails to pull an image. Common causes: typo in image name, wrong tag, missing registry credentials (need imagePullSecrets), or registry rate-limiting (Docker Hub anonymous limits)."

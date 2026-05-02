@@ -1,0 +1,43 @@
+# Quiz — Lesson 09, Container Runtimes & OCI Standard
+# Total: 3 questions.
+
+questions:
+  - id: 1
+    prompt: |
+      A teammate says "let's just use :latest for our production deployments —
+      it'll auto-update us to the newest version." What do you say?
+    answer: |
+      It's a footgun. :latest is a mutable tag — the image owner can move
+      it at any time. When pods restart in production (which happens
+      constantly), they'll pull whatever :latest happens to point at then,
+      not what you tested with. Half your fleet may end up on a different
+      image than the other half. Pin to digests (nginx@sha256:abc...) in
+      production manifests, and use Renovate or Dependabot to bump digests
+      via PR (with tests). You get reproducibility AND stay current.
+
+  - id: 2
+    prompt: |
+      A pod stays in ImagePullBackOff. kubectl describe pod shows the
+      kubelet is trying to pull from ghcr.io/myorg/my-app:v2 but failing
+      with "denied". What's the likely fix?
+    answer: |
+      Missing or wrong registry credentials. GHCR requires authentication
+      for private images. Fix: create a Kubernetes Secret of type
+      kubernetes.io/dockerconfigjson containing GHCR auth (a personal
+      access token with read:packages, or a GitHub App token), then
+      reference it in the pod spec via imagePullSecrets: [{name:
+      ghcr-creds}]. For larger fleets, use a node-level credential
+      provider (cleaner ops than per-namespace secrets).
+
+  - id: 3
+    prompt: |
+      A team builds their image on an ARM Mac (M-series). When they deploy
+      to AMD64 nodes in EKS, the pod crashes with "exec format error".
+      What happened?
+    answer: |
+      The image was built only for the host's architecture (linux/arm64).
+      The AMD64 nodes can't run an ARM binary. Fix: build a multi-arch
+      image with `docker buildx build --platform linux/amd64,linux/arm64
+      -t my-app:v1 --push .` The result is a single tag containing
+      manifests for both architectures. EKS nodes will pick the right one
+      automatically.
