@@ -415,3 +415,25 @@ Primers are first-class lesson files (`preview-{domain}-lesson-N-5.html`) and in
 **Alternatives considered:** Define every prerequisite term inline in the dependent lesson — rejected, dilutes the lesson's actual content and signals "this lesson is hard" instead of "you can do this with a 5-minute warm-up." Maintain a separate glossary appendix — rejected, requires the learner to leave the flow. Renumber lessons (so "Lesson 08" becomes "Lesson 09" and the primer is "Lesson 08") — rejected, breaks every existing cross-reference and makes future renumbering tempting (which it shouldn't be).
 
 **Revisit when:** A primer becomes long enough to warrant its own first-time-learner test (>1500 words). At that point, promote it to a full lesson and re-number, accepting the cross-reference cost.
+
+---
+
+## 2026-05-02 — K-Town revision Phase 1 — accuracy fixes and primer-filename convention
+
+**Context:** Phase 1 of the Kubernetes course revision (`tasks/k8s-course-revision-plan.md`). Four small accuracy fixes plus one governing-file addition. Bundled here as a single phase entry per the founder-approved "one DECISIONS entry per phase commit" rule for this revision.
+
+**Decision:** Four content fixes plus one STYLE.md addition:
+
+1. **Seccomp default-profile syscall count canonicalised to "roughly 40–65 dangerous syscalls (varies by runtime version) out of ~300 total."** Lesson 08 previously said "~70" in six places (concept body, primitive tile description, real-world scenario, flashcard, glossary, animation step-4 status string). Lesson 11 said "~50" in three places (securityContext prevents-table, flashcard, glossary). Both numbers were brittle — containerd's `RuntimeDefault` count varies by architecture and version (40–65 is the realistic spread). The new phrasing is accurate without pretending to a precision the runtime doesn't actually offer.
+
+2. **Lesson 07 "GA only in prod" scenario rewritten to use Gateway API instead of InPlacePodVerticalScaling.** The original example claimed InPlacePodVerticalScaling changed shape *during beta* between K8s 1.27 and 1.28 — factually wrong; that feature was **alpha** in 1.27 and 1.28 and didn't reach beta until 1.33. Replaced with Gateway API's beta-period field renames (v1beta1 → v1) before October 2023 GA — same pedagogical point, factually correct, less in-the-weeds.
+
+3. **Lesson 13 Managed CP scenario gets a one-line pricing footnote.** The "GKE control plane is ~$73/cluster/mo" claim is correct only for GKE Standard. AKS is free; EKS is $73/mo; GKE Autopilot bills per-pod. Added a small italic muted footnote inside the same `.scenario` panel making the variation explicit and noting the conclusion (managed beats self-managed at this team size) is unchanged.
+
+4. **STYLE.md "Preview filename per domain" gets a primer-filename convention.** The 2026-05-02 prerequisite-primer DECISIONS entry left the filename casing implicit. Established explicitly: Lesson-N.5 primers substitute a hyphen for the dot — `preview-{domain}-lesson-N-5.html` (e.g. `preview-kubernetes-lesson-7-5.html`). No leading zero on the integer part. Filesystem-friendly and unambiguous.
+
+**Reasoning:** All four are low-risk, high-confidence corrections that make the course more accurate without touching the visual language or pedagogy. Bundling them as Phase 1 builds momentum before the larger Phase 2 component-template work and gives the founder a small reviewable diff to validate the revision plan's discipline before bigger changes land.
+
+**Alternatives considered:** Apply each fix as its own commit — rejected, four trivial commits add noise without adding review value when they share a phase. Defer the seccomp fix to Phase 5 lesson-by-lesson — rejected, the contradiction between L08 and L11 is what makes it Phase-1 material; touching only one lesson would leave the contradiction. Drop "varies by runtime version" from the canonical phrasing for brevity — rejected, the variation is the honest thing and is exactly why neither "~70" nor "~50" was right.
+
+**Revisit when:** A future lesson cites a more specific seccomp count from a specific runtime version (legitimate if the lesson is about that runtime). At that point, that lesson can override the canonical phrasing inline rather than re-deciding the policy.

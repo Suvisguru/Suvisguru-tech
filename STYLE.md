@@ -432,6 +432,8 @@ Same palette is used for the hero "journey" station numbers so the journey color
 
 VMware previews use `preview-lesson-NN.html` (existing series). Kubernetes previews use `preview-kubernetes-lesson-NN.html` so the two domain sequences don't collide at the repo root. Future domains follow the same pattern: `preview-{domain}-lesson-NN.html`.
 
+Lesson-N.5 primers (per the 2026-05-02 prerequisite-primer DECISIONS entry) substitute a hyphen for the dot to stay filesystem-friendly: `preview-{domain}-lesson-N-5.html` — for example, `preview-kubernetes-lesson-7-5.html`. No leading zero on the integer part.
+
 ### Unified analogical universe — Kubernetes (K-Town)
 
 Every Kubernetes lesson is set in a single shared world: **K-Town**. Each lesson zooms into one *district* of the city. This solves the problem of beginners burning cognitive energy learning a fresh analogy every lesson. The cast and the city map persist; the lesson-specific analogy is a district within the city.

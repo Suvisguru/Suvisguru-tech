@@ -325,7 +325,7 @@
     <p><strong>Namespaces</strong> give each container its own private view of system resources. Process IDs, network interfaces, mount points, hostnames, user IDs — they all look private to the container, but they're really shared kernel resources sliced into isolated views. There are 8 namespace types in modern Linux: PID, NET, MNT, UTS, IPC, USER, cgroup, and time.</p>
     <p><strong>cgroups (control groups)</strong> are the meters. Each container gets a budget for CPU, memory, disk I/O, and network bandwidth. Try to use more than your budget, and the kernel throttles you (or kills the process for memory). Two versions exist — cgroup v1 (legacy, hierarchies per resource) and cgroup v2 (unified hierarchy, the modern default since ~2022).</p>
     <p><strong>Capabilities</strong> chop the old "root vs not-root" model into ~40 fine-grained permissions. Instead of giving a container full root, you give it just <code>NET_BIND_SERVICE</code> (bind to port < 1024) or just <code>SYS_TIME</code> (change the clock). Containers should drop everything they don't need.</p>
-    <p><strong>seccomp</strong> filters which Linux system calls a container is allowed to make. Modern container runtimes apply a default profile blocking the ~70 most-dangerous syscalls (out of ~300 total). You can write custom profiles for tighter restriction.</p>
+    <p><strong>seccomp</strong> filters which Linux system calls a container is allowed to make. Modern container runtimes apply a default profile blocking roughly 40–65 dangerous syscalls (varies by runtime version) out of ~300 total. You can write custom profiles for tighter restriction.</p>
     <p><strong>AppArmor / SELinux</strong> are mandatory access control (MAC) systems. They define explicit policies — "this container can read these files but not those" — at a layer below normal Linux permissions. Different distros pick different ones (Ubuntu/Debian default to AppArmor; RHEL/Fedora default to SELinux).</p>
     <p>That's it. Five Linux features. Stack them together and you have a container. Take them away and a container is just a normal process.</p>
   </section>
@@ -426,7 +426,7 @@
             </g>
           </svg>
         </div>
-        <p class="prim-desc">Filters which Linux system calls a container can make. Default profile blocks ~70 dangerous syscalls (out of ~300). Custom profiles available.</p>
+        <p class="prim-desc">Filters which Linux system calls a container can make. Default profile blocks roughly 40–65 dangerous syscalls (varies by runtime version) out of ~300. Custom profiles available.</p>
       </div>
 
       <!-- 5 — AppArmor / SELinux -->
@@ -601,7 +601,7 @@
       </div>
       <div class="scenario">
         <p class="scenario-name">Custom seccomp profile for a sandboxed workload</p>
-        <p>A team runs untrusted user code (a code-execution playground). The default seccomp profile blocks ~70 syscalls but still allows things like <code>ptrace</code>. They write a custom seccomp profile that blocks ptrace, ioctl, and several others. The user code can still run normal Python; it can't escape the sandbox. The lesson: seccomp default profiles are good baseline; for hostile workloads, write a tighter custom profile.</p>
+        <p>A team runs untrusted user code (a code-execution playground). The default seccomp profile blocks roughly 40–65 dangerous syscalls (varies by runtime version) but still allows things like <code>ptrace</code>. They write a custom seccomp profile that blocks ptrace, ioctl, and several others. The user code can still run normal Python; it can't escape the sandbox. The lesson: seccomp default profiles are good baseline; for hostile workloads, write a tighter custom profile.</p>
       </div>
     </div>
   </section>
@@ -659,7 +659,7 @@
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Name the 8 namespace types<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">PID, NET, MNT, UTS, IPC, USER, cgroup, time. Each gives a private view of one specific kind of resource.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">cgroups v1 vs v2?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">v1: separate hierarchies per resource (CPU hierarchy, memory hierarchy, etc.). v2: unified single hierarchy. v2 is the modern default since ~2022 (Kubernetes 1.25+ requires it on certain features).</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What are Linux capabilities?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">~40 fine-grained permissions chopping the old "root vs not-root" model. Examples: NET_BIND_SERVICE (bind to port < 1024), SYS_TIME (change clock), SYS_ADMIN (most-dangerous, do not grant). Drop everything you don't need.</div></div></div>
-      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is seccomp?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Linux feature filtering which system calls a process can make. Modern container runtimes apply a default profile blocking ~70 dangerous syscalls. Custom profiles allow tighter restriction for sensitive workloads.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is seccomp?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Linux feature filtering which system calls a process can make. Modern container runtimes apply a default profile blocking roughly 40–65 dangerous syscalls (varies by runtime version). Custom profiles allow tighter restriction for sensitive workloads.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">AppArmor vs SELinux?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Both are Linux Security Modules (LSM) providing mandatory access control. AppArmor is path-based, simpler. SELinux is label-based, more powerful but harder. Ubuntu/Debian default to AppArmor; RHEL/Fedora default to SELinux.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does hostPID: true do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Disables the PID namespace for the container, sharing the host's PID namespace instead. Container can see all host processes via ps. Useful for debugging, dangerous for security. Same pattern: hostNetwork, hostIPC.</div></div></div>
       <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why is the kernel shared?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Containers are processes on the host kernel — that's the whole point of containers vs VMs. It makes them lightweight (no boot time, no OS overhead per container). The trade-off: a kernel exploit can break out of any container. For untrusted multi-tenancy, use VMs or sandboxed runtimes (gVisor, Kata).</div></div></div>
@@ -691,7 +691,7 @@
       <div class="gloss-item"><div class="gloss-name">Namespace</div><div class="gloss-def">Linux kernel feature giving a process a private view of one resource type. 8 types: PID, NET, MNT, UTS, IPC, USER, cgroup, time.</div></div>
       <div class="gloss-item"><div class="gloss-name">cgroup (control group)</div><div class="gloss-def">Linux feature limiting how much CPU, memory, I/O, and other resources a process group can use. Two versions: v1 (legacy) and v2 (modern).</div></div>
       <div class="gloss-item"><div class="gloss-name">Capability</div><div class="gloss-def">One of ~40 fine-grained permissions in Linux. Examples: NET_BIND_SERVICE, SYS_TIME, SYS_ADMIN. Replaces the old all-or-nothing root model.</div></div>
-      <div class="gloss-item"><div class="gloss-name">seccomp</div><div class="gloss-def">Secure Computing Mode. Filters which Linux syscalls a process can make. Container runtimes apply default profiles blocking ~70 dangerous syscalls.</div></div>
+      <div class="gloss-item"><div class="gloss-name">seccomp</div><div class="gloss-def">Secure Computing Mode. Filters which Linux syscalls a process can make. Container runtimes apply default profiles blocking roughly 40–65 dangerous syscalls (varies by runtime version).</div></div>
       <div class="gloss-item"><div class="gloss-name">AppArmor</div><div class="gloss-def">Linux Security Module providing mandatory access control via path-based policies. Default on Ubuntu/Debian.</div></div>
       <div class="gloss-item"><div class="gloss-name">SELinux</div><div class="gloss-def">Linux Security Module providing mandatory access control via label-based policies. Default on RHEL/Fedora.</div></div>
       <div class="gloss-item"><div class="gloss-name">OOMKilled</div><div class="gloss-def">"Out of memory killed." When a container exceeds its memory cgroup limit, the kernel kills its PID 1. Pods restart per their restart policy.</div></div>
@@ -827,7 +827,7 @@
       animStep.textContent = '4 / 4';
       animContainerLabel.textContent = 'CONTAINER ✓ (process + namespaces + cgroups + capabilities + seccomp + LSM)';
       animContainerRect.setAttribute('stroke', '#5A9F7A');
-      setStatus('Step 4: seccomp blocks ~70 dangerous syscalls. LSM enforces policies. Done — that\'s a container.');
+      setStatus('Step 4: seccomp blocks roughly 40–65 dangerous syscalls (varies by runtime). LSM enforces policies. Done — that\'s a container.');
       setReadout('<strong>Step 4.</strong> seccomp filter applied (blocks dangerous syscalls). AppArmor or SELinux enforces label-based policies. The process is now what we call a <strong>container</strong>.');
     });
     later(11000, runBuild);
