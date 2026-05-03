@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-VAN V5 · Core Add-ons</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-VAN module journey">
+  <span class="concept-rail-title">K-VAN modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V1 architecture design</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V2 OS &amp; node prep</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V3 kubeadm bootstrap</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V4 CNI &amp; networking</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>V5 core add-ons</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V6 cluster config</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V7 etcd production</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V8 upgrades &amp; patching</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V9 security hardening</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V10 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V11 capstone homestead</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-VAN · Module V5</span></a>
+    <span class="progress-pill">V5 · core add-ons</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏕️ K-Frontier site: <strong>Outbuildings</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Frontier site map: V5">
+    <title>K-Frontier site map · V5</title>
+    <desc>Stylised map of the K-Frontier homestead. Outbuildings highlighted.</desc>
+    <defs>
+      <linearGradient id="kf-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+      <linearGradient id="kf-creek" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kf-soil)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · FRONTIER</text>
+    <path d="M 20 350 Q 200 343 400 348 T 780 350 L 780 380 L 20 380 Z" fill="url(#kf-creek)"/>
+    <path d="M 20 350 Q 200 343 400 348 T 780 350" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="372" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— creek —</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <g class="pin" id="kf-site01" transform="translate(100,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V1</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Drafting Hut</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">design</text></g>
+    <g class="pin" id="kf-site02" transform="translate(230,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Land Clearing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">OS prep</text></g>
+    <g class="pin" id="kf-site03" transform="translate(360,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Frame Raising</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">kubeadm</text></g>
+    <g class="pin" id="kf-site04" transform="translate(490,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Wiring & Plumbing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">CNI</text></g>
+    <g class="pin active" id="kf-site05" transform="translate(620,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Outbuildings</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">add-ons</text></g>
+    <g class="pin" id="kf-site06" transform="translate(100,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rules Board</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">config</text></g>
+    <g class="pin pin-anchor" id="kf-site07" transform="translate(240,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">V7</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">The Well</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">etcd</text></g>
+    <g class="pin" id="kf-site08" transform="translate(380,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Renovation</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">upgrades</text></g>
+    <g class="pin" id="kf-site09" transform="translate(510,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">hardening</text></g>
+    <g class="pin" id="kf-site10" transform="translate(640,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Drill Square</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshoot</text></g>
+    <g class="pin" id="kf-site11" transform="translate(720,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Homestead</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Outbuildings</strong> <span>· V5 of 11</span><span class="visually-hidden">Lesson V5, Outbuildings.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module V5 · the outbuildings</span>
+    <h1>V5 · Core Add-ons (CoreDNS, Gateway, cert-manager, CSI, observability, GitOps)</h1>
+    <p class="hero-sub">kubeadm + CNI = a working but bare cluster. Production needs ~10 add-ons before the first workload lands. Get them right (and version-controlled) once; use the same stack across every cluster.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Outbuildings around a homestead: shed labels CoreDNS, metrics-server, Gateway, cert-manager, CSI, monitoring, logging, ingress.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">OUTBUILDINGS · CORE ADD-ON STACK</text>
+  <g transform="translate(40,50)">
+    <rect width="600" height="160" rx="8" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <text x="300" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">DAY-1 ADD-ONS (installed via Argo CD)</text>
+    <rect x="14" y="34" width="110" height="34" rx="3" fill="#5A9F7A"/><text x="69" y="50" text-anchor="middle" font-size="9" fill="#FFFFFF" font-weight="700">CoreDNS</text><text x="69" y="62" text-anchor="middle" font-size="7" fill="#FBE8DC">in-cluster DNS</text>
+    <rect x="130" y="34" width="110" height="34" rx="3" fill="#3F4A5E"/><text x="185" y="50" text-anchor="middle" font-size="9" fill="#FBF1D6" font-weight="700">metrics-server</text><text x="185" y="62" text-anchor="middle" font-size="7" fill="#FBF1D6">HPA + kubectl top</text>
+    <rect x="246" y="34" width="110" height="34" rx="3" fill="#A04832"/><text x="301" y="50" text-anchor="middle" font-size="9" fill="#FFFFFF" font-weight="700">Gateway / Ingress</text><text x="301" y="62" text-anchor="middle" font-size="7" fill="#FBE8DC">Envoy / Cilium GW</text>
+    <rect x="362" y="34" width="110" height="34" rx="3" fill="#E8B547"/><text x="417" y="50" text-anchor="middle" font-size="9" fill="#5A4F45" font-weight="700">cert-manager</text><text x="417" y="62" text-anchor="middle" font-size="7" fill="#5A4F45">app TLS</text>
+    <rect x="478" y="34" width="110" height="34" rx="3" fill="#FBE8DC" stroke="#A04832"/><text x="533" y="50" text-anchor="middle" font-size="9" fill="#A04832" font-weight="700">CSI driver</text><text x="533" y="62" text-anchor="middle" font-size="7" fill="#5A4F45">storage</text>
+    <rect x="14" y="76" width="110" height="34" rx="3" fill="#FBF1D6" stroke="#8B5A00"/><text x="69" y="92" text-anchor="middle" font-size="9" fill="#8B5A00" font-weight="700">ExternalDNS</text>
+    <rect x="130" y="76" width="110" height="34" rx="3" fill="#FBF1D6" stroke="#8B5A00"/><text x="185" y="92" text-anchor="middle" font-size="9" fill="#8B5A00" font-weight="700">SOPS / Sealed</text>
+    <rect x="246" y="76" width="110" height="34" rx="3" fill="#E0EEF3" stroke="#4A8FA8"/><text x="301" y="92" text-anchor="middle" font-size="9" fill="#3F4A5E" font-weight="700">monitoring</text><text x="301" y="104" text-anchor="middle" font-size="7" fill="#5A4F45">kube-prometheus</text>
+    <rect x="362" y="76" width="110" height="34" rx="3" fill="#E0EEF3" stroke="#4A8FA8"/><text x="417" y="92" text-anchor="middle" font-size="9" fill="#3F4A5E" font-weight="700">logging</text><text x="417" y="104" text-anchor="middle" font-size="7" fill="#5A4F45">Loki / Vector</text>
+    <rect x="478" y="76" width="110" height="34" rx="3" fill="#3F4A5E"/><text x="533" y="92" text-anchor="middle" font-size="9" fill="#FBF1D6" font-weight="700">policy + Falco</text>
+    <rect x="14" y="118" width="578" height="34" rx="3" fill="#5A9F7A"/><text x="303" y="134" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">Argo CD installs + reconciles all of the above from git</text><text x="303" y="146" text-anchor="middle" font-size="7" fill="#FBE8DC">App-of-Apps + ApplicationSet manage versions</text>
+  </g>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>You hand the cluster to an app team. They say "it has no DNS for our ingress hostname, no certificates, no metrics, no log shipping, no policy enforcement, no backup." You spend the next two weeks installing add-ons one by one, each one a manual <code>kubectl apply</code>. Three months later there's no record of which versions are installed where, and rebuilding a cluster takes a week of remembering. <em>Add-ons are infrastructure. Treat them as code from day 1.</em></p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Day-1 add-on stack: <strong>CoreDNS</strong> (kubeadm installs; customise for stub zones), <strong>metrics-server</strong> (HPA + kubectl top), <strong>Gateway controller</strong> (Envoy Gateway / Cilium Gateway / Contour — Ingress NGINX EOL 2026), <strong>cert-manager</strong>, <strong>CSI driver</strong> + <strong>snapshot-controller</strong>, <strong>ExternalDNS</strong>, <strong>SOPS or Sealed Secrets</strong>, <strong>kube-prometheus-stack</strong>, <strong>Loki or Vector + S3</strong>, <strong>Kyverno</strong>, <strong>Falco</strong>. Install via <strong>Argo CD App-of-Apps</strong> from git.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Why add-ons need their own discipline</h2>
+    <p>kubeadm gives you the apartment building. Add-ons are everything else humans expect to live there: water (DNS), power (metrics), mail (Gateway / Ingress), security (cert-manager + policy), the basement (storage CSI), the security camera system (Falco), the maintenance log (logging stack), the energy meter (monitoring). Without these, the building is structurally complete but uninhabitable.</p>
+    <p>Critical principle: <strong>add-ons are infrastructure</strong>, not "things ops installs by hand." Treat them as code: pinned versions, declarative manifests, GitOps reconciliation. The cluster reconciles its own add-on stack from git the same way Deployments reconcile their Pods.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · The day-1 stack</span>
+    <h2>What every cluster needs</h2>
+    <table class="data-table">
+      <thead><tr><th>Add-on</th><th>What it does</th><th>Common choice</th></tr></thead>
+      <tbody>
+        <tr><td>CoreDNS</td><td>In-cluster DNS</td><td>kubeadm-installed; customise via ConfigMap</td></tr>
+        <tr><td>metrics-server</td><td>Pod/node CPU+memory for HPA, kubectl top</td><td>kubernetes-sigs/metrics-server</td></tr>
+        <tr><td>Gateway controller</td><td>L7 traffic ingress (host/path routing, TLS)</td><td>Envoy Gateway, Cilium Gateway, Contour</td></tr>
+        <tr><td>cert-manager</td><td>App-layer X.509 issuance + rotation</td><td>cert-manager.io + Let's Encrypt or Vault PKI</td></tr>
+        <tr><td>CSI driver</td><td>Persistent storage</td><td>Longhorn (on-prem block), Rook-Ceph, vSphere CSI</td></tr>
+        <tr><td>snapshot-controller</td><td>VolumeSnapshot support</td><td>kubernetes-csi/external-snapshotter</td></tr>
+        <tr><td>ExternalDNS</td><td>Sync K8s Services + Ingresses to DNS provider</td><td>kubernetes-sigs/external-dns</td></tr>
+        <tr><td>Sealed Secrets / SOPS</td><td>Git-stored encrypted secrets</td><td>bitnami-labs/sealed-secrets, getsops/sops</td></tr>
+        <tr><td>kube-prometheus-stack</td><td>Prometheus + Grafana + AlertManager</td><td>prometheus-community/kube-prometheus-stack</td></tr>
+        <tr><td>Logging</td><td>Cluster log collection</td><td>Loki + Vector + S3, or ELK, or vendor</td></tr>
+        <tr><td>Policy engine</td><td>Admission policies</td><td>Kyverno (or OPA Gatekeeper)</td></tr>
+        <tr><td>Runtime security</td><td>Syscall-level threat detection</td><td>Falco</td></tr>
+        <tr><td>Argo CD</td><td>GitOps for everything above</td><td>argoproj/argo-cd</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · The bootstrap-Argo-CD problem</span>
+    <h2>Chicken and egg: who installs Argo CD?</h2>
+    <p>Argo CD will reconcile every other add-on from git — but Argo CD itself has to be installed somehow. Three patterns:</p>
+    <ul>
+      <li><strong>Bootstrap script</strong>: a small shell + Helm one-liner that installs Argo CD, then applies a single "root" Application that points at the rest of git. After that initial bootstrap, Argo CD manages itself.</li>
+      <li><strong>Cluster API + ClusterResourceSet</strong>: in CAPI environments, a ClusterResourceSet attaches Argo CD to every new workload cluster automatically.</li>
+      <li><strong>Talos extension</strong>: bake the Argo CD manifests into the Talos machine-config so they apply at first boot.</li>
+    </ul>
+    <p>The standard repo layout:</p>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code>k8s-platform/
+├── bootstrap/argocd-install.sh
+├── apps/
+│   ├── root.yaml                 # App-of-Apps pointing at apps/*
+│   ├── coredns/
+│   ├── metrics-server/
+│   ├── gateway-envoy/
+│   ├── cert-manager/
+│   ├── csi-longhorn/
+│   ├── kube-prometheus-stack/
+│   └── ...
+└── overlays/{prod,staging,dev}/</code></pre>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Your team installs add-ons via <code>kubectl apply</code> by hand on each cluster. Six months in, dev/staging/prod versions have drifted. What's the cure?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Document everything in a wiki</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Move every add-on into a git repo with Helm charts + pinned versions; install via Argo CD; let drift be impossible by structure</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Ban kubectl apply</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Documentation is no substitute for declarative reconciliation. With Argo CD + git, the cluster pulls its add-on stack from a single source of truth. Drift = git diff. Adding a new cluster = pointing Argo CD at the same git path. The wiki becomes the README in the same repo.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · Versioning + lifecycle</span>
+    <h2>Pinning, upgrading, retiring</h2>
+    <p>Each add-on is a separate project with its own release cadence. Treat them like dependencies in a programming language:</p>
+    <ul>
+      <li><strong>Pin versions</strong> in Helm chart references. Never use "latest" on production.</li>
+      <li><strong>Update intentionally</strong>: PR to bump version, Argo CD detects diff, reviewer approves the resulting object diff before sync.</li>
+      <li><strong>Test on staging cluster first.</strong> Same Helm version + same K8s version.</li>
+      <li><strong>Retire EOL add-ons.</strong> Ingress NGINX is EOL end of 2026 — migrate to a Gateway-API-conformant controller.</li>
+    </ul>
+    <p>Special-case: <strong>dashboard</strong>. The Kubernetes Dashboard is included in many install guides but rarely justified for production — Grafana + Hubble + ArgoCD UI cover the use cases more securely. If you do install it, lock it down (auth, RBAC, no NodePort/LoadBalancer expose).</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>For air-gapped: every add-on's images need to live in your internal registry. Helm charts often default to images on Docker Hub / Quay; override with <code>--set image.registry=harbor.corp</code>. Rebuild the bootstrap with these overrides.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Add-ons installed by hand, one per ticket. No record of versions. "Why does staging have 1.14 and prod has 1.11?" answered with "someone upgraded staging." Add-on outage requires log archeology to know what should be running.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>One git repo. Argo CD reconciles every add-on. <code>kubectl get applications -n argocd</code> shows current state. Versions pinned. Adding a cluster = pointing Argo CD at the same path. Outages = git revert + sync.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Add-on stack as code is the difference between operating one cluster and operating a fleet.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this build site</h2>
+<p>Outbuildings is the fifth site. The main house is up; the wiring is in. Now the property needs the supporting buildings: well house (DNS), shed (metrics), garage (Gateway), workshop (cert-manager), root cellar (storage CSI), watchtower (Falco), library (logging), barn (monitoring). Each outbuilding has its own purpose, but they all need to be planned together: where the path runs, where the power feeds in, who maintains them. The general contractor (Argo CD) coordinates: pulls all the building plans from git, reconciles them onto the property, keeps them updated.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in vanilla Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>Well house (always-on water)</td><td>CoreDNS</td></tr>
+          <tr><td>Shed with the meter readings</td><td>metrics-server</td></tr>
+          <tr><td>Garage facing the road</td><td>Gateway controller (Envoy / Cilium / Contour)</td></tr>
+          <tr><td>Notary workshop with stamping press</td><td>cert-manager</td></tr>
+          <tr><td>Root cellar</td><td>CSI driver + snapshot-controller</td></tr>
+          <tr><td>Address-book sign at the gate</td><td>ExternalDNS</td></tr>
+          <tr><td>Locked safe with vault keys</td><td>Sealed Secrets / SOPS</td></tr>
+          <tr><td>Library + observatory</td><td>Logging + monitoring stacks</td></tr>
+          <tr><td>Watchman + alarm panel</td><td>Kyverno + Falco</td></tr>
+          <tr><td>General contractor coordinating it all</td><td>Argo CD App-of-Apps</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real add-ons aren't separate buildings — they're Pods running on the same nodes as workloads, sharing the cluster's resources. Capacity planning has to account for the add-on stack's baseline load (~10-15% of cluster CPU/memory).</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>The house is built and wired. Now you build the well, the shed, the garage, the watchman's post — all the small buildings that make a homestead actually work.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>kubeadm + CNI = bare cluster. Day-1 add-ons (~10): CoreDNS, metrics-server, Gateway controller, cert-manager, CSI + snapshot-controller, ExternalDNS, Sealed Secrets / SOPS, kube-prometheus-stack, Loki / Vector for logs, Kyverno, Falco. Install via Argo CD from a git repo (App-of-Apps pattern). Pin versions. Test on staging first. Treat the whole stack as code.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS shipping the same add-on stack to 8 clusters</p><p>Single git repo. Argo CD on each cluster points at the same path with cluster-specific Kustomize overlays. New cluster create = bootstrap script installs Argo CD + applies the root App. 90 minutes from kubeadm done to fully populated cluster.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank with FIPS + air-gap requirements</p><p>Internal Harbor mirror with all add-on images. Argo CD bootstrap script overrides image registries. Custom cert-manager Issuer pointing at internal Vault PKI. ExternalDNS uses internal CoreDNS (not Route53). Same Argo CD pattern; different registry + DNS configs.</p></div>
+      <div class="scenario"><p class="scenario-name">A startup graduating from "kubectl apply" to GitOps</p><p>First cluster: 18 manual installs. Migration: clone stack into a git repo, install Argo CD, import existing resources via <code>argocd app create --upsert</code>. Two weeks of validation. Then turn off manual access. Drift impossible.</p></div>
+      <div class="scenario"><p class="scenario-name">A team retiring Ingress NGINX before EOL</p><p>Plan: install Envoy Gateway alongside Ingress NGINX. Migrate one Ingress at a time to HTTPRoute. Validate. Decommission Ingress NGINX. Deadline: end of 2026 (when ingress-nginx EOLs). Started Q2; finished Q4.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Argo CD reconciles the add-on stack</h2>
+    <p>One sync brings up the full add-on stack from git.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="80" width="110" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="95" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">git repo</text><text x="95" y="118" text-anchor="middle" font-size="9" fill="#6B6058">platform/</text>
+        <rect x="180" y="80" width="130" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="245" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Argo CD</text><text x="245" y="118" text-anchor="middle" font-size="9" fill="#6B6058">App-of-Apps root</text>
+        <rect x="340" y="30" width="130" height="30" rx="6" fill="#E8B547" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#5A4F45">cert-manager</text>
+        <rect x="340" y="70" width="130" height="30" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Gateway</text>
+        <rect x="340" y="110" width="130" height="30" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">CSI</text>
+        <rect x="340" y="150" width="130" height="30" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="172" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Velero</text>
+        <rect x="500" y="80" width="110" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="555" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">all add-ons</text><text x="555" y="118" text-anchor="middle" font-size="9" fill="#6B6058">synced</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,110)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="reconcile">▶ reconcile App-of-Apps</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> Argo CD App-of-Apps reconciling.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Argo CD is overkill for a single cluster."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Even one cluster benefits from declarative reconciliation: drift detection, audit log via git, easy disaster recovery (cluster gone → new kubeadm + bootstrap Argo CD + git reconciles everything). The overhead of Argo CD itself is ~50 MB.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Helm + a Makefile is good enough."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Works until two clusters diverge or someone hand-patches a resource and forgets to update the Makefile. Argo CD detects drift; <code>helm install</code> doesn't.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Add-ons are install-and-forget."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Each add-on has its own release cadence + CVE history + breaking-change pattern. Treat them like any other dependency: review changelogs before bumping, test on staging, monitor deprecations.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why install Argo CD first?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Bootstraps the GitOps loop. Once installed, Argo CD installs every other add-on from git. Eliminates "kubectl apply by hand" drift across clusters.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's App-of-Apps?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Argo CD pattern: a single "root" Application points at a git path containing other Application manifests. Argo CD syncs the root, which creates/updates all the children. One sync = full add-on stack.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">kube-prometheus-stack — what's in it?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Helm chart bundling Prometheus + Grafana + AlertManager + node-exporter + kube-state-metrics + ServiceMonitor + PrometheusRule CRDs. The de-facto vanilla monitoring stack.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Sealed Secrets vs SOPS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Sealed Secrets: cluster controller decrypts on apply; secret encrypted with cluster public key (per-cluster). SOPS: encrypts at file layer with PGP/age/KMS; decrypts in CI. Either lets you commit secrets to git.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why no Kubernetes Dashboard in production?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Auth + RBAC are easy to misconfigure. Grafana + Hubble + Argo CD UI cover most use cases more safely. If you do install Dashboard, lock it down behind SSO + RBAC + no NodePort/LB expose.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Snapshot-controller — what's it for?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">K8s SIG-Storage component that turns VolumeSnapshot API objects into CSI snapshot calls. Required for any CSI driver supporting snapshots. Separate from the CSI driver itself; install once cluster-wide.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">ExternalDNS — what does it do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Watches K8s Services + Ingresses + Gateways with hostname annotations; syncs corresponding records in your DNS provider (Route53, Cloud DNS, RFC2136 internal). Eliminates the "someone forgot to add the DNS record" failure mode.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Argo CD on every cluster vs central?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Each cluster runs its own Argo CD pulling from git is the most resilient pattern (cluster fully self-managing). Central Argo CD pushing to many clusters is simpler but a SPOF. Most fleets land on per-cluster.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">You're about to bootstrap a fresh cluster. What order do you install the add-ons?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>(1) CNI (V4)</strong> — until done, every node NotReady. <strong>(2) CoreDNS</strong> (kubeadm installs by default; customise after). <strong>(3) Argo CD</strong> (the meta-installer for everything else). <strong>(4) Argo CD installs the rest</strong> from git: metrics-server (so HPAs work), CSI + snapshot-controller (so PVs work), Gateway controller + cert-manager (so external access works), ExternalDNS (so DNS works), Sealed Secrets / SOPS (so secrets can come from git), kube-prometheus-stack (so you can see anything), logging stack (so you can debug), Kyverno + Falco (so policy enforcement is on). Order matters because some add-ons depend on others (cert-manager needs CRDs from snapshot-controller? no — just sequential). Use Argo CD sync waves (annotations) for explicit ordering of dependent apps.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">Your <code>helm install kube-prometheus-stack</code> succeeds but Prometheus Pods crash-loop with <code>permission denied: /prometheus</code>. Diagnosis?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Storage ownership / fsGroup mismatch. Prometheus runs as a non-root UID; the PV mounted at <code>/prometheus</code> is owned by root. <strong>Fix:</strong> set <code>prometheus.prometheusSpec.securityContext.fsGroup: 65534</code> in values.yaml. The kubelet (with most CSI drivers) <code>chown</code>s the PV to fsGroup at mount. <strong>Verify:</strong> exec into the Pod, <code>ls -la /prometheus</code> should show 65534. If still failing: PV provisioner doesn't support fsGroup; use an init container to chown, or pick a different StorageClass. <strong>This is the most common Helm chart deployment pain point</strong> — the chart values often need cluster-specific tuning.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">You're asked to migrate a 30-Ingress cluster off Ingress NGINX before EOL. <strong>Click for the playbook. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the playbook</span><strong>(1) Pick replacement Gateway controller.</strong> Envoy Gateway (modern default), Cilium Gateway (if Cilium is your CNI), Contour (CNCF mature). Install alongside Ingress NGINX in the cluster. <strong>(2) Convert Ingress YAML to HTTPRoute.</strong> Use <code>InGate</code> tool (kubernetes/ingress-nginx provides it) for bulk translation. Manually fix the ones with vendor annotations. <strong>(3) Per-host migration.</strong> Each Ingress has a hostname. For one host: deploy the new HTTPRoute pointing at the same Service; keep Ingress NGINX serving the same host until you swap DNS. <strong>(4) Smoke test the host on the new Gateway</strong> by editing <code>/etc/hosts</code> on a test machine to point at the Gateway's LB IP. Once happy, flip ExternalDNS / DNS to the new Gateway. <strong>(5) Repeat per host.</strong> 30 hosts × ~30 min each = 1-2 sprints if anyone else is on the project. <strong>(6) Decommission Ingress NGINX</strong> when zero hosts remain. <code>helm uninstall ingress-nginx</code>. <strong>Result:</strong> all traffic on Gateway API, no EOL panic, no big-bang switch.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">CoreDNS</div><div class="gloss-def">Default in-cluster DNS server. kubeadm installs it. Customise via the <code>coredns</code> ConfigMap in <code>kube-system</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">metrics-server</div><div class="gloss-def">Aggregates Pod/node CPU+memory metrics from kubelets. Required for HPA + <code>kubectl top</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Gateway controller</div><div class="gloss-def">Implements Gateway API CRDs. Envoy Gateway (modern), Cilium Gateway, Contour. Replaces Ingress NGINX.</div></div>
+      <div class="gloss-item"><div class="gloss-name">cert-manager</div><div class="gloss-def">K8s-native X.509 issuance + rotation. Issuers: Let's Encrypt, Vault, internal CA.</div></div>
+      <div class="gloss-item"><div class="gloss-name">CSI driver + snapshot-controller</div><div class="gloss-def">Storage interface + the controller that processes VolumeSnapshot API objects.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ExternalDNS</div><div class="gloss-def">Syncs K8s Services / Ingresses / Gateways with hostnames into your DNS provider.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Sealed Secrets</div><div class="gloss-def">Bitnami project: encrypts a Secret with a cluster-public-key so the encrypted form lives in git. Cluster controller decrypts.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SOPS</div><div class="gloss-def">Mozilla project: file-level encryption with PGP/age/KMS. Decryption usually in CI.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kube-prometheus-stack</div><div class="gloss-def">Helm chart bundling Prometheus + Grafana + AlertManager + node-exporter + kube-state-metrics + Operator CRDs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Loki / Vector</div><div class="gloss-def">Lightweight log aggregation (Loki) + log shipping (Vector). Common pairing with S3-compatible storage.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Kyverno</div><div class="gloss-def">K8s-native policy engine. YAML policies for validate/mutate/generate/cleanup/verifyImages.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Falco</div><div class="gloss-def">CNCF runtime security tool. eBPF-based syscall monitoring with rule engine.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Argo CD App-of-Apps</div><div class="gloss-def">Pattern: one parent App in Argo CD points at a git path containing many child App manifests. Bootstrap many add-ons in one sync.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Day-1 add-on stack: <strong>CoreDNS</strong> (kubeadm installs; customise for stub zones), <strong>metrics-server</strong> (HPA + kubectl top), <strong>Gateway controller</strong> (Envoy Gateway / Cilium Gateway / Contour — Ingress NGINX EOL 2026), <strong>cert-manager</strong>, <strong>CSI driver</strong> + <strong>snapshot-controller</strong>, <strong>ExternalDNS</strong>, <strong>SOPS or Sealed Secrets</strong>, <strong>kube-prometheus-stack</strong>, <strong>Loki or Vector + S3</strong>, <strong>Kyverno</strong>, <strong>Falco</strong>. Install via <strong>Argo CD App-of-Apps</strong> from git.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module V5 complete</span>
+    <p>~10 day-1 add-ons installed via Argo CD App-of-Apps from git. Pin versions. Test on staging. Same stack across every cluster.</p>
+    <p class="recap-next"><strong>Next — V6: Cluster Configuration.</strong> The knobs you tune after install: API server flags, audit, encryption, kubelet eviction, scheduler profiles, RuntimeClass.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-VAN · Module V5 of 11 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+
+  // -------- Animation --------
+  (function() {
+    const SCENES = [{"mode_id": "reconcile", "mode_label": "Mode: reconcile the platform from git", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Git push: new add-on YAML committed to platform/.", "move_to": [95, 110], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Argo CD detects diff; the root App fans out to children.", "move_to": [245, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Each child App syncs: cert-manager\u2026", "move_to": [405, 45], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> \u2026Gateway\u2026", "move_to": [405, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> \u2026CSI + Velero. All Apps Synced + Healthy.", "move_to": [555, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })();
+
+</script>
+
+</body>
+</html>

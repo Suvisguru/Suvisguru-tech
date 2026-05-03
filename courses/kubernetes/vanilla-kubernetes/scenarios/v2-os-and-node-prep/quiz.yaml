@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You SSH to a freshly-prepped node. `kubeadm join` fails with `node "x" not found` after a few minutes. The kubelet logs show `x509: certificate signed by unknown authority`. Diagnosis?
+    answer: |
+      Two common causes: (1) **Time skew.** The node's clock is wrong — JWT and certs fail validation. `chronyc tracking` shows offset > 5 minutes. Sync time, retry. (2) **Wrong CA**. The kubeadm join command's discovery token + CA hash don't match the cluster's actual CA (typo? old token?). Re-run `kubeadm token create --print-join-command` on the control plane and use the fresh output. **Pre-flight rule:** verify `chronyc tracking` output before any kubeadm command — saves hours of mystery.
+
+  - id: 2
+    prompt: |
+      You're asked to onboard 30 new bare-metal nodes for an existing cluster. What's the right unit of work?
+    answer: |
+      Not SSH. **(1) Ansible playbook** covering the V2 checklist, idempotent. **(2) PXE boot + cloud-init** for fully unattended provisioning. **(3) Talos Linux** if you can pick the OS — the machine-config IS the playbook. **(4) For each new node**: PXE boots, cloud-init applies playbook, node reboots, sanity script verifies (crictl info / sysctl values / chronyc tracking), then `kubeadm join`. Scripted end-to-end. **Manual SSH for 30 nodes is a process smell** — automate now, not later.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Air-gapped customer needs the kubeadm v1.36 install bundle for a fresh cluster. **Click for the air-gap procedure. ▼**
+    answer: |
+      **(1) On a connected build host**: `kubeadm config images list --kubernetes-version v1.36` → captures the list (kube-apiserver, kube-controller-manager, kube-scheduler, kube-proxy, etcd, coredns, pause). `kubeadm config images pull --kubernetes-version v1.36` → caches them in containerd. `ctr -n k8s.io images export kubeadm-v1.36.tar <each-image>`. **(2) Add-on images**: pull and export Cilium / cert-manager / Velero / kube-prometheus-stack / Argo CD images the same way (or push to internal registry). **(3) Distribution media**: USB / encrypted tarball / internal artifact server reachable from the air-gapped network. **(4) On every disconnected node**: `ctr -n k8s.io images import kubeadm-v1.36.tar`. Verify with `crictl images`. **(5) Configure containerd registry mirror** pointing at the internal Harbor (or local cache) so subsequent pulls work transparently. **(6) Install kubeadm/kubelet/kubectl Debian/RPM packages** from the internal package mirror. **(7) Run kubeadm init** — the images are already local; no internet needed.

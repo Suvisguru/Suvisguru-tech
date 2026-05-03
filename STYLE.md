@@ -521,6 +521,46 @@ A single SVG of K-Town renders once per lesson, just under the breadcrumb header
 - Do not exceed three recurring characters in regular use. Beyond Katie, Podrick, and the Thermostat, every additional character is overhead.
 - Do not let the city framing crowd the actual content. It's a frame, not the lesson.
 
+### Unified analogical universe — Vanilla Kubernetes (K-Frontier)
+
+K-VAN (vanilla self-managed K8s; prereq K-COM) uses its own universe: **K-Frontier**. Where K-Town is the city you live in, K-Frontier is the homestead you build from raw land. Each K-VAN module = one build site on the homestead.
+
+**District-to-module mapping**
+
+| Module | Site | Topic |
+|---|---|---|
+| V1 | **Drafting Hut** | Production architecture design |
+| V2 | **Land Clearing** | OS + node prep |
+| V3 | **Frame Raising** | kubeadm bootstrap |
+| V4 | **Wiring & Plumbing** | CNI install + networking |
+| V5 | **Outbuildings** | Core add-on stack |
+| V6 | **Rules Board** | Cluster configuration |
+| V7 | **The Well** *(anchor)* | etcd production |
+| V8 | **Renovation Site** | Upgrades + patching |
+| V9 | **Watchtower** | Security hardening |
+| V10 | **Drill Square** | Troubleshooting drills |
+| V11 | **Complete Homestead** | Capstone |
+
+The Well is the anchor (analogous to Mayor's Office in K-Town) — etcd is the foundation everything else depends on; if the well fails, the whole homestead fails.
+
+**Cast (recurring)**
+
+K-Frontier shares the K-Town cast where helpful (Katie may appear in V1's architecture-decision narration as the cluster manager you're emulating). New K-Frontier-specific characters are <em>roles, not named characters</em>:
+
+- The **Settler** — the operator (you) building the homestead. Every K-VAN module is told from the Settler's POV.
+- The **Foreman** — the experienced builder who knows the gotchas. Recurs across modules as a knowing voice.
+
+These are job titles for whichever operator/SRE is being discussed, not new cast members. The 3-character cap from K-COM still applies.
+
+**Implementation rules**
+
+- Every K-VAN module opens with `🏕️ K-Frontier site: **[Site Name]**.` (the K-VAN equivalent of K-COM's `📍 Today's stop in K-Town: **[District Name]**.`).
+- Every K-VAN module includes the K-Frontier map graphic with the current site highlighted.
+- Map viewBox: 800×400 (smaller than K-Town's 800×420 — fewer sites).
+- Map renders by `scripts/k_van_lesson_generator.py:_render_kfrontier_map()` from the same KFRONTIER_SITES list.
+- Sub-labels under each site (\"design\", \"OS prep\", \"kubeadm\") give a one-word reminder.
+- Strip dot count: 11 (one per module). Anchor at V1 (the Drafting Hut, where any homestead build starts).
+
 ## What never changes
 
 - The packet/request motion track follows the visible cable/connection trajectory exactly. No exceptions.

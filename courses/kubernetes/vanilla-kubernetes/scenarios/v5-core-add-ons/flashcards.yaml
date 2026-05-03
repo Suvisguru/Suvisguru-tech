@@ -1,0 +1,50 @@
+# Flashcards — K-VAN V (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Why install Argo CD first?
+    back: |
+      Bootstraps the GitOps loop. Once installed, Argo CD installs every other add-on from git. Eliminates "kubectl apply by hand" drift across clusters.
+
+  - id: 2
+    front: |
+      What's App-of-Apps?
+    back: |
+      Argo CD pattern: a single "root" Application points at a git path containing other Application manifests. Argo CD syncs the root, which creates/updates all the children. One sync = full add-on stack.
+
+  - id: 3
+    front: |
+      kube-prometheus-stack — what's in it?
+    back: |
+      Helm chart bundling Prometheus + Grafana + AlertManager + node-exporter + kube-state-metrics + ServiceMonitor + PrometheusRule CRDs. The de-facto vanilla monitoring stack.
+
+  - id: 4
+    front: |
+      Sealed Secrets vs SOPS?
+    back: |
+      Sealed Secrets: cluster controller decrypts on apply; secret encrypted with cluster public key (per-cluster). SOPS: encrypts at file layer with PGP/age/KMS; decrypts in CI. Either lets you commit secrets to git.
+
+  - id: 5
+    front: |
+      Why no Kubernetes Dashboard in production?
+    back: |
+      Auth + RBAC are easy to misconfigure. Grafana + Hubble + Argo CD UI cover most use cases more safely. If you do install Dashboard, lock it down behind SSO + RBAC + no NodePort/LB expose.
+
+  - id: 6
+    front: |
+      Snapshot-controller — what's it for?
+    back: |
+      K8s SIG-Storage component that turns VolumeSnapshot API objects into CSI snapshot calls. Required for any CSI driver supporting snapshots. Separate from the CSI driver itself; install once cluster-wide.
+
+  - id: 7
+    front: |
+      ExternalDNS — what does it do?
+    back: |
+      Watches K8s Services + Ingresses + Gateways with hostname annotations; syncs corresponding records in your DNS provider (Route53, Cloud DNS, RFC2136 internal). Eliminates the "someone forgot to add the DNS record" failure mode.
+
+  - id: 8
+    front: |
+      Argo CD on every cluster vs central?
+    back: |
+      Each cluster runs its own Argo CD pulling from git is the most resilient pattern (cluster fully self-managing). Central Argo CD pushing to many clusters is simpler but a SPOF. Most fleets land on per-cluster.

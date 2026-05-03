@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-VAN V8 · Upgrades and Patching</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-VAN module journey">
+  <span class="concept-rail-title">K-VAN modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V1 architecture design</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V2 OS &amp; node prep</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V3 kubeadm bootstrap</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V4 CNI &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V5 core add-ons</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V6 cluster config</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V7 etcd production</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>V8 upgrades &amp; patching</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V9 security hardening</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V10 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V11 capstone homestead</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-VAN · Module V8</span></a>
+    <span class="progress-pill">V8 · upgrades &amp; patching</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏕️ K-Frontier site: <strong>Renovation</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Frontier site map: V8">
+    <title>K-Frontier site map · V8</title>
+    <desc>Stylised map of the K-Frontier homestead. Renovation highlighted.</desc>
+    <defs>
+      <linearGradient id="kf-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+      <linearGradient id="kf-creek" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kf-soil)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · FRONTIER</text>
+    <path d="M 20 350 Q 200 343 400 348 T 780 350 L 780 380 L 20 380 Z" fill="url(#kf-creek)"/>
+    <path d="M 20 350 Q 200 343 400 348 T 780 350" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="372" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— creek —</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <g class="pin" id="kf-site01" transform="translate(100,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V1</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Drafting Hut</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">design</text></g>
+    <g class="pin" id="kf-site02" transform="translate(230,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Land Clearing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">OS prep</text></g>
+    <g class="pin" id="kf-site03" transform="translate(360,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Frame Raising</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">kubeadm</text></g>
+    <g class="pin" id="kf-site04" transform="translate(490,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Wiring & Plumbing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">CNI</text></g>
+    <g class="pin" id="kf-site05" transform="translate(620,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Outbuildings</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">add-ons</text></g>
+    <g class="pin" id="kf-site06" transform="translate(100,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rules Board</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">config</text></g>
+    <g class="pin pin-anchor" id="kf-site07" transform="translate(240,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">V7</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">The Well</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">etcd</text></g>
+    <g class="pin active" id="kf-site08" transform="translate(380,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Renovation</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">upgrades</text></g>
+    <g class="pin" id="kf-site09" transform="translate(510,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">hardening</text></g>
+    <g class="pin" id="kf-site10" transform="translate(640,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Drill Square</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshoot</text></g>
+    <g class="pin" id="kf-site11" transform="translate(720,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Homestead</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Renovation</strong> <span>· V8 of 11</span><span class="visually-hidden">Lesson V8, Renovation.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module V8 · the renovation site</span>
+    <h1>V8 · Upgrades and Patching (kubeadm, version skew, rollback)</h1>
+    <p class="hero-sub">K8s ships a new minor version every ~4 months and patches monthly. <strong>Skipping minors is dangerous</strong>; staying current is operational discipline. kubeadm has good upgrade tooling — but the order matters and rollback is limited.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Renovation site: scaffolding around the homestead, sequence arrows showing CP -> kubelet -> kube-proxy -> workers -> add-ons -> CNI/CSI; rollback flag in case.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">RENOVATION · UPGRADES &amp; PATCHING</text>
+  <g transform="translate(40,50)">
+    <rect width="600" height="160" rx="8" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <text x="300" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">UPGRADE ORDER · v1.35 → v1.36</text>
+    <rect x="14" y="34" width="110" height="34" rx="3" fill="#3F4A5E"/><text x="69" y="50" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">1 backup etcd</text><text x="69" y="62" text-anchor="middle" font-size="7" fill="#FBF1D6">snapshot save</text>
+    <rect x="130" y="34" width="110" height="34" rx="3" fill="#A04832"/><text x="185" y="50" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">2 cp-1 (kubeadm)</text><text x="185" y="62" text-anchor="middle" font-size="7" fill="#FBE8DC">apiserver/scheduler/cm</text>
+    <rect x="246" y="34" width="110" height="34" rx="3" fill="#A04832"/><text x="301" y="50" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">3 cp-2/3</text>
+    <rect x="362" y="34" width="110" height="34" rx="3" fill="#5A9F7A"/><text x="417" y="50" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">4 kubelet (CP)</text>
+    <rect x="478" y="34" width="110" height="34" rx="3" fill="#5A9F7A"/><text x="533" y="50" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">5 workers</text><text x="533" y="62" text-anchor="middle" font-size="7" fill="#FBE8DC">drain → kubeadm</text>
+    <rect x="14" y="76" width="110" height="34" rx="3" fill="#E8B547"/><text x="69" y="92" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">6 add-ons</text>
+    <rect x="130" y="76" width="110" height="34" rx="3" fill="#FBF1D6" stroke="#8B5A00"/><text x="185" y="92" text-anchor="middle" font-size="9" font-weight="700" fill="#8B5A00">7 CNI / CSI</text>
+    <rect x="246" y="76" width="110" height="34" rx="3" fill="#E0EFE6" stroke="#3D7857"/><text x="301" y="92" text-anchor="middle" font-size="9" font-weight="700" fill="#3D7857">verify smoke</text>
+    <rect x="362" y="76" width="226" height="34" rx="3" fill="#FBE8DC" stroke="#A04832"/><text x="475" y="92" text-anchor="middle" font-size="9" font-weight="700" fill="#A04832">rollback: kubeadm-config + etcd snapshot</text>
+    <rect x="14" y="118" width="572" height="34" rx="3" fill="#3F4A5E"/><text x="300" y="134" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">version skew rule: kubelet may be at most 3 minor versions behind apiserver</text><text x="300" y="146" text-anchor="middle" font-size="7" fill="#FBE8DC">k8s release cadence: minor every 4 months · patch monthly · 14 months support</text>
+  </g>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>You upgrade the cluster and 30% of workloads break. Investigation: a CRD you depend on used <code>apiextensions.k8s.io/v1beta1</code> which was removed in v1.22; the operator hadn't been updated. Or: PodSecurityPolicy was removed in v1.25 + your namespaces still reference it. Or: your CSI driver requires a feature gate that flipped default. <em>Upgrades only feel routine when the prep work is done</em>. This module is the prep work.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> K8s release cadence: <strong>minor every ~4 months</strong>, patches monthly, ~14 months support per minor. Version skew: <strong>kubelet ≤ apiserver, max 3 minors behind</strong>; never skip a minor on upgrade. Order: <strong>etcd snapshot → cp-1 (kubeadm upgrade apply) → cp-2/3 → kubelet on CP → workers (drain → upgrade → uncordon) → add-ons → CNI/CSI</strong>. Pre-upgrade: scan for deprecated APIs (kubectl convert, Pluto). Rollback: limited — backup-restore is the safety net.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Why upgrades scare people</h2>
+    <p>Three things make K8s upgrades different from other software:</p>
+    <ul>
+      <li><strong>Frequent minors.</strong> Three or four minor releases a year. Skipping is unsafe (can't go 1.32 → 1.36 in one shot — must be 1.32 → 1.33 → 1.34 → 1.35 → 1.36).</li>
+      <li><strong>Multi-component coordination.</strong> Upgrade apiserver + controller-manager + scheduler + etcd + kubelets + kube-proxy + CNI + CSI + add-ons + CRDs. Each must work together and has its own version skew rules.</li>
+      <li><strong>Limited rollback.</strong> kubeadm doesn't auto-rollback. The safety net is etcd snapshot + backup → cluster restore. Plan for upgrade-fail by having a tested restore.</li>
+    </ul>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · Version skew</span>
+    <h2>Who can be how far ahead/behind whom</h2>
+    <ul>
+      <li><strong>kube-apiserver</strong>: highest version. New minor first.</li>
+      <li><strong>controller-manager / scheduler</strong>: ≤ apiserver. Same minor or one behind during transition.</li>
+      <li><strong>kubelet</strong>: ≤ apiserver, may be up to 3 minors behind. Practical: don't leave kubelets behind by &gt; 1 minor.</li>
+      <li><strong>kube-proxy</strong>: same minor as kubelet on its node.</li>
+      <li><strong>kubectl</strong>: ±1 minor from apiserver.</li>
+    </ul>
+    <p>The skew rules let you upgrade the control plane first, then workers — without a hard cutover. A worker on v1.35 can keep talking to a v1.36 apiserver during the transition.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · The kubeadm upgrade flow</span>
+    <h2>One node at a time, control plane first</h2>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code># 0. Backup etcd snapshot (V7) — verify it's recent + tested
+# 1. Plan
+sudo kubeadm upgrade plan v1.36.0
+
+# 2. On cp-1 — apply
+sudo apt-get install -y kubeadm=1.36.0-1.1
+sudo kubeadm upgrade apply v1.36.0
+
+# 3. On cp-1 — kubelet + kubectl
+sudo kubectl drain cp-1 --ignore-daemonsets --delete-emptydir-data
+sudo apt-get install -y kubelet=1.36.0-1.1 kubectl=1.36.0-1.1
+sudo systemctl daemon-reload && sudo systemctl restart kubelet
+sudo kubectl uncordon cp-1
+
+# 4. Repeat steps 2-3 on cp-2, cp-3 (with `kubeadm upgrade node`, not `apply`)
+sudo apt-get install -y kubeadm=1.36.0-1.1
+sudo kubeadm upgrade node
+# ... drain + kubelet + uncordon
+
+# 5. Workers — same drain → kubeadm upgrade node → kubelet → uncordon, one at a time
+# 6. Add-ons — Argo CD detects new versions if you've bumped Helm chart values
+
+# 7. CNI / CSI — typically on a different cadence; bump after K8s upgrade settles</code></pre>
+    <p>Surge nodes (extra worker added before upgrade, removed after) make worker upgrades safer for capacity-sensitive clusters.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Your cluster is on v1.32. You want to go to v1.36. Can you do it in one <code>kubeadm upgrade apply</code>?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Yes — kubeadm handles multi-version jumps</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) No — must upgrade one minor at a time: 1.32 → 1.33 → 1.34 → 1.35 → 1.36 (each verified before the next)</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Yes if you skip kubelet upgrade in between</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> kubeadm enforces +1 minor at most. Skipping risks API removals + storage migrations + skew violations. Plan a 1-minor-per-week cadence (or faster if your team has the muscle), with each step verified on staging first.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · Pre-upgrade hygiene + rollback</span>
+    <h2>Detect breakage early; have a path back</h2>
+    <p><strong>Pre-upgrade:</strong></p>
+    <ul>
+      <li><strong>Scan for deprecated APIs</strong> in your manifests + git: <code>pluto detect-files -d &lt;dir&gt;</code> or <code>kubectl convert</code>. Removes are listed in each release's notes.</li>
+      <li><strong>Check CRD compatibility:</strong> third-party operators often pin to a K8s version range. Check their docs.</li>
+      <li><strong>Run upgrade on staging first.</strong> Same K8s minor, same add-on versions, same workloads. If it breaks there, fix before prod.</li>
+      <li><strong>PodDisruptionBudgets</strong> on production workloads to prevent drain from taking too many replicas at once.</li>
+      <li><strong>Backup-before-upgrade:</strong> fresh etcd snapshot, fresh Velero backup of all namespaces.</li>
+    </ul>
+    <p><strong>Rollback options</strong> (in increasing pain):</p>
+    <ol>
+      <li><strong>Per-component:</strong> downgrade kubelet/kubeadm packages on a node, restart. Limited (apiserver downgrade is more disruptive).</li>
+      <li><strong>etcd restore:</strong> bring the cluster back to its pre-upgrade snapshot. All workloads come back to that state. Lose any post-upgrade work.</li>
+      <li><strong>Blue-green clusters:</strong> the safest. Build the new cluster fresh at the new version, migrate workloads via GitOps, decommission the old. Twice the cost during cutover.</li>
+    </ol>
+    <p>For most teams: <strong>etcd restore is the rollback plan</strong>. Make sure you have a tested one.</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>For Talos: upgrades are a single <code>talosctl upgrade --image talos:v1.x</code> per node — the OS image is replaced + rebooted. Cluster API: declarative version bump in the Cluster manifest; CAPI rolls nodes. Different operational shape but same skew rules apply.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>"We'll upgrade later." 18 months pass. Cluster is now 4 minors behind. CVEs accumulate. Operators stop supporting the version. Upgrade requires going through 4 minors with all their breaking changes at once. Migration ends up being a cluster rebuild.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Quarterly upgrade cadence. Each upgrade rehearsed on staging the prior week. Pluto + kubectl convert in CI on every PR catches deprecated APIs before they ship. etcd snapshot + Velero backup before every upgrade. Rollback playbook drilled. Upgrades feel like routine maintenance.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">The cluster that doesn't upgrade routinely is the cluster that has to be rebuilt.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this build site</h2>
+<p>The Renovation site sits next to the main house. Every season, the homesteader rolls in a new floor, replaces a worn beam, swaps the old roof for a better one. The work follows a strict order — you can't replace the roof before the rafters are stable. The contractor knows: <strong>foundation first</strong> (etcd snapshot), <strong>frame next</strong> (control plane), <strong>then floors</strong> (kubelets), <strong>then siding</strong> (workers), <strong>then fixtures</strong> (add-ons + CNI/CSI). And before any of it: <strong>backup the family heirlooms</strong> (etcd + Velero) in case the contractor falls through the floor.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in vanilla Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>Renovation calendar</td><td>K8s release cadence (~4 months/minor)</td></tr>
+          <tr><td>"Foundation first"</td><td>etcd snapshot before upgrade</td></tr>
+          <tr><td>Frame replacement</td><td>kubeadm upgrade apply on cp-1</td></tr>
+          <tr><td>Mirror the new frame on the other corners</td><td><code>kubeadm upgrade node</code> on cp-2/3</td></tr>
+          <tr><td>New floors over the same frame</td><td>kubelet upgrade on each node</td></tr>
+          <tr><td>Siding (one wall at a time)</td><td>Worker drain → upgrade → uncordon</td></tr>
+          <tr><td>Light fixtures + plumbing fittings</td><td>Add-ons + CNI / CSI</td></tr>
+          <tr><td>Family heirlooms in storage</td><td>etcd snapshot + Velero backup before start</td></tr>
+          <tr><td>Contractor's rollback van</td><td>Restore from snapshot if upgrade fails</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real upgrades don't have nailguns. They have API deprecations, controller restarts, version skew rules, and YAML CRD migrations. The renovation feel undersells the precision needed.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Every few months, the house gets a renovation. Don't skip three years of renovations and try them all at once — do one per season. Save the family photos before the contractor starts, just in case.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>K8s minors every ~4 months; patches monthly. Skew rule: kubelet may be ≤ 3 minors behind apiserver but never ahead. Upgrade order: etcd snapshot → cp-1 (kubeadm upgrade apply) → cp-2/3 → kubelet on CP → workers (drain + upgrade + uncordon) → add-ons → CNI/CSI. Pre-upgrade: scan for deprecated APIs (Pluto, kubectl convert), test on staging, take etcd snapshot + Velero backup. Rollback: per-component downgrade, etcd restore, or blue-green cluster.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS doing quarterly upgrades</p><p>Calendar: week 1 = staging upgrade + soak. Week 2 = production CP. Week 3 = production workers. Week 4 = add-on bumps. Repeat next quarter. Upgrades feel boring. Pre-upgrade: Pluto runs in CI on every PR; deprecated APIs caught months before they bite.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank doing blue-green cluster upgrades</p><p>Build new cluster at v1.36. Migrate workloads via GitOps (Argo CD points at new cluster). Validate. Cut DNS + load balancer. Decommission old cluster. Twice the infra cost during cutover; zero in-place upgrade risk. Used for the most-critical clusters only.</p></div>
+      <div class="scenario"><p class="scenario-name">A team that hit a 4-minor-behind upgrade</p><p>Cluster on v1.28 in early 2026 (now v1.36 era). Plan: skip n+1 strategy is unsafe, but they can't schedule 4 sequential upgrades. Adopted blue-green: built fresh v1.36 cluster, migrated workloads over 3 weeks via Argo CD, decommissioned old. Total project: 6 weeks; would have been 4-12 months of in-place upgrades + risk.</p></div>
+      <div class="scenario"><p class="scenario-name">A team using kube-proxy mode change as an upgrade</p><p>K8s 1.31 added nftables mode for kube-proxy (β). Plan: upgrade cluster to 1.32 first; then on a soak weekend, change KubeProxyConfiguration mode iptables → nftables; restart kube-proxy; verify Service traffic still flows. Different from a K8s minor upgrade but follows the same staging-first pattern.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Upgrade walk — v1.35 → v1.36</h2>
+    <p>One minor at a time, in order.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="70" width="110" height="60" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="95" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">v1.35 cluster</text><text x="95" y="108" text-anchor="middle" font-size="9" fill="#6B6058">Ready</text>
+        <rect x="180" y="70" width="110" height="60" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="235" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">etcd snap</text><text x="235" y="108" text-anchor="middle" font-size="9" fill="#6B6058">backup</text>
+        <rect x="310" y="70" width="110" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="365" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">cp-1 upgrade</text><text x="365" y="108" text-anchor="middle" font-size="9" fill="#6B6058">kubeadm apply</text>
+        <rect x="440" y="70" width="110" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="495" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">cp-2/3</text><text x="495" y="108" text-anchor="middle" font-size="9" fill="#6B6058">node upgrade</text>
+        <rect x="570" y="70" width="110" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="625" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">workers</text><text x="625" y="108" text-anchor="middle" font-size="9" fill="#6B6058">drain → upgrade</text>
+        <rect x="40" y="150" width="640" height="50" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="360" y="172" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">smoke test pass · v1.36 cluster Ready</text><text x="360" y="188" text-anchor="middle" font-size="9" fill="#6B6058">rollback path: snapshot restore</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,100)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="upgrade">▶ minor upgrade</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a controlled minor upgrade.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "kubeadm rolls back automatically on failure."</div><div class="misc-row misc-truth"><strong>Truth:</strong> No. kubeadm does its best to be atomic per-node, but cluster-wide rollback is on you (snapshot restore or per-component downgrade). Plan for it.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "You can skip a minor if nothing in your workloads uses removed APIs."</div><div class="misc-row misc-truth"><strong>Truth:</strong> kubeadm itself enforces +1 minor max. The CRD + admission webhook compat + storage migration + scheduler / kubelet skew rules also assume incremental. Doing it in one shot has been seen to corrupt clusters.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Patch versions are safe to skip."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Mostly true, with exceptions: some patches fix CVEs you should not be running unpatched against. Stay current on patches; skip them only with eyes open.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">K8s release cadence?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Minor every ~4 months. Patches monthly. ~14 months of patch support per minor.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Skew rules?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">kubelet ≤ apiserver, max 3 minors behind. controller-manager/scheduler same minor as apiserver. kubectl ±1 minor.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">kubeadm upgrade order?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">etcd snapshot → cp-1 (<code>kubeadm upgrade apply</code>) → cp-2/3 (<code>kubeadm upgrade node</code>) → kubelet on CP → workers (drain + upgrade + uncordon) → add-ons → CNI/CSI.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why drain a node before kubelet upgrade?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Kubelet restart kills its Pods briefly. Drain reschedules them onto other nodes first, respecting PodDisruptionBudgets. Without drain, you take random Pod outages.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is Pluto?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Tool from FairwindsOps that scans manifests for deprecated/removed K8s APIs. Run in CI to catch API regressions before upgrade.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">kubectl convert?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Subcommand of kubectl that converts manifests between API versions. Useful for migrating off deprecated APIs ahead of upgrade.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three rollback paths?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Per-component package downgrade (limited), etcd snapshot restore (cluster-wide), blue-green cluster (safest, costliest).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Talos / CAPI upgrade differences?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Talos: <code>talosctl upgrade --image</code> per node — image-replacement, no kubeadm. CAPI: bump version in Cluster manifest; CAPI rolls Machines. Same skew rules; different mechanics.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">Pre-upgrade scan flags 4 Deployments using <code>autoscaling/v2beta2</code> (removed in v1.26). Walk the remediation.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>(1) Identify owners.</strong> Each Deployment lives in a namespace; map to team. <strong>(2) Per-Deployment fix.</strong> Edit the HPA YAML: change <code>apiVersion: autoscaling/v2beta2</code> to <code>autoscaling/v2</code>. The schema is mostly compatible; sometimes field names changed (e.g., <code>targetCPUUtilizationPercentage</code> → <code>metrics</code>). Use <code>kubectl convert</code>: <code>kubectl convert -f hpa.yaml --output-version autoscaling/v2</code>. <strong>(3) PR + Argo CD diff review</strong> shows the exact change. <strong>(4) Apply on staging first.</strong> Validate HPA still scales. <strong>(5) Apply on production.</strong> <strong>(6) Re-run Pluto</strong> to confirm no remaining v2beta2 references. <strong>(7) Add a CI check</strong> that blocks PRs introducing deprecated APIs going forward. <strong>Total time:</strong> 1-2 sprints depending on team count + workload count. <strong>Lesson:</strong> deprecation scans should be running quarterly, not on the day of upgrade.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">Your prod cluster upgrade hangs at "upgrading kubelet on cp-1" — 30 minutes in, no progress. Diagnose.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Common causes:</strong> (1) <em>Image pull stuck</em>. The new kubelet/kube-apiserver/etc images aren't in the local containerd cache + the registry is unreachable. <code>crictl images</code> on cp-1 — empty? <code>journalctl -u containerd</code> for pull errors. (2) <em>etcd unhealthy</em>. The kubeadm upgrade waits for etcd; if etcd is degraded (slow disk, alarm), the upgrade hangs. <code>etcdctl endpoint health + status</code>. (3) <em>API server health-check failing</em>. The new apiserver static pod is up but failing readiness. <code>journalctl -u kubelet</code>; <code>kubectl logs -n kube-system kube-apiserver-cp-1</code>. <strong>Recovery:</strong> if you can identify + fix in &lt; 30 min, do. Otherwise, restore etcd snapshot + downgrade kubelet + kubeadm packages on cp-1 + restart kubelet to roll back to pre-upgrade state. Then debug on staging. <strong>Documentation:</strong> add the diagnosis path to the upgrade runbook.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">You're asked to upgrade a 30-node cluster from v1.34 to v1.36. <strong>Click for the playbook. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the upgrade playbook</span><strong>Two minor versions = two upgrade cycles, each verified.</strong> <strong>Cycle A: 1.34 → 1.35.</strong> <strong>(A.1) Pre-flight</strong> — Pluto scan for v1.35 removals; staging upgrade succeeds; etcd snapshot + Velero backup taken. <strong>(A.2) Control plane</strong> — kubeadm upgrade apply on cp-1 (10 min); kubeadm upgrade node on cp-2, cp-3 (10 min each). <strong>(A.3) Kubelets on CP</strong> — drain + upgrade + uncordon on each (15 min each). <strong>(A.4) Workers</strong> — drain + kubeadm upgrade node + kubelet + uncordon on each, with PodDisruptionBudgets respected. 30 nodes × 10 min = 5 hrs. Run rolling, 3 in parallel where capacity allows. <strong>(A.5) Verify</strong> — <code>kubectl get nodes</code> all v1.35; smoke tests pass. <strong>Cycle B: 1.35 → 1.36.</strong> Repeat A.1-A.5. <strong>Add-ons + CNI + CSI</strong> bumped after both cycles complete; per their compat matrices. <strong>Total time:</strong> ~2 weekends if scheduled outside production load. <strong>Risk mitigation:</strong> if anything breaks at A.1-A.3, you have an etcd snapshot + a tested restore. If a worker upgrade fails, that node is cordoned + reportable; cluster is degraded by 1/30 nodes max. Beats one 4-minor leap by months.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">K8s release cadence</div><div class="gloss-def">Minor versions every ~4 months. Patches monthly. ~14 months of support per minor.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Version skew</div><div class="gloss-def">How far apart components can be. kubelet ≤ apiserver, max 3 minors behind. Practical: keep within 1 minor.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubeadm upgrade plan</div><div class="gloss-def">Subcommand: shows the available upgrade target + version skew check.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubeadm upgrade apply</div><div class="gloss-def">On the first CP node: upgrades cluster control plane to the target version.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubeadm upgrade node</div><div class="gloss-def">On subsequent CP nodes + workers: upgrades kubeadm-managed components on this node.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Deprecated API</div><div class="gloss-def">K8s API marked for removal in a future version. Often replaced by a stable equivalent.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Pluto</div><div class="gloss-def">FairwindsOps tool scanning manifests for deprecated/removed K8s APIs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubectl convert</div><div class="gloss-def">Converts manifests between API versions. Useful for ahead-of-upgrade migration.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Surge node</div><div class="gloss-def">Extra worker node added before drains to maintain capacity during upgrade.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Blue-green cluster</div><div class="gloss-def">Build new cluster at new version; migrate workloads; decommission old. Safest upgrade pattern; costliest.</div></div>
+      <div class="gloss-item"><div class="gloss-name">PodDisruptionBudget</div><div class="gloss-def">Cap on simultaneous voluntary disruptions. Critical during drain/upgrade.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Backup-before-upgrade</div><div class="gloss-def">Standard practice: fresh etcd snapshot + Velero backup before any upgrade work.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> K8s release cadence: <strong>minor every ~4 months</strong>, patches monthly, ~14 months support per minor. Version skew: <strong>kubelet ≤ apiserver, max 3 minors behind</strong>; never skip a minor on upgrade. Order: <strong>etcd snapshot → cp-1 (kubeadm upgrade apply) → cp-2/3 → kubelet on CP → workers (drain → upgrade → uncordon) → add-ons → CNI/CSI</strong>. Pre-upgrade: scan for deprecated APIs (kubectl convert, Pluto). Rollback: limited — backup-restore is the safety net.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module V8 complete</span>
+    <p>Quarterly upgrades, one minor at a time. Order: etcd snapshot → cp-1 → cp-2/3 → CP kubelets → workers → add-ons → CNI/CSI. Pre-upgrade: deprecated-API scan + staging rehearsal. Rollback: snapshot restore.</p>
+    <p class="recap-next"><strong>Next — V9: Security Hardening.</strong> CIS benchmark, RBAC least privilege, secret encryption, admission policy, image signing, runtime security, certificate rotation.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-VAN · Module V8 of 11 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+
+  // -------- Animation --------
+  (function() {
+    const SCENES = [{"mode_id": "upgrade", "mode_label": "Mode: minor upgrade with backups + rollback path", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Cluster on v1.35. Healthy.", "move_to": [95, 100], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Take etcd snapshot + Velero backup. Rollback path established.", "move_to": [235, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> <code>kubeadm upgrade apply</code> on cp-1.", "move_to": [365, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> <code>kubeadm upgrade node</code> + kubelet upgrade on cp-2/3.", "move_to": [495, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> Drain \u2192 upgrade kubelet \u2192 uncordon, on each worker.", "move_to": [625, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 6.</strong> Smoke tests pass. v1.36 cluster Ready.", "move_to": [360, 175], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 100];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })();
+
+</script>
+
+</body>
+</html>

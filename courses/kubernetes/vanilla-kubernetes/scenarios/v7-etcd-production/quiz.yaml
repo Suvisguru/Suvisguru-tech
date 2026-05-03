@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Your monitoring shows etcd p99 fsync latency climbing to 80ms. The cluster feels slow. First diagnostic step?
+    answer: |
+      Check the disk. **(1)** `iostat -x 1` on the etcd hosts during the latency spike. await + util%. (2) Is the etcd data dir on dedicated NVMe? Or shared with container image storage / logs / kubelet state? (3) Is there a noisy neighbour? (kubelet log rotation, container image GC, page-cache contention). **Fix paths:** move etcd to dedicated NVMe (rebuild member); set io scheduler to `none`; isolate via `systemd` resource limits. **Long-term:** alert on fsync p99 > 25ms — long before users notice. Etcd is forgiving until it isn't.
+
+  - id: 2
+    prompt: |
+      Two of three etcd members went down at the same time (a hypervisor crash took out two CP VMs). The cluster is unresponsive. Walk the recovery.
+    answer: |
+      **Quorum lost.** Recovery requires snapshot-restore to a fresh cluster — you can't simply restart the dead members because they're missing committed log entries. **Step 1:** stop etcd on the surviving member to prevent it from being a stale source. **Step 2:** on each of three replacement nodes, restore from the latest snapshot to a new `--data-dir` + the same `--initial-cluster` set, using a fresh `--initial-cluster-token`. **Step 3:** start all three etcd processes simultaneously. **Step 4:** the K8s apiservers (which restart the static-pod automatically) reconnect; deployments + StatefulSets reconcile their derived state. **Step 5:** verify with `etcdctl endpoint status` + `etcdctl endpoint health`. Pods that were running keep running; new Pod scheduling resumes once the apiserver is healthy. **Lesson:** if recoveries like this terrify you, run a 5-member etcd (tolerates 2 simultaneous faults).
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Your team has "snapshots" but has never restored them. **Click for the etcd DR drill playbook. ▼**
+    answer: |
+      **(1) Pick a non-prod cluster.** Treat it as expendable. **(2) Schedule a 1-hour drill window.** Notify the team. **(3) Take a fresh snapshot** from production etcd: `etcdctl snapshot save` + `aws s3 cp`. Note the file path. **(4) Stop kubelet + etcd on the non-prod cluster.** Move the existing `/var/lib/etcd` aside. **(5) Restore on each member node:** `etcdctl snapshot restore $SNAP --data-dir /var/lib/etcd --initial-cluster ... --initial-cluster-token drill --initial-advertise-peer-urls ...`. **(6) Start etcd on all three simultaneously.** Watch logs for leader election + log replication. **(7) Restart kube-apiserver static-pods** (touch the manifest file). **(8) Verify:** `kubectl get nodes`, `kubectl get pods -A`. Sample 5 random Deployments — do their replicas match the production snapshot point-in-time? **(9) Document timing**: snapshot age (RPO), restore-to-cluster-ready elapsed (RTO). **(10) File issues** for any rough edges; iterate on the runbook. **Cadence:** quarterly, ideally rotating who runs the drill — knowledge spread is part of the goal.

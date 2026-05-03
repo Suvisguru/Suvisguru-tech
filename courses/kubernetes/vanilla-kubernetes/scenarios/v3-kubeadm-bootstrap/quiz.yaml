@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Your `kubeadm init` succeeds, but `kubectl get nodes` shows the CP node as `NotReady`. What's the next step?
+    answer: |
+      **Install a CNI.** The kubelet needs a CNI plugin to set up Pod networking; without one, every node stays NotReady. Standard procedure: `kubectl apply -f <cni-manifest.yaml>` (Cilium / Calico / etc., with the right Pod CIDR matching your kubeadm config). Wait 30-60s; node transitions to Ready. **If still NotReady after CNI install:** check the CNI Pods (`kubectl -n kube-system get pods | grep -i cni`), check kubelet logs, check the node's `/etc/cni/net.d/` for the CNI config file. Lesson V4 covers CNI selection + install in detail.
+
+  - id: 2
+    prompt: |
+      You're bootstrapping a fresh cluster and notice cp-1 has been up for 6 hours but cp-2 is still failing to join. The error says "unable to fetch the kubeadm-certs Secret." Diagnosis?
+    answer: |
+      The certificate key Secret created by `--upload-certs` has a default 2-hour TTL — long expired. **Two fixes:** (1) Regenerate from cp-1: `sudo kubeadm init phase upload-certs --upload-certs` — outputs a new cert key. Use it in cp-2's join command. (2) Print a fresh full join command: `sudo kubeadm token create --print-join-command --certificate-key $(sudo kubeadm certs certificate-key)`. **Process improvement:** bootstrap all CP nodes within the first hour after init. If you can't, document the regenerate-cert-key step in your runbook.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to design a fleet management approach for 12 K8s clusters across 3 regions. **Click for the Cluster API playbook. ▼**
+    answer: |
+      **(1) Build a management cluster.** Single small kubeadm cluster (3 CP, 1-2 workers). This runs CAPI and the provider controllers. Backed up obsessively (it's your fleet's source of truth). **(2) Pick providers.** CAPV for vSphere, CAPA for AWS, CAPZ for Azure, CAPG for GCP, CAPD for Docker (testing). Install via Helm or Operator. **(3) Define a cluster template.** A YAML manifest (`Cluster` + `KubeadmControlPlane` + `MachineDeployment`) parameterised by region/size/version. Store in git. **(4) Apply per workload cluster.** Helm install with values; CAPI provisions infra (VMs / nodes), bootstraps K8s, and registers the new cluster in your management. **(5) Continuous reconciliation.** CAPI keeps each workload cluster in line with its declared spec. Node failure → CAPI replaces. Version bump in spec → rolling upgrade. **(6) Backup + DR.** Velero on the management cluster snapshots the CAPI state. Recovery means restoring management → CAPI re-discovers workload clusters via their kubeconfigs. **Result:** 12 clusters declared in 12 git PRs. Adding a 13th cluster is a YAML change, not a manual install. Worth the management-cluster overhead at ~5+ workload clusters.

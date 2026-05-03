@@ -1,0 +1,50 @@
+# Flashcards — K-VAN V (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      K8s release cadence?
+    back: |
+      Minor every ~4 months. Patches monthly. ~14 months of patch support per minor.
+
+  - id: 2
+    front: |
+      Skew rules?
+    back: |
+      kubelet ≤ apiserver, max 3 minors behind. controller-manager/scheduler same minor as apiserver. kubectl ±1 minor.
+
+  - id: 3
+    front: |
+      kubeadm upgrade order?
+    back: |
+      etcd snapshot → cp-1 (`kubeadm upgrade apply`) → cp-2/3 (`kubeadm upgrade node`) → kubelet on CP → workers (drain + upgrade + uncordon) → add-ons → CNI/CSI.
+
+  - id: 4
+    front: |
+      Why drain a node before kubelet upgrade?
+    back: |
+      Kubelet restart kills its Pods briefly. Drain reschedules them onto other nodes first, respecting PodDisruptionBudgets. Without drain, you take random Pod outages.
+
+  - id: 5
+    front: |
+      What is Pluto?
+    back: |
+      Tool from FairwindsOps that scans manifests for deprecated/removed K8s APIs. Run in CI to catch API regressions before upgrade.
+
+  - id: 6
+    front: |
+      kubectl convert?
+    back: |
+      Subcommand of kubectl that converts manifests between API versions. Useful for migrating off deprecated APIs ahead of upgrade.
+
+  - id: 7
+    front: |
+      Three rollback paths?
+    back: |
+      Per-component package downgrade (limited), etcd snapshot restore (cluster-wide), blue-green cluster (safest, costliest).
+
+  - id: 8
+    front: |
+      Talos / CAPI upgrade differences?
+    back: |
+      Talos: `talosctl upgrade --image` per node — image-replacement, no kubeadm. CAPI: bump version in Cluster manifest; CAPI rolls Machines. Same skew rules; different mechanics.

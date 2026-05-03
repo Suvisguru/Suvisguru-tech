@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You're about to bootstrap a fresh cluster. What order do you install the add-ons?
+    answer: |
+      **(1) CNI (V4)** — until done, every node NotReady. **(2) CoreDNS** (kubeadm installs by default; customise after). **(3) Argo CD** (the meta-installer for everything else). **(4) Argo CD installs the rest** from git: metrics-server (so HPAs work), CSI + snapshot-controller (so PVs work), Gateway controller + cert-manager (so external access works), ExternalDNS (so DNS works), Sealed Secrets / SOPS (so secrets can come from git), kube-prometheus-stack (so you can see anything), logging stack (so you can debug), Kyverno + Falco (so policy enforcement is on). Order matters because some add-ons depend on others (cert-manager needs CRDs from snapshot-controller? no — just sequential). Use Argo CD sync waves (annotations) for explicit ordering of dependent apps.
+
+  - id: 2
+    prompt: |
+      Your `helm install kube-prometheus-stack` succeeds but Prometheus Pods crash-loop with `permission denied: /prometheus`. Diagnosis?
+    answer: |
+      Storage ownership / fsGroup mismatch. Prometheus runs as a non-root UID; the PV mounted at `/prometheus` is owned by root. **Fix:** set `prometheus.prometheusSpec.securityContext.fsGroup: 65534` in values.yaml. The kubelet (with most CSI drivers) `chown`s the PV to fsGroup at mount. **Verify:** exec into the Pod, `ls -la /prometheus` should show 65534. If still failing: PV provisioner doesn't support fsGroup; use an init container to chown, or pick a different StorageClass. **This is the most common Helm chart deployment pain point** — the chart values often need cluster-specific tuning.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to migrate a 30-Ingress cluster off Ingress NGINX before EOL. **Click for the playbook. ▼**
+    answer: |
+      **(1) Pick replacement Gateway controller.** Envoy Gateway (modern default), Cilium Gateway (if Cilium is your CNI), Contour (CNCF mature). Install alongside Ingress NGINX in the cluster. **(2) Convert Ingress YAML to HTTPRoute.** Use `InGate` tool (kubernetes/ingress-nginx provides it) for bulk translation. Manually fix the ones with vendor annotations. **(3) Per-host migration.** Each Ingress has a hostname. For one host: deploy the new HTTPRoute pointing at the same Service; keep Ingress NGINX serving the same host until you swap DNS. **(4) Smoke test the host on the new Gateway** by editing `/etc/hosts` on a test machine to point at the Gateway's LB IP. Once happy, flip ExternalDNS / DNS to the new Gateway. **(5) Repeat per host.** 30 hosts × ~30 min each = 1-2 sprints if anyone else is on the project. **(6) Decommission Ingress NGINX** when zero hosts remain. `helm uninstall ingress-nginx`. **Result:** all traffic on Gateway API, no EOL panic, no big-bang switch.

@@ -1,0 +1,50 @@
+# Flashcards — K-VAN V (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      node allocatable formula?
+    back: |
+      node total − systemReserved − kubeReserved − evictionHard reservations. This is what the scheduler sees as schedulable.
+
+  - id: 2
+    front: |
+      Why `cgroupDriver: systemd` in kubelet?
+    back: |
+      Must match container runtime (containerd `SystemdCgroup = true`). Mismatch = kubelet refuses to start with cryptic cgroup errors. Both default to systemd in modern setups.
+
+  - id: 3
+    front: |
+      evictionHard thresholds?
+    back: |
+      Memory and disk thresholds at which kubelet starts evicting BestEffort + Burstable Pods. Default soft eviction is too lenient for many workloads; tune `memory.available`, `nodefs.available`, `imagefs.available`.
+
+  - id: 4
+    front: |
+      APF — what does it solve?
+    back: |
+      API Priority and Fairness. Prevents one noisy client (a runaway controller, a misbehaving Pod) from starving the API server. FlowSchemas categorise requests; PriorityLevels allocate concurrency.
+
+  - id: 5
+    front: |
+      EncryptionConfiguration providers?
+    back: |
+      `identity` (no encryption), `aescbc` / `secretbox` (static AES key), `kms` (v1 deprecated; v2 GA in 1.31). Production: KMS v2 with an external KMS.
+
+  - id: 6
+    front: |
+      Multiple scheduler profiles?
+    back: |
+      kube-scheduler runs N named profiles in one process. Pods opt in via `spec.schedulerName`. Use bin-pack profile for batch, default (spread) for traffic.
+
+  - id: 7
+    front: |
+      What is RuntimeClass?
+    back: |
+      K8s API for selecting alternate container runtimes per Pod. Examples: `kata` (lightweight VMs), `gvisor` (syscall sandbox). Defense-in-depth for untrusted workloads.
+
+  - id: 8
+    front: |
+      Kubelet serving cert rotation?
+    back: |
+      `serverTLSBootstrap: true` + a CSR auto-approver (rancher-csr or custom). Without it, kubelets use self-signed certs; metrics-server, kubectl exec/logs all break.

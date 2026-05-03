@@ -1,0 +1,50 @@
+# Flashcards — K-VAN V (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What is Raft?
+    back: |
+      Distributed consensus protocol. Leader elected by heartbeat; followers replicate the log. Used by etcd, Consul, others.
+
+  - id: 2
+    front: |
+      Quorum formula?
+    back: |
+      Majority of members. 3 → 2. 5 → 3. 7 → 4. Below quorum = read-only / unavailable.
+
+  - id: 3
+    front: |
+      Why odd-number members?
+    back: |
+      Even numbers add cost without adding fault tolerance. 3 → tolerate 1 fail (need 2); 4 → still tolerate 1 (need 3, more fragile); 5 → tolerate 2.
+
+  - id: 4
+    front: |
+      What is a learner member?
+    back: |
+      Non-voting member catching up to the cluster. Used when adding a member: avoids temporary disruption + split-brain risk during catch-up.
+
+  - id: 5
+    front: |
+      etcd disk requirements?
+    back: |
+      Dedicated SSD (preferably NVMe) with < 10ms p99 fsync. *Don't* share with container image cache or kubelet logs.
+
+  - id: 6
+    front: |
+      Snapshot vs compaction vs defrag?
+    back: |
+      Snapshot = full point-in-time copy (for backup). Compaction = discard old key revisions (frees in-DB space). Defrag = return freed space to disk (member briefly unavailable).
+
+  - id: 7
+    front: |
+      etcd alarms — NOSPACE?
+    back: |
+      DB hit `quota-backend-bytes`. Cluster read-only. Fix: bump quota, defrag, then `etcdctl alarm disarm`.
+
+  - id: 8
+    front: |
+      Snapshot restore disaster recovery flow?
+    back: |
+      On every member node: `etcdctl snapshot restore` to a new data dir + same `--initial-cluster` flags. Replace the data dir + restart etcd. Apiserver will recover; controllers re-create derived state.

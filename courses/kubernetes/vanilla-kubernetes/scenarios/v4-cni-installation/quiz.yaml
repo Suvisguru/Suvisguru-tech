@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You install Cilium with kube-proxy replacement and enable Hubble. `kubectl get pods -n kube-system` shows kube-proxy still running. Should you delete it?
+    answer: |
+      Yes — once Cilium is healthy and tests pass. Run `cilium status`, then `cilium connectivity test`. If both pass, delete kube-proxy: `kubectl -n kube-system delete ds kube-proxy`. Cleanup the iptables rules left over: `iptables-save | grep -v KUBE | iptables-restore` (or just reboot the node, which is cleaner). Failure to delete leaves you in a hybrid state with both managing Service routing — confusing performance characteristics. **Why this matters:** the speedup from kube-proxy replacement only manifests when kube-proxy is gone.
+
+  - id: 2
+    prompt: |
+      Cross-node Pod traffic mysteriously fails for large payloads (HTTP responses with 4 MB JSON). Same-node fine. Diagnosis?
+    answer: |
+      **MTU mismatch.** Symptoms: small packets work; large packets (>= MTU) get fragmented or dropped. Diagnose: from inside a Pod, `ping -M do -s 1472 <another-node-pod-ip>`. If "Frag needed" returns, MTU is misconfigured. **Fix:** Cilium: `helm upgrade cilium cilium/cilium --set MTU=1450` (assuming 1500 underlay + VXLAN encap). Calico: edit FelixConfiguration. Then restart the CNI Pods. **Verify:** Pod's eth0 MTU matches the new value (`kubectl exec pod -- ip link show`). **Long-term:** document the underlay MTU in the V1 architecture doc and never trust auto-detection alone.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to switch CNI from Flannel to Cilium on a 30-node production cluster. **Click for the migration playbook. ▼**
+    answer: |
+      **(1) Pre-flight on staging.** Same migration end-to-end. Validate Cilium NetworkPolicy enforces what your apps expect. **(2) Install Cilium in chaining mode** on prod (Cilium runs alongside Flannel temporarily, providing observability + new policy enforcement without taking over data plane). Validate Hubble flows match expected behavior. **(3) Document rollback.** Helm uninstall cilium = back to Flannel-only. Rehearse it. **(4) One node at a time.** `kubectl drain node-X --ignore-daemonsets`. Reset CNI on that node: stop kubelet → remove `/etc/cni/net.d/*` → restart kubelet → Cilium DaemonSet picks up. Verify with a smoke test. `kubectl uncordon node-X`. **(5) Watch for application errors** as Pods reschedule onto Cilium-only nodes. Common gotcha: NetworkPolicy semantics differ in subtle ways (Cilium's identity-based vs Flannel's lack thereof). **(6) Continue node-by-node.** 30 nodes × 10 min each = 5 hours of degraded capacity (one node down at a time). Schedule outside peak. **(7) Final cleanup:** uninstall Flannel DaemonSet entirely, remove kube-proxy if Cilium is replacing it. **(8) Update CI** to assert `cilium connectivity test` on every cluster create going forward. **Total project time:** 1 sprint of prep, 1 evening of execution.

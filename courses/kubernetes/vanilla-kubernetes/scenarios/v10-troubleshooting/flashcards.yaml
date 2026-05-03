@@ -1,0 +1,50 @@
+# Flashcards — K-VAN V (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      kubeadm cert TTL?
+    back: |
+      1 year by default. Renew with `kubeadm certs renew all` + restart static pods (kubelet auto-restarts on file change).
+
+  - id: 2
+    front: |
+      Recovery for a broken CNI Helm upgrade?
+    back: |
+      `helm history` + `helm rollback` to last good revision; `kubectl rollout restart ds/<cni>` in kube-system. Verify `cilium status` or equivalent.
+
+  - id: 3
+    front: |
+      CoreDNS not resolving in-cluster?
+    back: |
+      Check Corefile (`kubectl -n kube-system get cm coredns -o yaml`); CoreDNS Pod logs for parse errors; restart Deployment after fixing.
+
+  - id: 4
+    front: |
+      Apiserver down — first diagnostic step?
+    back: |
+      SSH to a CP node, `journalctl -u kubelet` + `crictl ps -a | grep kube-apiserver` + `crictl logs <container-id>`. Static-pod manifest is the source of truth for apiserver config.
+
+  - id: 5
+    front: |
+      etcd quorum lost — what?
+    back: |
+      Snapshot restore (V7). Bring up fresh 3-member etcd from the snapshot; restart kube-apiserver static pods.
+
+  - id: 6
+    front: |
+      Webhook blocking apiserver — the trick?
+    back: |
+      Static-pod manifests bypass admission. Edit kube-apiserver.yaml: add `--disable-admission-plugins=ValidatingAdmissionWebhook,MutatingAdmissionWebhook`. Kubelet auto-restarts. Fix the bad webhook; remove the flag.
+
+  - id: 7
+    front: |
+      Velero restore single namespace?
+    back: |
+      `velero restore create --from-backup <name> --include-namespaces <ns> --restore-volumes=true`. Requires PVC snapshot plugin if you want PVs back.
+
+  - id: 8
+    front: |
+      Quarterly tournament protocol?
+    back: |
+      Build a non-prod cluster. Pair: chaos engineer + on-call. Each scenario drilled once per quarter. Track time-to-mitigation. Update runbooks. Rotate roles so everyone has recovered each disaster.

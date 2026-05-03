@@ -1,0 +1,60 @@
+# Intake brief — V8, K-VAN
+# Topic: V8 · Upgrades and Patching (kubeadm, version skew, rollback)
+# Module V8 · Upgrades and Patching
+
+lesson:
+  title: 'V8 · Upgrades and Patching (kubeadm, version skew, rollback)'
+  slug: 'v8-upgrades-and-patching'
+  domain: 'kubernetes'
+  course_slug: 'vanilla-kubernetes'
+  position: 08
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Frontier · Renovation — The Renovation site sits next to the main house. Every season, the homesteader rolls in a new floor, replaces a worn beam, swaps the old roof for a better one. The work follows a strict order — you ca'
+  module: 'Module V8 · Upgrades and Patching'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'K-VAN modules 1-7 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain why upgrades scare people.'
+  - 'Learner can explain who can be how far ahead/behind whom.'
+  - 'Learner can explain one node at a time, control plane first.'
+
+sections:
+  - 'Why upgrades scare people'
+  - 'Who can be how far ahead/behind whom'
+  - 'One node at a time, control plane first'
+  - 'Detect breakage early; have a path back'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Calendar: week 1 = staging upgrade + soak.'
+    - 'Build new cluster at v1.'
+    - 'Cluster on v1.'
+    - 'K8s 1.'
+
+section_6_animated_svg:
+  modes_count: 1-3
+  description: 'See preview-kubernetes-vanilla-lesson-08.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-vanilla-lesson-08.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'K8s release cadence: **minor every ~4 months**, patches monthly, ~14 months support per minor. Version skew: **kubelet ≤ apiserver, max 3 minors behind**; never skip a minor on upgrade. Order: **etcd snapshot → cp-1 (kubeadm upgrade apply) → cp-2/3 → kubelet on CP → workers (drain → upgrade → uncordon) → add-ons → CNI/CSI**. Pre-upgrade: scan for deprecated APIs (kubectl convert, Pluto). Rollback: limited — backup-restore is the safety net.'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/'
+  - 'https://github.com/kubernetes/kubeadm'

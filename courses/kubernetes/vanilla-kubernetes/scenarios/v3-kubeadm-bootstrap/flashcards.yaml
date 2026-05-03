@@ -1,0 +1,50 @@
+# Flashcards — K-VAN V (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Four kubeadm config kinds?
+    back: |
+      InitConfiguration (per-host init), ClusterConfiguration (cluster-wide), KubeletConfiguration (per-node kubelet), KubeProxyConfiguration (kube-proxy mode + settings).
+
+  - id: 2
+    front: |
+      What does `--upload-certs` do?
+    back: |
+      Stores the control-plane CA + signing keys in a Secret keyed by a generated certificate key. Additional CP nodes use that key in `kubeadm join --control-plane --certificate-key X` to fetch certs without manual file copy. 2-hour TTL.
+
+  - id: 3
+    front: |
+      kubeadm join — two flavours?
+    back: |
+      Worker: `kubeadm join <LB>:6443 --token X --discovery-token-ca-cert-hash sha256:Y`. Control plane: same plus `--control-plane --certificate-key Z`.
+
+  - id: 4
+    front: |
+      controlPlaneEndpoint?
+    back: |
+      The LB address (FQDN preferred) clients hit. Embedded into kubeconfigs + cert SANs. Required for HA; for single-CP, can be omitted (defaults to apiserver address).
+
+  - id: 5
+    front: |
+      kube-vip vs HAProxy + keepalived?
+    back: |
+      kube-vip = single static pod, self-contained. HAProxy + keepalived = two-tier classic LB pair. kube-vip is the modern kubeadm HA default; HAProxy still common in regulated environments.
+
+  - id: 6
+    front: |
+      Talos's answer to kubeadm?
+    back: |
+      `talosctl apply-config` with a machine-config YAML. The OS itself is the kubeadm equivalent — bootstrapping is just applying config to immutable nodes.
+
+  - id: 7
+    front: |
+      What is Cluster API (CAPI)?
+    back: |
+      Declarative cluster lifecycle. A management cluster runs CAPI; workload clusters are CRDs (`Cluster`, `Machine`, `MachineDeployment`, `ControlPlane`). Provider plugins handle the underlying infra: CAPV (vSphere), CAPA, CAPZ, CAPG, CAPD.
+
+  - id: 8
+    front: |
+      "Kubernetes the Hard Way" — for what?
+    back: |
+      Educational walkthrough: install K8s without any bootstrapper, on raw VMs, by hand. Reveals what kubeadm/Talos automate. Production: never. Once for understanding: highly recommended.

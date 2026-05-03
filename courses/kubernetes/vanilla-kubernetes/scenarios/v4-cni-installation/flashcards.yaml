@@ -1,0 +1,50 @@
+# Flashcards — K-VAN V (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Why is the cluster NotReady after kubeadm init?
+    back: |
+      No CNI installed. The kubelet needs a CNI plugin to set up Pod networking. Install Cilium / Calico / etc., wait 30-60s, nodes go Ready.
+
+  - id: 2
+    front: |
+      Pod CIDR alignment rule?
+    back: |
+      kubeadm `networking.podSubnet` must match the CNI's configured cluster CIDR exactly. Mismatch = Pods get wrong IPs, routing breaks, mysterious failures.
+
+  - id: 3
+    front: |
+      MTU formula?
+    back: |
+      Pod MTU = underlay MTU − encap overhead. VXLAN: 50 bytes. Geneve: 60. WireGuard: 60-80. Native routing: 0. Modern CNIs auto-detect; verify after install.
+
+  - id: 4
+    front: |
+      kube-proxy replacement (Cilium)?
+    back: |
+      Cilium handles Service load balancing in eBPF, eliminating kube-proxy. Set `kubeProxyReplacement=true` in Helm + delete `kube-proxy` DaemonSet. Faster + more observable.
+
+  - id: 5
+    front: |
+      What is Hubble?
+    back: |
+      Cilium's per-flow observability layer. Shows source/dest/protocol/policy decision per packet. Built on the same eBPF data plane.
+
+  - id: 6
+    front: |
+      Multus — when?
+    back: |
+      Meta-CNI letting Pods have multiple network interfaces from different CNIs. Use for NFV, telecom (SR-IOV), ML training with dedicated NICs. Adds complexity; only when you need extra interfaces per Pod.
+
+  - id: 7
+    front: |
+      Calico BGP vs VXLAN?
+    back: |
+      BGP: native routing, no encap overhead, requires BGP-capable underlay (TOR switches or cloud VPC). VXLAN: works on any L3 underlay, ~5-10% throughput cost. BGP for performance + simplicity; VXLAN for portability.
+
+  - id: 8
+    front: |
+      Switching CNIs on a running cluster?
+    back: |
+      Drain node → uninstall old CNI (DaemonSet + /etc/cni/net.d/*) → install new CNI → uncordon. Cluster degraded during migration. Test policy semantics first.

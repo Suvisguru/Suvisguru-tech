@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      kube-bench reports 5.2.4 ("Minimize the admission of containers wishing to share the host network namespace") as FAIL. Walk the remediation.
+    answer: |
+      **(1) Find the offending Pods.** `kubectl get pods -A -o jsonpath='{range .items[?(@.spec.hostNetwork==true)]}{.metadata.namespace}/{.metadata.name}{"\n"}{end}'`. Some are legitimate (CNI agents, monitoring DaemonSets); others are accidental. **(2) Categorise.** Legitimate hostNetwork goes in a namespace labelled `pod-security.kubernetes.io/enforce: privileged` (an explicit exception). Accidental hostNetwork in app Pods gets fixed: remove the field. **(3) Enforce.** PSA `baseline` profile blocks hostNetwork; ensure your app namespaces have `baseline` or stricter. **(4) Re-run kube-bench**; control 5.2.4 should pass. **Lesson:** CIS controls have remediation pointers; the work is finding which Pods + which namespaces are in scope.
+
+  - id: 2
+    prompt: |
+      Your audit shows `cluster-admin` bound to a ServiceAccount in the `jenkins` namespace. The Jenkins job needs to apply manifests across many namespaces. How do you tighten?
+    answer: |
+      **(1) Replace `cluster-admin` with a least-privilege ClusterRole.** Identify the actual verbs Jenkins needs: `create`, `update`, `patch`, `delete`, `get`, `list` on specific resources (Deployments, Services, ConfigMaps). Probably NOT cluster-scoped objects (CRDs, Nodes, ClusterRoles themselves) unless explicitly. **(2) Scope by namespace.** If Jenkins manages 20 specific namespaces, create a RoleBinding in each. If it manages "any namespace where label X=Y", use a CRB but with the tight ClusterRole. **(3) Validate.** `kubectl auth can-i --as=system:serviceaccount:jenkins:jenkins-deployer <verb> <resource> -n <ns>` for representative actions. **(4) Soft-rollout.** Run Jenkins jobs in CI mode (dry-run) against the new SA; verify nothing breaks. Then switch the SA. **(5) Remove the cluster-admin binding.** **(6) Add to compliance evidence:** document the new permissions + reason. Pen-tester next quarter sees the thoughtful boundary instead of a cluster-admin keystone.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're tasked with bringing a vanilla kubeadm cluster to a CIS-style 95+ score in a sprint. **Click for the playbook. ▼**
+    answer: |
+      **Day 1: baseline measure.** Install kube-bench Job + capture report. Categorise FAILs by impact + ease. **Day 2-3: API server hardening.** Edit the static-pod manifest: `--anonymous-auth=false`, `--audit-log-*`, `--encryption-provider-config`. KMS v2 backed by Vault Transit. Roll one CP at a time. **Day 4: kubelet hardening.** KubeletConfiguration: `authentication.anonymous.enabled: false`, `authorization.mode: Webhook`, `readOnlyPort: 0`, `serverTLSBootstrap: true` + auto-CSR-approver. Roll node-by-node. **Day 5-6: PSA + NetworkPolicy default-deny.** Label every namespace with `pod-security.kubernetes.io/enforce: baseline` (or restricted where workloads tolerate). Apply BANP for cluster-wide default-deny egress. Smoke test. **Day 7-8: RBAC review.** `rakkess` output → spreadsheet. Find + fix obvious over-grants. Quarterly re-review baked into runbook. **Day 9: image verification.** Install cosign + Kyverno verifyImages policy in audit mode (log only). Cataloguing weeks 2-3. Switch to enforce after. **Day 10: runtime + scan loop.** Falco + Trivy as DaemonSets / CronJobs. Re-run kube-bench. **Result:** ~95+ score, documented exceptions, ongoing weekly scan + alerting. Sprint complete; baseline locked in.

@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-VAN V2 · OS and Node Preparation</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-VAN module journey">
+  <span class="concept-rail-title">K-VAN modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V1 architecture design</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>V2 OS &amp; node prep</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V3 kubeadm bootstrap</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V4 CNI &amp; networking</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V5 core add-ons</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V6 cluster config</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V7 etcd production</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V8 upgrades &amp; patching</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V9 security hardening</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V10 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>V11 capstone homestead</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-VAN · Module V2</span></a>
+    <span class="progress-pill">V2 · OS &amp; node prep</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏕️ K-Frontier site: <strong>Land Clearing</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Frontier site map: V2">
+    <title>K-Frontier site map · V2</title>
+    <desc>Stylised map of the K-Frontier homestead. Land Clearing highlighted.</desc>
+    <defs>
+      <linearGradient id="kf-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+      <linearGradient id="kf-creek" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kf-soil)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · FRONTIER</text>
+    <path d="M 20 350 Q 200 343 400 348 T 780 350 L 780 380 L 20 380 Z" fill="url(#kf-creek)"/>
+    <path d="M 20 350 Q 200 343 400 348 T 780 350" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="372" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— creek —</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <g class="pin" id="kf-site01" transform="translate(100,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V1</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Drafting Hut</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">design</text></g>
+    <g class="pin active" id="kf-site02" transform="translate(230,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Land Clearing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">OS prep</text></g>
+    <g class="pin" id="kf-site03" transform="translate(360,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Frame Raising</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">kubeadm</text></g>
+    <g class="pin" id="kf-site04" transform="translate(490,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Wiring & Plumbing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">CNI</text></g>
+    <g class="pin" id="kf-site05" transform="translate(620,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Outbuildings</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">add-ons</text></g>
+    <g class="pin" id="kf-site06" transform="translate(100,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rules Board</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">config</text></g>
+    <g class="pin pin-anchor" id="kf-site07" transform="translate(240,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">V7</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">The Well</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">etcd</text></g>
+    <g class="pin" id="kf-site08" transform="translate(380,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Renovation</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">upgrades</text></g>
+    <g class="pin" id="kf-site09" transform="translate(510,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">hardening</text></g>
+    <g class="pin" id="kf-site10" transform="translate(640,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Drill Square</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshoot</text></g>
+    <g class="pin" id="kf-site11" transform="translate(720,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Homestead</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Land Clearing</strong> <span>· V2 of 11</span><span class="visually-hidden">Lesson V2, Land Clearing.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module V2 · the soil before the frame</span>
+    <h1>V2 · OS and Node Preparation for kubeadm</h1>
+    <p class="hero-sub">Every <strong>self-managed</strong> K8s install fails the same way: the team skips a kernel module, leaves swap on, or misconfigures the cgroup driver. This module is the per-node checklist that makes <code>kubeadm init</code> work the first time.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Land clearing site: a cleared patch with foundation stones marked, tools (kernel modules, sysctl values), a containerd toolbox, and a sign showing 'swap OFF'.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">LAND CLEARING · NODE PREP</text>
+  <g transform="translate(40,50)">
+    <rect width="600" height="160" rx="8" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <text x="300" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">PER-NODE PREP CHECKLIST</text>
+    <rect x="14" y="34" width="140" height="40" rx="3" fill="#FBF1D6" stroke="#8B5A00"/><text x="84" y="50" text-anchor="middle" font-size="9" fill="#8B5A00" font-weight="700">kernel modules</text><text x="84" y="64" text-anchor="middle" font-size="7" fill="#5A4F45">overlay · br_netfilter</text>
+    <rect x="160" y="34" width="140" height="40" rx="3" fill="#E0EEF3" stroke="#4A8FA8"/><text x="230" y="50" text-anchor="middle" font-size="9" fill="#3F4A5E" font-weight="700">sysctl</text><text x="230" y="64" text-anchor="middle" font-size="7" fill="#5A4F45">ip_forward · bridge-nf</text>
+    <rect x="306" y="34" width="140" height="40" rx="3" fill="#FBE8DC" stroke="#A04832"/><text x="376" y="50" text-anchor="middle" font-size="9" fill="#A04832" font-weight="700">swap OFF</text><text x="376" y="64" text-anchor="middle" font-size="7" fill="#5A4F45">/etc/fstab + swapoff -a</text>
+    <rect x="452" y="34" width="140" height="40" rx="3" fill="#E0EFE6" stroke="#3D7857"/><text x="522" y="50" text-anchor="middle" font-size="9" fill="#3D7857" font-weight="700">time sync</text><text x="522" y="64" text-anchor="middle" font-size="7" fill="#5A4F45">chrony / systemd-timesyncd</text>
+    <rect x="14" y="84" width="140" height="40" rx="3" fill="#3F4A5E"/><text x="84" y="100" text-anchor="middle" font-size="9" fill="#FBF1D6" font-weight="700">containerd 2.x</text><text x="84" y="114" text-anchor="middle" font-size="7" fill="#FBF1D6">SystemdCgroup=true</text>
+    <rect x="160" y="84" width="140" height="40" rx="3" fill="#3F4A5E"/><text x="230" y="100" text-anchor="middle" font-size="9" fill="#FBF1D6" font-weight="700">CRI socket</text><text x="230" y="114" text-anchor="middle" font-size="7" fill="#FBF1D6">/run/containerd/containerd.sock</text>
+    <rect x="306" y="84" width="140" height="40" rx="3" fill="#5A9F7A"/><text x="376" y="100" text-anchor="middle" font-size="9" fill="#FFFFFF" font-weight="700">image pre-pull</text><text x="376" y="114" text-anchor="middle" font-size="7" fill="#FBE8DC">crictl pull or air-gap load</text>
+    <rect x="452" y="84" width="140" height="40" rx="3" fill="#A04832"/><text x="522" y="100" text-anchor="middle" font-size="9" fill="#FFFFFF" font-weight="700">hardening</text><text x="522" y="114" text-anchor="middle" font-size="7" fill="#FBE8DC">SSH · auditd · firewall</text>
+    <rect x="14" y="134" width="578" height="22" rx="3" fill="#FBF7F0" stroke="#9D9389"/><text x="303" y="148" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">order of operations: kernel modules → sysctl → runtime → swap-off → reboot test → kubeadm</text>
+  </g>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>You've built three control-plane nodes and three workers. <code>kubeadm init</code> starts and then hangs. Hours later you find: the kernel's <code>br_netfilter</code> module wasn't loaded, so iptables can't see bridged traffic. Or swap was on and kubelet refused to start. Or containerd uses cgroupfs while kubelet expects systemd. <em>Each is a one-line fix; finding it from a hung install takes hours.</em> Today's lesson is the checklist.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Per-node prep, in order: <strong>kernel modules</strong> (<code>overlay</code>, <code>br_netfilter</code>), <strong>sysctl</strong> (<code>net.ipv4.ip_forward=1</code>, <code>net.bridge.bridge-nf-call-iptables=1</code>), <strong>swap OFF</strong>, <strong>time sync</strong>, <strong>container runtime</strong> (<code>containerd 2.x</code> with <code>SystemdCgroup=true</code>), <strong>image pre-pulling</strong> for air-gap. Reboot, sanity-check, then run kubeadm.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Why per-node prep exists</h2>
+    <p>Linux is configurable to a fault. K8s assumes a specific configuration: certain kernel modules loaded, certain sysctl values, no swap, a CRI-compatible runtime, the right cgroup driver. The kubelet and CNI plugins fail in confusing ways when these aren't right. The one good thing: the checklist is short and the same on every node.</p>
+    <p>Your goal in V2 is a node that, when handed to <code>kubeadm</code>, joins the cluster cleanly. That means the same six categories on every node: kernel, network sysctl, swap, time, runtime, hardening.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · Kernel modules + sysctl</span>
+    <h2>What the cluster expects from the host</h2>
+    <p><strong>Modules to load at boot</strong> (write to <code>/etc/modules-load.d/k8s.conf</code>):</p>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code>overlay
+br_netfilter</code></pre>
+    <p>Then <code>modprobe overlay</code> and <code>modprobe br_netfilter</code> for the running kernel.</p>
+    <p><strong>sysctl values</strong> (<code>/etc/sysctl.d/k8s.conf</code>):</p>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code>net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1</code></pre>
+    <p>Then <code>sysctl --system</code>. <code>br_netfilter</code> must be loaded before sysctl applies — order matters.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · Swap, time, runtime</span>
+    <h2>The other three categories</h2>
+    <p><strong>Swap.</strong> Kubelet refuses to start with swap enabled by default (you can enable swap support explicitly via <code>KubeletConfiguration</code> in K8s 1.28+, but most production clusters keep it off). Disable now and persist:</p>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code>swapoff -a
+sed -i '/ swap / s/^/#/' /etc/fstab</code></pre>
+    <p><strong>Time sync.</strong> Certificates, etcd, and audit logs all assume monotonic time. Run <code>chrony</code> or <code>systemd-timesyncd</code>; verify with <code>chronyc tracking</code> (offset &lt; 100ms).</p>
+    <p><strong>Container runtime.</strong> Install <code>containerd 2.x</code>:</p>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code># Generate default config
+containerd config default | sudo tee /etc/containerd/config.toml
+
+# CRITICAL: enable systemd cgroup driver to match kubelet
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+
+# Optional: configure registry mirror for air-gap or ratelimit avoidance
+# [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+#   endpoint = ["https://harbor.corp/v2/dockerhub-proxy"]
+
+systemctl restart containerd
+crictl info | grep -i cgroup  # verify systemd</code></pre>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q"><code>kubeadm init</code> hangs at "Waiting for the kubelet to boot up the control plane." You check kubelet logs and see <code>failed to find cgroup mountpoint</code>. The most likely cause?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) etcd isn't running yet</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) containerd is using cgroupfs while kubelet expects systemd (or vice versa)</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) The node is out of memory</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> The cgroup-driver mismatch is the #1 kubeadm bootstrap bug. Both must agree. Edit <code>/etc/containerd/config.toml</code> → <code>SystemdCgroup = true</code>; restart containerd. Modern kubelet defaults to systemd. Verify with <code>crictl info | grep -i cgroup</code>.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · Hardening + image pre-pull</span>
+    <h2>Beyond minimum-viable</h2>
+    <p><strong>Node hardening</strong> (cover at minimum):</p>
+    <ul>
+      <li>SSH: key-only auth (<code>PasswordAuthentication no</code>); root login disabled; SSH on standard port behind a bastion.</li>
+      <li>auditd: enable at boot; ship logs to a central collector.</li>
+      <li>Firewall: <code>ufw</code> / <code>firewalld</code> allowing only required ports (6443 to CP, 10250 kubelet, etcd 2379-2380 between CP, CNI overlay UDP if applicable).</li>
+      <li>SELinux/AppArmor: keep enabled (<code>setenforce 1</code> on RHEL family). K8s components have AppArmor profiles; PSA <code>restricted</code> requires AppArmor.</li>
+      <li>Log rotation: <code>logrotate</code> for <code>/var/log/containers/*</code> and <code>/var/log/pods/*</code> if not handled by container runtime.</li>
+      <li>Package management: pin <code>kubeadm</code>, <code>kubelet</code>, <code>kubectl</code>, <code>containerd</code> to a known version; <code>apt-mark hold</code> / <code>dnf versionlock</code> to prevent surprise upgrades.</li>
+    </ul>
+    <p><strong>Air-gapped image pre-pull.</strong> If the cluster has no internet, you must seed the kubeadm + add-on images on every node:</p>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code># Online: list and pull
+kubeadm config images list --kubernetes-version v1.36
+kubeadm config images pull --kubernetes-version v1.36
+
+# Air-gap: ctr -n k8s.io images import &lt;tar&gt; on every node
+# Or push to internal registry mirror + configure containerd</code></pre>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>For Talos Linux: most of this is the machine-config YAML you write at install time — no manual <code>modprobe</code>, no per-node tweaking. The OS image bakes in the right kernel modules and cgroup driver. That's the appeal of immutable infra: V2 collapses to "apply machine-config."</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>SSH into 6 nodes. <code>vim</code> some files. Forget one. Run kubeadm. Hang. Diagnose. Fix. Re-run. Hang differently. Repeat for hours. Different team members do it differently; nodes drift; "works on my node" stories abound.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Per-node prep is one Ansible playbook (or one Talos machine-config YAML). Idempotent, repeatable, version-controlled. New node = run playbook + reboot + verify with a sanity script. kubeadm runs first time. Drift impossible.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">Per-node prep is the most automatable layer of self-managed K8s. Manual SSH-and-edit is the wrong unit of work even for one cluster.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this build site</h2>
+<p>Land Clearing is the second site. Trees don't fall and stones don't arrange themselves. Before any frame goes up, the surveyor walks the plot, removes the stumps (legacy services that conflict), checks the soil pH (kernel modules + sysctl), tests the well water (time sync), and stockpiles the materials at the build site (image pre-pull). The work is repetitive but each step prevents a class of later disaster. Skip the soil test, your foundation cracks. Skip the kernel modules, your CNI never starts.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in vanilla Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>Soil pH test</td><td>Kernel modules + sysctl</td></tr>
+          <tr><td>Removing stumps + brush</td><td>Disabling swap + conflicting services</td></tr>
+          <tr><td>Calibrating tools</td><td>Time sync (chrony / timesyncd)</td></tr>
+          <tr><td>The contractor's toolbox</td><td>Container runtime (containerd / CRI-O)</td></tr>
+          <tr><td>Cgroup-driver toolbox lock</td><td><code>SystemdCgroup = true</code> alignment</td></tr>
+          <tr><td>Stockpiling materials at the site</td><td>Image pre-pull for air-gap installs</td></tr>
+          <tr><td>Posted construction rules</td><td>Hardening: SSH, audit, firewall, SELinux</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: kernel modules + sysctl aren't physical preparation — they're knobs in /proc and /sys that only matter at runtime. Setting them and rebooting is more like "flipping breakers" than "clearing land."</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Before you build a treehouse, you check that the tree is healthy and bring all your tools to the spot. Same for a Kubernetes node: check the kernel, turn off swap, install containerd, gather images.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Per-node prep checklist for kubeadm to work: load kernel modules (<code>overlay</code>, <code>br_netfilter</code>), set sysctls (<code>ip_forward</code>, <code>bridge-nf-call-iptables</code>), disable swap, sync time, install + configure containerd 2.x with <code>SystemdCgroup = true</code>, harden the host, optionally pre-pull images for air-gap. Order matters: modules before sysctl. Automate via Ansible or use Talos Linux which bakes it in.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A bank using Ansible playbook for 50 nodes</p><p>One playbook. Idempotent. Tests with <code>--check</code>. Runs in CI on every change. New rack of 10 nodes onboarded by a junior engineer in an afternoon. Drift detected automatically by a daily Ansible-pull cron.</p></div>
+      <div class="scenario"><p class="scenario-name">A startup picking Talos to skip V2 entirely</p><p>No SSH, no per-node prep. Machine-config YAML defines the kernel + sysctl + runtime in one place. Boot the Talos image; nodes register themselves. The whole V2 module collapses to writing the machine-config. Trade-off: less flexibility for non-K8s workloads on the host.</p></div>
+      <div class="scenario"><p class="scenario-name">A team that learned about the cgroup-driver bug</p><p>First install: containerd cgroupfs, kubelet systemd. <code>kubeadm init</code> hangs. Three hours of debugging. Now: every node sanity-script checks <code>crictl info</code> output before kubeadm runs. Pre-flight assumption — fail loudly, fix instantly.</p></div>
+      <div class="scenario"><p class="scenario-name">An air-gapped install at a defence contractor</p><p>No internet. <code>kubeadm config images pull</code> + <code>ctr images export</code> on a connected build host. Tarballs to physical media. <code>ctr -n k8s.io images import</code> on every disconnected node. Plus internal Harbor mirror with the rest of the add-on images. Air-gap process documented + automated.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Node prep — order matters</h2>
+    <p>Walk a raw node through the prep checklist in order.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="80" width="110" height="60" rx="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1.5"/><text x="95" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">raw node</text><text x="95" y="118" text-anchor="middle" font-size="9" fill="#6B6058">freshly imaged</text>
+        <rect x="180" y="80" width="130" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="245" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">load modules</text><text x="245" y="118" text-anchor="middle" font-size="9" fill="#6B6058">overlay · br_netfilter</text>
+        <rect x="340" y="80" width="130" height="60" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">sysctl</text><text x="405" y="118" text-anchor="middle" font-size="9" fill="#6B6058">ip_forward + bridge</text>
+        <rect x="500" y="80" width="110" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="555" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">containerd</text><text x="555" y="118" text-anchor="middle" font-size="9" fill="#6B6058">SystemdCgroup</text>
+        <rect x="640" y="80" width="100" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="690" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">ready</text><text x="690" y="118" text-anchor="middle" font-size="9" fill="#6B6058">kubeadm OK</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,110)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="prep">▶ run the prep checklist</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a node going from raw to kubeadm-ready.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Disabling swap is optional in modern K8s."</div><div class="misc-row misc-truth"><strong>Truth:</strong> K8s 1.28+ supports swap behind a feature gate, but most production clusters still disable it. Memory eviction logic and QoS classes assume no swap; enabling adds complexity. Default to off unless you have a specific reason.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "The cgroup driver doesn't really matter as long as both ends agree."</div><div class="misc-row misc-truth"><strong>Truth:</strong> True — but the failure mode when they disagree is opaque. Always systemd in 2026 (it's the default for all major distros + containerd). "Both agree on systemd" is the rule.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "You can skip <code>br_netfilter</code> if your CNI handles its own networking."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Even Cilium with eBPF prefers <code>br_netfilter</code> loaded for compatibility paths. The cost of loading it is essentially zero; load it anyway.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Two kernel modules to load?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>overlay</code> (overlay filesystem for container layers) and <code>br_netfilter</code> (bridge traffic visible to iptables/nftables). Both go in <code>/etc/modules-load.d/k8s.conf</code>.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three sysctl values?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>net.bridge.bridge-nf-call-iptables=1</code>, <code>net.bridge.bridge-nf-call-ip6tables=1</code>, <code>net.ipv4.ip_forward=1</code>. Apply via <code>/etc/sysctl.d/k8s.conf</code> + <code>sysctl --system</code>.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Cgroup driver alignment?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">containerd <code>SystemdCgroup = true</code> + kubelet defaults to systemd in modern K8s = aligned. Mismatch = kubelet refuses to start with cryptic cgroup errors.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Time sync — why?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Certificates, etcd Raft, audit logs all assume monotonic time within ms tolerance. <code>chrony</code> or <code>systemd-timesyncd</code> on every node.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Image pre-pulling for air-gap?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>kubeadm config images list</code> for the version. <code>ctr -n k8s.io images import &lt;tar&gt;</code> on every node, or pull from an internal registry mirror configured in containerd.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why disable swap?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Kubelet eviction + QoS logic assumes no swap. K8s 1.28+ supports it behind a flag, but production default is off.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Pin package versions?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>apt-mark hold kubeadm kubelet kubectl containerd</code> on Debian/Ubuntu. <code>dnf versionlock</code> on RHEL family. Prevents surprise minor-version drift between unattended-upgrades runs.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Talos Linux's answer to V2?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Bakes everything in: machine-config YAML covers kernel, sysctl, runtime, swap, time. No SSH, no per-node tweaking. Re-image to upgrade.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">You SSH to a freshly-prepped node. <code>kubeadm join</code> fails with <code>node "x" not found</code> after a few minutes. The kubelet logs show <code>x509: certificate signed by unknown authority</code>. Diagnosis?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Two common causes: (1) <strong>Time skew.</strong> The node's clock is wrong — JWT and certs fail validation. <code>chronyc tracking</code> shows offset &gt; 5 minutes. Sync time, retry. (2) <strong>Wrong CA</strong>. The kubeadm join command's discovery token + CA hash don't match the cluster's actual CA (typo? old token?). Re-run <code>kubeadm token create --print-join-command</code> on the control plane and use the fresh output. <strong>Pre-flight rule:</strong> verify <code>chronyc tracking</code> output before any kubeadm command — saves hours of mystery.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">You're asked to onboard 30 new bare-metal nodes for an existing cluster. What's the right unit of work?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Not SSH. <strong>(1) Ansible playbook</strong> covering the V2 checklist, idempotent. <strong>(2) PXE boot + cloud-init</strong> for fully unattended provisioning. <strong>(3) Talos Linux</strong> if you can pick the OS — the machine-config IS the playbook. <strong>(4) For each new node</strong>: PXE boots, cloud-init applies playbook, node reboots, sanity script verifies (crictl info / sysctl values / chronyc tracking), then <code>kubeadm join</code>. Scripted end-to-end. <strong>Manual SSH for 30 nodes is a process smell</strong> — automate now, not later.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">Air-gapped customer needs the kubeadm v1.36 install bundle for a fresh cluster. <strong>Click for the air-gap procedure. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the air-gap procedure</span><strong>(1) On a connected build host</strong>: <code>kubeadm config images list --kubernetes-version v1.36</code> → captures the list (kube-apiserver, kube-controller-manager, kube-scheduler, kube-proxy, etcd, coredns, pause). <code>kubeadm config images pull --kubernetes-version v1.36</code> → caches them in containerd. <code>ctr -n k8s.io images export kubeadm-v1.36.tar &lt;each-image&gt;</code>. <strong>(2) Add-on images</strong>: pull and export Cilium / cert-manager / Velero / kube-prometheus-stack / Argo CD images the same way (or push to internal registry). <strong>(3) Distribution media</strong>: USB / encrypted tarball / internal artifact server reachable from the air-gapped network. <strong>(4) On every disconnected node</strong>: <code>ctr -n k8s.io images import kubeadm-v1.36.tar</code>. Verify with <code>crictl images</code>. <strong>(5) Configure containerd registry mirror</strong> pointing at the internal Harbor (or local cache) so subsequent pulls work transparently. <strong>(6) Install kubeadm/kubelet/kubectl Debian/RPM packages</strong> from the internal package mirror. <strong>(7) Run kubeadm init</strong> — the images are already local; no internet needed.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">containerd 2.x</div><div class="gloss-def">Default container runtime for Kubernetes. CRI-compatible. Configure via <code>/etc/containerd/config.toml</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">CRI</div><div class="gloss-def">Container Runtime Interface — gRPC API kubelet uses to talk to runtime.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Cgroup driver</div><div class="gloss-def">Mechanism for organising cgroups. <code>systemd</code> (modern default) or <code>cgroupfs</code> (legacy). Container runtime + kubelet must agree.</div></div>
+      <div class="gloss-item"><div class="gloss-name">br_netfilter</div><div class="gloss-def">Kernel module enabling iptables/nftables to see bridged traffic. Required for kube-proxy iptables mode and many CNIs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">overlay</div><div class="gloss-def">Overlay filesystem kernel module — used for container image layering.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ip_forward sysctl</div><div class="gloss-def">Enables the kernel to forward packets between interfaces. Required for cross-node Pod traffic.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Swap</div><div class="gloss-def">Disk space used as virtual memory. K8s default is to refuse to start kubelet if swap is on. 1.28+ has opt-in.</div></div>
+      <div class="gloss-item"><div class="gloss-name">chrony / systemd-timesyncd</div><div class="gloss-def">NTP clients for time synchronisation. One per node, monitored.</div></div>
+      <div class="gloss-item"><div class="gloss-name">crictl</div><div class="gloss-def">CRI-compatible CLI for runtime debugging (analog to docker CLI). <code>crictl ps</code>, <code>crictl images</code>, <code>crictl info</code>.</div></div>
+      <div class="gloss-item"><div class="gloss-name">nerdctl</div><div class="gloss-def">containerd-native CLI with docker-compatible UX. Useful for image management on nodes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Image pre-pulling</div><div class="gloss-def">Caching container images in the runtime ahead of Pod creation. Required for air-gap; useful for big images on slow networks.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Talos machine-config</div><div class="gloss-def">YAML defining the entire OS state of a Talos node — kernel modules, sysctls, runtime, networking. Replaces V2 manual prep.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> Per-node prep, in order: <strong>kernel modules</strong> (<code>overlay</code>, <code>br_netfilter</code>), <strong>sysctl</strong> (<code>net.ipv4.ip_forward=1</code>, <code>net.bridge.bridge-nf-call-iptables=1</code>), <strong>swap OFF</strong>, <strong>time sync</strong>, <strong>container runtime</strong> (<code>containerd 2.x</code> with <code>SystemdCgroup=true</code>), <strong>image pre-pulling</strong> for air-gap. Reboot, sanity-check, then run kubeadm.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module V2 complete</span>
+    <p>Six categories of node prep — kernel, sysctl, swap, time, runtime, hardening — repeated identically on every node. Automate via Ansible or skip with Talos.</p>
+    <p class="recap-next"><strong>Next — V3: kubeadm Cluster Bootstrap.</strong> Now that the soil is prepared, raise the frame: kubeadm phases, configuration files, HA control plane, worker join, the alternative bootstrappers (kubespray / kOps / Talos / Cluster API).</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-VAN · Module V2 of 11 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+
+  // -------- Animation --------
+  (function() {
+    const SCENES = [{"mode_id": "prep", "mode_label": "Mode: ordered prep \u2014 modules \u2192 sysctl \u2192 runtime \u2192 ready", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Raw node booted; nothing K8s-ready yet.", "move_to": [95, 110], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Load kernel modules: <code>overlay</code>, <code>br_netfilter</code>.", "move_to": [245, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Apply sysctl: <code>ip_forward</code>, <code>bridge-nf-call-iptables</code>. Order matters: modules first.", "move_to": [405, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Install containerd; set <code>SystemdCgroup = true</code> to match kubelet.", "move_to": [555, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> Reboot test, sanity-check, then <code>kubeadm</code> joins cleanly.", "move_to": [690, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })();
+
+</script>
+
+</body>
+</html>

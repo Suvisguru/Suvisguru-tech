@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-VAN V11 · Capstone Homestead</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-VAN module journey">
+  <span class="concept-rail-title">K-VAN modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V1 architecture design</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V2 OS &amp; node prep</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V3 kubeadm bootstrap</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V4 CNI &amp; networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V5 core add-ons</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V6 cluster config</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V7 etcd production</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V8 upgrades &amp; patching</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V9 security hardening</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>V10 troubleshooting</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>V11 capstone homestead</span><span class="concept-rail-here">← here</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-VAN · Module V11</span></a>
+    <span class="progress-pill">V11 · capstone homestead</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏕️ K-Frontier site: <strong>Complete Homestead</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Frontier site map: V11">
+    <title>K-Frontier site map · V11</title>
+    <desc>Stylised map of the K-Frontier homestead. Complete Homestead highlighted.</desc>
+    <defs>
+      <linearGradient id="kf-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.6"/><stop offset="100%" stop-color="#F5EFE3" stop-opacity="0.6"/></linearGradient>
+      <linearGradient id="kf-creek" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kf-soil)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · FRONTIER</text>
+    <path d="M 20 350 Q 200 343 400 348 T 780 350 L 780 380 L 20 380 Z" fill="url(#kf-creek)"/>
+    <path d="M 20 350 Q 200 343 400 348 T 780 350" stroke="#7AB3CC" stroke-width="0.9" fill="none" opacity="0.5"/>
+    <text x="745" y="372" text-anchor="end" font-family="sans-serif" font-size="8" font-style="italic" fill="#4A8FA8" opacity="0.7">— creek —</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <g class="pin" id="kf-site01" transform="translate(100,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V1</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Drafting Hut</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">design</text></g>
+    <g class="pin" id="kf-site02" transform="translate(230,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Land Clearing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">OS prep</text></g>
+    <g class="pin" id="kf-site03" transform="translate(360,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Frame Raising</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">kubeadm</text></g>
+    <g class="pin" id="kf-site04" transform="translate(490,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Wiring & Plumbing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">CNI</text></g>
+    <g class="pin" id="kf-site05" transform="translate(620,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Outbuildings</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">add-ons</text></g>
+    <g class="pin" id="kf-site06" transform="translate(100,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Rules Board</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">config</text></g>
+    <g class="pin pin-anchor" id="kf-site07" transform="translate(240,200)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">V7</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">The Well</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">etcd</text></g>
+    <g class="pin" id="kf-site08" transform="translate(380,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Renovation</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">upgrades</text></g>
+    <g class="pin" id="kf-site09" transform="translate(510,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">hardening</text></g>
+    <g class="pin" id="kf-site10" transform="translate(640,195)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Drill Square</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshoot</text></g>
+    <g class="pin active" id="kf-site11" transform="translate(720,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">V11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Homestead</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+  </ol>
+  <p class="ktown-strip-label">📍 <strong>Complete Homestead</strong> <span>· V11 of 11</span><span class="visually-hidden">Lesson V11, Complete Homestead.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module V11 · the complete homestead</span>
+    <h1>V11 · Capstone — Build, Harden, Back Up, Upgrade, Recover an HA Cluster</h1>
+    <p class="hero-sub"><strong>Tie everything together.</strong> Build an HA on-prem cluster from scratch using the reference stack: Talos + Cilium + Gateway API + cert-manager + Velero + kube-prometheus-stack + Argo CD. Harden, back up, upgrade, recover. Produce runbooks. Defend it.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Complete homestead: a finished property with main house, well, fence, watchtower, outbuildings, and a posted plaque listing the K-VAN stack.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">COMPLETE HOMESTEAD · CAPSTONE</text>
+  <g transform="translate(40,50)">
+    <rect width="600" height="160" rx="8" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <text x="300" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">REFERENCE STACK · TALOS + CILIUM + ARGO CD</text>
+    <rect x="14" y="34" width="110" height="34" rx="3" fill="#3F4A5E"/><text x="69" y="50" text-anchor="middle" font-size="9" fill="#FBF1D6" font-weight="700">Talos Linux</text><text x="69" y="62" text-anchor="middle" font-size="7" fill="#FBE8DC">immutable hosts</text>
+    <rect x="130" y="34" width="110" height="34" rx="3" fill="#A04832"/><text x="185" y="50" text-anchor="middle" font-size="9" fill="#FFFFFF" font-weight="700">3 CP + 3 worker</text><text x="185" y="62" text-anchor="middle" font-size="7" fill="#FBE8DC">stacked etcd</text>
+    <rect x="246" y="34" width="110" height="34" rx="3" fill="#5A9F7A"/><text x="301" y="50" text-anchor="middle" font-size="9" fill="#FFFFFF" font-weight="700">Cilium</text><text x="301" y="62" text-anchor="middle" font-size="7" fill="#FBE8DC">eBPF + Hubble</text>
+    <rect x="362" y="34" width="110" height="34" rx="3" fill="#E8B547"/><text x="417" y="50" text-anchor="middle" font-size="9" fill="#5A4F45" font-weight="700">Gateway API</text><text x="417" y="62" text-anchor="middle" font-size="7" fill="#5A4F45">Cilium Gateway</text>
+    <rect x="478" y="34" width="110" height="34" rx="3" fill="#FBF1D6" stroke="#8B5A00"/><text x="533" y="50" text-anchor="middle" font-size="9" fill="#8B5A00" font-weight="700">cert-manager</text>
+    <rect x="14" y="76" width="110" height="34" rx="3" fill="#FBE8DC" stroke="#A04832"/><text x="69" y="92" text-anchor="middle" font-size="9" font-weight="700" fill="#A04832">Velero</text><text x="69" y="104" text-anchor="middle" font-size="7" fill="#5A4F45">backup S3</text>
+    <rect x="130" y="76" width="110" height="34" rx="3" fill="#E0EEF3" stroke="#4A8FA8"/><text x="185" y="92" text-anchor="middle" font-size="9" fill="#3F4A5E" font-weight="700">Prometheus</text><text x="185" y="104" text-anchor="middle" font-size="7" fill="#5A4F45">+ Grafana + AM</text>
+    <rect x="246" y="76" width="110" height="34" rx="3" fill="#3F4A5E"/><text x="301" y="92" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">Argo CD</text><text x="301" y="104" text-anchor="middle" font-size="7" fill="#FBF1D6">App-of-Apps</text>
+    <rect x="362" y="76" width="110" height="34" rx="3" fill="#5A9F7A"/><text x="417" y="92" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">Falco + Kyverno</text>
+    <rect x="478" y="76" width="110" height="34" rx="3" fill="#A04832"/><text x="533" y="92" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">runbooks</text><text x="533" y="104" text-anchor="middle" font-size="7" fill="#FBE8DC">DR + upgrade</text>
+    <rect x="14" y="118" width="572" height="34" rx="3" fill="#5A9F7A"/><text x="300" y="138" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">capstone deliverables: working cluster + git repo + DR runbook + upgrade runbook</text>
+  </g>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Two weeks before launch, your team realises: nobody has end-to-end built this stack. They've installed pieces. They haven't been through V1 → V10 in sequence with a working cluster at the end. The capstone is the safeguard — finishing K-VAN means you've <em>actually done it</em>, with the receipts (a working cluster, the git repo, the runbooks).</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Capstone deliverables</strong>: (1) Working 6-node HA cluster on Talos with the reference stack. (2) Git repo (Argo CD App-of-Apps) reproducing the cluster from scratch. (3) etcd snapshot + Velero backup tested. (4) Documented upgrade rehearsal runbook. (5) Documented DR runbook covering all 7 disasters from V10. (6) kube-bench score &gt; 95%. <strong>You're K-VAN-complete when you can teach someone else to do it.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>What "capstone" means here</h2>
+    <p>K-VAN is 10 modules of how. The capstone is one module of <em>do</em>: a single end-to-end project that exercises every prior module in sequence. You'll come out the other side with a working cluster you can defend in an interview, a runbook library, and the muscle memory to do it again on another network.</p>
+    <p>The reference stack is opinionated to keep the project tractable: Talos (immutable OS, no SSH, fast bootstrap), Cilium (modern CNI), Gateway API (the future of ingress), cert-manager (TLS), Velero (backup), kube-prometheus-stack (monitoring), Argo CD (GitOps). You can sub equivalents if your environment demands it (RKE2 instead of Talos, Calico instead of Cilium) — the modules will still apply.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · Phase A — Architecture + Build</span>
+    <h2>V1-V4 in sequence</h2>
+    <p><strong>A.1 Architecture document</strong> (V1). One page covering: 6 nodes (3 CP + 3 worker), Talos OS, Cilium CNI, stacked etcd, Pod CIDR <code>192.168.224.0/20</code>, Service CIDR <code>10.96.0.0/12</code>, kube-vip for API LB at 192.168.1.100, Longhorn CSI, Velero backup to S3, Argo CD GitOps, kube-bench scoring target ≥ 95%. Commit to git as <code>docs/architecture.md</code>.</p>
+    <p><strong>A.2 Provision 6 VMs</strong> with Talos image + machine-config (V2 collapses to applying the config). Each node's machine-config sets kernel modules, sysctl, runtime, swap-off — all baked into the OS image. <code>talosctl apply-config</code> on each.</p>
+    <p><strong>A.3 Bootstrap the cluster</strong> (V3 via Talos, not kubeadm): <code>talosctl bootstrap --nodes &lt;cp-1-ip&gt;</code> on the first CP node; the others auto-join via the machine-config. kube-vip runs as a Talos extension or a static pod. Cluster comes up in 2-3 minutes.</p>
+    <p><strong>A.4 Install Cilium</strong> (V4): Helm install with <code>kubeProxyReplacement=true</code>, native routing, Hubble enabled, MTU verified. <code>cilium connectivity test</code> passes.</p>
+    <p>Verify: <code>kubectl get nodes</code> all 6 Ready.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · Phase B — Add-ons + Hardening</span>
+    <h2>V5, V6, V9 in sequence</h2>
+    <p><strong>B.1 Bootstrap Argo CD</strong>: helm install argocd; create the App-of-Apps root pointing at <code>k8s-platform/apps/</code> in the git repo. Argo CD installs:</p>
+    <ul>
+      <li>cert-manager + ClusterIssuer (Let's Encrypt staging for the lab)</li>
+      <li>Cilium Gateway controller (already part of Cilium, register Gateway API CRDs)</li>
+      <li>Longhorn CSI + snapshot-controller</li>
+      <li>Velero with the Longhorn snapshot plugin + S3 (or MinIO) target</li>
+      <li>kube-prometheus-stack with Grafana exposed via Gateway</li>
+      <li>Loki + Vector for logs</li>
+      <li>Kyverno (policies) + Falco (runtime)</li>
+      <li>kube-bench as a daily CronJob, output to PolicyReport</li>
+    </ul>
+    <p><strong>B.2 Cluster config</strong> (V6): apply your kubeadm/Talos cluster config additions: audit log on, KMS v2 encryption with Vault Transit (or static AES for the lab), systemReserved + kubeReserved on every node, scheduler bin-pack profile available, RuntimeClass for kata.</p>
+    <p><strong>B.3 Hardening</strong> (V9): label every namespace with <code>pod-security.kubernetes.io/enforce: restricted</code> (or baseline). Apply default-deny BANP. Apply Kyverno verifyImages policy in audit mode (move to enforce after a soak). Run kube-bench; investigate FAILs; aim for ≥ 95% Level 1 PASS.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">You finish Phase A but Argo CD won't install — Helm fails because "no available CSI driver." Diagnosis?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Argo CD has a known bug</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Argo CD's redis component requests a PVC; no StorageClass exists yet because the CSI driver hasn't been installed. Order matters: install Longhorn CSI before Argo CD, or use Argo CD with emptyDir instead of PVC for the bootstrap</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) The cluster needs more memory</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Add-on dependencies form an order: CNI → CoreDNS → CSI → cert-manager → ingress → Argo CD → everything else (which Argo CD then installs). Or use Argo CD's in-memory Redis bootstrap, then have it reconfigure to PV after CSI is up. Either is valid; document which approach in the runbook.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · Phase C — Backup, Upgrade, DR Runbooks</span>
+    <h2>V7, V8, V10 in sequence + writeup</h2>
+    <p><strong>C.1 etcd snapshots</strong> (V7): Talos has a built-in etcd-snapshot path; configure machine-config to snapshot every 30 min and ship to S3. Verify with <code>talosctl etcd snapshot save</code>.</p>
+    <p><strong>C.2 Velero backup</strong>: schedule <code>nightly</code> at 02:00; include all namespaces; include PV snapshots; retain 30 days.</p>
+    <p><strong>C.3 Upgrade rehearsal</strong> (V8): plan an upgrade from current Talos / K8s minor → next. On the staging clone (or a Vagrant lab): apply the upgrade. Document what broke + what to do differently. Output: <code>docs/runbooks/upgrade-vX-to-vY.md</code>.</p>
+    <p><strong>C.4 DR drills</strong> (V10): run all seven scenarios from V10 on the staging cluster. Document each recovery in a separate runbook file. Output: <code>docs/runbooks/dr-{cert-expiry,cni-broken,coredns,apiserver-down,etcd-quorum,webhook-lockout,namespace-restore}.md</code>.</p>
+    <p><strong>C.5 Final review</strong>: walk a colleague through the architecture doc, the git repo, the runbooks, kube-bench score. They should be able to reproduce the cluster from scratch using your artifacts. <strong>That's the K-VAN bar</strong>.</p>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>If you have time + capacity: build the cluster on real hardware (3 NUCs + 3 mini-PCs, ~$3K total). Operating physical infra adds the rack, power, network, BMC, console-server experience that VMs hide. Worth doing once for the muscle memory.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>You finished K-COM and read all 10 K-VAN modules. You haven't built end-to-end. There's a gap between knowing and doing — and you only find it when something breaks under pressure.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>You've built the reference cluster. You've broken it on purpose and recovered each disaster. Your git repo + runbooks let a colleague reproduce the work in a day. You can defend any choice in an interview. <strong>K-VAN-complete</strong>.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">The capstone exists so the gap between knowing and doing is closed deliberately, not by surprise in production.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this build site</h2>
+<p>The Complete Homestead is the eleventh and final site on the K-Frontier map. The Drafting Hut produced the blueprint; the Land Clearing prepared the ground; the Frame went up; the Wiring went in; the Outbuildings clustered around the main house; the Rules Board was posted; the Well was drilled deep; the Renovation routine was practiced; the Watchtower was staffed; the Drill Square saw quarterly fires controlled. Now you stand in front of the gate, the deed in one hand, the keys in the other. The plaque on the post lists the stack. Inside the house: the runbook library, the architecture doc, the kube-bench scorecard. You can defend it to the inspector. You can leave it to the next homesteader. <strong>That's K-VAN complete</strong>.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in vanilla Kubernetes</th></tr></thead>
+        <tbody>
+          <tr><td>The full deed of the homestead</td><td>Architecture document in git</td></tr>
+          <tr><td>The keys to every outbuilding</td><td>kubeconfig + RBAC bindings</td></tr>
+          <tr><td>Plaque on the post</td><td>Cluster bill of materials (versions, components)</td></tr>
+          <tr><td>Library of runbooks</td><td>docs/runbooks/ in git</td></tr>
+          <tr><td>Drill scoreboard on the wall</td><td>kube-bench Grafana dashboard</td></tr>
+          <tr><td>Backup well drilled + tested</td><td>etcd snapshots + Velero + DR drill</td></tr>
+          <tr><td>Renovation calendar pinned to the door</td><td>Quarterly upgrade cadence</td></tr>
+          <tr><td>Sealed envelope: emergency keys</td><td>Break-glass admin procedure</td></tr>
+          <tr><td>Property survey + inspector approval</td><td>kube-bench score + audit log review</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: the homestead is a one-time build; clusters are continuously evolving. K-VAN-complete means "you can build + operate + defend" — not "you're done forever." The next K8s minor is always coming.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>You've been learning to build a house the hard way. Now you build the whole house, lock it down, set up the alarms, write down what to do in a fire — and prove someone else could do it from your notes.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Capstone: build a working 6-node HA cluster end-to-end on Talos + Cilium + Gateway API + cert-manager + Velero + kube-prometheus-stack + Argo CD, hardened to kube-bench &gt; 95%. Phase A: architecture doc + Talos bootstrap + Cilium. Phase B: Argo CD App-of-Apps for all add-ons + cluster config + PSA + Kyverno + Falco. Phase C: etcd snapshots + Velero + upgrade rehearsal + 7 DR runbooks. Final review: a colleague can reproduce from your artifacts. K-VAN-complete.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How real teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A team finishing K-VAN as their pre-prod milestone</p><p>6 weeks of dedicated time. Vagrant + libvirt for local dev cluster; bare-metal NUCs for a real cluster. Final demo: chaos-day on the lab cluster recovering all 7 V10 scenarios in front of the team. Clear "we can do this in production" signal.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank using K-VAN graduates as the SRE pool</p><p>Anyone running the production K8s clusters has finished K-VAN. Demonstrates: built the reference cluster, scored kube-bench &gt; 95%, written the DR runbooks, walked a peer through. New hires onboarded by working through K-VAN with a buddy. Operational quality is hire-time + ongoing.</p></div>
+      <div class="scenario"><p class="scenario-name">A startup choosing K-VAN over an EKS cert</p><p>Engineering manager: certifications validate trivia; K-VAN validates the work. New SRE candidates pair on the Talos build + Cilium install + Velero restore drill. The artifact (git repo + runbooks) is the interview portfolio.</p></div>
+      <div class="scenario"><p class="scenario-name">An open-source contributor giving back</p><p>Used K-VAN to build their first self-managed cluster. Wrote a blog post documenting deviations (Calico instead of Cilium for FIPS reasons). PR'd a typo fix in the K-VAN module. Cycle complete.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>The capstone walk — A → B → C → defense</h2>
+    <p>Four phases; each gates the next.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="90" width="110" height="50" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="95" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Phase A</text><text x="95" y="128" text-anchor="middle" font-size="9" fill="#6B6058">build</text>
+        <rect x="180" y="90" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="235" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Phase B</text><text x="235" y="128" text-anchor="middle" font-size="9" fill="#6B6058">stack + harden</text>
+        <rect x="320" y="90" width="110" height="50" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="375" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Phase C</text><text x="375" y="128" text-anchor="middle" font-size="9" fill="#6B6058">DR + upgrade</text>
+        <rect x="460" y="90" width="110" height="50" rx="6" fill="#E8B547" stroke="#3F4A5E" stroke-width="1.5"/><text x="515" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#5A4F45">Defense</text><text x="515" y="128" text-anchor="middle" font-size="9" fill="#6B6058">peer review</text>
+        <rect x="600" y="90" width="130" height="50" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="665" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">K-VAN-complete</text><text x="665" y="128" text-anchor="middle" font-size="9" fill="#6B6058">artifact + drill</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,115)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="walk">▶ end-to-end walk</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a complete capstone walk.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "The capstone is optional / nice-to-have."</div><div class="misc-row misc-truth"><strong>Truth:</strong> K-VAN-complete means built end-to-end. Reading the modules without doing the capstone is K-VAN-read, not K-VAN-done. Different skill level.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "You need real hardware to do K-VAN properly."</div><div class="misc-row misc-truth"><strong>Truth:</strong> VMs work fine for the curriculum. Real hardware adds depth (BMC, network, console) but isn't required. If you have access to a few NUCs or rack space, take it; otherwise VMs.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "You can skip the runbooks if everything works."</div><div class="misc-row misc-truth"><strong>Truth:</strong> The runbooks ARE the deliverable. Working cluster without runbooks = you can't hand it off + you can't recover under pressure. Write them as you go, not after.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Six K-VAN deliverables?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Architecture doc, working 6-node HA cluster, git repo (Argo CD App-of-Apps), etcd + Velero backups (tested), upgrade rehearsal runbook, 7 DR runbooks. Plus kube-bench score &gt; 95%.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Reference stack components?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Talos Linux, 3 CP + 3 worker, stacked etcd, Cilium CNI + Gateway, cert-manager, Longhorn CSI, Velero, kube-prometheus-stack, Loki + Vector, Kyverno + Falco, Argo CD.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Phase A milestones?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Architecture doc complete; 6 VMs provisioned with Talos + machine-config; cluster bootstrapped with kube-vip + stacked etcd; Cilium installed with kube-proxy replacement + Hubble; <code>kubectl get nodes</code> shows 6 Ready.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Phase B milestones?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Argo CD installed + App-of-Apps reconciling all add-ons; cluster config tuned (audit + encryption + reserved); PSA + Kyverno + Falco enforcing; kube-bench &gt; 95%.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Phase C milestones?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">etcd snapshots scheduled + tested; Velero scheduled + restore tested; upgrade rehearsal documented; all 7 DR scenarios recovered + documented.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">How to know you're K-VAN-complete?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A colleague reproduces the cluster from your artifacts (git + runbooks + architecture doc) without help. They recover at least one disaster using your runbook only. Score = pass.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Reference stack alternatives?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">RKE2 instead of Talos (regulated). Calico instead of Cilium (BGP / FIPS). HAProxy + keepalived instead of kube-vip (large org). Same modules apply; substitute components.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Time investment?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">4-6 weeks of focused work for a single engineer + reviewer pair. Less if your org has previous K-VAN graduates to mentor. More if doing in spare time alongside other duties.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">You've finished Phase A and B. The cluster works; kube-bench is at 96%. You start Phase C's upgrade rehearsal: <code>talosctl upgrade --image talos:v1.x</code> on cp-1. After 5 min, cp-1 is unreachable. The other CP nodes still serve the API. What now?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Diagnose first; don't reboot.</strong> <strong>(1)</strong> <code>talosctl --nodes cp-1 dmesg</code> + <code>service-control logs</code>. Talos surfaces config errors here. <strong>(2)</strong> Common: machine-config drift (the new image expects different sysctls or kernel modules). Fix the machine-config; <code>talosctl apply-config --insecure</code> while the node is still bootloader-stage. <strong>(3)</strong> If physically wedged: <code>talosctl reset</code> (factory reset) and re-bootstrap. The cluster's remaining 2 CPs hold quorum + serve traffic. <strong>(4) Document.</strong> What broke? What was missing from the upgrade procedure? Update <code>docs/runbooks/upgrade-vX-to-vY.md</code> with the finding. <strong>This is the value of a rehearsal:</strong> finding the gap when only one CP is at risk + you have 2 healthy ones. Never first-time-in-production.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">Your Phase C's DR drill of "namespace deleted" finds: Velero restore brings everything back, but two Pods crash-loop on startup with config errors. Diagnosis?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Restore-time race condition.</strong> Pods came up before their dependent ConfigMaps / Secrets were fully restored. Solution patterns: (1) <strong>Restore order</strong>: Velero supports restore hooks; configure to apply ConfigMaps + Secrets first, then Deployments. (2) <strong>Pod restart loops resolve themselves</strong> as kubelet retries; if the dependent resources eventually exist, the Pods recover. Often this resolves within 1-2 retry cycles (~60s). (3) <strong>If they never recover</strong>: check the Pod manifest for <code>configMapKeyRef</code> / <code>secretKeyRef</code> pointing at keys that don't match the restored ConfigMap (e.g., key renamed since backup). Rare; happens with old backups. <strong>Lesson:</strong> the DR drill exposes ordering bugs that production never showed. Document the restore procedure including the wait + observe step. Don't Velero-restore + leave; Velero-restore + verify each app's readiness.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">You're the senior engineer reviewing a colleague's K-VAN capstone submission. <strong>Click for the rubric. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the rubric</span><strong>(1) Architecture doc clarity.</strong> One page; covers sizing, network plan, OS, runtime, CNI, CSI, HA topology, backup, upgrade, security baseline. Decisions justified, not just listed. <strong>(2) Working cluster.</strong> 6 nodes Ready; control plane HA-tested (kill cp-1, verify cluster keeps working); Cilium connectivity test passes; Hubble shows flows. <strong>(3) Git repo.</strong> Argo CD App-of-Apps reconciles every add-on; pinned versions; per-environment overlays. Reproducibility test: deploy to a fresh K8s cluster from the repo; should come up identically. <strong>(4) Backups tested.</strong> Velero restore on a fresh namespace works; etcd snapshot restore on a fresh cluster works; both timed end-to-end. <strong>(5) Upgrade rehearsal documented.</strong> Walked a minor-version upgrade end-to-end; surprises captured; runbook updated. <strong>(6) DR runbooks.</strong> Seven scenarios from V10; each tested; each runbook is reproducible by another engineer. <strong>(7) kube-bench score &gt; 95%.</strong> Documented exceptions for the remaining FAILs. <strong>(8) Defense.</strong> The colleague walks me through any decision I question; reasoning is solid. <strong>(9) Demo.</strong> Live: I introduce a chaos failure on the lab cluster; they recover blind, without help, in &lt; 30 min, using their runbook. <strong>If all 9 pass:</strong> K-VAN-complete. <strong>Common failure modes:</strong> "works but undocumented", "documented but unreproducible", "reproducible but no DR drilled". Each is the thin slice between knowing + doing.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Capstone</div><div class="gloss-def">Final K-VAN module. End-to-end project tying every prior module to a working artifact.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Reference stack</div><div class="gloss-def">Opinionated K-VAN bill of materials: Talos + Cilium + Gateway + cert-manager + Velero + kube-prometheus-stack + Argo CD.</div></div>
+      <div class="gloss-item"><div class="gloss-name">K-VAN deliverables</div><div class="gloss-def">Architecture doc, working cluster, git repo, tested backups, upgrade runbook, 7 DR runbooks, kube-bench score &gt; 95%.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Phase A (Build)</div><div class="gloss-def">V1-V4: architecture, OS, bootstrap, CNI. Cluster goes from blueprint to Ready.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Phase B (Stack + Hardening)</div><div class="gloss-def">V5, V6, V9: Argo CD + add-ons, cluster config, hardening to baseline.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Phase C (Resilience)</div><div class="gloss-def">V7, V8, V10: backups, upgrade rehearsal, 7 DR runbooks documented + tested.</div></div>
+      <div class="gloss-item"><div class="gloss-name">K-VAN-complete</div><div class="gloss-def">You can build, operate, harden, back up, upgrade, recover an HA cluster — and someone else can reproduce from your artifacts.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Bare-metal capstone</div><div class="gloss-def">Optional: do the capstone on real hardware (NUCs / rack) for BMC + network + console depth.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Pair review</div><div class="gloss-def">Final K-VAN gate: a peer reviews artifacts + watches a chaos drill. Score = pass / iterate.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Substitute stack</div><div class="gloss-def">RKE2 instead of Talos; Calico instead of Cilium; same K-VAN modules apply with different components.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Reproducibility test</div><div class="gloss-def">Deploy from your git repo to a fresh K8s cluster; should come up identically. Litmus test for "infra as code".</div></div>
+      <div class="gloss-item"><div class="gloss-name">Defense (interview-style)</div><div class="gloss-def">Walking through every decision; explaining tradeoffs; defending against alternatives. The K-VAN graduate test.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Capstone deliverables</strong>: (1) Working 6-node HA cluster on Talos with the reference stack. (2) Git repo (Argo CD App-of-Apps) reproducing the cluster from scratch. (3) etcd snapshot + Velero backup tested. (4) Documented upgrade rehearsal runbook. (5) Documented DR runbook covering all 7 disasters from V10. (6) kube-bench score &gt; 95%. <strong>You're K-VAN-complete when you can teach someone else to do it.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module V11 complete</span>
+    <p>Capstone = build the reference stack end-to-end + harden + back up + upgrade + DR-drill all 7 scenarios + produce runbooks. Working cluster + git repo + runbooks + defended decisions + reproduced by a peer = K-VAN-complete.</p>
+    <p class="recap-next"><strong>Done.</strong> You've walked the K-Frontier homestead from raw land to defendable property. K-VAN ends here; what comes next is operating real clusters with the muscle memory you built. The Drafting Hut on the next site is yours to design.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-VAN · Module V11 of 11 · grounded in kubernetes.io</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+
+  // -------- Animation --------
+  (function() {
+    const SCENES = [{"mode_id": "walk", "mode_label": "Mode: A \u2192 B \u2192 C \u2192 defense \u2192 K-VAN-complete", "initial_set_text": null, "phases": [{"readout": "<strong>Phase A.</strong> Architecture doc + Talos bootstrap + Cilium. Cluster Ready.", "move_to": [95, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Phase B.</strong> Argo CD App-of-Apps + cluster tuning + hardening. kube-bench &gt; 95%.", "move_to": [235, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Phase C.</strong> etcd snapshots + Velero + upgrade rehearsal + 7 DR runbooks.", "move_to": [375, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Defense.</strong> Peer review of artifacts + live chaos drill recovery.", "move_to": [515, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>K-VAN-complete.</strong> Artifacts + reproduced cluster + recovered disaster. Done.", "move_to": [665, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 115];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })();
+
+</script>
+
+</body>
+</html>

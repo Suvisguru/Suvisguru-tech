@@ -1,0 +1,50 @@
+# Flashcards — K-VAN V (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Self-managed vs managed K8s — when self-manage?
+    back: |
+      When you need: data sovereignty, on-prem / bare metal / air-gapped, very specific compliance, deep cost optimisation at scale, custom kernel/runtime, cluster-scale your cloud doesn't support. Otherwise, managed (EKS/GKE/AKS) usually wins on TCO.
+
+  - id: 2
+    front: |
+      Stacked vs external etcd?
+    back: |
+      Stacked = etcd on the same nodes as kube-apiserver (one tier, simpler). External = etcd on dedicated nodes (more resilient, more ops). Most clusters < 250 nodes do fine stacked.
+
+  - id: 3
+    front: |
+      Why etcd needs NVMe SSD?
+    back: |
+      etcd writes synchronously and waits for fsync. Slow disks → slow writes → slow API server → cluster-wide degradation. Target < 10ms p99 fsync.
+
+  - id: 4
+    front: |
+      Pod CIDR sizing rule of thumb?
+    back: |
+      Each node gets a /24 (256 IPs) by default. With max 110 Pods/node + headroom, that fits. Cluster Pod CIDR = /16 fits 256 nodes. Plan for 2-3x your projected node count.
+
+  - id: 5
+    front: |
+      Service CIDR considerations?
+    back: |
+      Default `10.96.0.0/12` (~1M IPs). Reserve `10.96.0.10` (or your equivalent) for cluster DNS — every Pod's resolv.conf points there.
+
+  - id: 6
+    front: |
+      What is Talos Linux?
+    back: |
+      Immutable, API-driven Linux for Kubernetes. No SSH (machine-config API only). Read-only root FS. Smaller attack surface, simpler upgrades. Popular for production self-managed clusters in 2026.
+
+  - id: 7
+    front: |
+      What is Cluster API (CAPI)?
+    back: |
+      Declarative cluster lifecycle. A management cluster runs CAPI controllers; workload clusters are YAML. Provider plugins: CAPV (vSphere), CAPA (AWS), CAPZ, CAPG, CAPD (Docker for testing).
+
+  - id: 8
+    front: |
+      HA control-plane minimum?
+    back: |
+      3 nodes (odd number ≥ 3 for etcd quorum). 2 nodes is worse than 1 — losing either kills quorum. Production: 3 or 5.

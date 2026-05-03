@@ -1,0 +1,50 @@
+# Flashcards — K-VAN V (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What is the CIS Kubernetes Benchmark?
+    back: |
+      Community-curated set of ~120 hardening controls across master, etcd, control plane, worker, policies. Run via kube-bench (Aqua). Track score over time.
+
+  - id: 2
+    front: |
+      Three apiserver hardening flags?
+    back: |
+      `--anonymous-auth=false`, audit policy enabled, EncryptionConfiguration with KMS v2. NodeRestriction admission. Disable insecure-port if still around (deprecated).
+
+  - id: 3
+    front: |
+      RBAC least-privilege checklist?
+    back: |
+      No bindings to `system:authenticated` beyond `system:public-info-viewer`. No default-SA RoleBindings. Quarterly cluster-admin review. OIDC for humans (no shared kubeconfigs).
+
+  - id: 4
+    front: |
+      PSA restricted requirements?
+    back: |
+      runAsNonRoot, drop ALL capabilities, seccompProfile RuntimeDefault, AppArmor profile, no privileged, no hostPath, no hostNetwork, no hostPID. K8s baseline for app Pods.
+
+  - id: 5
+    front: |
+      Image signing verification flow?
+    back: |
+      cosign sign image in CI (keyless via Fulcio + OIDC). Kyverno verifyImages policy at admission verifies signature against expected identity. Reject unsigned or wrong-key.
+
+  - id: 6
+    front: |
+      Falco vs Tetragon?
+    back: |
+      Both are eBPF runtime security. Falco: longer-established, rule-based, CNCF graduated. Tetragon (Cilium): newer, integrates with Cilium policy, broader process tracking. Either is fine; pick one.
+
+  - id: 7
+    front: |
+      Break-glass best practices?
+    back: |
+      Separate auth path (not daily SSO). Time-bounded credential. Audited (out-of-band alert on use). Documented when/why/how. Tested quarterly.
+
+  - id: 8
+    front: |
+      Where do FIPS-validated binaries come from?
+    back: |
+      RKE2 ships FIPS builds. Talos has a FIPS edition. OpenShift + commercial distros provide their own. Vanilla kubeadm does not provide FIPS out of the box.

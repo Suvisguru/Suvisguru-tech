@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Your apiserver static pod is in CrashLoopBackOff. `crictl logs` on the most recent container shows: `error reading encryption-config-file: stat /etc/kubernetes/enc/encryption.yaml: no such file or directory`. Walk recovery.
+    answer: |
+      **Diagnosis is in the log.** Apiserver was reconfigured to use an encryption config file; the file is missing on this node. **Fix:** SSH to the CP node. Either: (a) place the missing encryption.yaml at the expected path (the same one that lives on other CP nodes; `scp` from a healthy peer); or (b) edit the static-pod manifest to remove the `--encryption-provider-config` arg temporarily. After (a) the kubelet detects the manifest unchanged and the apiserver starts. After (b) you can `kubectl apply` a Secret with the file content + redeploy properly. **Prevention:** the encryption.yaml should be deployed to every CP node atomically (Ansible / Talos machine-config / kubeadm config). Hand-deployment to one node + missing on another is the classic V6 hardening shortcut that bites V10 later.
+
+  - id: 2
+    prompt: |
+      Your CoreDNS Pods have been stable for months. After upgrading the cluster, all in-cluster DNS lookups fail with NXDOMAIN. The CoreDNS Pods themselves are Running. Diagnose.
+    answer: |
+      **Common cause: Corefile schema mismatch.** CoreDNS plugin syntax changes occasionally between versions; an older Corefile may reference a removed or renamed plugin. **Diagnose:** `kubectl -n kube-system logs deploy/coredns` often shows parse warnings. `kubectl -n kube-system get cm coredns -o yaml` + compare to the upstream default for the new version. **Fix:** update Corefile; restart Deployment (`kubectl rollout restart deploy/coredns -n kube-system`). **Other possibilities:** CoreDNS Pod's `readinessProbe` failing for a different reason (memory limit too tight, DNS upstream unreachable). `kubectl describe pod` shows the readiness state. **Prevention:** include CoreDNS upgrade in the pre-K8s-upgrade staging rehearsal; bump CoreDNS chart in same change as K8s minor.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Your team is running its first quarterly chaos tournament. **Click for the protocol. ▼**
+    answer: |
+      **(1) Build the drill cluster.** Same K8s version + add-on stack as production, on a separate VM pool. Velero backups taken pre-drill (so you can reset between scenarios). **(2) Pair up.** Two-person teams: A is chaos engineer (introduces failure, observes), B is on-call (recovers blind). **(3) Round 1: certs.** A: SSH to a CP node, `find /etc/kubernetes/pki -name "*.crt" -exec openssl x509 -in {} -dates -noout \;` finds the expiry; A uses `faketime -1 year` to advance system clock OR manually rotates a cert with a 1-day TTL. B sees alerts; B walks recovery procedure. Stopwatch from "alert fires" to "`kubectl get nodes` works". **(4) Reset cluster** (Velero restore). **(5) Round 2: CNI.** A: `kubectl -n kube-system delete ds cilium`. B: notices new Pods stuck ContainerCreating; `helm install` Cilium back. **(6) Repeat for scenarios 3-7.** **(7) Debrief.** What was hard? What was missing from the runbook? Update runbooks. **(8) Score keep + circulate.** Visible to leadership; resourcing decisions follow. **(9) Schedule next quarter.** Same cluster reused. Cumulative knowledge after 4 quarters: every engineer has recovered every scenario.

@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Pre-upgrade scan flags 4 Deployments using `autoscaling/v2beta2` (removed in v1.26). Walk the remediation.
+    answer: |
+      **(1) Identify owners.** Each Deployment lives in a namespace; map to team. **(2) Per-Deployment fix.** Edit the HPA YAML: change `apiVersion: autoscaling/v2beta2` to `autoscaling/v2`. The schema is mostly compatible; sometimes field names changed (e.g., `targetCPUUtilizationPercentage` → `metrics`). Use `kubectl convert`: `kubectl convert -f hpa.yaml --output-version autoscaling/v2`. **(3) PR + Argo CD diff review** shows the exact change. **(4) Apply on staging first.** Validate HPA still scales. **(5) Apply on production.** **(6) Re-run Pluto** to confirm no remaining v2beta2 references. **(7) Add a CI check** that blocks PRs introducing deprecated APIs going forward. **Total time:** 1-2 sprints depending on team count + workload count. **Lesson:** deprecation scans should be running quarterly, not on the day of upgrade.
+
+  - id: 2
+    prompt: |
+      Your prod cluster upgrade hangs at "upgrading kubelet on cp-1" — 30 minutes in, no progress. Diagnose.
+    answer: |
+      **Common causes:** (1) *Image pull stuck*. The new kubelet/kube-apiserver/etc images aren't in the local containerd cache + the registry is unreachable. `crictl images` on cp-1 — empty? `journalctl -u containerd` for pull errors. (2) *etcd unhealthy*. The kubeadm upgrade waits for etcd; if etcd is degraded (slow disk, alarm), the upgrade hangs. `etcdctl endpoint health + status`. (3) *API server health-check failing*. The new apiserver static pod is up but failing readiness. `journalctl -u kubelet`; `kubectl logs -n kube-system kube-apiserver-cp-1`. **Recovery:** if you can identify + fix in < 30 min, do. Otherwise, restore etcd snapshot + downgrade kubelet + kubeadm packages on cp-1 + restart kubelet to roll back to pre-upgrade state. Then debug on staging. **Documentation:** add the diagnosis path to the upgrade runbook.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to upgrade a 30-node cluster from v1.34 to v1.36. **Click for the playbook. ▼**
+    answer: |
+      **Two minor versions = two upgrade cycles, each verified.** **Cycle A: 1.34 → 1.35.** **(A.1) Pre-flight** — Pluto scan for v1.35 removals; staging upgrade succeeds; etcd snapshot + Velero backup taken. **(A.2) Control plane** — kubeadm upgrade apply on cp-1 (10 min); kubeadm upgrade node on cp-2, cp-3 (10 min each). **(A.3) Kubelets on CP** — drain + upgrade + uncordon on each (15 min each). **(A.4) Workers** — drain + kubeadm upgrade node + kubelet + uncordon on each, with PodDisruptionBudgets respected. 30 nodes × 10 min = 5 hrs. Run rolling, 3 in parallel where capacity allows. **(A.5) Verify** — `kubectl get nodes` all v1.35; smoke tests pass. **Cycle B: 1.35 → 1.36.** Repeat A.1-A.5. **Add-ons + CNI + CSI** bumped after both cycles complete; per their compat matrices. **Total time:** ~2 weekends if scheduled outside production load. **Risk mitigation:** if anything breaks at A.1-A.3, you have an etcd snapshot + a tested restore. If a worker upgrade fails, that node is cordoned + reportable; cluster is degraded by 1/30 nodes max. Beats one 4-minor leap by months.

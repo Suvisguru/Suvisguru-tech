@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You've finished Phase A and B. The cluster works; kube-bench is at 96%. You start Phase C's upgrade rehearsal: `talosctl upgrade --image talos:v1.x` on cp-1. After 5 min, cp-1 is unreachable. The other CP nodes still serve the API. What now?
+    answer: |
+      **Diagnose first; don't reboot.** **(1)** `talosctl --nodes cp-1 dmesg` + `service-control logs`. Talos surfaces config errors here. **(2)** Common: machine-config drift (the new image expects different sysctls or kernel modules). Fix the machine-config; `talosctl apply-config --insecure` while the node is still bootloader-stage. **(3)** If physically wedged: `talosctl reset` (factory reset) and re-bootstrap. The cluster's remaining 2 CPs hold quorum + serve traffic. **(4) Document.** What broke? What was missing from the upgrade procedure? Update `docs/runbooks/upgrade-vX-to-vY.md` with the finding. **This is the value of a rehearsal:** finding the gap when only one CP is at risk + you have 2 healthy ones. Never first-time-in-production.
+
+  - id: 2
+    prompt: |
+      Your Phase C's DR drill of "namespace deleted" finds: Velero restore brings everything back, but two Pods crash-loop on startup with config errors. Diagnosis?
+    answer: |
+      **Restore-time race condition.** Pods came up before their dependent ConfigMaps / Secrets were fully restored. Solution patterns: (1) **Restore order**: Velero supports restore hooks; configure to apply ConfigMaps + Secrets first, then Deployments. (2) **Pod restart loops resolve themselves** as kubelet retries; if the dependent resources eventually exist, the Pods recover. Often this resolves within 1-2 retry cycles (~60s). (3) **If they never recover**: check the Pod manifest for `configMapKeyRef` / `secretKeyRef` pointing at keys that don't match the restored ConfigMap (e.g., key renamed since backup). Rare; happens with old backups. **Lesson:** the DR drill exposes ordering bugs that production never showed. Document the restore procedure including the wait + observe step. Don't Velero-restore + leave; Velero-restore + verify each app's readiness.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're the senior engineer reviewing a colleague's K-VAN capstone submission. **Click for the rubric. ▼**
+    answer: |
+      **(1) Architecture doc clarity.** One page; covers sizing, network plan, OS, runtime, CNI, CSI, HA topology, backup, upgrade, security baseline. Decisions justified, not just listed. **(2) Working cluster.** 6 nodes Ready; control plane HA-tested (kill cp-1, verify cluster keeps working); Cilium connectivity test passes; Hubble shows flows. **(3) Git repo.** Argo CD App-of-Apps reconciles every add-on; pinned versions; per-environment overlays. Reproducibility test: deploy to a fresh K8s cluster from the repo; should come up identically. **(4) Backups tested.** Velero restore on a fresh namespace works; etcd snapshot restore on a fresh cluster works; both timed end-to-end. **(5) Upgrade rehearsal documented.** Walked a minor-version upgrade end-to-end; surprises captured; runbook updated. **(6) DR runbooks.** Seven scenarios from V10; each tested; each runbook is reproducible by another engineer. **(7) kube-bench score > 95%.** Documented exceptions for the remaining FAILs. **(8) Defense.** The colleague walks me through any decision I question; reasoning is solid. **(9) Demo.** Live: I introduce a chaos failure on the lab cluster; they recover blind, without help, in < 30 min, using their runbook. **If all 9 pass:** K-VAN-complete. **Common failure modes:** "works but undocumented", "documented but unreproducible", "reproducible but no DR drilled". Each is the thin slice between knowing + doing.

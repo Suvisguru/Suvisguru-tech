@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Your apiserver writes audit logs to `/var/log/audit.log`. Disk fills nightly. What's the right pattern?
+    answer: |
+      **Don't write audit to local disk for production.** Set `audit-log-path` + `audit-log-maxsize` + `audit-log-maxbackup` + `audit-log-maxage` for local rotation as a fallback, but configure a **webhook** backend (`audit-webhook-config-file`) to forward audit events to your SIEM / log lake in real time. Local disk is for debug only. **Tune the audit policy** to log writes at RequestResponse and reads at Metadata; otherwise even a healthy cluster generates GB/day. **Volume sanity check**: ~30K-100K events/day in a typical cluster; if you see millions, the policy is over-broad.
+
+  - id: 2
+    prompt: |
+      You enable `topologyManagerPolicy: single-numa-node`. After the kubelet restart, some previously-running Pods are now Pending forever. Why?
+    answer: |
+      Topology Manager `single-numa-node` policy requires every Pod's CPU + memory + (optionally) devices to fit on one NUMA node. If the Pod requests 16 CPU but each NUMA node has only 8 CPU, the Pod can never be admitted. **Diagnose:** `kubectl describe pod` shows the rejection reason. **Fix:** either reduce the Pod's request to fit one NUMA node, or relax to `policy: restricted` (warn but allow), or to `best-effort` (try, allow regardless). **Lesson:** `single-numa-node` is a correctness setting for latency-critical workloads; for general workloads it can cause Pending. Enable per-node-class via per-pool kubelet config, not cluster-wide.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to add audit + encryption-at-rest + APF to an existing cluster without downtime. **Click for the playbook. ▼**
+    answer: |
+      **(1) Audit:** write an `audit-policy.yaml` covering writes-at-RequestResponse + reads-at-Metadata for sensitive resources (secrets, RBAC, NP). **(2) Encryption:** create an `encryption-config.yaml` with KMS v2 provider pointing at Vault Transit (or static AES if no KMS). **(3) Stage:** push both files to `/etc/kubernetes/` on every CP node. **(4) Edit static-pod manifest** for kube-apiserver: `/etc/kubernetes/manifests/kube-apiserver.yaml`. Add `--audit-log-path`, `--audit-policy-file`, `--encryption-provider-config`. The kubelet auto-restarts the static pod on file change. **(5) APF:** verify FlowSchemas and PriorityLevelConfigurations are present (kubeadm 1.20+ ships defaults). Customise via custom CRDs if you have known noisy clients. **(6) Encrypt existing Secrets:** `kubectl get secrets -A -o json | kubectl replace -f -` rewrites them and triggers re-encryption. **(7) Verify:** grep an etcd dump for a Secret value — should be ciphertext. Audit log shows recent operations. APF metrics on Prometheus dashboard. **Total downtime:** ~30s per CP node as the static pod restarts. Roll one CP at a time; HA absorbs.

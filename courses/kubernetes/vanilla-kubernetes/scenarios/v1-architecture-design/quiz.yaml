@@ -1,0 +1,21 @@
+# Quiz — K-VAN V (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You're sizing etcd for a 100-node cluster with ~3000 Pods, modest API write rate. What spec?
+    answer: |
+      3 etcd members (stacked on the control-plane nodes is fine at this size). Per node: 4 vCPU, 8 GiB RAM, 50 GiB NVMe SSD dedicated for etcd data dir, < 10ms p99 fsync verified with `fio`. Network: low-latency between members (< 10ms). Don't share the etcd disk with anything else — not the kubelet, not container images, not logs.
+
+  - id: 2
+    prompt: |
+      Your team is debating Pod CIDR `10.244.0.0/16` (kubeadm default) vs `192.168.224.0/20`. The corporate VPN routes `10.0.0.0/8`. Which is right and why?
+    answer: |
+      `192.168.224.0/20`. The kubeadm default `10.244.0.0/16` is a subset of the VPN's `10.0.0.0/8` — every Pod IP looks like a VPN destination to upstream routers. Symptoms range from "can't reach corporate services from Pods" to "corporate hosts can't reach the cluster" to silent black-holing. `192.168.224.0/20` sits in RFC1918 space the VPN doesn't use, gives you 4096 Pod IPs (16 nodes × 256), and can grow with /20 → /16 expansion later. **The kubeadm default is a starting point, not a recommendation.**
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to choose between Talos Linux and Ubuntu LTS for a 30-node on-prem cluster. **Click for the decision walk. ▼**
+    answer: |
+      **Pick Talos when:** (1) your team is comfortable with API-driven config (no SSH); (2) you value immutable hosts (kernel + userspace from one signed image); (3) you want simpler upgrades (replace the host image, reboot, done); (4) you don't need to install random tools on the host. **Pick Ubuntu when:** (1) your team has deep Ubuntu/Debian expertise + tooling; (2) you need to run agents that don't fit Talos's extension model; (3) you need root SSH for compliance (some regulators still expect it); (4) you have years of Ansible / playbook investment in Ubuntu hardening. **For a fresh on-prem 30-node cluster in 2026 with a willing team, Talos is the modern default** — smaller attack surface, simpler upgrades, no drift between nodes. The decision is *org capability*, not technology — both run K8s well.

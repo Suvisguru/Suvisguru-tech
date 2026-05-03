@@ -892,3 +892,41 @@ L7-5 (the prerequisite primer per DECISIONS 2026-05-02 "Lesson N.5 pattern") is 
 **Alternatives considered:** Run audit only in CI. Rejected — too slow a feedback loop; developers iterate locally. Run audit on every git commit hook. Rejected — runs even for unrelated changes (docs, scripts), adds friction. Block via mandatory pre-commit script rather than wiring into the generator. Rejected — generator is the single chokepoint where lesson HTML is produced; better to enforce there. Single combined audit script. Rejected — mechanical and content checks have very different false-positive profiles; splitting them lets each be tuned independently.
 
 **Revisit when:** A new lesson type is introduced (e.g., a new primer style, an "interactive lab" lesson) that legitimately fails one of the v2 checks. At that point: add it to the exemption set + log here. Or: a new audit category (image alignment math, vocabulary canon enforcement, accessibility) gets enough wins to justify a v3 audit script — same auto-run pattern.
+
+## 2026-05-03 — K-VAN course + K-Frontier analogical universe
+
+**Context:** Founder asked for a new course: Vanilla Kubernetes (K-VAN) — \"own the full stack — install, configure, upgrade, harden, back up, and troubleshoot Kubernetes you run yourself (bare metal, on-prem, or IaaS VMs).\" 11 modules: V1 architecture, V2 OS prep, V3 kubeadm bootstrap, V4 CNI install, V5 core add-ons, V6 cluster config, V7 etcd production, V8 upgrades, V9 hardening, V10 troubleshooting, V11 capstone. Prereq: K-COM. Per CLAUDE.md \"When you encounter a needed analogical district that doesn\'t exist in the universe... propose the new district\" — K-COM\'s K-Town metaphor doesn\'t fit (K-Town is a city you live in; K-VAN is about <em>building</em> from raw land).
+
+**Decision:** New course at `courses/kubernetes/vanilla-kubernetes/` with its own analogical universe (K-Frontier — homestead metaphor) and a parallel generator stack.
+
+**Sub-decision A — K-Frontier universe.** Eleven build sites mapped one-to-one with V1-V11:
+
+| # | Site | Module |
+|---|---|---|
+| V1 | **Drafting Hut** | Production architecture design |
+| V2 | **Land Clearing** | OS + node prep |
+| V3 | **Frame Raising** | kubeadm bootstrap |
+| V4 | **Wiring & Plumbing** | CNI install |
+| V5 | **Outbuildings** | Core add-on stack |
+| V6 | **Rules Board** | Cluster configuration |
+| V7 | **The Well** (anchor) | etcd production |
+| V8 | **Renovation Site** | Upgrades + patching |
+| V9 | **Watchtower** | Security hardening |
+| V10 | **Drill Square** | Troubleshooting drills |
+| V11 | **Complete Homestead** | Capstone |
+
+Map viewBox 800×400 (smaller than K-Town\'s 800×420 — only 11 sites). Anchor: The Well (V7 — etcd is the foundation everything else depends on; mirrors K-Town\'s anchor at Mayor\'s Office). No new recurring characters (per the 3-character cap from K-COM); roles instead (the Settler, the Foreman) used as job titles in narration.
+
+**Sub-decision B — Parallel generator stack.** `scripts/k_van_lesson_generator.py` mirrors `k8s_lesson_generator.py` but emits K-Frontier atlas + K-VAN concept rail + V-numbered footers + \"Module V{N} of 11\" labels. Reuses BASE_CSS, SCRIPT_BLOCK, dataclasses, _render_animation from the K-COM generator (no duplication of shared infrastructure). Lesson specs in `scripts/lessons_kvan/lessonNN.py`; animations in `scripts/lessons_kvan/animations.py`.
+
+**Sub-decision C — File naming.** Per STYLE.md \"Per-domain preview filename pattern\" extended: K-COM uses `preview-kubernetes-lesson-NN.html`; K-VAN uses `preview-kubernetes-vanilla-lesson-NN.html` (domain stays `kubernetes`; course identifier `vanilla` added). Course folder slug: `vanilla-kubernetes` (kebab-case lowercase per existing convention; the user-facing name is \"Vanilla Kubernetes\").
+
+**Sub-decision D — Audit per course.** `scripts/audit_lessons_kvan.py` — mechanical + content checks for K-VAN. Same \"audit runs immediately after generation\" rule (DECISIONS 2026-05-03 above) — `k_van_lesson_generator.py` auto-runs the K-VAN audit after every generation pass. K-COM and K-VAN have separate audits because the expected counts differ (K-COM: 24 K-Town pins, 45 strip dots; K-VAN: 11 K-Frontier sites, 11 strip dots).
+
+**Reasoning:** K-Frontier as a new universe (rather than reusing K-Town) is justified because: (1) the metaphor changes — K-COM is \"living in the city\" (consuming K8s primitives), K-VAN is \"building your own town\" (operating K8s yourself). Forcing K-VAN into K-Town would dilute both. (2) The smaller K-VAN site count (11 vs 24) means a K-Frontier-specific atlas is visually cleaner. (3) The homestead metaphor maps onto V1-V11 naturally — Drafting Hut → architecture, Land Clearing → OS prep, Frame Raising → kubeadm, etc. — without forced mappings.
+
+The parallel generator stack (rather than refactoring k8s_lesson_generator.py to be domain-agnostic) is justified because: (1) the K-COM generator has K-Town-specific data hard-coded throughout; refactoring risks regressions across 45 published K-COM lessons. (2) Reusing BASE_CSS + SCRIPT_BLOCK + dataclasses + _render_animation as imports means the shared infra has one source of truth; the K-VAN generator is ~400 lines vs the K-COM generator\'s 800. (3) Per-course audits are cleaner than one polyglot audit handling both expected counts.
+
+**Alternatives considered:** Add K-VAN modules into the K-COM curriculum as L45+. Rejected — K-VAN is a separate course with a separate prereq + audience; K-COM ends at L44 capstone. Reuse K-Town atlas with new district pins for V1-V11. Rejected — would push K-Town past 35 districts; map becomes unreadable; metaphor confused. Make the K-COM generator domain-agnostic. Rejected — too much refactor risk for too little reuse benefit. Use one combined audit script. Rejected — different expected counts per course; clearer to keep them separate.
+
+**Revisit when:** A future K-related course is added (K-EKS, K-GKE, K-AKS for managed-cloud-specific deep dives; K-EDGE for edge K8s). At that point: each gets its own course slug + its own analogical universe (or reuses K-Frontier if the metaphor fits) + its own generator + its own audit. Update STYLE.md with the new universe + DECISIONS.md with the new entry.
