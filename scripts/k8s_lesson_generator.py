@@ -591,31 +591,35 @@ def _render_pin(pin: tuple, active_id: str) -> str:
     )
 
 
-def _render_ktown_map(active_pin: str, lesson_num: str, district_label: str, total_lessons: int) -> str:
-    pins_svg = "\n    ".join(_render_pin(p, active_pin) for p in KTOWN_PINS)
-    # build dot strip — anchor pin first, then one per non-anchor lesson in
-    # numerical order, with the current lesson's dot marked active
-    strip_parts = ['<li class="ktown-strip-pin ktown-strip-anchor"></li>']
-    # We assemble dots roughly matching how L18 had ~17 + active + ~6 — for
-    # generated lessons we generate (total_lessons-1) dots after the anchor
-    for i in range(1, total_lessons):
-        is_active = False
-        # Crude mapping: dots correspond to a flat order. Active dot = current
-        # The previous L18 mapped 17 inactive + 1 active + 6 trailing for L18.
-        # For simplicity make active dot mid-list, near current lesson position.
-        strip_parts.append('<li class="ktown-strip-pin"></li>')
+TOTAL_LESSONS_IN_CURRICULUM = 45  # L01-L17 + L7.5 + L18-L44
 
-    # mark a representative active dot near where the current lesson sits
-    # (not strictly accurate, but visually aligned)
+# Map lesson_num → strip dot index (anchor at L01 = 0; L7.5 inserted between L07 and L08).
+def _strip_index_for(lesson_num: str) -> int | None:
+    if lesson_num == "7-5":
+        return 7
     try:
         n = int(lesson_num)
-        # idx = n is fine because anchor is index 0
-        if 1 <= n - 1 < total_lessons - 1:
-            strip_parts[n] = '<li class="ktown-strip-pin active"></li>'
     except ValueError:
-        pass
+        return None
+    if n <= 7:
+        return n - 1  # L01 = 0 (anchor), L02 = 1, ..., L07 = 6
+    return n  # L08 = 8 (skip 7 = L7.5), ..., L44 = 44
 
+
+def _render_ktown_map(active_pin: str, lesson_num: str, district_label: str) -> str:
+    pins_svg = "\n    ".join(_render_pin(p, active_pin) for p in KTOWN_PINS)
+    # Build 45 dots: index 0 is the anchor (L01); active dot matches current lesson
+    active_idx = _strip_index_for(lesson_num)
+    strip_parts = []
+    for i in range(TOTAL_LESSONS_IN_CURRICULUM):
+        cls = "ktown-strip-pin"
+        if i == 0:
+            cls += " ktown-strip-anchor"
+        if i == active_idx:
+            cls += " active"
+        strip_parts.append(f'<li class="{cls}"></li>')
     strip_html = "\n    ".join(strip_parts)
+
     aria_label = f"Lesson {lesson_num}, {district_label}."
     return f"""<div class="ktown-map-wrap">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Town district map: lesson {lesson_num}">
@@ -638,7 +642,7 @@ def _render_ktown_map(active_pin: str, lesson_num: str, district_label: str, tot
   <ol class="ktown-strip" aria-hidden="true">
     {strip_html}
   </ol>
-  <p class="ktown-strip-label">\U0001F4CD <strong>{district_label}</strong> <span>· lesson {lesson_num}</span><span class="visually-hidden">{aria_label}</span></p>
+  <p class="ktown-strip-label">\U0001F4CD <strong>{district_label}</strong> <span>· lesson {lesson_num} of {TOTAL_LESSONS_IN_CURRICULUM}</span><span class="visually-hidden">{aria_label}</span></p>
 </div>"""
 
 
@@ -850,7 +854,7 @@ def _render_animation(anim: 'Animation') -> tuple:
 
 def render_lesson(spec: LessonSpec) -> str:
     css = BASE_CSS + (spec.extra_css or "")
-    map_html = _render_ktown_map(spec.district_pin, spec.num, spec.district_label, len(CONCEPT_RAIL))
+    map_html = _render_ktown_map(spec.district_pin, spec.num, spec.district_label)
     rail_html = _render_concept_rail(spec.num)
 
     sections_html = []
@@ -1068,7 +1072,7 @@ def render_lesson(spec: LessonSpec) -> str:
 
 </main>
 
-<footer>Suvis Guru · K-COM · Lesson {spec.num} · grounded in kubernetes.io</footer>
+<footer>Suvis Guru · K-COM · Lesson {spec.num} of {TOTAL_LESSONS_IN_CURRICULUM} · grounded in kubernetes.io</footer>
 
 {combined_script}
 </body>

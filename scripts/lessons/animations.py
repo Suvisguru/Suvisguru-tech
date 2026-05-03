@@ -69,8 +69,7 @@ ANIM_L18 = Animation(
             phases=[
                 P(readout='<strong>Step 1.</strong> PVC submitted; <code>storageClassName: fast-ssd</code>.', move_to=(285, 105), duration_ms=900),
                 P(readout='<strong>Step 2.</strong> StorageClass invokes the provisioner.', move_to=(465, 105), duration_ms=900),
-                P(readout='<strong>Step 3.</strong> Provisioner creates a PV; binds to PVC. Pod mounts <code>/data</code>.', move_to=(650, 105), duration_ms=900,
-                  set_attr=[("anim-pv-state", "fill", "#5A9F7A")]),
+                P(readout='<strong>Step 3.</strong> Provisioner creates a PV; binds to PVC. Pod mounts <code>/data</code>.', move_to=(650, 105), duration_ms=900),
                 P(readout='<strong>Step 4.</strong> User <code>kubectl delete pvc</code>. Reclaim=Delete → PV + underlying disk gone.', move_to=(650, 200), duration_ms=900, pause_after_ms=2200,
                   set_text=[("anim-mode-label", "Mode: reclaimPolicy=Delete — disk removed with PVC")]),
             ],
