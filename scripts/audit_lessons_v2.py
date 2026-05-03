@@ -38,10 +38,16 @@ def report(category: str, lesson: str, msg: str):
     issues[category].append(f"L{lesson}: {msg}")
 
 
+# Primers (Lesson-N.5 pattern) are intentionally lighter per
+# DECISIONS 2026-05-02 — exempt from Section 7 / glossary / analogy-stops checks.
+PRIMER_EXEMPT = {"7-5"}
+
+
 for filename in LESSON_FILES:
     num = lesson_num(filename)
     path = os.path.join(ROOT, filename)
     content = open(path).read()
+    is_primer = num in PRIMER_EXEMPT
 
     # --- SECTIONS: count s-eyebrow occurrences to verify section coverage ---
     eyebrows = re.findall(r'<span class="s-eyebrow">([^<]+)</span>', content)
@@ -49,6 +55,9 @@ for filename in LESSON_FILES:
     needs = ["Section 1", "Section 2", "Section 3", "Section 4", "Section 5", "Section 7"]
     if num.isdigit() and 18 <= int(num) <= 44:
         needs.append("Section 6")
+    if is_primer:
+        # primers may omit Section 7 (no canonical quiz/misconception block)
+        needs = [n for n in needs if n != "Section 7"]
     for need in needs:
         if not any(eb.startswith(need) for eb in eyebrows):
             report("SECTIONS", num, f"missing {need}")
@@ -96,17 +105,18 @@ for filename in LESSON_FILES:
     if stamp_count != 2:
         report("WORDS", num, f"expected 2 .stamp-box (top + bottom), found {stamp_count}")
 
-    # --- WORDS: analogy stops note present ---
-    if 'analogy-stops' not in content:
+    # --- WORDS: analogy stops note present (skip for primers) ---
+    if not is_primer and 'analogy-stops' not in content:
         report("WORDS", num, "missing 'analogy stops here' callout")
 
-    # --- GLOSS: glossary present ---
-    if 'class="glossary"' not in content:
-        report("GLOSS", num, "missing glossary <details> block")
-    else:
-        items = re.findall(r'class="gloss-item"', content)
-        if len(items) < 4:
-            report("GLOSS", num, f"glossary has only {len(items)} items (expected ≥ 4)")
+    # --- GLOSS: glossary present (skip for primers) ---
+    if not is_primer:
+        if 'class="glossary"' not in content:
+            report("GLOSS", num, "missing glossary <details> block")
+        else:
+            items = re.findall(r'class="gloss-item"', content)
+            if len(items) < 4:
+                report("GLOSS", num, f"glossary has only {len(items)} items (expected ≥ 4)")
 
     # --- RECAP: recap card present + has next-lesson hook ---
     if 'class="recap"' not in content:

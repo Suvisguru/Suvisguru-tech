@@ -1113,10 +1113,34 @@ def _maybe_attach_animation(spec: LessonSpec, spec_path: str) -> None:
         spec.animation = animations[spec.num]
 
 
+def _run_audits() -> int:
+    """Auto-run both audits at the end of generation. Returns total issue count.
+
+    Per CLAUDE.md "Audit runs immediately after generation": this is mandatory.
+    """
+    import subprocess
+    failures = 0
+    for script in ("audit_lessons.py", "audit_lessons_v2.py"):
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), script)
+        result = subprocess.run([sys.executable, path], capture_output=True, text=True)
+        if result.returncode != 0:
+            failures += 1
+            print(f"\n>>> {script} FAILED <<<")
+            print(result.stdout)
+            if result.stderr:
+                print(result.stderr, file=sys.stderr)
+        else:
+            # Print concise success line
+            first_line = (result.stdout.splitlines() or [""])[0]
+            print(f"audit: {script} ✓ ({first_line})")
+    return failures
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("specs", nargs="+", help="Python files defining LESSON = LessonSpec(...)")
     parser.add_argument("--out", default=ROOT, help="Output directory (default: repo root)")
+    parser.add_argument("--no-audit", action="store_true", help="Skip post-generation audits (NOT recommended; see CLAUDE.md).")
     args = parser.parse_args()
 
     for spec_path in args.specs:
@@ -1130,6 +1154,15 @@ def main():
         with open(out_path, "w") as f:
             f.write(html)
         print(f"wrote {out_path}")
+
+    if args.no_audit:
+        print("\n[--no-audit] skipped post-generation audits.")
+        return
+    print()
+    failures = _run_audits()
+    if failures:
+        print(f"\n{failures} audit(s) reported issues — fix before committing.")
+        sys.exit(2)
 
 
 if __name__ == "__main__":

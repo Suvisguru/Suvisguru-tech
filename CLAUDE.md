@@ -50,6 +50,17 @@ Apply the **unified analogical universe** convention for the domain. For Kuberne
 
 For every section with a creative dimension (analogy, ELI5, ELI10, real-world scenarios, before/after, Nightmare opener, one-sentence stamp), follow the drafting protocol in QUALITY.md: generate at least three substantively different drafts, self-critique each one, select a winner with reasoning, revise once, and save the discarded drafts to `NOTES.md` in the lesson folder. Do not present a section to the founder that you know is mediocre.
 
+## Audit runs immediately after generation
+
+Whenever you generate, regenerate, or patch any K-COM lesson HTML file (via `scripts/k8s_lesson_generator.py`, `scripts/build_combined_course.py`, `scripts/normalise_legacy_strips.py`, `scripts/expand_ktown_to_*_pins.py`, `scripts/patch_l18_animation.py`, or any future per-lesson editor), you MUST run both audits before reporting the work as done:
+
+  1. `python3 scripts/audit_lessons.py` — mechanical (HTML balance, K-Town pins, strip dots, footer "of N", animation refs, structural sections)
+  2. `python3 scripts/audit_lessons_v2.py` — content + alignment (sections present, animation packet alignment with scene boxes, ELI5 length sanity, glossary/recap presence)
+
+If either reports issues, fix them before committing. The lesson generator (`scripts/k8s_lesson_generator.py`) auto-runs both audits at the end of every invocation; do not bypass this.
+
+Exception: the L7-5 primer is allowed to fail v2's "missing Section 7 / glossary / analogy-stops" checks because primers follow the lighter Lesson-N.5 pattern (DECISIONS 2026-05-02). All other lessons must pass both audits cleanly.
+
 ## When you encounter a needed primitive that does not exist in the library
 
 Stop. Draft the primitive in `/library/primitives/{domain}/{primitive-name}.svg` and present it for approval. Do not embed an ad-hoc version inline in the lesson. The library is canonical.

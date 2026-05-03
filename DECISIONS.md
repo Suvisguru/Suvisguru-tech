@@ -867,3 +867,28 @@ Each district anchors at least one lesson; several anchor 2-4 lessons (security 
 **Alternatives considered:** Hand-author all 27 lessons. Rejected — output budget. Skip new districts and shoehorn every L18-L44 topic into existing districts. Rejected — security topics have nothing to do with the warehouse/library/switchboard analogies, and forced metaphors would break the pattern that makes K-Town valuable. Bump viewBox to 800×500 to add a fresh row of pins. Rejected — would require updating viewBox in every inline SVG copy across all 19 older files; the chosen 6 positions fit the existing viewBox. Use a separate map for the L18-L44 lessons. Rejected — the whole point of the unified atlas is one map; visitors should see the city growing, not a fork.
 
 **Revisit when:** A future K-COM expansion (e.g., a deep dive into edge K8s, mobile Pods, multi-cluster fleet management) needs additional districts that don't fit the 800×420 viewBox. At that point, bump to 800×500 in one coordinated update (script + primitive + propagation across all 45 lesson files). Or: when an L18-L44 lesson is ready for the per-lesson animation pass — the generator's static-SVG output is intentionally the floor, not the ceiling.
+
+## 2026-05-03 — Audit runs immediately after every generation pass
+
+**Context:** L01-L17 + L7.5 + L18-L44 build complete (45 lessons). The first cross-lesson audit found 62 mechanical issues (footer "of N" stale on every older lesson, strip-dot count inconsistent — 24 / 30 / 45 — across batches, L18 animation referencing a nonexistent element id, L18 packet motion landing in dead space, L18 strip label saying "lesson 19 of 24"). Every one of these would have been caught at generation time if an audit had run automatically. Founder asked: make the audit run immediately after generation as a standing rule.
+
+**Decision:** Two audit scripts always run after any generation/regeneration pass. The lesson generator (`scripts/k8s_lesson_generator.py`) auto-runs both audits at end-of-main and exits non-zero if either reports issues. CLAUDE.md "Audit runs immediately after generation" rule documents this.
+
+**Sub-decision A — Two audit scripts.**
+
+  - `scripts/audit_lessons.py` — mechanical: HTML tag balance per lesson, all 24 K-Town pins present, active pin matches expected district, strip dot count = 45, footer/strip-label "of N" = 45, animation block presence for L18-L44, animation packet move_to within viewBox, animation set_text/set_attr targets reference existing element ids.
+  - `scripts/audit_lessons_v2.py` — content + alignment: required sections present (1, 1.5? optional, 2, 3, 4, 5, 6 for L18-L44, 7), animation packet move_to lands inside (or within 30px of) a scene rect (catches dead-space motion), ELI5 length 12-130 words, stamp present at top and bottom, glossary + recap present, concept-rail count consistency across L19-L44.
+
+**Sub-decision B — Primer exemption.**
+
+L7-5 (the prerequisite primer per DECISIONS 2026-05-02 "Lesson N.5 pattern") is intentionally lighter and exempt from v2's "Section 7 / glossary / analogy-stops" checks. The exemption is hard-coded as `PRIMER_EXEMPT = {"7-5"}` in `audit_lessons_v2.py`. All non-primer lessons must pass both audits cleanly.
+
+**Sub-decision C — Generator integration.**
+
+`k8s_lesson_generator.py` runs both audits via `subprocess` after every successful render. Output is concise (one line per audit when clean; full failure block when not). The generator exits with code 2 if either audit reports issues, blocking accidental commits of broken lessons. A `--no-audit` flag exists for emergency bypass but is not the default and is documented as not recommended in CLAUDE.md.
+
+**Reasoning:** Audit-after-generation is the cheapest, highest-leverage quality control. The same regex that flagged "of 16" stale footers across L01-L17 catches the next regression in seconds. Coupling it to the generator means there's no path where a developer runs the generator, eyeballs the output, and ships without checking — every regen is an audit. The two-audit split (mechanical vs content) keeps each fast (~50ms cluster-wide) and lets us iterate on each independently as new categories of issue emerge.
+
+**Alternatives considered:** Run audit only in CI. Rejected — too slow a feedback loop; developers iterate locally. Run audit on every git commit hook. Rejected — runs even for unrelated changes (docs, scripts), adds friction. Block via mandatory pre-commit script rather than wiring into the generator. Rejected — generator is the single chokepoint where lesson HTML is produced; better to enforce there. Single combined audit script. Rejected — mechanical and content checks have very different false-positive profiles; splitting them lets each be tuned independently.
+
+**Revisit when:** A new lesson type is introduced (e.g., a new primer style, an "interactive lab" lesson) that legitimately fails one of the v2 checks. At that point: add it to the exemption set + log here. Or: a new audit category (image alignment math, vocabulary canon enforcement, accessibility) gets enough wins to justify a v3 audit script — same auto-run pattern.
