@@ -1,0 +1,50 @@
+# Flashcards — K-ECS C (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Five AWS container shapes — what differs?
+    back: |
+      **ECS**: AWS-native orchestrator (no K8s API). **EKS**: managed K8s. **Fargate**: serverless capacity (launch type for ECS or EKS). **App Runner**: opinionated single-service PaaS (120s timeout, no sidecars). **Lambda**: function-as-a-service, 15-min cap, event-driven.
+
+  - id: 2
+    front: |
+      ECS shapes — Cluster, Service, Task, Task Definition?
+    back: |
+      **Cluster**: logical grouping of capacity. **Task Definition**: versioned JSON spec for a Task (containers + CPU/memory + network + IAM + logs). **Task**: one running instance of a Task Definition (group of containers scheduled together). **Service**: long-running controller keeping N Tasks running, integrating with ALB/NLB and rolling deploys.
+
+  - id: 3
+    front: |
+      Four ECS launch types?
+    back: |
+      **EC2**: you manage EC2 ASG + ECS agent on each. **Fargate**: serverless capacity, per-Task billing, no nodes. **External (ECS Anywhere)**: your-own-hardware joins the cluster. **ECS Managed Instances**: AWS-managed EC2 with ECS-optimised AMI lifecycle (middle ground).
+
+  - id: 4
+    front: |
+      What is the ECS agent and where does it run?
+    back: |
+      A small Go binary (open-source) on every container host — EC2, external instance, or Fargate microVM. Reports capacity, pulls Task assignments, manages container lifecycle, ships logs. Talks to the regional ECS control plane via outbound HTTPS.
+
+  - id: 5
+    front: |
+      Three deployment controllers in ECS?
+    back: |
+      **ECS** (built-in rolling — default; `deploymentConfiguration` with min-healthy/max percent + circuit breaker). **CODE_DEPLOY** (blue/green via CodeDeploy, two target groups). **EXTERNAL** (you drive deploys via ECS API directly — for custom controllers).
+
+  - id: 6
+    front: |
+      Task lifecycle states?
+    back: |
+      PROVISIONING (capacity being prepared) → PENDING (waiting for ENI / volumes / image pull) → RUNNING (containers up + healthChecks passing) → STOPPED (with stop reason like USER_INITIATED, OutOfMemoryError, Essential container exited, CannotPullContainerError, ResourceInitializationError).
+
+  - id: 7
+    front: |
+      ECS Service vs K8s Service — what's the key difference?
+    back: |
+      ECS Service ≈ K8s Deployment (long-running controller maintaining N Tasks + driving rolling deploys). A K8s Service is a virtual-IP + DNS object for selecting Pods. They share a name but not a meaning. ECS does its load balancing via ALB/NLB target groups or Service Connect.
+
+  - id: 8
+    front: |
+      When to pick ECS over EKS?
+    back: |
+      *AWS-only deployment, want least YAML, value tight AWS service integration over K8s portability, team has no existing K8s investment.* ECS removes a class of platform-team work; the trade is no portability to GCP/Azure/on-prem K8s. Pick EKS if K8s portability or ecosystem (Helm, operators, mesh) matters.

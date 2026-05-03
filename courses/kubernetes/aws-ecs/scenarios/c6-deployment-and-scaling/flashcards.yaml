@@ -1,0 +1,50 @@
+# Flashcards — K-ECS C (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three deploymentController types?
+    back: |
+      **ECS** (rolling, default), **CODE_DEPLOY** (blue/green via two target groups), **EXTERNAL** (you drive deploys via the ECS API directly).
+
+  - id: 2
+    front: |
+      What does the deployment circuit breaker do?
+    back: |
+      Watches new Task health during a rollout; if failures cross threshold, stops the rollout and rolls back to the previous Task Definition revision. **Off by default — turn it on.**
+
+  - id: 3
+    front: |
+      minimumHealthyPercent + maximumPercent — what do they control?
+    back: |
+      **minimumHealthyPercent**: minimum % of desired-count that stays healthy during a deploy (default 100). **maximumPercent**: max % of desired-count Tasks (old + new) running simultaneously (default 200).
+
+  - id: 4
+    front: |
+      Blue/green traffic shift modes?
+    back: |
+      **AllAtOnce** (full cutover), **Linear** (N% per K minutes), **Canary** (N% then wait then 100%). Combine with CloudWatch alarms in the Deployment Group for auto-rollback.
+
+  - id: 5
+    front: |
+      Three Service Auto Scaling policy types?
+    back: |
+      **Target tracking** (recommended; pick a metric + target value), **step scaling** (alarm bands), **scheduled** (cron-style).
+
+  - id: 6
+    front: |
+      Capacity providers — what problem do they solve?
+    back: |
+      Coordinate Cluster + Service scaling. **Managed scaling** sizes the EC2 ASG to fit pending Tasks; capacity provider strategies blend providers (e.g., Fargate base + Fargate Spot weight) for Spot fallback or multi-launch-type Services.
+
+  - id: 7
+    front: |
+      placementStrategies — three types?
+    back: |
+      **binpack** (fewest hosts), **spread** (evenly by attribute, e.g., AZ for HA), **random**. Combine: spread by AZ + binpack by memory is the common HA + density combo.
+
+  - id: 8
+    front: |
+      distinctInstance constraint — when use?
+    back: |
+      When you want exactly one Task per host (DaemonSet-like agents, host-coupled monitoring sidecars, anything that should not duplicate per host). EC2-launch only.

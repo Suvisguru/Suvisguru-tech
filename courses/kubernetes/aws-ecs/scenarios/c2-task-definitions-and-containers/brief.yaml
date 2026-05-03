@@ -1,0 +1,67 @@
+# Intake brief — C2, K-ECS (non-Kubernetes companion course)
+# Topic: C2 · Task Definitions and Containers
+# Module C2 · Task Definitions and Containers
+
+lesson:
+  title: 'C2 · Task Definitions and Containers'
+  slug: 'c2-task-definitions-and-containers'
+  domain: 'kubernetes'
+  course_slug: 'aws-ecs'
+  position: 02
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Harbor · Cargo Manifests — Down at the harbor, every ship''s captain checks in at **Cargo Manifests**. The manifest is a stamped numbered form: family name (*"my-app"*), revision number (*42*), the type of ship (LINUX or WINDOWS'
+  module: 'Module C2 · Task Definitions and Containers'
+
+course_disclaimer:
+  non_kubernetes: true
+  rationale: 'AWS ECS uses its own APIs (Cluster / Service / Task / Task Definition / Capacity Provider / Service Connect) — not K8s APIs. Included as a companion to K-EKS because organisations frequently choose between or coexist with EKS.'
+
+learner_profile:
+  prerequisites:
+    - 'AWS basics: IAM, VPC, EC2, ALB, ECR, CloudWatch, Secrets Manager, KMS.'
+    - 'Container fundamentals: Docker, image registries, container lifecycle.'
+    - 'K-ECS modules 1-1 (cumulative).'
+  assumed_zero_knowledge_of:
+    - 'Kubernetes Pods / Deployments / Services / Ingress / RBAC / CRDs.'
+
+learning_outcomes:
+  - 'Learner can explain family, revision, network mode, CPU + memory, ephemeralStorage, runtimePlatform.'
+  - 'Learner can explain image, ports, env, secrets, dependsOn, healthCheck, logConfiguration, ulimits, linuxParameters.'
+  - 'Learner can explain bind mounts, Docker volumes, EFS, FSx for Windows / ONTAP.'
+
+sections:
+  - 'family, revision, network mode, CPU + memory, ephemeralStorage, runtimePlatform'
+  - 'image, ports, env, secrets, dependsOn, healthCheck, logConfiguration, ulimits, linuxParameters'
+  - 'bind mounts, Docker volumes, EFS, FSx for Windows / ONTAP'
+  - 'Sidecars share the Task; execution role vs task role'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A 60-engineer SaaS runs a Node.'
+    - 'A 25-engineer team flipped `cpuArchitecture` from `X86_64` to `ARM64` + rebuilt their Node + Java images for arm64.'
+    - 'A team migrating a legacy uploader to ECS.'
+    - 'An on-call engineer added `s3:PutObject` to the execution role (intending to grant runtime access).'
+
+section_6_animated_svg:
+  modes_count: 1-2
+  description: 'See preview-kubernetes-ecs-lesson-02.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-ecs-lesson-02.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Task Definitions are immutable; every change is a new revision. Two IAM roles: execution (image pull + secrets + logs) vs task (your app''s AWS calls). awsvpc is the recommended network mode for almost every Task. Sidecars share the Task''s network namespace + task-level volumes via mountPoints.**'
+
+fact_check_anchors:
+  - 'https://docs.aws.amazon.com/ecs/'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/intro.html'

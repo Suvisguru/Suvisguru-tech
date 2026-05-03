@@ -1,0 +1,50 @@
+# Flashcards — K-ECS C (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      First command for any ECS troubleshooting?
+    back: |
+      `aws ecs describe-tasks --cluster X --tasks ID` — read `lastStatus` + `stoppedReason` + `containers[].exitCode`. Narrows cause class in seconds.
+
+  - id: 2
+    front: |
+      Four stuck-PENDING cause families?
+    back: |
+      (1) **ENI provisioning** (subnet IPs / SG), (2) **image pull** (ECR auth / KMS / network), (3) **IAM/KMS for Secrets** (execution role + KMS Decrypt), (4) **capacity** (Fargate quota, EC2 ASG full, external).
+
+  - id: 3
+    front: |
+      CannotPullContainerError sub-causes?
+    back: |
+      *"no basic auth credentials"* = private registry creds. *"manifest unknown"* = image tag/digest gone. *"AccessDenied"* = ECR repo policy or execution role. *"failed to decrypt with KMS"* = KMS Decrypt missing.
+
+  - id: 4
+    front: |
+      ResourceInitializationError most common cause?
+    back: |
+      Execution role missing `secretsmanager:GetSecretValue` on the secret ARN, OR missing `kms:Decrypt` on the secret's customer-managed KMS key. Both role policy AND key policy must allow.
+
+  - id: 5
+    front: |
+      Exit code 137 typically means?
+    back: |
+      SIGKILL — most often the kernel OOM-killer or an OOM-reaped container. Look at memory metrics; bump container `memory`; investigate leak.
+
+  - id: 6
+    front: |
+      What does the deployment circuit breaker do on failure?
+    back: |
+      Stops the rollout + auto-rolls-back to the previous Task Definition revision (if `rollback: true`). Service events tab logs "deployment circuit breaker" message; read the rolled-back-revision's Task stoppedReasons for the root cause.
+
+  - id: 7
+    front: |
+      ALB target health is Unhealthy but Task is RUNNING — first check?
+    back: |
+      **SG inbound**: does the Task SG allow inbound from the ALB SG on the container port? Most common ALB-Unhealthy cause.
+
+  - id: 8
+    front: |
+      ECS Exec — when most useful?
+    back: |
+      When the failure is inside the container and not visible in logs — DNS issues, downstream timeouts, in-memory state inspection. Faster than restart-and-pray. Works on Fargate where SSH doesn't exist.

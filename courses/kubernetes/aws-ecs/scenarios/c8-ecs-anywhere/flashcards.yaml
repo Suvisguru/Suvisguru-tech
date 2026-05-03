@@ -1,0 +1,50 @@
+# Flashcards — K-ECS C (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Two agents an external instance needs?
+    back: |
+      **SSM agent** (registers + maintains channel back to AWS) + **ECS agent** (manages Task lifecycle on the host). The AWS install script installs both.
+
+  - id: 2
+    front: |
+      What does `aws ssm create-activation` produce?
+    back: |
+      A one-time **activation code + activation ID** used by the agent install script to register the host into SSM (and thereby into the ECS Cluster).
+
+  - id: 3
+    front: |
+      What network direction is required for ECS Anywhere?
+    back: |
+      **Outbound HTTPS only** to SSM Messages + ECS regional endpoints. No inbound from AWS to your hardware. Firewall-friendly.
+
+  - id: 4
+    front: |
+      Three network modes supported on external instances?
+    back: |
+      **bridge** (Docker bridge), **host** (host network namespace), **none**. *awsvpc is NOT supported* on external.
+
+  - id: 5
+    front: |
+      Can external instances integrate with ALB?
+    back: |
+      No. ALB target type IP requires awsvpc; target type instance requires the instance be in a VPC. External instance Tasks need on-prem LB or DNS round-robin or queue-based ingress instead.
+
+  - id: 6
+    front: |
+      Strong-fit ECS Anywhere use cases?
+    back: |
+      **Regulated on-prem (data residency)**, **edge processing (retail / factory / oilfield)**, **gradual cloud migration bridge**, **hybrid burst (steady on-prem + cloud burst)**.
+
+  - id: 7
+    front: |
+      Weak-fit cases (don't pick ECS Anywhere)?
+    back: |
+      General-purpose web services (lose ALB + awsvpc + Service Connect), workloads needing EFS / FSx (cloud-side only), high-churn workloads (external operational burden = yours).
+
+  - id: 8
+    front: |
+      What's the requiresAttributes filter for external Tasks?
+    back: |
+      `requiresAttributes` array on a Task Definition can include `ecs.os-type=linux` + `ecs.cluster-resources` conditions. The EXTERNAL launch type filter routes Tasks to external capacity within a multi-launch-type Cluster.

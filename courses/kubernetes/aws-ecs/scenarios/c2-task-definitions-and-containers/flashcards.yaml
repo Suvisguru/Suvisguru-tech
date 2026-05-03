@@ -1,0 +1,50 @@
+# Flashcards — K-ECS C (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does immutable mean for Task Definitions?
+    back: |
+      Once registered, a revision's contents never change. Each change is a new revision (my-app:42 → my-app:43). Old revisions stay around for rollback. UpdateService points the Service at the new revision.
+
+  - id: 2
+    front: |
+      Four ECS network modes — and which is recommended?
+    back: |
+      **awsvpc** (recommended; ENI per Task; SG per Task; required for Fargate), **bridge** (Docker bridge; EC2-launch legacy), **host** (host network; collisions if multiple Tasks bind same port), **none** (no network).
+
+  - id: 3
+    front: |
+      Where does ephemeralStorage live and what's the Fargate default + max?
+    back: |
+      In Task Definition top-level `ephemeralStorage.sizeInGiB`. Fargate default = **20 GiB**; bumpable to **200 GiB**. EC2 launch uses host disk.
+
+  - id: 4
+    front: |
+      What does runtimePlatform let you set?
+    back: |
+      `operatingSystemFamily` (LINUX, WINDOWS_SERVER_2019 / 2022 FULL/CORE) and `cpuArchitecture` (X86_64 or ARM64 — Graviton). Pick ARM64 for cost wins on compatible workloads.
+
+  - id: 5
+    front: |
+      Two ways to inject Secrets into a container?
+    back: |
+      `secrets` array with valueFrom = Secrets Manager ARN or SSM parameter ARN. Execution role policy must allow Secrets Manager / SSM Get + KMS Decrypt for the encryption key. Injected as env vars at launch; not logged.
+
+  - id: 6
+    front: |
+      What does dependsOn do?
+    back: |
+      Container-level field listing other containers in the same Task and the state they must reach (START / COMPLETE / SUCCESS / HEALTHY) before this container starts. Use for sidecar boot order — app waits for log-router HEALTHY.
+
+  - id: 7
+    front: |
+      EFS for ECS — what's the win?
+    back: |
+      Managed NFSv4 filesystem; **RWX-equivalent** across many Tasks and AZs; IAM-based authorization; access points isolate path + UID/GID + perms per Task. Use for shared state, uploads, durable on-Task-restart storage.
+
+  - id: 8
+    front: |
+      Three logConfiguration options most teams use?
+    back: |
+      **awslogs** (CloudWatch — default, simple), **awsfirelens** (route via Firelens sidecar to anywhere — OpenSearch / Kinesis / S3 / Splunk), **splunk / fluentd / journald** (specific destinations). Production default for flexibility = awsfirelens.

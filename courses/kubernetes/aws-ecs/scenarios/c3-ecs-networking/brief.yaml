@@ -1,0 +1,68 @@
+# Intake brief — C3, K-ECS (non-Kubernetes companion course)
+# Topic: C3 · ECS Networking — Network Modes, Service Connect, ALB/NLB, VPC Lattice
+# Module C3 · ECS Networking
+
+lesson:
+  title: 'C3 · ECS Networking — Network Modes, Service Connect, ALB/NLB, VPC Lattice'
+  slug: 'c3-ecs-networking'
+  domain: 'kubernetes'
+  course_slug: 'aws-ecs'
+  position: 03
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Harbor · Lookout & Comms Tower — The **Lookout & Comms Tower** overlooks every pier in K-Harbor. The harbor master uses it to wire each ship''s communications and route signal traffic between ships and to the outside world.
+    In **a'
+  module: 'Module C3 · ECS Networking'
+
+course_disclaimer:
+  non_kubernetes: true
+  rationale: 'AWS ECS uses its own APIs (Cluster / Service / Task / Task Definition / Capacity Provider / Service Connect) — not K8s APIs. Included as a companion to K-EKS because organisations frequently choose between or coexist with EKS.'
+
+learner_profile:
+  prerequisites:
+    - 'AWS basics: IAM, VPC, EC2, ALB, ECR, CloudWatch, Secrets Manager, KMS.'
+    - 'Container fundamentals: Docker, image registries, container lifecycle.'
+    - 'K-ECS modules 1-2 (cumulative).'
+  assumed_zero_knowledge_of:
+    - 'Kubernetes Pods / Deployments / Services / Ingress / RBAC / CRDs.'
+
+learning_outcomes:
+  - 'Learner can explain bridge, host, awsvpc (recommended), none.'
+  - 'Learner can explain eNI per Task, SG per Task, ENI limits, awsvpc trunking.'
+  - 'Learner can explain modern east-west and the legacy DNS path.'
+
+sections:
+  - 'bridge, host, awsvpc (recommended), none'
+  - 'ENI per Task, SG per Task, ENI limits, awsvpc trunking'
+  - 'Modern east-west and the legacy DNS path'
+  - 'north-south traffic; cross-VPC application networking'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A 100-engineer org has 12 ECS Services on Fargate.'
+    - 'A regulated workload has Tasks A (PII handler) and Tasks B (public web) on the same Cluster + same hosts.'
+    - 'A platform team owns Service A in Account-1; partner team owns Service B in Account-2.'
+    - 'A team running 50 Tasks on bridge-mode EC2 hit hostPort 8080 collision when adding a new Service.'
+
+section_6_animated_svg:
+  modes_count: 1-2
+  description: 'See preview-kubernetes-ecs-lesson-03.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-ecs-lesson-03.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**awsvpc network mode is the recommended default — ENI per Task, SG per Task, required for Fargate. Service Connect is the modern east-west pattern (replaces App Mesh). ALB target type = IP for awsvpc Tasks. VPC Lattice for cross-VPC / cross-account application networking.**'
+
+fact_check_anchors:
+  - 'https://docs.aws.amazon.com/ecs/'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/intro.html'

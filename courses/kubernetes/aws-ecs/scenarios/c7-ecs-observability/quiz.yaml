@@ -1,0 +1,21 @@
+# Quiz — K-ECS C (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A Service's Tasks crash within 5 seconds of startup with no logs. ECS Exec into a Task during the brief startup window? Or another approach?
+    answer: |
+      ECS Exec needs the Task to reach RUNNING + healthy enough for the SSM agent path to be established — usually too slow if the container crashes in 5 seconds. Better approach: (1) Add a **sleep + tail at the entrypoint** for one debug Task — `command: ["/bin/sh", "-c", "sleep 600"]` — Exec in once it's up, run the real binary by hand, watch it fail. (2) Or use **Run Task** (one-off) with the suspect Task Definition + sleep override; debug at leisure. (3) Read **stoppedReason + container exit code** from `describe-tasks` — often names the cause (Essential container exited; OutOfMemoryError; CannotPullContainerError). (4) Make sure logConfiguration captures *everything* — stderr, not just stdout — so any startup error has a chance of being recorded.
+
+  - id: 2
+    prompt: |
+      A team has Container Insights enabled but not ADOT/X-Ray. They're seeing P99 latency drift up over weeks with no obvious metric tipping. What's the next investment?
+    answer: |
+      **Distributed tracing via ADOT + X-Ray.** Container Insights gives per-Service and per-Task aggregates; it can't answer "which downstream call is the slow one?" or "which user request paths take longest?" Add OTel SDK to the app; deploy ADOT sidecar; export traces to X-Ray. Within hours, X-Ray service map shows: which downstream services are in the path, where time is spent, which paths have anomalous tails. Slow drift over weeks usually traces to a downstream that's gradually slowing (DB index degraded, cache hit rate dropping). Distributed tracing makes that visible in one chart.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees a $1,200/month CloudWatch bill from Container Insights + FireLens-to-CloudWatch on a 200-Task cluster. "Cut it in half." Defend the value or propose tradeoffs.
+    answer: |
+      "**Container Insights and CloudWatch logging are the things we'd miss most in an outage.** $1,200/month works out to ~$6 per Task per month. Two ways to trim without losing the value: (1) **Reduce CloudWatch log retention** from default to 14 days (compliance work-around: keep S3 archive via FireLens for the long retention; CloudWatch is just live operational). Cuts ingestion of old logs from re-indexing during search. (2) **Filter at FireLens** — drop DEBUG logs from CloudWatch (route them to S3 only); keep INFO/WARN/ERROR in CloudWatch. Often 60-80% of log volume is DEBUG. **Combined: usually halves the bill while preserving every signal we actually use during incidents.** Cutting Container Insights itself would save more, but next outage we'd be debugging blind."

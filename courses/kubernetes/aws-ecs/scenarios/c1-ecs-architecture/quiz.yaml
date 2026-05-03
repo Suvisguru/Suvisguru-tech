@@ -1,0 +1,21 @@
+# Quiz — K-ECS C (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team is choosing between ECS on Fargate and ECS on EC2 for a steady-state web service running 24/7. CFO asks why anyone would pick EC2 if Fargate is "easier". Defend the EC2 choice.
+    answer: |
+      "**Fargate is per-vCPU-hour priced ~30-40% higher than equivalent raw EC2 capacity.** For a workload running 24/7 at predictable load, raw EC2 with reserved instances or Savings Plans is materially cheaper. Fargate wins for bursty workloads (off-hours scale-to-near-zero), workloads where node management costs human time, or where Spot interruptions on EC2 are unacceptable. Steady-state always-on web service with predictable utilisation is the textbook EC2 case — we get cheaper compute and the orchestrator still does rolling deploys, autoscaling, healing. We pay the EC2 patching tax (Bottlerocket + ECS-optimised AMI rotations make this small) and we save 30%."
+
+  - id: 2
+    prompt: |
+      A new engineer asks: "Why doesn't ECS have Pods?" Explain.
+    answer: |
+      ECS pre-dates wide K8s adoption (~2014) and was designed by AWS as a Docker-first orchestrator with simpler primitives. The ECS **Task** is its closest analog to a K8s Pod — a group of containers scheduled and stopped together, sharing a network namespace (in awsvpc mode), sharing volumes via task-level mounts. The vocabulary differs because the products are independent ancestries: Pods = K8s vocabulary; Tasks = ECS vocabulary. They're not interchangeable terms in writing or quizzes — "Pod" specifically means the K8s object.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO says: "Move everything to App Runner. Less ops, less code." The team has 8 microservices, three of which run async background workers. What happens?
+    answer: |
+      App Runner is single-service-HTTPS-only. Three of the eight services don't fit at all (background workers don't expose HTTPS endpoints — App Runner can't schedule them). The other five would need to drop their sidecars (App Runner has no multi-container support). Inter-service traffic would go through public HTTPS or VPC connectors — no Service Connect, no Cloud Map, no internal mesh. The 120-second request timeout would clip any long upload/download or report-generation endpoint. **Result:** within a week, ops surface is up (because the team is rebuilding what App Runner doesn't have), and three services are stuck. **The right move:** keep the eight services on ECS Fargate; if a single-service-HTTPS app shows up *new* in the future, App Runner is fine for *that* one.

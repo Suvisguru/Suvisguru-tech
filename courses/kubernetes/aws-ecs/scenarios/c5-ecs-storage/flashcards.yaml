@@ -1,0 +1,50 @@
+# Flashcards — K-ECS C (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Fargate ephemeralStorage default + max?
+    back: |
+      **20 GiB default**; bumpable to **200 GiB** via Task Definition `ephemeralStorage.sizeInGiB`. Per-Task scratch; destroyed on Task stop. KMS-encrypted (AWS-managed default; customer-managed via `ephemeralStorageKmsKeyId`).
+
+  - id: 2
+    front: |
+      Five ECS storage shapes?
+    back: |
+      **ephemeral** (per-Task scratch), **bind mount** (EC2 host path; legacy), **Docker volume** (EBS / local on EC2; legacy), **EFS** (NFSv4 RWX cross-Task cross-AZ), **FSx** (Windows / NetApp ONTAP).
+
+  - id: 3
+    front: |
+      EFS access points — what do they isolate?
+    back: |
+      A managed entrypoint with **path + POSIX UID/GID + permissions**. Each Task workload gets its own access point; subtree visible to that Task only; UID/GID enforced server-side. One filesystem can host many access points.
+
+  - id: 4
+    front: |
+      EFS IAM auth — what enables it?
+    back: |
+      `iam: ENABLED` + `transitEncryption: ENABLED` in the volumeConfiguration; execution role policy with `elasticfilesystem:ClientMount` + `elasticfilesystem:ClientWrite` on the filesystem or access point. Replaces relying on NFS host-level auth.
+
+  - id: 5
+    front: |
+      Why are bind mounts and Docker volumes legacy?
+    back: |
+      EC2-launch only; host-coupled (bind mounts lost when Task moves hosts); volume drivers (REX-Ray etc.) require host AMI work that's sidestepped by Fargate + EFS. Use EFS or ephemeralStorage for new workloads.
+
+  - id: 6
+    front: |
+      When pick FSx for Windows over EFS?
+    back: |
+      When Tasks are Windows containers needing SMB shares. EFS is NFSv4 — Linux-friendly; Windows containers can't mount NFS in ECS's supported pattern. FSx for Windows = managed SMB + AD integration.
+
+  - id: 7
+    front: |
+      EFS mount targets — how many do you need?
+    back: |
+      **One per AZ** in your VPC. Tasks land in subnets that have a path to a mount target. The mount target's SG must allow NFS (port 2049) from the Task SGs.
+
+  - id: 8
+    front: |
+      High-IOPS small-file workload — EFS or alternative?
+    back: |
+      EFS Standard has higher latency than local SSD or EBS. For IOPS-sensitive small-file work, prefer **ephemeralStorage** + S3 archive, or step to EBS-on-EC2-launch. EFS shines for shared-state RWX, not raw IOPS.

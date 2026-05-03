@@ -1,0 +1,50 @@
+# Flashcards — K-ECS C (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does Container Insights for ECS provide?
+    back: |
+      Preconfigured cluster + service + task metrics (CPU / memory / network / I/O) + dashboards in CloudWatch. Per-Task perf in `/aws/ecs/containerinsights/<cluster>/performance` log group.
+
+  - id: 2
+    front: |
+      Three things needed to use ECS Exec?
+    back: |
+      (1) `enableExecuteCommand: true` on Service, (2) Task role with `ssmmessages` perms, (3) VPC outbound to SSM Messages endpoint (or VPC endpoint for private). Container needs a shell.
+
+  - id: 3
+    front: |
+      ECS Exec audit trail?
+    back: |
+      CloudTrail logs `ecs:ExecuteCommand` and the underlying SSM `StartSession`. Optional CloudWatch Logs streaming of session content via SSM logging config.
+
+  - id: 4
+    front: |
+      What does FireLens route?
+    back: |
+      Container logs (stdout + stderr) through a sidecar Fluent Bit / Fluentd to any destination — CloudWatch, S3, Kinesis, OpenSearch, Splunk, Datadog, custom HTTP. Multi-destination routing in one sidecar.
+
+  - id: 5
+    front: |
+      ADOT vs X-Ray — what's the relationship?
+    back: |
+      **ADOT** = AWS Distro for OpenTelemetry — collector that receives OTLP from apps + exports to multiple backends. **X-Ray** = AWS's distributed tracing service. ADOT exports OTel traces in X-Ray format.
+
+  - id: 6
+    front: |
+      Where does an OTel-instrumented app emit traces?
+    back: |
+      To `localhost:4317` (gRPC) or `localhost:4318` (HTTP) on the same Task — picked up by an ADOT sidecar in the same Task that exports onward.
+
+  - id: 7
+    front: |
+      Service Connect observability bonus?
+    back: |
+      The Service Connect Envoy proxy emits per-service rps + latency + 5xx automatically — into Container Insights without app instrumentation. Layer-7 observability for free; pair with ADOT for app-internal traces.
+
+  - id: 8
+    front: |
+      When NOT use FireLens?
+    back: |
+      When CloudWatch is the only log destination + you don't need filtering — plain `awslogs` driver is simpler, no sidecar overhead. The trade gets favorable for FireLens when multi-destination or filtering matters.

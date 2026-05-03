@@ -1,0 +1,68 @@
+# Intake brief — C5, K-ECS (non-Kubernetes companion course)
+# Topic: C5 · ECS Storage — Ephemeral, Bind, Docker, EFS, FSx
+# Module C5 · ECS Storage
+
+lesson:
+  title: 'C5 · ECS Storage — Ephemeral, Bind, Docker, EFS, FSx'
+  slug: 'c5-ecs-storage'
+  domain: 'kubernetes'
+  course_slug: 'aws-ecs'
+  position: 05
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Harbor · Cargo Holds — Down at the harbor''s **Cargo Holds** there are five places to put cargo while ships work.
+    **The ship''s own scratch hold** (ephemeral storage) is where each ship dumps temp cargo during the voyage.'
+  module: 'Module C5 · ECS Storage'
+
+course_disclaimer:
+  non_kubernetes: true
+  rationale: 'AWS ECS uses its own APIs (Cluster / Service / Task / Task Definition / Capacity Provider / Service Connect) — not K8s APIs. Included as a companion to K-EKS because organisations frequently choose between or coexist with EKS.'
+
+learner_profile:
+  prerequisites:
+    - 'AWS basics: IAM, VPC, EC2, ALB, ECR, CloudWatch, Secrets Manager, KMS.'
+    - 'Container fundamentals: Docker, image registries, container lifecycle.'
+    - 'K-ECS modules 1-4 (cumulative).'
+  assumed_zero_knowledge_of:
+    - 'Kubernetes Pods / Deployments / Services / Ingress / RBAC / CRDs.'
+
+learning_outcomes:
+  - 'Learner can explain per-Task scratch, sized at Task Definition.'
+  - 'Learner can explain eC2-launch storage patterns.'
+  - 'Learner can explain nFSv4 managed filesystem; access points; mount targets per AZ.'
+
+sections:
+  - 'Per-Task scratch, sized at Task Definition'
+  - 'EC2-launch storage patterns'
+  - 'NFSv4 managed filesystem; access points; mount targets per AZ'
+  - 'SMB and higher-tier file storage'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A 30-engineer media-processing SaaS resizes user-uploaded videos.'
+    - 'A team has an upload Service + a periodic-cleanup Service.'
+    - 'A regulated insurance back-office runs a Windows .'
+    - 'A team had bind-mounts to `/data/app-state` on EC2 hosts.'
+
+section_6_animated_svg:
+  modes_count: 1-2
+  description: 'See preview-kubernetes-ecs-lesson-05.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-ecs-lesson-05.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Pick storage by lifetime + sharing. Ephemeral = per-Task scratch (sized in Task Definition). EFS = the only RWX-across-Tasks-across-AZs answer. Bind mounts + Docker volumes are EC2-only legacy. FSx for Windows or NetApp use cases. Always set ephemeralStorage explicitly on Fargate when you need >20 GiB.**'
+
+fact_check_anchors:
+  - 'https://docs.aws.amazon.com/ecs/'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/intro.html'

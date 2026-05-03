@@ -1,0 +1,68 @@
+# Intake brief — C9, K-ECS (non-Kubernetes companion course)
+# Topic: C9 · ECS Troubleshooting — Stuck Tasks, Stopped Reasons, Deploy Failures
+# Module C9 · ECS Troubleshooting
+
+lesson:
+  title: 'C9 · ECS Troubleshooting — Stuck Tasks, Stopped Reasons, Deploy Failures'
+  slug: 'c9-troubleshooting'
+  domain: 'kubernetes'
+  course_slug: 'aws-ecs'
+  position: 09
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Harbor · Salvage Office — The harbor''s **Salvage Office** is where things that went wrong come for forensic review. The salvager (you) reads a chain of evidence top-down.
+    First the **boarding log** (describe-tasks) — what '
+  module: 'Module C9 · ECS Troubleshooting'
+
+course_disclaimer:
+  non_kubernetes: true
+  rationale: 'AWS ECS uses its own APIs (Cluster / Service / Task / Task Definition / Capacity Provider / Service Connect) — not K8s APIs. Included as a companion to K-EKS because organisations frequently choose between or coexist with EKS.'
+
+learner_profile:
+  prerequisites:
+    - 'AWS basics: IAM, VPC, EC2, ALB, ECR, CloudWatch, Secrets Manager, KMS.'
+    - 'Container fundamentals: Docker, image registries, container lifecycle.'
+    - 'K-ECS modules 1-8 (cumulative).'
+  assumed_zero_knowledge_of:
+    - 'Kubernetes Pods / Deployments / Services / Ingress / RBAC / CRDs.'
+
+learning_outcomes:
+  - 'Learner can explain eNI, image pull, IAM, KMS — the launch-time failure quartet.'
+  - 'Learner can explain read the reason; take the matching action.'
+  - 'Learner can explain a deploy halted itself — read why.'
+
+sections:
+  - 'ENI, image pull, IAM, KMS — the launch-time failure quartet'
+  - 'Read the reason; take the matching action'
+  - 'A deploy halted itself — read why'
+  - 'Tasks RUNNING but not serving traffic'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A Service''s Tasks all stop with *CannotPullContainerError: failed to decrypt image manifest with KMS key arn:.'
+    - 'New revision raised the workload''s baseline memory; container memory was unchanged; OOM at startup.'
+    - 'During an autoscale-out spike, Tasks stuck PROVISIONING with *VPC.'
+    - 'A team''s Service had circuit breaker disabled.'
+
+section_6_animated_svg:
+  modes_count: 1-2
+  description: 'See preview-kubernetes-ecs-lesson-09.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-ecs-lesson-09.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Read top-down: describe-tasks → stoppedReason → service events → CloudWatch logs → ECS Exec. Each step narrows the cause class. Stop reading the moment the cause is identified — most ECS failures are in the first three categories: ENI / image pull / IAM-KMS.**'
+
+fact_check_anchors:
+  - 'https://docs.aws.amazon.com/ecs/'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/intro.html'

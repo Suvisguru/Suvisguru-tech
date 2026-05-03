@@ -1,0 +1,21 @@
+# Quiz — K-ECS C (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A Task Definition with two containers (app + Firelens) is failing — the app starts but Firelens sidecar exits within 5 seconds with "Could not fetch logs". Where do you look first?
+    answer: |
+      The Firelens sidecar is failing because it can't talk to the destination AWS service (OpenSearch / Kinesis / etc.). Two checks in order: (1) **Task role** permissions — the running Firelens container uses the task role to call the destination service; missing perms = silent fail. Add `opensearch:ESHttp*` or equivalent. (2) **VPC connectivity** — if the destination is in a private VPC and the Task is in an isolated subnet, ensure VPC endpoints (or NAT gateway egress) exist for the destination service. Logs from the sidecar itself land in CloudWatch via the sidecar's *own* awslogs configuration — start there.
+
+  - id: 2
+    prompt: |
+      The team wants per-container CPU caps so a runaway sidecar can't starve the app. Where do they configure that?
+    answer: |
+      Per-container `cpu` in containerDefinitions is a *relative weight*, not a hard cap (Linux cpu shares semantics). For a **hard limit** use `cpuShares` + `memoryReservation` (soft floor) and `memory` (hard cap). At the Linux cgroup level, ECS doesn't expose `cpu_quota_us` directly — but on Fargate the Task's overall CPU is capped by the Task-level `cpu` field, and the per-container weights divide that. The cleanest answer: **tune at Task level** (set Task `cpu` to enough total + per-container `cpu` weights to bias toward app), and accept that ECS doesn't implement K8s-style hard CPU limits per container without leaving the orchestrator.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      An on-call engineer wires `s3:PutObject` into the task *execution* role (instead of the task role) and pushes a deploy. The app continues to fail PutObject calls. They escalate after 90 minutes. What was the fix and why does this confuse so many engineers?
+    answer: |
+      **Fix:** move the policy from execution role to task role; leave the execution role with only image pull + secrets + logs. **Why the confusion:** both are "task IAM" in the docs sidebar, both attach to a Task Definition, both involve assume-role chains. The mental model that locks it in: *execution role is the dock crew loading your ship at launch; task role is the captain on the voyage*. Dock crew never sail; the captain never unloads cargo at boarding. Forgetting this costs hours every quarter on every team.

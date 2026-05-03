@@ -1,0 +1,50 @@
+# Flashcards — K-ECS C (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Four ECS network modes — and which is recommended?
+    back: |
+      **awsvpc** (recommended; ENI + SG per Task; required for Fargate), **bridge** (Docker bridge, EC2-only legacy, port-mapped), **host** (host network, EC2-only, hostPort=containerPort), **none** (no network, batch use).
+
+  - id: 2
+    front: |
+      What does awsvpc trunking solve?
+    back: |
+      EC2 ENI density. Without trunking, each Task takes one ENI from the host's instance-type-limited pool (e.g., m5.large = 3 ENIs total). Trunking attaches a multiplexing trunk ENI; each Task gets a sub-ENI; effective Task density per host rises by 5-10×.
+
+  - id: 3
+    front: |
+      Service Connect vs Cloud Map — when to use which?
+    back: |
+      **Service Connect** for east-west needing L7 (LB + retries + timeouts + metrics) — modern recommended path. **Cloud Map** for simple DNS-only east-west or workloads not yet on Service Connect; can coexist.
+
+  - id: 4
+    front: |
+      ALB target types for ECS?
+    back: |
+      **IP** for awsvpc Tasks (registers ENI IP directly — recommended). **instance** for bridge/host Tasks (registers EC2 + dynamic port — legacy).
+
+  - id: 5
+    front: |
+      What does VPC Lattice add over Service Connect?
+    back: |
+      **Cross-VPC + cross-account** application-layer service networking without peering. Service Connect is single-VPC + single-Cluster; Lattice spans VPCs and accounts. Lattice adds IAM-based service auth + managed cross-boundary encryption.
+
+  - id: 6
+    front: |
+      Where is the SG configured for an awsvpc Task?
+    back: |
+      In the Service's `networkConfiguration.awsvpcConfiguration.securityGroups` array. Per-Task — applied to each Task ENI as it's provisioned. Different Tasks on the same host can have different SGs.
+
+  - id: 7
+    front: |
+      What happens during Task PROVISIONING in awsvpc?
+    back: |
+      ECS agent / Fargate requests an ENI from the configured subnets, applies the SGs, attaches it to the host, then transitions to PENDING (waiting on image pull). If ENI provisioning stalls (subnet has no free IPs / IAM denies CreateNetworkInterface) the Task hangs in PROVISIONING.
+
+  - id: 8
+    front: |
+      Service Connect — what infrastructure does it need?
+    back: |
+      A Cloud Map namespace per Cluster (private DNS), Service Connect enabled on the Service with `serviceConnectConfiguration` declaring published / consumed names, and a sidecar Envoy proxy injected per Task by ECS automatically.

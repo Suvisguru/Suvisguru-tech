@@ -1,0 +1,67 @@
+# Intake brief — C8, K-ECS (non-Kubernetes companion course)
+# Topic: C8 · ECS Anywhere and Hybrid — On-Prem and Edge Capacity
+# Module C8 · ECS Anywhere and Hybrid
+
+lesson:
+  title: 'C8 · ECS Anywhere and Hybrid — On-Prem and Edge Capacity'
+  slug: 'c8-ecs-anywhere'
+  domain: 'kubernetes'
+  course_slug: 'aws-ecs'
+  position: 08
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Harbor · Outport Station — The harbor isn''t the only place ships dock. Some captains have private wharves at remote islands or up in the river estuary. The **Outport Station** is how those private wharves get registered into th'
+  module: 'Module C8 · ECS Anywhere and Hybrid'
+
+course_disclaimer:
+  non_kubernetes: true
+  rationale: 'AWS ECS uses its own APIs (Cluster / Service / Task / Task Definition / Capacity Provider / Service Connect) — not K8s APIs. Included as a companion to K-EKS because organisations frequently choose between or coexist with EKS.'
+
+learner_profile:
+  prerequisites:
+    - 'AWS basics: IAM, VPC, EC2, ALB, ECR, CloudWatch, Secrets Manager, KMS.'
+    - 'Container fundamentals: Docker, image registries, container lifecycle.'
+    - 'K-ECS modules 1-7 (cumulative).'
+  assumed_zero_knowledge_of:
+    - 'Kubernetes Pods / Deployments / Services / Ingress / RBAC / CRDs.'
+
+learning_outcomes:
+  - 'Learner can explain control plane in AWS, capacity on your hardware.'
+  - 'Learner can explain sSM activation + agent installation.'
+  - 'Learner can explain bridge/host network only; no ALB; storage on host.'
+
+sections:
+  - 'Control plane in AWS, capacity on your hardware'
+  - 'SSM activation + agent installation'
+  - 'bridge/host network only; no ALB; storage on host'
+  - 'When ECS Anywhere fits — and when it doesn''t'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A retailer has 800 stores.'
+    - 'A health system can''t move PHI to cloud.'
+    - 'A team migrating 40 services from on-prem to cloud.'
+    - 'A team running a 5-service web app on a single on-prem server in Compose tried ECS Anywhere as a "pro upgrade.'
+
+section_6_animated_svg:
+  modes_count: 1-2
+  description: 'See preview-kubernetes-ecs-lesson-08.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-ecs-lesson-08.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**ECS Anywhere = control plane in AWS, capacity on your hardware. SSM + ECS agents register external instances. Networking is bridge/host (no awsvpc on external; no ALB). Pick for regulated, edge, hybrid bridge use cases — not for general-purpose workloads.**'
+
+fact_check_anchors:
+  - 'https://docs.aws.amazon.com/ecs/'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/intro.html'

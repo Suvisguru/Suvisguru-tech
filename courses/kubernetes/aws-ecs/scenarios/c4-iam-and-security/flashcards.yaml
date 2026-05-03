@@ -1,0 +1,50 @@
+# Flashcards — K-ECS C (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Execution role — what does it do?
+    back: |
+      Assumed by ECS agent / Fargate at Task *launch*. ECR pull, fetch Secrets Manager / SSM, write CloudWatch Logs. AWS-managed baseline: `AmazonECSTaskExecutionRolePolicy`. Add KMS Decrypt for encrypted secrets and ECR.
+
+  - id: 2
+    front: |
+      Task role — what does it do?
+    back: |
+      Assumed by the *running container code* via the ECS metadata endpoint. Scope to the actual AWS APIs the app calls. Default-deny; use IAM Conditions for fine-grained scoping.
+
+  - id: 3
+    front: |
+      Two ways to inject secrets at Task launch?
+    back: |
+      `containerDefinitions[].secrets` — array of `{name, valueFrom: arn-of-secret-or-parameter}`. valueFrom can be Secrets Manager ARN or SSM Parameter ARN. Plaintext injected as env var; never logged.
+
+  - id: 4
+    front: |
+      The most-forgotten ECS-IAM policy?
+    back: |
+      `kms:Decrypt` on the customer-managed KMS key protecting Secrets Manager secrets or KMS-encrypted ECR repos. Both *role policy* AND *key policy* must allow it.
+
+  - id: 5
+    front: |
+      VPC endpoints needed for ECR pulls in disconnected VPCs?
+    back: |
+      `com.amazonaws.region.ecr.api`, `com.amazonaws.region.ecr.dkr`, `com.amazonaws.region.s3` (Gateway — image layers are S3), CloudWatch Logs, STS, Secrets Manager, SSM.
+
+  - id: 6
+    front: |
+      Fargate platform versions — pin or LATEST?
+    back: |
+      **LATEST** = auto-update on Task replacement (good default; gets patches). **Pin** = deterministic rollouts; required for some compliance change-control regimes. Cycle Tasks regularly when pinned to absorb patches.
+
+  - id: 7
+    front: |
+      Private-registry auth — how?
+    back: |
+      `repositoryCredentials` in the container definition pointing to a Secrets Manager secret containing `{username, password}`. Execution role allows `secretsmanager:GetSecretValue` on that secret + `kms:Decrypt` for its KMS key.
+
+  - id: 8
+    front: |
+      Compliance scopes for ECS?
+    back: |
+      **PCI DSS** in scope (segmentation via SG; encryption; least-privilege; audit logging). **HIPAA-eligible** with BAA. **FedRAMP** in GovCloud (US) and FedRAMP High accounts (use FIPS endpoints).

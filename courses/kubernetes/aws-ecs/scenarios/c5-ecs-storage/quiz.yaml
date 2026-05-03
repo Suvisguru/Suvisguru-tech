@@ -1,0 +1,21 @@
+# Quiz — K-ECS C (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      An ECS Task Definition mounts an EFS access point but Tasks fail to start with "Could not mount EFS: timed out". The execution role policy looks correct. What else?
+    answer: |
+      Check in this order: (1) **EFS mount targets exist in the AZs the Tasks land in** (one per AZ in the VPC). (2) **Mount target SG allows NFS (TCP 2049) from the Task SGs**. (3) **Task subnet route table** can reach the mount target ENI. (4) **Access point still exists + IAM auth enabled**. (5) **transitEncryption** matches the access point's settings — mismatch produces silent timeouts. The most common cause is SG: mount target SG is shared by the EFS service and frequently overlooked when adding a new Task SG.
+
+  - id: 2
+    prompt: |
+      The team wants to move from bind-mounts on EC2 to EFS to enable Fargate. What's the migration path for an existing service holding 200 GiB of state?
+    answer: |
+      (1) **Provision EFS** + access point in the target VPC, mount targets in each AZ. (2) **One-time copy**: spin up an EC2 instance that mounts both the existing bind path and the new EFS access point; rsync the data. (3) **Update Task Definition**: replace the bind-mount volume with an efsVolumeConfiguration; same containerPath via mountPoints. (4) **Cutover** — UpdateService to the new revision. (5) **Validate** — Tasks restart, see EFS-mounted contents at the same path. (6) **Decommission** the old bind-mount EC2 capacity. Add deployment circuit breaker so a bad migration auto-rolls back.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees the EFS bill: "$300/month for storage that's mostly idle. Switch to bind mounts." Defend EFS.
+    answer: |
+      "**Three reasons EFS stays:** (1) **RWX cross-AZ** — bind mounts are single-host; we'd give up the multi-AZ resilience of running Tasks in three subnets. (2) **State doesn't move with Tasks** — when ECS reschedules a Task to a different host (instance replacement, autoscaling, deploy), bind-mount state is gone; that's how we lost a customer's data the last time we tried this. (3) **EFS Infrequent Access (IA) storage class** auto-tiers cold files to ~$0.025/GB-month; we can flip that on and reduce ~70% of the bill without changing the architecture. **The architectural property of EFS — that any Task on any host in any AZ sees the same filesystem — is why we're using it. Bind mounts trade away that property for $200/month savings, and we've done that experiment before.**"

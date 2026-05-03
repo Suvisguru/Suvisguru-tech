@@ -1,0 +1,21 @@
+# Quiz — K-ECS C (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A migration is moving 30 ECS Services from bridge-mode to awsvpc. The platform team is worried about ENI limits on existing m5.large hosts. What's the path?
+    answer: |
+      Three options, in increasing operational ambition. (1) **Right-size to instances with higher ENI ceilings** — m5.4xlarge = 8 ENIs, m6i.8xlarge = 15 — accept the host-density trade for the cleaner Task isolation. (2) **Enable awsvpc trunking** in ECS account settings; supported instance types attach a trunk ENI multiplexing many sub-ENIs; effective Task density per host rises 5-10×. (3) **Move to Fargate** for some Services — no ENI density worry at all; per-Task pricing premium accepted. Most teams pick a mix: trunking for EC2-launch baseline, Fargate for new Services + bursty workloads.
+
+  - id: 2
+    prompt: |
+      An old Service on Cloud Map DNS is failing intermittently — Task A calls Task B and gets timeouts ~5% of the time during deploys. The team wants to move to Service Connect. What changes?
+    answer: |
+      Service Connect adds three things on top of DNS: (1) **L7 retries** — the sidecar Envoy retries idempotent requests transparently; transient deploy-window failures disappear from caller logs. (2) **Connection pooling + warm connections** — no DNS-cache TTL surprise during scale-out / scale-in. (3) **App-level metrics** — caller sees rps + latency + 5xx per upstream service in Container Insights without instrumenting the app. Migration: enable Service Connect on each Service; Tasks call `service-b.namespace:port` as before; behind the scenes the Envoy handles the rest. Cloud Map can stay registered if you want both code paths; or retire it once Service Connect is proven.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      A platform team accidentally added a permissive 0.0.0.0/0 egress rule to a Task SG that should only egress to a specific S3 VPC endpoint. The compliance auditor flagged it. They're considering disabling awsvpc and putting the workload on bridge mode "to make SG less risky." Talk them out of it.
+    answer: |
+      "**Going back to bridge mode is the wrong direction — it makes the auditor's job harder, not easier.** In bridge mode, the SG is at the EC2 host level; *every Task on that host shares the SG*. We'd either lock down the host SG (breaking other Tasks) or leave the host SG wide-open (breaking compliance). The fix is to *fix the awsvpc SG*: tighten the egress rules on this Task's SG to only the S3 VPC endpoint prefix list. SG-per-Task is exactly what audit wants — workload-scoped network policy that we can show in change history. Reverting to bridge would lose us this and force years of compliance back-fill."

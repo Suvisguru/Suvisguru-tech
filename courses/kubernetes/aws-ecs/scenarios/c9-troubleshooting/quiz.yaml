@@ -1,0 +1,21 @@
+# Quiz — K-ECS C (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A Service goes from 10/10 to 3/10 healthy in 5 minutes. Engineers are paged. Walk through the diagnostic chain in order with specific commands.
+    answer: |
+      (1) **describe-services**: `aws ecs describe-services --cluster X --services Y --query "services[].events[:10]"`. Read recent events — likely "task X stopped, reason: ..." entries. (2) **List recently stopped Tasks**: `aws ecs list-tasks --cluster X --service-name Y --desired-status STOPPED`. (3) **describe-tasks** on the stopped IDs: `describe-tasks --query "tasks[].[lastStatus,stoppedReason,containers[0].exitCode]"`. Read the reason patterns: are they all the same (systemic — bad deploy, downstream outage, capacity)? Or different (per-Task issue)? (4) **If stoppedReason is generic**: dig into CloudWatch logs for the failing container — `aws logs filter-log-events --log-group-name /aws/ecs/X --filter-pattern ERROR`. (5) **If RUNNING Tasks are also unhappy**: ECS Exec into one to inspect; check ALB target health; check Service Connect endpoints. (6) **If pattern == bad-deploy**: confirm circuit breaker tripped (events tab); rollback completed; root-cause the bad revision in dev/staging.
+
+  - id: 2
+    prompt: |
+      A new revision deploys; circuit breaker fires; rollback completes; users notice nothing. Postmortem time. What's the right depth of investigation?
+    answer: |
+      **Investigate fully even though users were unaffected.** The circuit breaker prevented an outage but the bad revision is now an artifact in the system — and the next deploy may run into the same class of issue. (1) Read the bad-revision Tasks' stoppedReasons (still queryable for STOPPED Tasks). (2) Reproduce in dev or staging — register the bad revision against a non-prod Service; observe the failure mode. (3) Identify the root cause: code regression, env var change, missed migration, dependency outage. (4) Fix in code; ship a new revision (same family); deploy. (5) Add a regression test or pre-deploy check that catches the failure pattern. (6) **Document the failure family** in the team's runbook — "if the Service shows pattern X again, look at Y" — so the next on-call rotation is faster.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      A team wants to skip the ECS troubleshooting chain — "just restart the Service if anything is unhealthy." Defend the chain.
+    answer: |
+      "**Restart-as-debug is the slowest, riskiest technique.** Three reasons: (1) **The cause stays**. If a config or IAM change broke this Service, restart launches new Tasks with the same broken config; they'll fail again. We churn until we read the actual cause. (2) **The evidence is gone**. STOPPED Tasks have stoppedReason for a finite window; we lose ours by stopping the chain mid-debug. Reading describe-tasks first costs 30 seconds and preserves the evidence. (3) **Some bugs only surface during a specific code path**. Restart hits that path again only randomly; targeted ECS Exec into a struggling Task can run the path on demand. Our SLA on diagnosing ECS issues should be 5 minutes, not 30 — and the chain (describe-tasks → events → logs → ECS Exec) gets us there. Restart-as-debug should be reserved for known-recoverable transient failures, not unknown-root-cause incidents."

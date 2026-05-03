@@ -1,0 +1,68 @@
+# Intake brief — C6, K-ECS (non-Kubernetes companion course)
+# Topic: C6 · ECS Deployment and Scaling
+# Module C6 · Deployment and Scaling
+
+lesson:
+  title: 'C6 · ECS Deployment and Scaling'
+  slug: 'c6-deployment-and-scaling'
+  domain: 'kubernetes'
+  course_slug: 'aws-ecs'
+  position: 06
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Harbor · Loading Crew Yard — The **Loading Crew Yard** is where new ships get prepared before being moved to active piers. Two crew rotation styles work in this yard.
+    **Rolling rotation**: the harbor master starts new ships a'
+  module: 'Module C6 · Deployment and Scaling'
+
+course_disclaimer:
+  non_kubernetes: true
+  rationale: 'AWS ECS uses its own APIs (Cluster / Service / Task / Task Definition / Capacity Provider / Service Connect) — not K8s APIs. Included as a companion to K-EKS because organisations frequently choose between or coexist with EKS.'
+
+learner_profile:
+  prerequisites:
+    - 'AWS basics: IAM, VPC, EC2, ALB, ECR, CloudWatch, Secrets Manager, KMS.'
+    - 'Container fundamentals: Docker, image registries, container lifecycle.'
+    - 'K-ECS modules 1-5 (cumulative).'
+  assumed_zero_knowledge_of:
+    - 'Kubernetes Pods / Deployments / Services / Ingress / RBAC / CRDs.'
+
+learning_outcomes:
+  - 'Learner can explain deploymentConfiguration, minimumHealthyPercent, maximumPercent, circuit breaker.'
+  - 'Learner can explain two target groups, listener swap, canary + traffic shift.'
+  - 'Learner can explain task count + node count.'
+
+sections:
+  - 'deploymentConfiguration, minimumHealthyPercent, maximumPercent, circuit breaker'
+  - 'Two target groups, listener swap, canary + traffic shift'
+  - 'Task count + node count'
+  - 'Where Tasks land on capacity'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A 50-engineer SaaS with 10 ECS Services on Fargate.'
+    - 'A health-tech runs a PHI-handling API.'
+    - 'A 25-engineer team runs background workers tolerant to interruption.'
+    - 'A team rolled a Task Definition revision with a memory leak.'
+
+section_6_animated_svg:
+  modes_count: 1-2
+  description: 'See preview-kubernetes-ecs-lesson-06.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-ecs-lesson-06.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Rolling is the default; blue/green is for richer rollback (CodeDeploy). Always enable the deployment circuit breaker. Service Auto Scaling for Task count; capacity providers + managed scaling for cluster nodes. Placement strategies (binpack / spread / random) + constraints set Task→host affinity.**'
+
+fact_check_anchors:
+  - 'https://docs.aws.amazon.com/ecs/'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html'
+  - 'https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/intro.html'

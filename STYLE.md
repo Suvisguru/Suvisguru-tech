@@ -727,6 +727,51 @@ These are job titles for whichever entity is being discussed, not new cast membe
 - Strip dot count: **13** (one per module — K-OCP has 13 modules, the largest course). Anchor at O1 (the Welcome Hall, where every visitor enters).
 - Pin prefix `ko-bay` (K-OCP namespaced; not `kf-` to avoid collision with K-Frontier `kf-site`).
 
+### Unified analogical universe — AWS ECS (K-Harbor) — *non-Kubernetes companion*
+
+K-ECS (AWS ECS — Elastic Container Service; **not a Kubernetes course**) is shipped under the K-* family naming for organizational consistency, but its content uses ECS APIs (Tasks, Services, Task Definitions, Cluster, Capacity Providers, Service Connect) — not Kubernetes APIs. K-ECS is a *companion* to K-EKS, included because organizations frequently choose between or coexist with EKS. The K- prefix here is family branding, not a claim that ECS uses K8s.
+
+K-ECS uses its own universe: **K-Harbor**. Where K-Town is the city you live in, K-Frontier is the homestead you build by hand, K-Skyline is the AWS-managed tower you rent space in, K-Campus is the Azure-managed campus, K-Garden is the Google-managed garden, and K-Foundry is the Red Hat enterprise factory, K-Harbor is the **AWS-managed working harbor** — a real shipping port where physical containers literally ship in and out. The Harbor Master (ECS control plane) decides which pier each ship docks at; the Tugboat Skipper (ECS agent) actually pulls each container into its slip; the Captain (you, the AWS-shop platform team) shows up with a cargo manifest (Task Definition) and asks for berth. Each K-ECS module = one pier (or facility) of the harbor.
+
+**Pier-to-module mapping (10 piers — matches K-GKE shape: 9 content modules + capstone)**
+
+| Module | Pier | Topic |
+|---|---|---|
+| C1 | **Harbor Office** *(anchor)* | ECS architecture (Cluster / Service / Task / Task Definition / launch types) |
+| C2 | **Cargo Manifests** | Task definitions + container definitions + volumes |
+| C3 | **Lookout & Comms Tower** | ECS networking (network modes, awsvpc, Service Connect, Service Discovery, ALB/NLB, VPC Lattice) |
+| C4 | **Customs House** | IAM + security (task role vs execution role, Secrets Manager, KMS, ECR auth, VPC endpoints, compliance) |
+| C5 | **Cargo Holds** | ECS storage (bind mounts, Docker volumes, EFS, FSx, ephemeral storage) |
+| C6 | **Loading Crew Yard** | Deployment + scaling (rolling, blue/green, circuit breaker, Service Auto Scaling, capacity providers, placement) |
+| C7 | **Lighthouse** | Observability (Container Insights, ECS Exec, FireLens, ADOT, X-Ray) |
+| C8 | **Outport Station** | ECS Anywhere + hybrid |
+| C9 | **Salvage Office** | ECS troubleshooting (PROVISIONING/PENDING stuck tasks, stopped reasons, deployment failures, Service Connect / ALB target health) |
+| C10 | **Grand Voyage** | Capstone — multi-service Fargate app with Service Connect + ALB + EFS + Secrets Manager + CodeDeploy blue/green + Container Insights + autoscaling + failure-recovery runbook |
+
+The Harbor Office is the K-Harbor anchor: every captain (operator) checks in there; the wall map shows the whole harbor's pier layout (cluster topology + launch type comparison + ECS-vs-EKS-vs-Fargate-vs-App Runner-vs-Lambda selection guide); the Harbor Master hands you a berth assignment at the door.
+
+**Cast (recurring) — roles, not named characters**
+
+K-Harbor is a *non-K8s* universe; the K-COM cast (Mayor Katie / Podrick / Thermostat) does **not** carry over because the underlying machinery is different (ECS scheduler, not kube-scheduler; ECS agent, not kubelet; Tasks, not Pods). Three K-Harbor roles, parallel in shape to K-Skyline / K-Campus / K-Garden / K-Foundry:
+
+- The **Captain** — you (AWS-shop platform team), arriving at the harbor with a cargo manifest (Task Definition) for each cargo run. Every K-ECS module is told from the Captain's POV.
+- The **Harbor Master** — ECS control plane: the service scheduler + deployment controller + task placement engine. Decides which pier each task docks at; never boards a ship.
+- The **Tugboat Skipper** — the ECS agent (Fargate or EC2-launch-type): the small worker that actually pulls each container off the ship into its slip and reports state back to the Harbor Master.
+
+These are job titles for whichever entity is being discussed, not new cast members. The 3-character cap from K-COM still applies; K-Harbor's Captain / Harbor Master / Tugboat Skipper are the K-ECS equivalents of K-Skyline's Tenant / Building Manager / Concierge.
+
+**Implementation rules**
+
+- Every K-ECS module opens with `⚓ K-Harbor pier: **[Pier Name]**.` (the K-ECS equivalent of K-COM's `📍 Today's stop in K-Town:`, K-VAN's `🏕️ K-Frontier site:`, K-EKS's `🏙️ K-Skyline floor:`, K-AKS's `🏛️ K-Campus wing:`, K-GKE's `🌿 K-Garden plot:`, K-OCP's `🏭 K-Foundry bay:`).
+- Every K-ECS module includes the K-Harbor map graphic with the current pier highlighted.
+- Map viewBox: 800×400 (matches K-Frontier / K-Skyline / K-Campus / K-Garden — 10 piers fit in two rows + capstone).
+- Map renders by `scripts/k_ecs_lesson_generator.py` via the shared `scripts/multi_course_renderer.py` (post-refactor pattern: thin config caller, no per-course render fn).
+- Sub-labels under each pier ("architecture", "task defs", "networking + Service Connect") give a one-word reminder of the ECS surface.
+- Strip dot count: **10** (one per module — matches K-GKE shape). Anchor at C1 (the Harbor Office, where every captain enters).
+- Pin prefix `kh-pier` (K-Harbor namespaced; not colliding with prior `kf-/ks-/kc-/kg-/ko-` prefixes).
+- District-line emoji and strip emoji both render `⚓` (anchor); reused — no separate strip emoji as in K-VAN.
+- **Vocabulary canonicalization** for ECS: the canonical terms are *Task* (not "pod"), *Task Definition* (not "manifest"), *Service* (the ECS Service object — long-running task scheduler), *Cluster* (an ECS cluster, not a K8s cluster), *Capacity Provider* (not "node group"), *Service Connect* (preferred over App Mesh patterns). Lessons use these throughout body text and quiz answers; K8s-equivalent terms (Pod, Deployment, Service-the-K8s-object) appear in parentheses on first mention only as a gloss for K-EKS-trained readers, never as the standalone term.
+
 ## What never changes
 
 - The packet/request motion track follows the visible cable/connection trajectory exactly. No exceptions.
@@ -736,4 +781,5 @@ These are job titles for whichever entity is being discussed, not new cast membe
 - Every lesson ships with flashcards and a quiz.
 - Every lesson ships with the layman-first scaffolding (Nightmare, stamp, district line, pause-and-checks, Translation Legend, Misconceptions, concept rail).
 - Every Kubernetes lesson lives inside K-Town and uses its assigned district.
+- K-ECS is the lone non-Kubernetes K-* course — it lives in K-Harbor and uses ECS vocabulary, not K8s vocabulary.
 - The 800th lesson must look like the 1st.

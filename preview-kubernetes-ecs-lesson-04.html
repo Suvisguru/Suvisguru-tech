@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-ECS C4 · IAM and Security</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-ECS module journey">
+  <span class="concept-rail-title">K-ECS modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>C1 ECS architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>C2 task defs &amp; containers</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>C3 ECS networking</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>C4 IAM &amp; security</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>C5 ECS storage</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>C6 deploy &amp; scaling</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>C7 observability</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>C8 ECS Anywhere</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>C9 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>C10 capstone voyage</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-ECS · Module C4</span></a>
+    <span class="progress-pill">C4 · IAM & security</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">⚓ K-Harbor pier: <strong>Customs House</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Harbor map: C4">
+    <title>K-Harbor map · C4</title>
+    <desc>Stylised AWS-managed working harbor. Customs House highlighted.</desc>
+    <defs>
+      <linearGradient id="kh-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8F0F5" stop-opacity="0.7"/><stop offset="100%" stop-color="#C5D8E3" stop-opacity="0.6"/></linearGradient>
+      <linearGradient id="kh-pier" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#2E5A8E" stop-opacity="0.32"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kh-water)" stroke="#2E5A8E" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · HARBOR · AWS ECS</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">front harbor — arrival, manifests, entry</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">deeper berths — ops, observability, troubleshooting</text>
+    <g class="pin pin-anchor" id="kh-pier01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">C1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Harbor Office</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="kh-pier02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">C2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Cargo Manifests</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">task defs</text></g>
+    <g class="pin" id="kh-pier03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">C3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Lookout &amp; Comms</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">networking</text></g>
+    <g class="pin active" id="kh-pier04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">C4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Customs House</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">IAM + secrets</text></g>
+    <g class="pin" id="kh-pier05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">C5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Cargo Holds</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">EFS + FSx + ephemeral</text></g>
+    <g class="pin" id="kh-pier06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">C6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Loading Crew Yard</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">deploy + scale</text></g>
+    <g class="pin" id="kh-pier07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">C7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Lighthouse</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Container Insights</text></g>
+    <g class="pin" id="kh-pier08" transform="translate(380,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">C8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Outport Station</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">ECS Anywhere</text></g>
+    <g class="pin" id="kh-pier09" transform="translate(520,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">C9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Salvage Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshoot</text></g>
+    <g class="pin" id="kh-pier10" transform="translate(660,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">C10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Grand Voyage</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">⚓ <strong>Customs House</strong> <span>· C4 of 10</span><span class="visually-hidden">Module C4, Customs House.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module C4 · the Customs House — two letters of authority + the vault</span>
+    <h1>C4 · IAM and Security — Roles, Secrets, KMS, ECR, VPC Endpoints</h1>
+    <p class="hero-sub">Two roles per Task: <strong>execution role</strong> (launch-time AWS access — ECR pull, Secrets fetch, log writes) and <strong>task role</strong> (runtime app AWS calls). <strong>Secrets Manager / SSM Parameter Store</strong> inject values at Task launch (KMS-encrypted; never logged). <strong>ECR auth</strong> via the execution role; private-registry auth via repositoryCredentials + Secrets Manager. <strong>VPC endpoints</strong> for ECR / ECS / Logs / SSM keep traffic private. <strong>Fargate platform versions</strong> control patching; <em>LATEST</em> auto-updates, pinned versions for compliance freeze.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ECS IAM + security — execution role, task role, Secrets Manager, KMS, VPC endpoints, ECR auth.">
+  <rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6" stroke-width="1"/>
+  <text x="380" y="44" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="14" font-weight="700" fill="#3F4A5E">Customs House · K-Harbor — two letters of authority + the vault</text>
+  <rect x="40" y="70" width="220" height="55" rx="10" fill="#3F4A5E" stroke="#1F2433"/>
+  <text x="150" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#FBF1D6">execution role</text>
+  <text x="150" y="108" text-anchor="middle" font-size="9" fill="#FBF1D6">ECR + Secrets + Logs (launch-time)</text>
+  <rect x="40" y="140" width="220" height="55" rx="10" fill="#5DCAA5" stroke="#1F2433"/>
+  <text x="150" y="162" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2433">task role</text>
+  <text x="150" y="178" text-anchor="middle" font-size="9" fill="#1F2433">app → S3, DynamoDB (runtime)</text>
+  <rect x="280" y="70" width="200" height="55" rx="10" fill="#FF9900" stroke="#1F2433"/>
+  <text x="380" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2433">Secrets Manager / SSM</text>
+  <text x="380" y="108" text-anchor="middle" font-size="9" fill="#1F2433">env injection at launch</text>
+  <rect x="280" y="140" width="200" height="55" rx="10" fill="#5E4A8E" stroke="#1F2433"/>
+  <text x="380" y="162" text-anchor="middle" font-size="12" font-weight="700" fill="#FBF1D6">KMS</text>
+  <text x="380" y="178" text-anchor="middle" font-size="9" fill="#FBF1D6">encrypts secrets + logs at rest</text>
+  <rect x="500" y="70" width="220" height="55" rx="10" fill="#7AB3CC" stroke="#1F2433"/>
+  <text x="610" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#FBF1D6">VPC endpoints</text>
+  <text x="610" y="108" text-anchor="middle" font-size="9" fill="#FBF1D6">ECR + Logs + SSM private</text>
+  <rect x="500" y="140" width="220" height="55" rx="10" fill="#A04832" stroke="#1F2433"/>
+  <text x="610" y="162" text-anchor="middle" font-size="12" font-weight="700" fill="#FBF1D6">compliance scopes</text>
+  <text x="610" y="178" text-anchor="middle" font-size="9" fill="#FBF1D6">PCI / HIPAA / FedRAMP</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. A Task is failing CannotPullContainerError on rollout. ECR repo policy looks fine. The execution role has ecr:GetAuthorizationToken. <em>It's the KMS key.</em> The image's ECR repo is encrypted with a customer KMS key the new execution role can't Decrypt. Pulls fail silently. Today's lesson: ECS-IAM has more interlocks than "give the role the action" — KMS, VPC endpoints, and resource policies all play.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Two roles, different lifecycles. Secrets injected at Task launch by execution role; never logged. KMS Decrypt is the most-forgotten policy on encrypted ECR + Secrets. VPC endpoints keep ECR/Logs/SSM traffic off the public Internet — and required in disconnected/regulated VPCs.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · execution role vs task role</span>
+    <h2>Two roles, two lifecycles, two scopes</h2>
+    <p><strong>Execution role</strong> is assumed by the ECS agent / Fargate at Task launch. AWS-managed baseline policy: <code>AmazonECSTaskExecutionRolePolicy</code> (ECR pull, CloudWatch Logs writes). Add: <code>secretsmanager:GetSecretValue</code> for any Secrets Manager ARN you reference, <code>ssm:GetParameters</code> for SSM, <code>kms:Decrypt</code> for the KMS keys protecting those secrets and (if applicable) the ECR repo.</p>
+    <p><strong>Task role</strong> is assumed by the running container code via the ECS metadata endpoint (<code>http://169.254.170.2/v2/credentials/...</code>). Scope to the actual AWS APIs your app calls — <code>s3:GetObject</code> on a specific bucket, <code>dynamodb:UpdateItem</code> on a specific table. <strong>Default-deny everything else.</strong> Use IAM Conditions where possible (<code>aws:SourceVpce</code>, <code>aws:PrincipalTag</code>).</p>
+    <p>The two roles are <em>completely separate ARNs</em>. No inheritance. The container code never sees execution-role credentials; the agent never uses task-role credentials.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A container starts but immediately fails its first S3 PutObject call with AccessDenied. Where do you look first?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Execution role permissions.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Task role permissions.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">ECS agent IAM.</button></li>
+      </ul>
+      <p class="pause-check-feedback">Runtime AWS calls from the running container use the task role. AccessDenied at runtime = task role missing the action or the resource isn't in the policy's Resource list.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · Secrets Manager / SSM injection + KMS</span>
+    <h2>Inject at launch; KMS gates Decrypt</h2>
+    <p>In Task Definition <code>containerDefinitions[].secrets</code>:</p>
+    <pre><code>"secrets": [
+  { "name": "DB_PASSWORD", "valueFrom": "arn:aws:secretsmanager:us-east-1:111122223333:secret:prod/db-AbCdEf" },
+  { "name": "API_KEY",     "valueFrom": "arn:aws:ssm:us-east-1:111122223333:parameter/api-key" }
+]</code></pre>
+    <p>At Task launch the execution role calls <code>secretsmanager:GetSecretValue</code> + <code>kms:Decrypt</code> for the secret's KMS key. The plaintext is injected as an environment variable in the container. <em>Plaintext does not appear in CloudTrail; the GetSecretValue call does.</em> Rotate secrets via Secrets Manager rotation Lambda; restart Tasks to pick up new values (or use AWS SDK to fetch on-demand from inside the app, signed by the task role).</p>
+    <p><strong>KMS pitfall</strong>: customer-managed KMS keys protecting Secrets Manager secrets need <em>two</em> things. (1) The key policy must allow the execution role <code>kms:Decrypt</code>. (2) The execution role policy must allow <code>kms:Decrypt</code> on that key ARN. Missing either side = silent failure at Task launch with stoppedReason ResourceInitializationError.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · ECR auth + private-registry auth + VPC endpoints</span>
+    <h2>Image pull paths and how to keep them off the public Internet</h2>
+    <p><strong>ECR private repos</strong>: execution role needs <code>ecr:GetAuthorizationToken</code> + <code>ecr:BatchCheckLayerAvailability</code> + <code>ecr:GetDownloadUrlForLayer</code> + <code>ecr:BatchGetImage</code>. ECR repo policy must allow the execution-role principal. If repo is KMS-encrypted, also <code>kms:Decrypt</code> on the repo's KMS key.</p>
+    <p><strong>Private registries</strong> (Docker Hub paid, GHCR, GitLab Registry): use <code>repositoryCredentials</code> in the Task Definition pointing to a Secrets Manager secret with <code>{"username": "...", "password": "..."}</code>. Execution role gets GetSecretValue on that secret. ECS pulls using those creds.</p>
+    <p><strong>VPC endpoints</strong> for ECR / ECS / CloudWatch Logs / SSM / Secrets Manager / STS: keep all control-plane and image-pull traffic on private network — required for disconnected VPCs (no NAT gateway / no public subnets), faster pulls (less hop count), and reduced cost (no NAT gateway data charges). Endpoints needed for ECR pull: <code>com.amazonaws.region.ecr.api</code>, <code>com.amazonaws.region.ecr.dkr</code>, <code>com.amazonaws.region.s3</code> (Gateway endpoint — image layers are S3-backed), CloudWatch Logs, STS.</p>
+    <p><strong>Security Groups</strong>: VPC endpoint network interfaces have their own SGs; allow inbound from Task SGs on TCP/443.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · Fargate platform versions, patching, compliance</span>
+    <h2>Platform versions, OS patching, regulated workloads</h2>
+    <p><strong>Fargate platform versions</strong>: each Task runs on a specific Fargate platform version (e.g., 1.4.0). New platform versions ship with patched kernels + runtime fixes. Pin in <code>platformVersion</code> field of the Service. <em>LATEST</em> = auto-update on Task replacement (good default). Pin to a specific version for compliance change-control or deterministic rollouts.</p>
+    <p><strong>EC2-launch patching</strong>: AWS-managed. The ECS-optimised AMI (Amazon Linux 2023 or Bottlerocket) gets new versions; you bake them into your launch templates and roll instances. ECS Managed Instances launch type automates the AMI lifecycle for you. Bottlerocket is the modern choice — minimal container-host OS with atomic updates and rollback.</p>
+    <p><strong>Compliance scopes</strong>:</p>
+    <ul>
+      <li><strong>PCI DSS</strong> — ECS is in scope; design Cluster + Task Definitions + IAM roles + KMS as you would any PCI workload (segmentation via SG, encryption-at-rest, encryption-in-transit, least-privilege roles, audit logging via CloudTrail + ECS event stream).</li>
+      <li><strong>HIPAA</strong> — ECS + Fargate are HIPAA-eligible; sign a BAA with AWS; ensure all integrated services (S3, RDS, EFS, KMS) are HIPAA-eligible and properly configured.</li>
+      <li><strong>FedRAMP</strong> — ECS available in GovCloud (US) regions and FedRAMP High accounts; use FIPS endpoints; ensure all dependencies meet FedRAMP boundary.</li>
+    </ul>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A Task fails ResourceInitializationError when fetching Secrets. The execution role policy looks fine. What's a likely missed piece?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Task role missing <code>secretsmanager:GetSecretValue</code>.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Execution role missing <code>kms:Decrypt</code> on the secret's KMS key.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">VPC endpoints not set up.</button></li>
+      </ul>
+      <p class="pause-check-feedback">Customer-managed KMS keys require kms:Decrypt on the execution role + key policy allowing the role principal. The secret fetch is the loud failure mode of a missing KMS Decrypt.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-task-role / pre-Secrets-Manager, ECS workloads stuffed AWS credentials into env vars at deploy time, baked them into images, or shared host-level credentials across all Tasks. Secret rotation was a deploy event. KMS encryption was best-effort. Compliance audits found credentials sprayed across CloudFormation, scripts, repos.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Modern ECS IAM uses the two-role split, KMS-encrypted Secrets Manager / SSM with execution-role-fetched at launch (no creds in source), task role for runtime app calls (least-privilege per Task), VPC endpoints to keep traffic private, and pinned Fargate platform versions for compliance change-control. Audits map to specific role policies + KMS key policies + endpoint SGs. <em>Workload-scoped, audit-friendly.</em></p></div>
+    </div>
+    <p class="ba-caption"><em>Two roles, two policies, one KMS key per concern. Get this right and most security questions are mechanical.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this pier</h2>
+<p>The <strong>Customs House</strong> at the harbor is where authority is checked. Every captain (Task) carries two letters from the port authority. The <strong>boarding letter</strong> (execution role) is signed for one purpose only — it lets the dock crew unlock the warehouse (ECR), open the secrets vault (Secrets Manager / SSM), and stamp the logbook (CloudWatch Logs). The dock crew use it once at boarding and never again.</p>
+    <p>The <strong>voyage letter</strong> (task role) goes with the captain on the journey. It opens specific port doors at specific destinations: this letter says "captain may unload at S3 bucket X" or "captain may load at DynamoDB table Y." Anything not explicitly listed is denied.</p>
+    <p>The customs vault holds <strong>sealed envelopes</strong> (Secrets) — passwords, API keys, certificates. The vault is double-locked: once with the lock the dock crew has the key for (execution-role policy), and once with a master vault key (KMS) which has its <em>own</em> access list. The dock crew need both keys, every time. Forgetting the vault key (KMS Decrypt) is the most common reason a captain can't board.</p>
+    <p>For sensitive shipments, the harbor has <em>private inland canals</em> (VPC endpoints) to the warehouse, the vault, and the logbook archive — never going out to the public sea. Some shipments (PCI / HIPAA / FedRAMP) are <em>required</em> to use the canals, not the open sea.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in ECS / AWS</th></tr></thead>
+        <tbody>
+          <tr><td>Boarding letter (one-time use, dock crew)</td><td>execution role — image pull + Secrets fetch + logs</td></tr>
+          <tr><td>Voyage letter (captain carries on journey)</td><td>task role — running app's AWS calls</td></tr>
+          <tr><td>Customs vault sealed envelopes</td><td>Secrets Manager / SSM Parameter Store</td></tr>
+          <tr><td>Vault's master key (separate access list)</td><td>KMS customer key + key policy</td></tr>
+          <tr><td>Warehouse access stamp</td><td>ECR auth (GetAuthorizationToken + …)</td></tr>
+          <tr><td>Foreign-warehouse paperwork</td><td>repositoryCredentials → Secrets Manager</td></tr>
+          <tr><td>Private inland canals</td><td>VPC endpoints (ECR / Logs / SSM / Secrets Manager)</td></tr>
+          <tr><td>Harbor canal access list</td><td>VPC endpoint SG + endpoint policy</td></tr>
+          <tr><td>Captain's vehicle inspection cycle</td><td>Fargate platform version (LATEST or pinned)</td></tr>
+          <tr><td>Customs compliance scopes</td><td>PCI DSS, HIPAA, FedRAMP boundaries</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A real customs house has paper letters; ECS roles are IAM ARNs the AWS API checks on every request. There is no "physical letter" to forge or lose; all auth lives in policy.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Every ship has two letters. One letter the dock crew uses at boarding to unlock the warehouse and the secrets vault. The other letter the captain carries to open doors at other harbors. Different letters, different jobs. The secrets vault has two locks; you need both keys to open it. For sensitive cargo, ships use private inland canals instead of the open sea.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p><strong>Execution role</strong>: ECR pull + Secrets fetch + CloudWatch Logs (launch-time, used by ECS agent / Fargate). <strong>Task role</strong>: app's runtime AWS calls (assumed via metadata endpoint inside the container). <strong>Secrets Manager / SSM injection</strong>: in <code>secrets</code> array; KMS-encrypted; both execution-role policy AND KMS key policy must allow Decrypt. <strong>ECR auth</strong>: managed-policy baseline + KMS Decrypt for KMS-encrypted repos. <strong>Private-registry auth</strong>: repositoryCredentials → Secrets Manager. <strong>VPC endpoints</strong>: ECR.api + ECR.dkr + S3 Gateway + Logs + STS + SSM + Secrets Manager. <strong>Fargate platform versions</strong>: LATEST or pinned. <strong>Compliance</strong>: PCI / HIPAA / FedRAMP — use FIPS endpoints in regulated boundaries.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How AWS ECS teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">HIPAA — every secret KMS-encrypted with customer keys</p><p>A health-tech runs PHI-handling Tasks. All secrets in Secrets Manager use customer-managed KMS keys (one per environment); execution roles allow only that env's KMS key Decrypt. Task role allows specific S3 PHI-bucket reads, conditioned on <code>aws:RequestTag/Patient</code>. CloudTrail captures every Secret fetch. <em>Audit maps cleanly to role policies + key policies.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Disconnected VPC — image pulls via endpoints only</p><p>A regulated workload runs in private subnets with no NAT gateway. VPC endpoints for <code>ecr.api</code>, <code>ecr.dkr</code>, <code>s3</code> (gateway), <code>logs</code>, <code>sts</code>, <code>secretsmanager</code>, <code>ssm</code>. ECS Tasks pull images, fetch secrets, write logs entirely on private network. <em>No public Internet egress; satisfies the network-isolation control.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Quarterly secret rotation — Lambda + Tasks</p><p>A Service stores a database password in Secrets Manager with quarterly rotation. The rotation Lambda updates the secret + the database password atomically. ECS Service has a CloudWatch Events rule on Secret rotation success → triggers <code>UpdateService --force-new-deployment</code>. Tasks restart, fetch the new password via execution role, run with new creds. <em>No human in the loop.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Outage — execution role lost KMS Decrypt</p><p>A team rotated KMS keys and updated key policies but forgot to update <em>execution-role policy</em> to reference the new key ARN. Next deploy: every Task ResourceInitializationError. 25-minute outage until the policy was patched. <em>Postmortem</em>: KMS Decrypt is the most-forgotten ECS-IAM piece; runbook now requires testing in dev with the new key before prod rotation.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Two roles, one Task — execution role vs task role</h2>
+    <p>Execution role launches; task role runs. Different boundaries; different policies.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 230" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="70" width="200" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="140" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">task execution role</text><text x="140" y="108" text-anchor="middle" font-size="9" fill="#6B6058">ECR pull + Secrets fetch + log writer</text>
+        <rect x="40" y="150" width="200" height="60" rx="6" fill="#5DCAA5" stroke="#3F4A5E" stroke-width="1.5"/><text x="140" y="172" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2433">task role</text><text x="140" y="188" text-anchor="middle" font-size="9" fill="#6B6058">app → S3, DynamoDB, etc.</text>
+        <rect x="280" y="70" width="200" height="60" rx="6" fill="#FF9900" stroke="#3F4A5E" stroke-width="1.5"/><text x="380" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2433">ECR private repo</text><text x="380" y="108" text-anchor="middle" font-size="9" fill="#6B6058">image pulled on Task launch</text>
+        <rect x="280" y="150" width="200" height="60" rx="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1.5"/><text x="380" y="172" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">Secrets Manager / SSM</text><text x="380" y="188" text-anchor="middle" font-size="9" fill="#6B6058">injected as env at start</text>
+        <rect x="520" y="70" width="200" height="60" rx="6" fill="#7AB3CC" stroke="#3F4A5E" stroke-width="1.5"/><text x="620" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">VPC endpoints</text><text x="620" y="108" text-anchor="middle" font-size="9" fill="#6B6058">ECR + Logs + SSM private</text>
+        <rect x="520" y="150" width="200" height="60" rx="6" fill="#5E4A8E" stroke="#3F4A5E" stroke-width="1.5"/><text x="620" y="172" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">KMS key</text><text x="620" y="188" text-anchor="middle" font-size="9" fill="#6B6058">encrypts secrets + log group</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,100)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="iam">▶ launch sequence: roles in action</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> the two IAM roles a Task uses.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "If the role policy allows the action, the call will succeed."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Multiple gates: role policy, resource policy (KMS key, ECR repo, S3 bucket, Secret), VPC endpoint policy, SCP at the org level, permissions boundary. Any one of them denying = the call fails. Especially KMS — both <em>role policy AND key policy</em> must allow Decrypt for customer-managed keys.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Fargate is auto-patched, so we don't need to think about platform versions."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Fargate platform versions <em>do</em> get patched, but only when Tasks restart with <code>LATEST</code> (or you pin a newer version). A long-lived Service whose Tasks haven't cycled may run an older platform version with known CVEs. Force-deployment periodically or use Fargate platform-version pinning + scheduled rotation.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "VPC endpoints just save NAT cost."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Saving NAT cost is a side benefit. The real wins: (1) keep traffic on private network — required for many compliance baselines; (2) faster pulls (fewer hops); (3) more deterministic latency; (4) endpoint policies as a second auth layer. <em>Disconnected VPCs are impossible without VPC endpoints.</em></div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Execution role — what does it do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Assumed by ECS agent / Fargate at Task <em>launch</em>. ECR pull, fetch Secrets Manager / SSM, write CloudWatch Logs. AWS-managed baseline: <code>AmazonECSTaskExecutionRolePolicy</code>. Add KMS Decrypt for encrypted secrets and ECR.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Task role — what does it do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Assumed by the <em>running container code</em> via the ECS metadata endpoint. Scope to the actual AWS APIs the app calls. Default-deny; use IAM Conditions for fine-grained scoping.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Two ways to inject secrets at Task launch?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>containerDefinitions[].secrets</code> — array of <code>{name, valueFrom: arn-of-secret-or-parameter}</code>. valueFrom can be Secrets Manager ARN or SSM Parameter ARN. Plaintext injected as env var; never logged.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">The most-forgotten ECS-IAM policy?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>kms:Decrypt</code> on the customer-managed KMS key protecting Secrets Manager secrets or KMS-encrypted ECR repos. Both <em>role policy</em> AND <em>key policy</em> must allow it.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">VPC endpoints needed for ECR pulls in disconnected VPCs?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>com.amazonaws.region.ecr.api</code>, <code>com.amazonaws.region.ecr.dkr</code>, <code>com.amazonaws.region.s3</code> (Gateway — image layers are S3), CloudWatch Logs, STS, Secrets Manager, SSM.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Fargate platform versions — pin or LATEST?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>LATEST</strong> = auto-update on Task replacement (good default; gets patches). <strong>Pin</strong> = deterministic rollouts; required for some compliance change-control regimes. Cycle Tasks regularly when pinned to absorb patches.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Private-registry auth — how?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>repositoryCredentials</code> in the container definition pointing to a Secrets Manager secret containing <code>{username, password}</code>. Execution role allows <code>secretsmanager:GetSecretValue</code> on that secret + <code>kms:Decrypt</code> for its KMS key.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Compliance scopes for ECS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>PCI DSS</strong> in scope (segmentation via SG; encryption; least-privilege; audit logging). <strong>HIPAA-eligible</strong> with BAA. <strong>FedRAMP</strong> in GovCloud (US) and FedRAMP High accounts (use FIPS endpoints).</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A new ECS Service deploys; Tasks fail with stoppedReason "ResourceInitializationError: unable to retrieve secret value". Walk through the diagnostic steps in order.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) Read the full <strong>stoppedReason</strong> + look for the secret ARN in the message. (2) Confirm the <strong>execution role policy</strong> allows <code>secretsmanager:GetSecretValue</code> on that ARN (or <code>ssm:GetParameters</code> for SSM). (3) Read the <strong>secret's KMS key policy</strong> — does it allow the execution role principal <code>kms:Decrypt</code>? Customer-managed keys need both sides. (4) Check <strong>execution role policy</strong> for <code>kms:Decrypt</code> on that key ARN. (5) If using VPC endpoints, verify the <strong>Secrets Manager VPC endpoint</strong> exists + its endpoint policy doesn't block the call. (6) Look in <strong>CloudTrail</strong> for the GetSecretValue call — the error there usually names the missing permission.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A team's task role allows <code>s3:*</code> on <code>arn:aws:s3:::data-bucket/*</code>. The CISO wants this tightened. What's the right scope?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Three tightenings layered: (1) <strong>Specific actions</strong> — replace <code>s3:*</code> with the actual actions the app uses (<code>s3:GetObject</code>, <code>s3:PutObject</code>, <code>s3:ListBucket</code>). (2) <strong>Path scoping</strong> — replace <code>data-bucket/*</code> with <code>data-bucket/customer-uploads/*</code> if that's the only path. (3) <strong>IAM Conditions</strong> — <code>aws:SourceVpce</code> requires the call come from a specific VPC endpoint; <code>aws:RequestTag/Customer</code> matches the request to the user. Plus <strong>S3 bucket policy</strong> as defense in depth — explicit Allow only for this task role; explicit Deny for everything else.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">An auditor asks: "How do you guarantee that an ECS Task's container code can never see the credentials your CI/CD pipeline used to deploy it?" Defend the design.</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how the platform engineer answered the auditor</span>"<strong>The container code never has any path to the deploy credentials. Three barriers:</strong> (1) Deploy creds (CI/CD role) only call <code>ecs:UpdateService</code>, <code>ecs:RegisterTaskDefinition</code>, <code>iam:PassRole</code> — never assumed by Tasks. (2) The <em>execution role</em> the Tasks use at launch is a separate ARN, scoped narrowly to ECR pull + Secrets fetch + log writes; it has no overlap with the CI/CD role and is not assumable by anything outside of ECS-launch. (3) The <em>task role</em> the running container code assumes via the metadata endpoint is yet a third ARN, with only the runtime AWS APIs the app calls; the container code can't even <em>see</em> the execution-role credentials, let alone the CI/CD ones — they're held by ECS, not exposed to the container. <strong>Three roles, three scopes, three lifecycles. The container code's blast radius is the task role only.</strong>"</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">execution role</div><div class="gloss-def">IAM role assumed by ECS agent / Fargate at Task launch — image pull, fetch Secrets, write logs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">task role</div><div class="gloss-def">IAM role assumed by running container code via ECS metadata endpoint — app's runtime AWS calls.</div></div>
+      <div class="gloss-item"><div class="gloss-name">containerDefinitions[].secrets</div><div class="gloss-def">Array injecting Secrets Manager / SSM values as env vars at Task launch. Plaintext never logged.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kms:Decrypt</div><div class="gloss-def">The most-forgotten ECS-IAM policy. Required on execution role for customer-managed KMS keys protecting secrets or ECR.</div></div>
+      <div class="gloss-item"><div class="gloss-name">repositoryCredentials</div><div class="gloss-def">Task Definition field pointing at a Secrets Manager secret with private-registry creds.</div></div>
+      <div class="gloss-item"><div class="gloss-name">VPC endpoints (ECR / Logs / SSM)</div><div class="gloss-def">Private connectivity to AWS services from a VPC. Required for disconnected VPCs; reduces NAT cost.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Fargate platform version</div><div class="gloss-def">Versioned Fargate runtime. LATEST auto-updates on Task replacement; pinned versions for change-control.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Bottlerocket</div><div class="gloss-def">Minimal container-host OS; atomic updates with rollback. Modern ECS-optimised AMI choice.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ECS Managed Instances</div><div class="gloss-def">Launch type where AWS automates the EC2 + AMI lifecycle while you keep EC2-style features (Spot, GPU, custom AMIs).</div></div>
+      <div class="gloss-item"><div class="gloss-name">ECS metadata endpoint</div><div class="gloss-def">In-Task HTTP endpoint at 169.254.170.2 — exposes task role credentials, Task metadata, container stats.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Two roles, different lifecycles. Secrets injected at Task launch by execution role; never logged. KMS Decrypt is the most-forgotten policy on encrypted ECR + Secrets. VPC endpoints keep ECR/Logs/SSM traffic off the public Internet — and required in disconnected/regulated VPCs.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module C4 complete</span>
+    <p>ECS security is two roles, three policy layers (role + resource + KMS), VPC endpoints for private traffic, Fargate platform-version hygiene, and compliance scopes mapped to specific service configurations. Get the role split clean and the rest is mechanical.</p>
+    <p class="recap-next"><strong>Next — C5: ECS Storage.</strong> Bind mounts; Docker volumes; EFS (RWX-equivalent); FSx for Windows / NetApp ONTAP; ephemeral storage tuning; per-Task vs cross-Task lifetime; mountPoint patterns.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-ECS · Module C4 of 10 · grounded in docs.aws.amazon.com/ecs</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "iam", "mode_label": "Mode: execution role \u2192 task role", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> ECS agent uses task execution role to pull image from ECR.", "move_to": [380, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Execution role also fetches Secrets Manager values + injects as env.", "move_to": [380, 180], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Container starts. App now uses task role for its AWS calls.", "move_to": [140, 180], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> VPC endpoints keep ECR + Logs + SSM traffic on private network; KMS encrypts secrets + logs.", "move_to": [620, 180], "duration_ms": 900, "pause_after_ms": 2200, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 100];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

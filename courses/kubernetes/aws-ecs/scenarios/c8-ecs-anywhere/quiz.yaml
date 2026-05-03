@@ -1,0 +1,21 @@
+# Quiz — K-ECS C (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team wants to register 50 retail-store on-prem servers as external instances. What's the operational pattern that scales?
+    answer: |
+      (1) **Pre-shared activation**: create one SSM activation per store (or a few shared activations with high registration limits); deliver the activation IDs + codes to each store via secure config management (SSM Parameter Store fetch from cloud, secrets distribution tool). (2) **Automated agent install**: bake the install script into the store's base image / config-management playbook so new servers register on first boot. (3) **Cluster naming**: one ECS Cluster per region (or per tenant) with all stores in it; use ECS attributes to tag store-id (e.g., `store=4521`) so Task placement can target individual stores. (4) **Monitoring**: alarm on per-store "external instance count" dropping (lost connectivity at a store). (5) **De-registration runbook**: when a store closes, run deregister-container-instance + SSM deregister-managed-instance + uninstall agents.
+
+  - id: 2
+    prompt: |
+      An external instance shows ACTIVE in the Cluster but ECS isn't scheduling Tasks onto it. The Service has 5 desired Tasks; only 3 are running. What's the diagnostic?
+    answer: |
+      Check in order: (1) **Task Definition launch type compatibility** — is `EXTERNAL` in the `requiresCompatibilities` array? If only `EC2`, the scheduler won't place on external. (2) **Capacity provider strategy** — is the Service's strategy including the external capacity provider, or is it Fargate-only? (3) **Resources on the instance** — does the external host have free CPU + memory matching the Task requirements? `describe-container-instances` shows registered + remaining resources. (4) **Placement constraints** — does the Service have constraints filtering only certain attributes the external instance lacks? (5) **Network mode** — is the Task Definition using awsvpc? External doesn't support it; Task can't place. (6) **External instance status detail** — agent connection status; SSM agent / ECS agent process state; outbound 443 connectivity from the host.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership says: "We're mid-cloud-migration. Move all on-prem workloads to ECS Anywhere this quarter — same orchestrator everywhere." The fleet has 60 services, 40 of which are public web. Defend a more conservative plan.
+    answer: |
+      "**The blanket-move would lose us important operational machinery on the 40 public-web services.** ECS Anywhere is right for: regulated on-prem, edge, hybrid bridge, gradual migration. It's wrong for: general public-web (no ALB integration, no awsvpc + SG-per-Task, no Service Connect, no EFS for shared state). For the 40 public-web services, we should: (1) keep them on-prem temporarily on whatever they're running today, (2) migrate them *directly to cloud Fargate* via standard refactor (containerise + register with cloud Cluster), and (3) bypass the ECS-Anywhere step entirely. The remaining 20 (batch + edge + regulated) are real ECS Anywhere candidates. **Phased plan**: first the 20 onto Anywhere this quarter (low risk, real value), then the 40 onto cloud Fargate over next two quarters (more refactor, but the destination is the right shape). Forcing all 60 through Anywhere now means rebuilding ALB integrations afterward — wasted work."

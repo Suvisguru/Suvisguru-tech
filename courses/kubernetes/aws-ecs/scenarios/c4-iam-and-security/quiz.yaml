@@ -1,0 +1,21 @@
+# Quiz — K-ECS C (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A new ECS Service deploys; Tasks fail with stoppedReason "ResourceInitializationError: unable to retrieve secret value". Walk through the diagnostic steps in order.
+    answer: |
+      (1) Read the full **stoppedReason** + look for the secret ARN in the message. (2) Confirm the **execution role policy** allows `secretsmanager:GetSecretValue` on that ARN (or `ssm:GetParameters` for SSM). (3) Read the **secret's KMS key policy** — does it allow the execution role principal `kms:Decrypt`? Customer-managed keys need both sides. (4) Check **execution role policy** for `kms:Decrypt` on that key ARN. (5) If using VPC endpoints, verify the **Secrets Manager VPC endpoint** exists + its endpoint policy doesn't block the call. (6) Look in **CloudTrail** for the GetSecretValue call — the error there usually names the missing permission.
+
+  - id: 2
+    prompt: |
+      A team's task role allows `s3:*` on `arn:aws:s3:::data-bucket/*`. The CISO wants this tightened. What's the right scope?
+    answer: |
+      Three tightenings layered: (1) **Specific actions** — replace `s3:*` with the actual actions the app uses (`s3:GetObject`, `s3:PutObject`, `s3:ListBucket`). (2) **Path scoping** — replace `data-bucket/*` with `data-bucket/customer-uploads/*` if that's the only path. (3) **IAM Conditions** — `aws:SourceVpce` requires the call come from a specific VPC endpoint; `aws:RequestTag/Customer` matches the request to the user. Plus **S3 bucket policy** as defense in depth — explicit Allow only for this task role; explicit Deny for everything else.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      An auditor asks: "How do you guarantee that an ECS Task's container code can never see the credentials your CI/CD pipeline used to deploy it?" Defend the design.
+    answer: |
+      "**The container code never has any path to the deploy credentials. Three barriers:** (1) Deploy creds (CI/CD role) only call `ecs:UpdateService`, `ecs:RegisterTaskDefinition`, `iam:PassRole` — never assumed by Tasks. (2) The *execution role* the Tasks use at launch is a separate ARN, scoped narrowly to ECR pull + Secrets fetch + log writes; it has no overlap with the CI/CD role and is not assumable by anything outside of ECS-launch. (3) The *task role* the running container code assumes via the metadata endpoint is yet a third ARN, with only the runtime AWS APIs the app calls; the container code can't even *see* the execution-role credentials, let alone the CI/CD ones — they're held by ECS, not exposed to the container. **Three roles, three scopes, three lifecycles. The container code's blast radius is the task role only.**"

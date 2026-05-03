@@ -1,0 +1,21 @@
+# Quiz — K-ECS C (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team's Service is on the default rolling deploy. They want to upgrade to blue/green for richer rollback. Walk through the migration steps.
+    answer: |
+      (1) Create a **second ALB target group** (green) with the same target type IP + health check; both blue + green register with one ALB listener. (2) Create a **CodeDeploy application + Deployment Group** referencing the ECS Service + both target groups. (3) Update the **Service deploymentController** from ECS to CODE_DEPLOY (this requires a UpdateService with a new task definition; ECS rejects controller change otherwise). (4) Future deploys go through CodeDeploy: launch into green, run BeforeAllowTraffic hooks, shift via listener, run AfterAllowTraffic hooks, drain blue. (5) Add **CloudWatch alarms** to the Deployment Group for auto-rollback on metric breach. *Initial migration costs a few hours; future deploys are richer + safer.*
+
+  - id: 2
+    prompt: |
+      A Service's desired count is 4. CPU is sustained at 85%. Service Auto Scaling target tracking is set to 60% CPU. What happens, and how long until the Service stabilises?
+    answer: |
+      **Application Auto Scaling** sees actual CPU (85%) above target (60%) → calculates required Task count to hit 60% → issues `UpdateService --desired-count N` where N ≈ 4 × (85/60) = ~6 Tasks. ECS launches 2 new Tasks (PROVISIONING → PENDING → RUNNING; ~1-2 min on Fargate, longer on EC2 if ASG must scale). New Tasks register with ALB; load distributes; CPU drops. Auto Scaling waits the cooldown (default 300s) before any further adjustment. *Total time*: 2-5 minutes from CPU breach to stabilisation, faster on Fargate, slower if EC2 ASG must scale up first.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees the Fargate bill: "Move everything to EC2 capacity providers + Spot. Cheaper." The fleet has both stateful Services and stateless workers. Defend a hybrid.
+    answer: |
+      "**Spot interruptions are not equally tolerable across services.** Stateful Services (anything with active sessions, in-flight transactions, write-ahead logs) shouldn't run on pure Spot — every interruption is potential data loss or angry user. Stateless workers tolerant to interruption (queue consumers, image processors, batch tasks) are exactly the Spot use case — 70% discount, ECS reschedules them on Spot interruption. **The hybrid:** stateful Services on Fargate (or EC2 On-Demand) with capacity-provider strategy = base capacity. Stateless workers on Fargate Spot or EC2 Spot via capacity-provider strategy = weighted Spot with small base. *We get the Spot savings on ~60% of compute that can absorb interruption, and we keep the stateful 40% on stable capacity. Pure Spot would cost us a customer-facing incident.*"

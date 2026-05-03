@@ -1,0 +1,50 @@
+# Flashcards — K-ECS C (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Why Fargate base for api but Fargate Spot for worker?
+    back: |
+      API serves live HTTPS — Spot interruption = real user 503s. Worker drains an SQS queue — Spot interruption = ECS reschedules + SQS resurfaces the message. Capacity-provider strategy reflects this: api 100% Fargate; worker base + Spot-weighted.
+
+  - id: 2
+    front: |
+      Three IAM roles in this architecture and what each does?
+    back: |
+      **CI/CD role**: deploy (RegisterTaskDefinition, UpdateService, CodeDeploy CreateDeployment, PassRole). **Execution role**: launch (ECR pull, Secrets fetch, KMS Decrypt, CloudWatch Logs). **Task role**: runtime (DynamoDB, S3, SQS, EFS ClientMount, X-Ray PutTraceSegments).
+
+  - id: 3
+    front: |
+      What two CloudWatch alarms drive the CodeDeploy auto-rollback?
+    back: |
+      **5xxRate > 1% over 1 min** (errors during canary) and **P95Latency > 800 ms over 5 min** (latency regression). Both attached to the Deployment Group; either tripping rolls back.
+
+  - id: 4
+    front: |
+      api Service Auto Scaling target metric?
+    back: |
+      `ALBRequestCountPerTarget = 200`. min 6, max 50. Target tracking computes desired count to keep request load per Task at the target.
+
+  - id: 5
+    front: |
+      Worker Service Auto Scaling target metric?
+    back: |
+      `SQSApproximateNumberOfMessagesVisible = 100`. min 2, max 30. Scales out when queue depth grows; scales in when it drains.
+
+  - id: 6
+    front: |
+      What does the runbook do that automation doesn't?
+    back: |
+      Runbooks bridge the cases automation hasn't encoded yet — novel failures, multi-cause incidents, anything where a human needs to read the chain + decide. The runbook is the team's muscle memory in a written form, kept current via game days.
+
+  - id: 7
+    front: |
+      EFS access point design here?
+    back: |
+      Two access points: `/uploads` (api + worker both mount; api PUTs, worker GETs) and `/archive` (worker write-only; long-term retention). Each has its own POSIX UID/GID + path scope.
+
+  - id: 8
+    front: |
+      Three observability layers in this architecture?
+    back: |
+      **Container Insights** (cluster + service + task metrics + dashboards). **FireLens** sidecar logs to CloudWatch (14d) + S3 Glacier archive (long-term). **ADOT** sidecar exports OTel traces to X-Ray + metrics to AMP.

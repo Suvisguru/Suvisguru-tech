@@ -1,0 +1,21 @@
+# Quiz — K-ECS C (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A new engineer joins. What's the 2-minute architecture orientation?
+    answer: |
+      "Two ECS Services on Fargate. **api** is HTTPS, behind ALB with blue/green via CodeDeploy. **worker** is queue-driven on Fargate Spot. They talk via Service Connect. State lives in DynamoDB (orders) and EFS (uploads). Secrets in Secrets Manager, KMS-customer-keyed. Three IAM roles per Service: CI/CD (deploy creds), execution (launch creds), task (runtime creds). Container Insights + FireLens + ADOT/X-Ray for observability. Service Auto Scaling target-tracks request count for api and queue depth for worker. Deployment circuit breaker on; CodeDeploy alarm-gated. The runbook on the wiki maps every common failure to a 5-minute fix. Game days quarterly to keep it sharp." Then walk them through the runbook and one game-day exercise.
+
+  - id: 2
+    prompt: |
+      The CFO wants 30% cost reduction. Defend this architecture vs cuts.
+    answer: |
+      "**The architecture already takes the major cost-saving steps.** Worker on Fargate Spot saves ~70% on that fleet. CloudWatch logs go to S3 Glacier after 30 days (saves ~80% on long-term retention vs CloudWatch retention). Service Auto Scaling shrinks both Services to baseline during off-hours. **Possible further trims:** (1) move worker base from 2 → 1 Fargate (~$50/mo); (2) move api from 6 → 4 Fargate baseline + scale-up faster (~$200/mo, riskier); (3) FireLens filter DEBUG logs out of CloudWatch (~$300/mo); (4) Container Insights metric-filtering for low-signal metrics (~$100/mo). **Combined: ~$650/mo savings without architectural cuts.** Cuts I would NOT make: ALB (it's not the cost center), Secrets Manager (KMS-encrypted is non-negotiable), ADOT/X-Ray (without traces, the next P99 incident takes days). The architecture is already optimised; don't weaken the operational core to chase the last 10%."
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Friday afternoon: a junior engineer pushes a Task Definition revision that changes `memory` from 2048 to 512. Walk through what happens in this architecture, end to end.
+    answer: |
+      (1) **CodeDeploy starts** linear 10% per 5 min canary. New Tasks (rev N+1, 512 MiB) launch into green TG. (2) **Container OOMs at startup** — apps using more than 512 MiB memory get SIGKILL. stoppedReason: OutOfMemoryError; exit code 137. (3) **Green TG target health** goes Unhealthy. (4) **5xxRate alarm** in CodeDeploy Deployment Group trips (Tasks not serving). (5) **CodeDeploy auto-rollback** — listener flips back to blue (rev N, 2048 MiB Tasks); green Tasks deregistered + drained; users saw maybe 30 seconds of elevated latency. (6) **On-call paged** by the rollback notification. (7) **Runbook step 2**: describe-tasks STOPPED on the green Tasks; stoppedReason OutOfMemoryError; exit code 137; in CloudWatch see "OOMKilled". (8) **Root cause** identified in 2 minutes; junior engineer pings on Slack; new revision fixes the regression in code review; deploy resumes by 17:30. **The architecture caught the failure, rolled back automatically, and gave the team a 5-minute postmortem.** No customer-facing outage; one alarm; one paged engineer; one PR.
