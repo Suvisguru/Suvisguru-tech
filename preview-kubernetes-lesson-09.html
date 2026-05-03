@@ -1083,9 +1083,13 @@
 <footer>Suvis Guru · K-COM · Lesson 9 of 45 · grounded in opencontainers.org · containerd.io · github.com/opencontainers</footer>
 
 <script>
+
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
   // theme
   const themeToggle = document.getElementById('theme-toggle');
-  const stored = localStorage.getItem('lesson-theme');
+  const stored = safeStorageGet('lesson-theme');
   if (stored) {
     document.body.setAttribute('data-theme', stored);
     themeToggle.textContent = stored === 'dark' ? '☀ Light' : '🌙 Dark';
@@ -1095,7 +1099,7 @@
     const next = cur === 'light' ? 'dark' : 'light';
     document.body.setAttribute('data-theme', next);
     themeToggle.textContent = next === 'dark' ? '☀ Light' : '🌙 Dark';
-    localStorage.setItem('lesson-theme', next);
+    safeStorageSet('lesson-theme', next);
   });
 
   // flashcards

@@ -684,41 +684,60 @@ spec:
 
 
 <script>
-  const themeToggle = document.getElementById('theme-toggle');
-  const stored = localStorage.getItem('lesson-theme');
-  if (stored) {
-    document.body.setAttribute('data-theme', stored);
-    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
-  }
-  themeToggle.addEventListener('click', () => {
-    const cur = document.body.getAttribute('data-theme');
-    const next = cur === 'light' ? 'dark' : 'light';
-    document.body.setAttribute('data-theme', next);
-    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
-    localStorage.setItem('lesson-theme', next);
-  });
-  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
-  document.querySelectorAll('.quiz-reveal').forEach(btn => {
-    const showText = btn.textContent;
-    const hideText = showText.replace(/^Show/, 'Hide');
-    btn.addEventListener('click', () => {
-      const ans = btn.parentElement.querySelector('.quiz-answer');
-      const open = ans.classList.toggle('show');
-      btn.textContent = open ? hideText : showText;
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
     });
-  });
-  document.querySelectorAll('.pause-check-box').forEach(box => {
-    const opts = box.querySelectorAll('.pause-check-opt');
-    const fb = box.querySelector('.pause-check-feedback');
-    opts.forEach(opt => opt.addEventListener('click', () => {
-      opts.forEach(o => o.classList.remove('correct','wrong'));
-      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
-      fb.classList.add('show');
-    }));
-  });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
-  (function() {
+  try { (function() {
     const SCENES = [{"mode_id": "install", "mode_label": "Mode: helm install", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>helm install cm oci://registry/charts/cert-manager --version 1.14</code>.", "move_to": [255, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Helm pulls chart; merges values.yaml with user overrides.", "move_to": [405, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Renders templates \u2192 posts to K8s API.", "move_to": [555, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Release recorded as Secret <code>sh.helm.release.v1.cm.v1</code>.", "move_to": [690, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "upgrade", "mode_label": "Mode: helm upgrade \u2014 apply new version", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>helm upgrade cm ... --version 1.15</code>.", "move_to": [100, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Helm renders v1.15; diffs against previous render; applies changes.", "move_to": [405, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> New Release Secret <code>sh.helm.release.v1.cm.v2</code>. Old kept for rollback.", "move_to": [690, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "rollback", "mode_label": "Mode: helm rollback to previous revision", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>helm rollback cm 1</code>.", "move_to": [690, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Helm reads Secret v1; re-applies that manifest set.", "move_to": [555, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Cluster reverts to v1.14. Hooks that ran during upgrade are NOT undone \u2014 plan migrations to be reversible.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [100, 115];
     const animModeLabel = document.getElementById('anim-mode-label');
@@ -767,7 +786,7 @@ spec:
       clearTimer();
       const scene = SCENES.find(s => s.mode_id === modeId);
       if (!scene) return;
-      animModeLabel.textContent = scene.mode_label;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
       setText(scene.initial_set_text);
       // Reset packet to start
       currentXY = INITIAL_XY.slice();
@@ -799,7 +818,7 @@ spec:
     });
     // Auto-start first scene
     if (SCENES.length) runScene(SCENES[0].mode_id);
-  })();
+  })(); } catch (e) { console.warn('animation setup failed', e); }
 
 </script>
 

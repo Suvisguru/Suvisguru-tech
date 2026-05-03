@@ -698,41 +698,60 @@
 
 
 <script>
-  const themeToggle = document.getElementById('theme-toggle');
-  const stored = localStorage.getItem('lesson-theme');
-  if (stored) {
-    document.body.setAttribute('data-theme', stored);
-    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
-  }
-  themeToggle.addEventListener('click', () => {
-    const cur = document.body.getAttribute('data-theme');
-    const next = cur === 'light' ? 'dark' : 'light';
-    document.body.setAttribute('data-theme', next);
-    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
-    localStorage.setItem('lesson-theme', next);
-  });
-  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
-  document.querySelectorAll('.quiz-reveal').forEach(btn => {
-    const showText = btn.textContent;
-    const hideText = showText.replace(/^Show/, 'Hide');
-    btn.addEventListener('click', () => {
-      const ans = btn.parentElement.querySelector('.quiz-answer');
-      const open = ans.classList.toggle('show');
-      btn.textContent = open ? hideText : showText;
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
     });
-  });
-  document.querySelectorAll('.pause-check-box').forEach(box => {
-    const opts = box.querySelectorAll('.pause-check-opt');
-    const fb = box.querySelector('.pause-check-feedback');
-    opts.forEach(opt => opt.addEventListener('click', () => {
-      opts.forEach(o => o.classList.remove('correct','wrong'));
-      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
-      fb.classList.add('show');
-    }));
-  });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
-  (function() {
+  try { (function() {
     const SCENES = [{"mode_id": "api", "mode_label": "Mode: GET /api \u2014 first HTTPRoute matches", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User requests <code>https://acme.com/api/v1/users</code>.", "move_to": [270, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Gateway terminates TLS, looks up matching HTTPRoute by host+path.", "move_to": [485, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> First HTTPRoute matches /api/* \u2192 backendRef svc-api.", "move_to": [675, 60], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "shop", "mode_label": "Mode: GET /shop \u2014 second HTTPRoute matches", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User requests <code>https://acme.com/shop/cart</code>.", "move_to": [270, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Gateway routes by path; /shop matches the second HTTPRoute.", "move_to": [485, 130], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> backendRef points at svc-shop. Different team, same Gateway.", "move_to": [675, 130], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "canary", "mode_label": "Mode: HTTPRoute backendRef weights 90/10 (canary)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> /api HTTPRoute has 2 backendRefs: svc-api (weight 90) + svc-api-v2 (weight 10).", "move_to": [485, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Gateway distributes traffic: ~9 of 10 requests \u2192 svc-api stable.", "move_to": [675, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> ~1 of 10 \u2192 svc-api-v2 canary. Pure declarative \u2014 no controller-specific annotations.", "move_to": [675, 130], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [90, 100];
     const animModeLabel = document.getElementById('anim-mode-label');
@@ -781,7 +800,7 @@
       clearTimer();
       const scene = SCENES.find(s => s.mode_id === modeId);
       if (!scene) return;
-      animModeLabel.textContent = scene.mode_label;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
       setText(scene.initial_set_text);
       // Reset packet to start
       currentXY = INITIAL_XY.slice();
@@ -813,7 +832,7 @@
     });
     // Auto-start first scene
     if (SCENES.length) runScene(SCENES[0].mode_id);
-  })();
+  })(); } catch (e) { console.warn('animation setup failed', e); }
 
 </script>
 

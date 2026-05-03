@@ -697,41 +697,60 @@
 
 
 <script>
-  const themeToggle = document.getElementById('theme-toggle');
-  const stored = localStorage.getItem('lesson-theme');
-  if (stored) {
-    document.body.setAttribute('data-theme', stored);
-    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
-  }
-  themeToggle.addEventListener('click', () => {
-    const cur = document.body.getAttribute('data-theme');
-    const next = cur === 'light' ? 'dark' : 'light';
-    document.body.setAttribute('data-theme', next);
-    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
-    localStorage.setItem('lesson-theme', next);
-  });
-  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
-  document.querySelectorAll('.quiz-reveal').forEach(btn => {
-    const showText = btn.textContent;
-    const hideText = showText.replace(/^Show/, 'Hide');
-    btn.addEventListener('click', () => {
-      const ans = btn.parentElement.querySelector('.quiz-answer');
-      const open = ans.classList.toggle('show');
-      btn.textContent = open ? hideText : showText;
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
     });
-  });
-  document.querySelectorAll('.pause-check-box').forEach(box => {
-    const opts = box.querySelectorAll('.pause-check-opt');
-    const fb = box.querySelector('.pause-check-feedback');
-    opts.forEach(opt => opt.addEventListener('click', () => {
-      opts.forEach(o => o.classList.remove('correct','wrong'));
-      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
-      fb.classList.add('show');
-    }));
-  });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
-  (function() {
+  try { (function() {
     const SCENES = [{"mode_id": "cm-file", "mode_label": "Mode: ConfigMap mounted as a volume", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>kubectl apply -f cm.yaml</code> \u2014 ConfigMap stored in etcd as plain UTF-8.", "move_to": [310, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Kubelet sees the Pod's <code>volumes: configMap</code> mount.", "move_to": [515, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Each key becomes a file under the mount. Updates auto-resync within ~60s. App watches with inotify.", "move_to": [680, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "secret-env", "mode_label": "Mode: Secret as env var (read once at start)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Secret stored \u2014 base64-encoded in etcd. <em>Encrypted at rest only if KMS is configured.</em>", "move_to": [310, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Kubelet reads via API; injects as env var on Pod start.", "move_to": [515, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> App reads <code>os.environ[\"DB_PASSWORD\"]</code> once. <em>Rotation requires Pod restart</em>.", "move_to": [680, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "eso", "mode_label": "Mode: ESO syncs from Vault to a K8s Secret", "initial_set_text": [["anim-source-label", "Vault"]], "phases": [{"readout": "<strong>Step 1.</strong> Source of truth is HashiCorp Vault. <code>ExternalSecret</code> CRD points at a Vault path.", "move_to": [100, 110], "duration_ms": 400, "pause_after_ms": 600, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> ESO controller polls Vault on the refresh interval (default 1h).", "move_to": [310, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> ESO writes a K8s Secret. Kubelet projects it into the Pod normally.", "move_to": [515, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Vault rotation propagates: ESO refresh \u2192 Secret update \u2192 file watch \u2192 live reload.", "move_to": [680, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [100, 110];
     const animModeLabel = document.getElementById('anim-mode-label');
@@ -780,7 +799,7 @@
       clearTimer();
       const scene = SCENES.find(s => s.mode_id === modeId);
       if (!scene) return;
-      animModeLabel.textContent = scene.mode_label;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
       setText(scene.initial_set_text);
       // Reset packet to start
       currentXY = INITIAL_XY.slice();
@@ -812,7 +831,7 @@
     });
     // Auto-start first scene
     if (SCENES.length) runScene(SCENES[0].mode_id);
-  })();
+  })(); } catch (e) { console.warn('animation setup failed', e); }
 
 </script>
 

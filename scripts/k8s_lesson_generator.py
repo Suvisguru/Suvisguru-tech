@@ -390,38 +390,57 @@ BASE_CSS = """
 
 SCRIPT_BLOCK = """
 <script>
-  const themeToggle = document.getElementById('theme-toggle');
-  const stored = localStorage.getItem('lesson-theme');
-  if (stored) {
-    document.body.setAttribute('data-theme', stored);
-    themeToggle.textContent = stored === 'dark' ? '\\u2600 Light' : '\\ud83c\\udf19 Dark';
-  }
-  themeToggle.addEventListener('click', () => {
-    const cur = document.body.getAttribute('data-theme');
-    const next = cur === 'light' ? 'dark' : 'light';
-    document.body.setAttribute('data-theme', next);
-    themeToggle.textContent = next === 'dark' ? '\\u2600 Light' : '\\ud83c\\udf19 Dark';
-    localStorage.setItem('lesson-theme', next);
-  });
-  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
-  document.querySelectorAll('.quiz-reveal').forEach(btn => {
-    const showText = btn.textContent;
-    const hideText = showText.replace(/^Show/, 'Hide');
-    btn.addEventListener('click', () => {
-      const ans = btn.parentElement.querySelector('.quiz-answer');
-      const open = ans.classList.toggle('show');
-      btn.textContent = open ? hideText : showText;
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\\u2600 Light' : '\\ud83c\\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\\u2600 Light' : '\\ud83c\\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
     });
-  });
-  document.querySelectorAll('.pause-check-box').forEach(box => {
-    const opts = box.querySelectorAll('.pause-check-opt');
-    const fb = box.querySelector('.pause-check-feedback');
-    opts.forEach(opt => opt.addEventListener('click', () => {
-      opts.forEach(o => o.classList.remove('correct','wrong'));
-      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
-      fb.classList.add('show');
-    }));
-  });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
 </script>
 """
 
@@ -765,7 +784,7 @@ def _render_animation(anim: 'Animation') -> tuple:
 
     script_js = """
   // -------- Animation --------
-  (function() {{
+  try {{ (function() {{
     const SCENES = {scenes_json};
     const INITIAL_XY = {initial_xy_json};
     const animModeLabel = document.getElementById('anim-mode-label');
@@ -814,7 +833,7 @@ def _render_animation(anim: 'Animation') -> tuple:
       clearTimer();
       const scene = SCENES.find(s => s.mode_id === modeId);
       if (!scene) return;
-      animModeLabel.textContent = scene.mode_label;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
       setText(scene.initial_set_text);
       // Reset packet to start
       currentXY = INITIAL_XY.slice();
@@ -846,7 +865,7 @@ def _render_animation(anim: 'Animation') -> tuple:
     }});
     // Auto-start first scene
     if (SCENES.length) runScene(SCENES[0].mode_id);
-  }})();
+  }})(); }} catch (e) {{ console.warn('animation setup failed', e); }}
 """.format(scenes_json=scenes_json, initial_xy_json=initial_xy_json)
 
     return section_html, script_js

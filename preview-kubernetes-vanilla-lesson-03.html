@@ -612,41 +612,60 @@ mode: ipvs                                       # or empty if Cilium replaces k
 
 
 <script>
-  const themeToggle = document.getElementById('theme-toggle');
-  const stored = localStorage.getItem('lesson-theme');
-  if (stored) {
-    document.body.setAttribute('data-theme', stored);
-    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
-  }
-  themeToggle.addEventListener('click', () => {
-    const cur = document.body.getAttribute('data-theme');
-    const next = cur === 'light' ? 'dark' : 'light';
-    document.body.setAttribute('data-theme', next);
-    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
-    localStorage.setItem('lesson-theme', next);
-  });
-  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
-  document.querySelectorAll('.quiz-reveal').forEach(btn => {
-    const showText = btn.textContent;
-    const hideText = showText.replace(/^Show/, 'Hide');
-    btn.addEventListener('click', () => {
-      const ans = btn.parentElement.querySelector('.quiz-answer');
-      const open = ans.classList.toggle('show');
-      btn.textContent = open ? hideText : showText;
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
     });
-  });
-  document.querySelectorAll('.pause-check-box').forEach(box => {
-    const opts = box.querySelectorAll('.pause-check-opt');
-    const fb = box.querySelector('.pause-check-feedback');
-    opts.forEach(opt => opt.addEventListener('click', () => {
-      opts.forEach(o => o.classList.remove('correct','wrong'));
-      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
-      fb.classList.add('show');
-    }));
-  });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
-  (function() {
+  try { (function() {
     const SCENES = [{"mode_id": "bootstrap", "mode_label": "Mode: HA bootstrap (cp-1 init \u2192 cp-2/3 join \u2192 workers join)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Operator runs <code>kubeadm init --upload-certs</code> on cp-1.", "move_to": [245, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> cp-1 generates certs + bootstraps the control plane. Static pods start.", "move_to": null, "duration_ms": 400, "pause_after_ms": 900, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> cp-2 joins via <code>kubeadm join --control-plane --certificate-key</code>.", "move_to": [405, 75], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> cp-3 joins likewise. Quorum + HA reached.", "move_to": [405, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> Workers join via bootstrap token.", "move_to": [555, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 6.</strong> All 6 nodes Ready (after CNI install).", "move_to": [690, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [90, 110];
     const animModeLabel = document.getElementById('anim-mode-label');
@@ -695,7 +714,7 @@ mode: ipvs                                       # or empty if Cilium replaces k
       clearTimer();
       const scene = SCENES.find(s => s.mode_id === modeId);
       if (!scene) return;
-      animModeLabel.textContent = scene.mode_label;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
       setText(scene.initial_set_text);
       // Reset packet to start
       currentXY = INITIAL_XY.slice();
@@ -727,7 +746,7 @@ mode: ipvs                                       # or empty if Cilium replaces k
     });
     // Auto-start first scene
     if (SCENES.length) runScene(SCENES[0].mode_id);
-  })();
+  })(); } catch (e) { console.warn('animation setup failed', e); }
 
 </script>
 

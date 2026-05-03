@@ -249,10 +249,16 @@ def main() -> None:
     # --- Consolidated document-wide JS handlers ---
     out.append("<script>")
     out.append("""
+// Defensive helpers — Safari blocks localStorage on file:// origins; uncaught
+// throws here would halt every other handler in this <script> tag.
+function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
 // Theme toggle (single, document-wide)
-(function() {
+try { (function() {
   const themeToggle = document.getElementById('theme-toggle');
-  const stored = localStorage.getItem('lesson-theme');
+  if (!themeToggle) return;
+  const stored = safeStorageGet('lesson-theme');
   if (stored) {
     document.body.setAttribute('data-theme', stored);
     themeToggle.textContent = stored === 'dark' ? '☀ Light' : '🌙 Dark';
@@ -262,52 +268,59 @@ def main() -> None:
     const next = cur === 'light' ? 'dark' : 'light';
     document.body.setAttribute('data-theme', next);
     themeToggle.textContent = next === 'dark' ? '☀ Light' : '🌙 Dark';
-    localStorage.setItem('lesson-theme', next);
+    safeStorageSet('lesson-theme', next);
   });
-})();
+})(); } catch (e) { console.warn('theme toggle setup failed', e); }
 
 // Lesson jump dropdown
-(function() {
+try { (function() {
   const jump = document.getElementById('lesson-jump');
+  if (!jump) return;
   jump.addEventListener('change', () => {
     if (jump.value) {
       location.hash = '#' + jump.value;
       jump.value = '';
     }
   });
-})();
+})(); } catch (e) { console.warn('lesson-jump setup failed', e); }
 
 // Flashcards (document-wide)
-document.querySelectorAll('.flashcard').forEach(card => {
-  card.addEventListener('click', () => card.classList.toggle('flipped'));
-});
+try {
+  document.querySelectorAll('.flashcard').forEach(card => {
+    card.addEventListener('click', () => card.classList.toggle('flipped'));
+  });
+} catch (e) { console.warn('flashcard setup failed', e); }
 
 // Quiz reveals (document-wide; handles "Show answer" + CYOA "Show what happened")
-document.querySelectorAll('.quiz-reveal').forEach(btn => {
-  const showText = btn.textContent;
-  const hideText = showText.replace(/^Show/, 'Hide');
-  btn.addEventListener('click', () => {
-    const ans = btn.parentElement.querySelector('.quiz-answer');
-    const open = ans.classList.toggle('show');
-    btn.textContent = open ? hideText : showText;
-  });
-});
-
-// Pause-and-check (document-wide)
-document.querySelectorAll('.pause-check-box').forEach(box => {
-  const opts = box.querySelectorAll('.pause-check-opt');
-  const fb = box.querySelector('.pause-check-feedback');
-  opts.forEach(opt => {
-    opt.addEventListener('click', () => {
-      opts.forEach(o => o.classList.remove('correct','wrong'));
-      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
-      fb.classList.add('show');
+try {
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
     });
   });
-});
+} catch (e) { console.warn('quiz reveal setup failed', e); }
+
+// Pause-and-check (document-wide)
+try {
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      });
+    });
+  });
+} catch (e) { console.warn('pause-check setup failed', e); }
 
 // Sidebar scroll-spy — highlight the current lesson as the reader scrolls
-(function() {
+try { (function() {
   const sidebarLinks = document.querySelectorAll('.course-sidebar a');
   const linkByHash = {};
   sidebarLinks.forEach(a => { linkByHash[a.getAttribute('href')] = a; });
@@ -339,7 +352,7 @@ document.querySelectorAll('.pause-check-box').forEach(box => {
   sidebarLinks.forEach(a => {
     a.addEventListener('click', () => setCurrent(a.getAttribute('href').slice(1)));
   });
-})();
+})(); } catch (e) { console.warn('scroll-spy setup failed', e); }
 """)
     out.append("</script>")
     out.append("</body>")
