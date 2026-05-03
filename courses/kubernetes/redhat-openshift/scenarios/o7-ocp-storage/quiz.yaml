@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A bank installs OCP on bare metal needing RWX + block + object + S3 + DR. Walk through the storage architecture.
+    answer: |
+      (1) Install **ODF** on 4 dedicated worker nodes with attached storage. (2) ODF provides CephRBD (RWO block), CephFS (RWX), NooBaa S3 (object). (3) Default StorageClass uses CephRBD; explicit RWX StorageClass uses CephFS; container registry + Prometheus long-term storage use NooBaa S3 endpoint. (4) Install **OADP** Operator + DataProtectionApplication pointing to off-cluster S3 (a separate cluster, AWS S3, or NooBaa in DR region). Schedule nightly Backup CR. (5) Quarterly DR drill: restore into sibling cluster; verify.
+
+  - id: 2
+    prompt: |
+      A team's Pod with PVC fails to mount cross-zone after MachineSet rebalances. Diagnostic + fix?
+    answer: |
+      (1) `kubectl describe pod`: AttachVolume failure, often "target node does not match volume's zone." (2) `oc get pvc <pvc> -o yaml`: check `volume.kubernetes.io/selected-node` annotation + topology constraints. (3) Default StorageClass's `volumeBindingMode` = WaitForFirstConsumer prevents this for new PVCs; legacy PVCs may not have used WFC. (4) Fix paths: (a) Force the Pod back to the original zone via nodeSelector / topology-spread; (b) Migrate to Regional PD or ODF CephRBD (multi-zone); (c) Recreate PVC + restore from snapshot in the new zone. (5) Long-term: ensure all StorageClasses use WaitForFirstConsumer + plan for cross-zone resilience explicitly via app-level replication or multi-zone storage.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO walks in: "ODF is expensive — why not just use AWS EBS for everything?" Defend or pivot.
+    answer: |
+      "**It depends on the cluster shape and storage needs.** AWS EBS works well for: cloud-only OCP, RWO workloads, single-zone tolerance. EBS doesn't cover: RWX (need Azure Files / EFS — different cost model), object storage (need separate S3 bucket + IAM), software-defined storage on bare-metal (no cloud LB to use). **ODF wins when:** (1) on-prem / hybrid where there's no cloud-block-storage equivalent; (2) need for RWX + object integrated; (3) want one operationally-supported platform vs assembling NFS server + S3 service + block storage; (4) data sovereignty / no-cloud-egress requirements. **EBS wins when:** AWS-native shop, all RWO workloads, ok with per-zone-pinned PVCs. *For our hybrid bare-metal + cloud workload mix, ODF is right; for an AWS-only shop, EBS + EFS + S3 is right.*"

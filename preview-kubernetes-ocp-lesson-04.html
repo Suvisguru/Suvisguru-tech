@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-OCP O4 · OpenShift Security</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-OCP module journey">
+  <span class="concept-rail-title">K-OCP modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>O1 OCP architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>O2 installation models</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>O3 OCP networking</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>O4 OCP security</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O5 Operators &amp; OLM</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O6 workloads &amp; DevEx</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O7 OCP storage</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O8 OCP operations</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O9 Virt + AI + Edge</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O10 multi-cluster (ACM)</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O11 observability</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O12 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O13 capstone foundry</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-OCP · Module O4</span></a>
+    <span class="progress-pill">O4 · OCP security</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏭 K-Foundry bay: <strong>Safety Office</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Foundry map: O4">
+    <title>K-Foundry map · O4</title>
+    <desc>Stylised Red Hat OpenShift enterprise factory. Safety Office highlighted.</desc>
+    <defs>
+      <linearGradient id="ko-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF1D6" stop-opacity="0.7"/><stop offset="100%" stop-color="#E8DDC8" stop-opacity="0.55"/></linearGradient>
+      <linearGradient id="ko-fire" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#A04832" stop-opacity="0.16"/><stop offset="100%" stop-color="#3F4A5E" stop-opacity="0.30"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#ko-floor)" stroke="#A04832" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · FOUNDRY · RED HAT OPENSHIFT</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="240" x2="780" y2="240" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="350" x2="780" y2="350" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.3"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">welcome &amp; foundation bays</text>
+    <text x="48" y="232" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">production &amp; ops bays</text>
+    <text x="48" y="342" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">specialty &amp; multi-foundry bays</text>
+    <g class="pin pin-anchor" id="ko-bay01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">O1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Welcome Hall</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="ko-bay02" transform="translate(280,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Construction Site</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">installation</text></g>
+    <g class="pin" id="ko-bay03" transform="translate(460,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Pipework &amp; Conveyors</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">OVN-K + Routes</text></g>
+    <g class="pin active" id="ko-bay04" transform="translate(640,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Safety Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">SCC + RHACS</text></g>
+    <g class="pin" id="ko-bay05" transform="translate(100,180)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Operator Hub</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">OLM</text></g>
+    <g class="pin" id="ko-bay06" transform="translate(280,180)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Mold Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">S2I + Pipelines + GitOps</text></g>
+    <g class="pin" id="ko-bay07" transform="translate(460,180)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Inventory Warehouse</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">ODF + OADP</text></g>
+    <g class="pin" id="ko-bay08" transform="translate(640,180)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Maintenance Bay</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">EUS + MCO + upgrades</text></g>
+    <g class="pin" id="ko-bay09" transform="translate(100,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Special Castings Wing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Virt + AI + Edge</text></g>
+    <g class="pin" id="ko-bay10" transform="translate(280,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Multi-Foundry Network</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">ACM + Hypershift</text></g>
+    <g class="pin" id="ko-bay11" transform="translate(460,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Control Tower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Monitoring + Loki + Tempo</text></g>
+    <g class="pin" id="ko-bay12" transform="translate(640,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Diagnostic Lab</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">must-gather</text></g>
+    <g class="pin" id="ko-bay13" transform="translate(380,370)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Grand Opening</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🏭 <strong>Safety Office</strong> <span>· O4 of 13</span><span class="visually-hidden">Module O4, Safety Office.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module O4 · the Safety Office — defence in depth</span>
+    <h1>O4 · OpenShift Security (OAuth, SCCs, Compliance Operator, RHACS, FIPS, Kata)</h1>
+    <p class="hero-sub"><strong>AuthN</strong>: integrated OAuth server + providers (HTPasswd, LDAP, OIDC, GitHub, Keystone). <strong>AuthZ</strong>: OCP RBAC + ServiceAccounts. <strong>Security Context Constraints (SCCs)</strong>: <code>restricted-v2</code> default, plus <code>nonroot-v2</code>, <code>anyuid</code>, <code>hostnetwork</code>, <code>privileged</code>. SCC vs PSA. <strong>Compliance Operator</strong> (CIS / NIST / PCI-DSS / FedRAMP / HIPAA scans), <strong>File Integrity Operator</strong>, <strong>Security Profiles Operator</strong>. <strong>Red Hat Advanced Cluster Security (RHACS / StackRox)</strong> — vuln + compliance + network graph + runtime + admission. <strong>KMS</strong>, <strong>FIPS</strong>, <strong>OpenShift sandboxed containers (Kata)</strong>.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OCP security stack — OAuth, SCCs, RHACS, Compliance Operator, FIPS, Kata.">
+  <rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6"/>
+  <text x="380" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E">Safety Office — defence in depth</text>
+  <rect x="40" y="65" width="170" height="125" rx="10" fill="#7AB3CC" stroke="#3F4A5E"/>
+  <text x="125" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">authN / authZ</text>
+  <text x="125" y="103" text-anchor="middle" font-size="9" fill="#FBF1D6">OAuth providers</text>
+  <text x="125" y="118" text-anchor="middle" font-size="9" fill="#FBF1D6">LDAP · OIDC · HTPasswd</text>
+  <text x="125" y="133" text-anchor="middle" font-size="9" fill="#FBF1D6">OCP RBAC + ServiceAccts</text>
+  <text x="125" y="148" text-anchor="middle" font-size="9" fill="#FBF1D6">integrated OAuth server</text>
+  <rect x="225" y="65" width="170" height="125" rx="10" fill="#A04832" stroke="#3F4A5E"/>
+  <text x="310" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">SCCs</text>
+  <text x="310" y="103" text-anchor="middle" font-size="9" fill="#FFFFFF">restricted-v2 (default)</text>
+  <text x="310" y="118" text-anchor="middle" font-size="9" fill="#FFFFFF">nonroot-v2 · anyuid</text>
+  <text x="310" y="133" text-anchor="middle" font-size="9" fill="#FFFFFF">hostnetwork · privileged</text>
+  <text x="310" y="148" text-anchor="middle" font-size="9" fill="#FFFFFF">SCC vs PSA</text>
+  <rect x="410" y="65" width="170" height="125" rx="10" fill="#5A9F7A" stroke="#3F4A5E"/>
+  <text x="495" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">compliance + ACS</text>
+  <text x="495" y="103" text-anchor="middle" font-size="9" fill="#FFFFFF">Compliance Operator</text>
+  <text x="495" y="118" text-anchor="middle" font-size="9" fill="#FFFFFF">File Integrity</text>
+  <text x="495" y="131" text-anchor="middle" font-size="9" fill="#FFFFFF">Security Profiles</text>
+  <text x="495" y="148" text-anchor="middle" font-size="9" fill="#FFFFFF">RHACS / StackRox</text>
+  <rect x="595" y="65" width="125" height="125" rx="10" fill="#3F4A5E" stroke="#FBF1D6"/>
+  <text x="657" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">hardware</text>
+  <text x="657" y="103" text-anchor="middle" font-size="9" fill="#FBF1D6">KMS integration</text>
+  <text x="657" y="118" text-anchor="middle" font-size="9" fill="#FBF1D6">FIPS 140-2 mode</text>
+  <text x="657" y="135" text-anchor="middle" font-size="9" fill="#FBF1D6">Kata sandboxed</text>
+  <text x="657" y="148" text-anchor="middle" font-size="9" fill="#FBF1D6">containers</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. RHACS alert: <em>"crypto-miner detected in production Pod, container.runtime.process anomalous."</em> The Pod runs as root (anyuid SCC granted ad-hoc 18 months ago by someone now-departed). The image came from an internal registry but lacks SBOM + CVE scan. Compliance Operator was disabled in this namespace because "it broke the build" — last scan from 9 months ago. <em>Blast radius: every secret in the cluster the Pod's SA can read.</em> Today's lesson: layered OCP security — auth, SCC, compliance, runtime, hardware.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Default to restricted-v2 SCC; only escalate explicitly. Use Compliance Operator for CIS/NIST/PCI scans + RHACS for runtime. Integrated OAuth + identity providers; KMS for secrets; FIPS for federal; Kata for sandboxed untrusted workloads.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · OAuth + RBAC</span>
+    <h2>Integrated OAuth + identity providers + OCP RBAC</h2>
+    <p><strong>OCP's integrated OAuth server</strong> is built into the cluster (cluster operator <code>authentication</code>). It backs all human auth + many service-to-service flows.</p>
+    <p><strong>Identity providers</strong> configurable via <code>OAuth/cluster</code>: <strong>HTPasswd</strong> (file-based, dev/break-glass), <strong>LDAP</strong> (corporate dir), <strong>OIDC</strong> (Keycloak / Okta / Auth0), <strong>GitHub</strong>, <strong>GitLab</strong>, <strong>Google</strong>, <strong>Keystone</strong> (OpenStack), <strong>RequestHeader</strong> (proxy auth), <strong>BasicAuth</strong>. Multiple IDPs can coexist.</p>
+    <p><strong>OCP RBAC</strong> = K8s RBAC + OCP-specific roles: <em>cluster-admin</em>, <em>admin</em> (project), <em>edit</em> (project), <em>view</em> (project), plus all the <code>system:</code> roles. <code>oc adm policy add-role-to-user</code> / <code>oc adm policy add-cluster-role-to-user</code>.</p>
+    <p><strong>ServiceAccounts</strong> — every Project gets <em>default</em>, <em>builder</em>, and <em>deployer</em> SAs by default. Workloads that need scoped permissions get their own SA + RoleBinding.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · SCCs</span>
+    <h2>Security Context Constraints (SCCs) — five defaults you should know</h2>
+    <p><strong>SCCs</strong> are OCP's admission system for Pod-security. Predates K8s' Pod Security Admission (PSA). Bound to ServiceAccounts; the Pod's SA must be granted an SCC for the Pod to run.</p>
+    <p>Built-in SCCs (most-restrictive to least):</p>
+    <ul>
+      <li><strong>restricted-v2</strong> (default) — non-root, drop all caps + add NET_BIND_SERVICE, seccomp RuntimeDefault, no hostPath/hostNet/hostPID/hostIPC, no privileged. <em>Where every workload should aim.</em></li>
+      <li><strong>nonroot-v2</strong> — must run as non-root (no UID 0); slightly less restrictive on capabilities.</li>
+      <li><strong>anyuid</strong> — allows any UID. For workloads that hard-code UID (legacy images). Avoid where possible.</li>
+      <li><strong>hostnetwork</strong> — allows hostNetwork (sees host's network namespace). For node-level networking workloads.</li>
+      <li><strong>privileged</strong> — full root + caps + host access. Only for cluster-critical infra (CSI drivers, low-level monitoring agents).</li>
+    </ul>
+    <p><strong>SCC vs PSA:</strong> OCP supports both. PSA labels are honored on namespaces; SCC admission runs in addition. <em>Default OCP namespaces are pre-labelled with PSA <code>restricted</code>; SCC admission enforces parallel constraints.</em> For new workloads, design for restricted-v2 + PSA restricted; only escalate when proven needed.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · Compliance + RHACS</span>
+    <h2>Compliance Operator + RHACS (StackRox)</h2>
+    <p><strong>Compliance Operator</strong> — runs <em>OpenSCAP</em> scans against the cluster + nodes for compliance baselines: <strong>CIS</strong> (Kubernetes Benchmark), <strong>NIST 800-53</strong>, <strong>PCI-DSS</strong>, <strong>FedRAMP</strong>, <strong>HIPAA</strong>. Generates <code>ComplianceCheckResult</code> CRDs; suggests automated remediations via <code>ComplianceRemediation</code>. Schedule periodic scans via <code>ScanSettingBinding</code>.</p>
+    <p><strong>File Integrity Operator (FIO)</strong> — AIDE-based file integrity monitoring on RHCOS. Detects unauthorized changes to critical filesystem paths (<code>/etc</code>, <code>/usr/bin</code>, etc.). Generates alerts on drift.</p>
+    <p><strong>Security Profiles Operator (SPO)</strong> — manages seccomp + SELinux + AppArmor profiles as K8s resources. Bind to Pods via SPOD CRDs.</p>
+    <p><strong>Red Hat Advanced Cluster Security (RHACS) / StackRox</strong> — comprehensive K8s security platform:
+    <ul>
+      <li><em>Vulnerability management</em> — image + deployment scans</li>
+      <li><em>Compliance</em> — CIS, NIST, PCI-DSS dashboards</li>
+      <li><em>Network graph</em> — visualises Pod-to-Pod traffic + suggests NetworkPolicies</li>
+      <li><em>Runtime threat detection</em> — eBPF + audit-based; detects shells, miners, lateral movement</li>
+      <li><em>Admission control</em> — block deploys violating policy at admission</li>
+    </ul>
+    <p>Multi-cluster: one RHACS Central manages many Secured Clusters across an organisation.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A Helm chart's Pod fails to start in OCP — admission rejects with "unable to validate against any SCC." The Deployment runs as UID 0. What's the right path?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Grant the Pod's SA the <strong>privileged</strong> SCC.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Investigate why UID 0 is required; if avoidable, rewrite to non-root + restricted-v2. If genuinely needed (legacy hard-coded image), grant <strong>anyuid</strong> SCC scoped to that SA only.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Disable SCC admission.</button></li>
+      </ul>
+      <p class="pause-check-feedback">Default to restricted-v2 design; if UID 0 is truly required, anyuid is the minimum escalation. Privileged is for cluster-infra workloads only.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · KMS + FIPS + sandboxed containers</span>
+    <h2>KMS + FIPS + OpenShift sandboxed containers (Kata)</h2>
+    <p><strong>KMS integration</strong> — etcd Secrets encryption with external KMS (AWS KMS, Azure Key Vault, GCP KMS, HashiCorp Vault). <code>EncryptionConfiguration</code> on the apiserver. Keys rotated externally; etcd holds ciphertext.</p>
+    <p><strong>FIPS mode</strong> — install OCP with FIPS 140-2 validated cryptography. Set <code>fips: true</code> in install-config; cluster boots with FIPS kernel + crypto libraries. Required for federal / regulated workloads. Cannot toggle FIPS post-install.</p>
+    <p><strong>Disconnected security</strong> — air-gapped clusters need security operators (Compliance, RHACS, FIO) installed via mirrored OperatorHub catalogs. RHACS Central sits inside the air-gap; Sensor pods on each cluster phone-home to it.</p>
+    <p><strong>OpenShift sandboxed containers (Kata)</strong> — runs Pods in lightweight VMs (Kata Containers + KVM) for stronger isolation than runc. Per-Pod kernel; container escape doesn't reach host. <em>For multi-tenant workloads with untrusted code (CI runners, customer-submitted code, sensitive PII).</em> ~5-15% perf overhead on syscall-heavy workloads.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-OCP K8s security was DIY: bring-your-own RBAC discipline, no SCC equivalent, PSP (deprecated), separate compliance scanning tools, separate runtime detection (Falco, Sysdig). Multi-cluster security was scripts. FIPS was a kernel-config exercise. KMS integration was custom. Sandboxed containers required separate runtime install + OS support.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>OCP ships <strong>integrated OAuth + 7 identity providers + OCP RBAC + 5 default SCCs</strong>; <strong>Compliance Operator</strong> for CIS/NIST/PCI/FedRAMP/HIPAA scans; <strong>File Integrity</strong> + <strong>Security Profiles</strong> Operators; <strong>RHACS / StackRox</strong> as the comprehensive K8s security platform; <strong>KMS</strong> integration via apiserver EncryptionConfiguration; <strong>FIPS mode</strong> at install; <strong>Kata sandboxed containers</strong> for stronger isolation.</p></div>
+    </div>
+    <p class="ba-caption"><em>Layered defence with Red Hat-supported components: auth + SCC + compliance + runtime + hardware. Each layer is independently meaningful; together they're a defendable security story.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this bay</h2>
+<p>The <strong>Safety Office</strong> is the foundry's defence-in-depth headquarters. Four shifts.</p>
+    <p>The <strong>Badge Window</strong> (OAuth + RBAC) issues badges to humans (HTPasswd / LDAP / OIDC) and worker-permits to robots (ServiceAccounts). Every visitor and worker passes here.</p>
+    <p>The <strong>Safety Inspector's Booth</strong> (SCCs) checks every Pod against the regulations. <em>restricted-v2</em> is the default uniform; some specialty workers need <em>anyuid</em> exceptions; only critical infrastructure gets <em>privileged</em>.</p>
+    <p>The <strong>Compliance Auditor's Office</strong> (Compliance Operator + File Integrity + Security Profiles) runs scheduled audits against CIS/NIST/PCI/FedRAMP/HIPAA — generates checklists with auto-remediation suggestions. The <strong>RHACS Watchtower</strong> (StackRox) monitors live: vulnerability scanning, network graph, runtime threat detection, admission control.</p>
+    <p>The <strong>Hardware Vault</strong> handles silicon-level concerns: KMS-managed keys for etcd Secrets; FIPS-validated cryptography (chosen at install); Kata sandboxed containers for tenants with untrusted workloads.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in OpenShift / Red Hat</th></tr></thead>
+        <tbody>
+          <tr><td>Badge Window</td><td>Integrated OAuth server + identity providers</td></tr>
+          <tr><td>Worker permit</td><td>ServiceAccount + RoleBinding</td></tr>
+          <tr><td>Foundry-wide role book</td><td>OCP RBAC (cluster-admin, admin, edit, view + system:*)</td></tr>
+          <tr><td>Safety Inspector's rule book</td><td>SCC list (restricted-v2, nonroot-v2, anyuid, hostnetwork, privileged)</td></tr>
+          <tr><td>Default uniform</td><td>restricted-v2 SCC</td></tr>
+          <tr><td>Special-case exception</td><td>anyuid / hostnetwork SCC</td></tr>
+          <tr><td>Cluster-critical-infra-only badge</td><td>privileged SCC</td></tr>
+          <tr><td>Compliance Auditor's checklists</td><td>Compliance Operator (CIS / NIST / PCI / FedRAMP / HIPAA scans)</td></tr>
+          <tr><td>File-integrity tripwires</td><td>File Integrity Operator (AIDE-based)</td></tr>
+          <tr><td>Seccomp / SELinux profile bindings</td><td>Security Profiles Operator</td></tr>
+          <tr><td>Comprehensive watchtower</td><td>RHACS / StackRox (vuln + compliance + network + runtime + admission)</td></tr>
+          <tr><td>Hardware vault keys</td><td>KMS-encrypted etcd Secrets</td></tr>
+          <tr><td>FIPS-validated crypto stamp</td><td>FIPS install mode</td></tr>
+          <tr><td>Untrusted-worker isolation cell</td><td>OpenShift sandboxed containers (Kata)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A real Safety Office can't look inside Confidential VMs (Kata); SCC bypass via cluster-admin escalation is a real risk the metaphor doesn't capture.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>The Safety Office checks badges, enforces uniform rules, runs surprise inspections, watches camera feeds, and maintains the vault. Each shift has a different job; together they keep the foundry safe.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>OCP security = OAuth + identity providers + OCP RBAC + ServiceAccounts (authN/Z); SCCs (restricted-v2 default, nonroot-v2, anyuid, hostnetwork, privileged) for Pod-security; Compliance Operator + File Integrity + Security Profiles for compliance; RHACS / StackRox for runtime + admission + network + vuln; KMS for etcd Secrets; FIPS install mode; Kata sandboxed containers for stronger isolation.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How OpenShift teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">Bank — RHACS multi-cluster + Compliance Operator + KMS + FIPS</p><p>A bank's OCP fleet (10 prod clusters) runs RHACS multi-cluster — Central manages all Secured Clusters' policies. Compliance Operator runs weekly PCI-DSS scans; results aggregated in RHACS Central. KMS integration with on-prem HashiCorp Vault for etcd Secrets. FIPS install mode (cannot retrofit; chosen at install).</p></div>
+      <div class="scenario"><p class="scenario-name">Telco — Kata for untrusted CI tenants</p><p>Telco runs CI for partner integrations on a shared OCP cluster. Risk: malicious build escapes container, attacks node. Solution: dedicated node pool with Kata runtime; CI Pods scheduled there via runtimeClassName. Each Pod runs in its own KVM-backed lightweight VM. <em>Container escape doesn't cross VM boundary.</em></p></div>
+      <div class="scenario"><p class="scenario-name">SaaS — Compliance Operator finds 73 non-compliant manifests</p><p>A SaaS enables Compliance Operator with the CIS Kubernetes profile. Initial scan: 73 ComplianceCheckResult failures. Operator suggests ComplianceRemediation manifests for ~50 of them (auto-applicable). Manual fixes for the other 23. <em>CIS score from 41% to 94% in 2 weeks.</em></p></div>
+      <div class="scenario"><p class="scenario-name">anyuid escalation reverted — workload rewritten to non-root</p><p>A team discovered their Helm chart granted anyuid 18 months ago for a single Deployment. They rewrote the chart to use a non-root user UID, removed the SA-to-anyuid binding. <em>Posture improved; restricted-v2 enforced cluster-wide; one less escalation drift to monitor.</em></p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>A signed image walks from CI to a guarded Pod (RHACS-watched)</h2>
+    <p>Sign + scan → admission verify → SCC restricted-v2 → RHACS runtime.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="90" width="110" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="95" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">build CI</text><text x="95" y="128" text-anchor="middle" font-size="9" fill="#6B6058">image</text>
+        <rect x="180" y="90" width="130" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="245" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">ACR / Quay scan</text><text x="245" y="128" text-anchor="middle" font-size="9" fill="#6B6058">+ Cosign signing</text>
+        <rect x="340" y="30" width="130" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Compliance Op</text><text x="405" y="68" text-anchor="middle" font-size="9" fill="#6B6058">CIS / NIST</text>
+        <rect x="340" y="100" width="130" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">SCC restricted-v2</text><text x="405" y="138" text-anchor="middle" font-size="9" fill="#6B6058">+ Policy Controller</text>
+        <rect x="340" y="170" width="130" height="50" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="405" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">RHACS runtime</text><text x="405" y="208" text-anchor="middle" font-size="9" fill="#6B6058">watch</text>
+        <rect x="500" y="90" width="110" height="60" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="555" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Pod Running</text><text x="555" y="128" text-anchor="middle" font-size="9" fill="#6B6058">secure</text>
+        <rect x="640" y="90" width="100" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="690" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">Defender / SCC</text><text x="690" y="128" text-anchor="middle" font-size="9" fill="#6B6058">audit</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,120)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="signed">▶ signed image lifecycle</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a hardened deploy path.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "SCCs are obsolete since PSA exists."</div><div class="misc-row misc-truth"><strong>Truth:</strong> OCP supports both. PSA labels gate at the K8s level; SCCs gate at the OCP admission webhook level. They're complementary; both run in modern OCP. SCCs predate PSA and remain Red Hat-supported. Don't remove SCCs; design for both.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "FIPS can be enabled later."</div><div class="misc-row misc-truth"><strong>Truth:</strong> FIPS mode is an <strong>install-time choice</strong> via <code>fips: true</code> in install-config. The cluster boots with FIPS-validated crypto libraries + kernel. Cannot retrofit on existing clusters; requires reinstall. Plan + decide at install for federal / regulated workloads.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Kata sandboxed containers solve all multi-tenancy security problems."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Kata adds <strong>strong isolation between Pods</strong> (per-Pod kernel via lightweight VM). It doesn't solve: identity sprawl, RBAC drift, NetworkPolicy gaps, secret rotation, image supply chain. Layer Kata on top of those; not as a replacement.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Five default OCP SCCs?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>restricted-v2</strong> (default — non-root + drop caps + seccomp), <strong>nonroot-v2</strong> (no UID 0), <strong>anyuid</strong> (any UID — for legacy images), <strong>hostnetwork</strong> (host net namespace), <strong>privileged</strong> (full root + caps — cluster-infra-only).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does the Compliance Operator do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Runs OpenSCAP scans against the cluster + nodes against compliance baselines (CIS K8s Benchmark, NIST 800-53, PCI-DSS, FedRAMP, HIPAA). Generates ComplianceCheckResult + ComplianceRemediation CRDs; auto-remediation suggestions.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is RHACS / StackRox?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Red Hat Advanced Cluster Security — comprehensive K8s security platform: vulnerability mgmt, compliance dashboards, network graph + suggested NetworkPolicies, runtime threat detection (eBPF + audit), admission control. Multi-cluster: one Central, many Secured Clusters.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">OCP's identity providers?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">HTPasswd, LDAP, OIDC (Keycloak / Okta / Auth0), GitHub, GitLab, Google, Keystone, RequestHeader, BasicAuth. Configured via OAuth/cluster CR. Multiple coexist.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is FIPS mode and when set?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Install-time choice (<code>fips: true</code> in install-config). Cluster boots with FIPS 140-2 validated crypto libraries + kernel. For federal / regulated workloads. Cannot toggle post-install — plan at install.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's the difference between SCC and PSA?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>SCC</strong> = OCP-native admission webhook (predates PSA). <strong>PSA</strong> = K8s-native namespace-label-based (privileged / baseline / restricted). OCP runs both — design for restricted-v2 SCC + restricted PSA together.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When use OpenShift sandboxed containers (Kata)?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Multi-tenant workloads where stronger isolation than runc is needed: untrusted CI runners, customer-submitted code, sensitive-PII workloads. Per-Pod KVM-backed lightweight VM; container escape doesn't reach host. ~5-15% syscall overhead.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does the File Integrity Operator do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">AIDE-based file-integrity monitoring on RHCOS nodes. Detects unauthorized changes to critical filesystem paths (/etc, /usr/bin, etc.). Generates alerts on drift. For tamper detection on immutable nodes.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A Pod fails to start: "unable to validate against any SCC." Walk through the diagnostic.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) <code>oc describe pod &lt;name&gt;</code> — admission denial messages list the failing SCC checks. (2) Identify the Pod's SA. (3) <code>oc get pod &lt;name&gt; -o yaml</code> — what does the Pod request (runAsUser, capabilities, hostPath, etc.)? (4) Compare against the SA's currently-granted SCCs: <code>oc adm policy who-can use scc/restricted-v2</code>. (5) Determine fix: rewrite Pod to fit restricted-v2 (best); OR grant the SA an SCC that allows the Pod's requests (<code>oc adm policy add-scc-to-user nonroot-v2 -z &lt;sa&gt;</code>); use the most restrictive SCC that satisfies the Pod's needs. Don't default to privileged.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">The Compliance Operator scan reports 73 PCI-DSS failures. The team has 2 sprints to remediate. What's the workflow?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) <code>oc get compliancecheckresult -n openshift-compliance</code> — full list of failures + severity. (2) <code>oc get complianceremediation -n openshift-compliance</code> — auto-applicable remediations (the operator generated). (3) Filter by severity: high-severity failures first. (4) Apply remediations: <code>oc patch compliancecheckresult/&lt;name&gt; --type=merge -p '{"metadata":{"annotations":{"compliance.openshift.io/apply-remediation":""}}}'</code>. Some remediations are MachineConfigs (require node reboot via MCO drain); plan a maintenance window. (5) Manual fixes for non-auto-remediable (typically RBAC + NetworkPolicy issues). (6) Re-run scan; track score over time. Target: 95%+ pass; document exceptions for the rest.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">It's an audit Saturday. Auditor asks: "Show me your runtime threat detection." The team has RHACS deployed. Walk through the demo.</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how the audit demo went</span>(1) Open RHACS Central UI. (2) Navigate to <em>Violations</em> — recent runtime detections (suspicious shell-in-container, unexpected process exec, lateral-movement attempts, crypto-miner signatures). (3) Click a violation: see Pod, image, SA, deployment, attack details, MITRE ATT&amp;CK technique. (4) Show the <em>Network graph</em> — visual east-west traffic; flag deployments without NetworkPolicy. (5) Show <em>Vulnerability mgmt</em> — recent CVEs in running images. (6) Show <em>Compliance</em> dashboard — PCI/CIS scores. (7) Show <em>Admission policies</em> — which deploys were rejected at admission. <em>One pane for posture + runtime + admission across the fleet.</em></div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">OAuth (OCP)</div><div class="gloss-def">OCP's integrated OAuth server + identity provider configuration via OAuth/cluster CR.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Identity provider (IDP)</div><div class="gloss-def">HTPasswd, LDAP, OIDC, GitHub, GitLab, Google, Keystone, RequestHeader, BasicAuth. Multiple coexist.</div></div>
+      <div class="gloss-item"><div class="gloss-name">OCP RBAC roles</div><div class="gloss-def">cluster-admin, admin (project), edit (project), view (project), plus system:* roles. <code>oc adm policy</code> grants.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ServiceAccount (default Project SAs)</div><div class="gloss-def">Every Project gets default, builder, deployer SAs. Custom SAs for scoped workloads.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SCC (Security Context Constraint)</div><div class="gloss-def">OCP admission system for Pod-security. Bound to ServiceAccounts. Pod's SA must be granted an SCC for Pod to run.</div></div>
+      <div class="gloss-item"><div class="gloss-name">restricted-v2 SCC</div><div class="gloss-def">OCP's default. Non-root, drop all caps + add NET_BIND_SERVICE, seccomp RuntimeDefault, no host*, no privileged.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Compliance Operator</div><div class="gloss-def">OpenSCAP scans against CIS / NIST / PCI / FedRAMP / HIPAA. ComplianceCheckResult + ComplianceRemediation CRDs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">File Integrity Operator (FIO)</div><div class="gloss-def">AIDE-based file-integrity monitoring on RHCOS. Detects drift on critical paths.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Security Profiles Operator (SPO)</div><div class="gloss-def">Manages seccomp + SELinux + AppArmor profiles as K8s resources via SPOD.</div></div>
+      <div class="gloss-item"><div class="gloss-name">RHACS / StackRox</div><div class="gloss-def">Red Hat Advanced Cluster Security. Vuln + compliance + network + runtime + admission. Multi-cluster (Central + Secured).</div></div>
+      <div class="gloss-item"><div class="gloss-name">KMS integration</div><div class="gloss-def">External KMS (AWS / Azure / GCP / Vault) for etcd Secrets encryption via apiserver EncryptionConfiguration.</div></div>
+      <div class="gloss-item"><div class="gloss-name">FIPS mode</div><div class="gloss-def">Install-time choice; cluster boots with FIPS 140-2 validated crypto libs + kernel. Cannot retrofit.</div></div>
+      <div class="gloss-item"><div class="gloss-name">OpenShift sandboxed containers (Kata)</div><div class="gloss-def">Per-Pod KVM-backed lightweight VM runtime. Stronger isolation than runc. ~5-15% syscall overhead.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Default to restricted-v2 SCC; only escalate explicitly. Use Compliance Operator for CIS/NIST/PCI scans + RHACS for runtime. Integrated OAuth + identity providers; KMS for secrets; FIPS for federal; Kata for sandboxed untrusted workloads.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module O4 complete</span>
+    <p>Four shifts: authN/Z (OAuth + RBAC + SAs), SCCs (restricted-v2 default), compliance + RHACS, hardware (KMS / FIPS / Kata).</p>
+    <p class="recap-next"><strong>Next — O5: Operators and OLM.</strong> Operator Hub + CatalogSources + Subscriptions + InstallPlans + ClusterServiceVersions (CSV) + OperatorGroups + channels + manual vs automatic approval; Operator dependencies; broken-operator recovery; certified vs community vs custom operators.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-OCP · Module O4 of 13 · grounded in docs.openshift.com</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "signed", "mode_label": "Mode: CI \u2192 scan + sign \u2192 Compliance + SCC + Policy verify \u2192 RHACS runtime", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> CI builds + Cosign-signs image; pushes to registry.", "move_to": [245, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Compliance Operator scans the cluster CIS posture continuously.", "move_to": [405, 55], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> SCC restricted-v2 + Policy Controller verify Pod at admission.", "move_to": [405, 125], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> RHACS runtime watches behaviour; admission controller blocks if needed.", "move_to": [405, 195], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> Pod Running. RHACS continues watching.", "move_to": [555, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 120];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      The peer reviewer asks: "Why did you pick IPI + EUS over UPI + Regular channel?" Defend.
+    answer: |
+      "**IPI**: handles all infra provisioning (VMs, network, LB, DNS) — minutes from openshift-install to working cluster vs days for UPI. We don't need UPI's flexibility for our standard cloud / supported-bare-metal install. **EUS**: 24-month support for designated minor versions; avoids quarterly minor upgrades for a regulated workload. We accept being slightly behind latest features in exchange for predictable change-control. **Trade-offs accepted:** Regular channel gets newer features faster; UPI fits non-standard infra. For our standard prod path, IPI + EUS is right; we have a separate Regular-channel cluster for canary.
+
+  - id: 2
+    prompt: |
+      During the live drill the reviewer revokes an OCP RBAC binding for an SA. Pod 403s. Walk through the response under 15 minutes.
+    answer: |
+      (1) AMG dashboard fires red within seconds (Pod returns 5xx). PagerDuty via Action Group. (2) Open AMG; confirm failing service via RED dashboard. (3) Open Logs Explorer with saved query for kube-audit; filter to past 30 min; find the RoleBinding deletion event with timestamp + initiator. (4) Re-create RoleBinding via `oc adm policy add-role-to-user` (from git source-of-truth, not free-hand). (5) Pod's next call succeeds. (6) Postmortem note: this kind of reverted change should have been blocked by Policy Controller / GitOps drift detection — file improvement to require all RBAC changes via git PR + ArgoCD reconcile.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO asks: "Why are we paying for OCP + ODF + RHACS + RHACM all on top of vanilla K8s? That's a lot of zeros." Final defence.
+    answer: |
+      "**Each piece replaces something we'd otherwise build + operate ourselves with Red Hat support attached.** **OCP**: Routes + SCCs + integrated OAuth + registry + console + OperatorHub-everywhere — replaces 8+ self-installed Helm charts. **ODF**: software-defined storage with RWX + S3 — replaces NFS server + S3 service + block storage assembly. **RHACS**: vuln + compliance + runtime + admission in one — replaces Anchore + Falco + custom OPA + manual compliance scans. **RHACM**: multi-cluster apps + policy + observability — replaces per-cluster Argo CD + OPA + custom Thanos federation. *Operationally:* one vendor accountable for the whole stack; consistent upgrade story (CVO + EUS); single support contract. *Financially:* OCP + ODF + RHACS + RHACM at our scale (50 clusters, multi-cloud + on-prem) costs roughly the same as one platform engineer's annual salary — and it eliminates the need for 6+ platform engineers operating the assembled-from-OSS equivalent. *Worth every dollar at our complexity.*"

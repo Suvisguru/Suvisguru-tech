@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Routes return 503 across the cluster. Router pods are Running. Where do you look first?
+    answer: |
+      (1) `oc get co/ingress` — is the IngressController CO Available + not Degraded? (2) `oc get -n openshift-ingress pods` — Router pods Ready + recent restarts? (3) `oc logs -n openshift-ingress deployment/router-default` — Router runtime errors? (4) For specific Routes: `oc describe route <name>` — admitted by IngressController? cert valid? backing Service has Endpoints? (5) NetworkPolicy: is the Project denying ingress from openshift-ingress namespace? Add namespace label / explicit allow. (6) EgressIP / Egress firewall: blocking router-to-Pod path? `oc get egressfirewall -A`.
+
+  - id: 2
+    prompt: |
+      A team needs an internal-only LoadBalancer Service exposed only to the corp network on a bare-metal OCP. Walk through the design.
+    answer: |
+      (1) Install MetalLB Operator + create MetalLB instance. (2) Define IPAddressPool with internal-only IPs (corporate VLAN range); set `autoAssign: false` so explicit allocation. (3) For BGP mode (recommended): create BGPPeer CR + BGPAdvertisement. For L2 mode: create L2Advertisement. (4) Create the Service with `type: LoadBalancer` + annotation `metallb.universe.tf/address-pool: internal-pool`. (5) MetalLB allocates a VIP from the internal pool; advertises via BGP/ARP. (6) Combine with NetworkPolicy to restrict Pod-side ingress; use EgressIP if the upstream restricts by source.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Saturday. A DBA SSH-debugs a failed cross-region failover. They find Route on cluster A returns 200 but cluster B returns 503. Submariner installed, Service is exported. What's the diagnostic ladder?
+    answer: |
+      (1) `subctl diagnose all` — runs Submariner's built-in checks for connectivity, gateway health, IPsec tunnels. (2) Check Submariner gateway pods on both clusters: `oc get -n submariner-operator pods`. Tunnel UP? (3) `oc get serviceexport <name> -A` on cluster A — Exported + ServiceImport visible on cluster B? (4) On cluster B: try `oc exec` a Pod and curl the imported Service IP. If timeout: NetworkPolicy on B blocking the Pod from reaching the Submariner-imported Service. (5) Often: cross-cluster Service IP collision — Submariner needs distinct Service CIDRs across clusters. Plan at deploy time.

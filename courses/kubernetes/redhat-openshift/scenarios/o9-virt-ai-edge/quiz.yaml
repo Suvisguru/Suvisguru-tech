@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Live migration of a Windows VM in OCP Virtualization fails at 78%. What's the diagnostic + recovery?
+    answer: |
+      (1) `oc get vmim -A` — find the migration object; check status + reason. (2) `oc describe vmim <name>` — failure cause: storage incompatibility (source/target node has different storage access), network (Multus secondary network not on target), CPU model mismatch, or virt-launcher Pod scheduling issue. (3) Check the VMI: `oc get vmi <name> -o yaml` — phase + conditions. Often the VMI returns to original node intact (live-migration is intent-to-move; rollback on failure). (4) If VMI is in unknown state: stop + restart the VM; restore from latest snapshot if needed. (5) Postmortem: ensure storage is RWX-shared or pre-attached block; ensure target nodes have required Multus networks.
+
+  - id: 2
+    prompt: |
+      A telco wants to deploy a small LLM (Granite-7B) for local inference at 200 cell sites. Walk through the architecture.
+    answer: |
+      (1) Each cell site = SNO with GPU node (e.g., L4 GPU sufficient for 7B inference). (2) Install OpenShift AI Operator + KServe on each SNO. (3) Use RHACM (covered next module) ApplicationSet to push KServe InferenceService manifests to all 200 SNOs. (4) Model artifacts hosted in central S3 bucket / NooBaa; KServe pulls on cold-start. (5) Local app routes inference traffic to local SNO (no round-trip to central). (6) NVIDIA GPU Operator on each SNO manages driver + device plugin. (7) Optional: RHEL AI for managed inference platform with InstructLab fine-tuning for site-specific tuning. *Sub-100ms inference latency to local users.*
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO Slacks: "Why are we keeping VMware? Just rewrite the legacy Windows apps as containers." Defend the OCP Virtualization path.
+    answer: |
+      "**Containerising legacy Windows apps is a multi-year project for the apps that are even feasible to containerise.** Many legacy Windows apps depend on Windows desktop services, COM, MSMQ, or other patterns that don't containerise cleanly — or the source code is lost / vendored. **OpenShift Virtualization gives us a middle path:** migrate VMs from VMware to OCP via MTV (preserves IPs, minimal downtime); VMs run alongside our containers under one platform with one control plane, one RBAC, one storage stack. *VMware contract savings + container-platform consolidation in 6 months* vs 3-year container-rewrite project. We can rewrite individual VMs to containers over time at our own pace. **Both old and new workloads on one supported platform.**"

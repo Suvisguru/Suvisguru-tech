@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What is ODF?
+    back: |
+      **OpenShift Data Foundation** = Ceph (block + file) + NooBaa (object) + Rook (orchestrator). Software-defined storage platform integrated with OCP. 3+ ODF storage nodes typical.
+
+  - id: 2
+    front: |
+      When use Local vs LVM Storage Operator?
+    back: |
+      **Local Storage**: static-provisioned PVs from attached block devices (NVMe). **LVM Storage**: dynamic PVCs from a single node's LVM thin pool. LVM is the SNO/edge path; Local is for bare-metal local-storage workloads on multi-node clusters.
+
+  - id: 3
+    front: |
+      OCP cloud CSI drivers shipped?
+    back: |
+      vSphere CSI, AWS EBS CSI, Azure Disk + File CSI, GCP PD CSI. Auto-installed based on cluster platform. Default StorageClass uses WaitForFirstConsumer.
+
+  - id: 4
+    front: |
+      RWX storage options on OCP?
+    back: |
+      ODF CephFS (multi-zone, integrated), Azure Files (SMB/NFS managed), NFS via external NFS server + nfs-csi-driver, EFS CSI on AWS.
+
+  - id: 5
+    front: |
+      What is OADP?
+    back: |
+      **OpenShift APIs for Data Protection** — Velero-based managed backup integrated with OCP. DataProtectionApplication + Backup + Restore CRs. S3/Blob/GCS/NooBaa backup destinations.
+
+  - id: 6
+    front: |
+      VolumeAttributesClass — what does it do?
+    back: |
+      K8s GA feature for live performance-tier change on running PVCs without remount. With ODF: change Ceph storage-class quality params; with cloud CSI: provider-specific (e.g., AWS gp3 IOPS retier).
+
+  - id: 7
+    front: |
+      Where should the internal container registry storage live?
+    back: |
+      For prod: object storage backend (NooBaa, AWS S3, Azure Blob, GCS) — survives Pod migration across zones. PVC-backed (EBS/Azure Disk/GCE PD) is single-zone-pinned and breaks on cross-zone Pod migration.
+
+  - id: 8
+    front: |
+      Why plan Prometheus storage carefully?
+    back: |
+      Prometheus stores TSDB in PVCs. Default 15-day retention. *Don't share failure domain with workloads it monitors* — single-zone failure silences alerts about the failure. Use Thanos to ship to long-term S3 for cross-region resilience.

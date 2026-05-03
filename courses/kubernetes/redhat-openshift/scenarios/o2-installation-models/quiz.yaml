@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Bootstrap node is up but masters never reach Ready. What's your diagnostic ladder?
+    answer: |
+      (1) DNS: from each master, can `api.<cluster>.<base>` + `api-int` resolve correctly? Wrong DNS = silent stall. (2) From each master to bootstrap apiserver: can the master reach the bootstrap on TCP 6443? Firewall rules. (3) Ignition: did each master fetch its master.ign successfully? Check IPMI/BMC console for Ignition errors at first boot. (4) NTP: time skew > a few seconds breaks etcd Raft. (5) Pull secret: each master pulls control-plane container images on first boot — bad pull secret means kubelet can't start. (6) `openshift-install gather bootstrap` bundles bootstrap-side logs.
+
+  - id: 2
+    prompt: |
+      A bank wants OCP on existing vSphere with custom networking the IPI installer doesn't handle. UPI or IPI?
+    answer: |
+      **UPI vSphere**. They pre-create the VMs (or VM templates), the LB (typically MetalLB or external F5), the DNS records, the load-balancer health checks, and the DHCP. `openshift-install` generates Ignition configs they serve via an HTTP server. More work upfront; fits their existing vSphere networking constraints. IPI vSphere works for standard topologies but doesn't cover their custom path.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Saturday at the regulated SCIF site. Air-gapped install. Engineer plugs in the Agent-based ISO. Cluster comes up. Six weeks later, security feed publishes a CVE. How do they patch?
+    answer: |
+      (1) On internet-connected staging: run `oc-mirror --config imageset-config.yaml` targeting their stash repository — pulls the new patch release + Operator updates into a tarball. (2) Sneakernet (or one-way data diode) the tarball to the air-gapped facility. (3) On the air-gapped mirror server: `oc-mirror --from tarball.tar --to docker://mirror.example.com` populates the internal registry. (4) Disconnected OSUS Operator picks up the new upgrade-graph data. (5) ClusterVersion sees the new patch as available; admin upgrades via `oc adm upgrade --to-image=...`. *Disconnected isn't patch-free — it's patches-via-sneakernet on a defined cadence.*

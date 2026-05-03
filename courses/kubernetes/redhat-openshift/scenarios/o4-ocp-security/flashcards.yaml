@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Five default OCP SCCs?
+    back: |
+      **restricted-v2** (default — non-root + drop caps + seccomp), **nonroot-v2** (no UID 0), **anyuid** (any UID — for legacy images), **hostnetwork** (host net namespace), **privileged** (full root + caps — cluster-infra-only).
+
+  - id: 2
+    front: |
+      What does the Compliance Operator do?
+    back: |
+      Runs OpenSCAP scans against the cluster + nodes against compliance baselines (CIS K8s Benchmark, NIST 800-53, PCI-DSS, FedRAMP, HIPAA). Generates ComplianceCheckResult + ComplianceRemediation CRDs; auto-remediation suggestions.
+
+  - id: 3
+    front: |
+      What is RHACS / StackRox?
+    back: |
+      Red Hat Advanced Cluster Security — comprehensive K8s security platform: vulnerability mgmt, compliance dashboards, network graph + suggested NetworkPolicies, runtime threat detection (eBPF + audit), admission control. Multi-cluster: one Central, many Secured Clusters.
+
+  - id: 4
+    front: |
+      OCP's identity providers?
+    back: |
+      HTPasswd, LDAP, OIDC (Keycloak / Okta / Auth0), GitHub, GitLab, Google, Keystone, RequestHeader, BasicAuth. Configured via OAuth/cluster CR. Multiple coexist.
+
+  - id: 5
+    front: |
+      What is FIPS mode and when set?
+    back: |
+      Install-time choice (`fips: true` in install-config). Cluster boots with FIPS 140-2 validated crypto libraries + kernel. For federal / regulated workloads. Cannot toggle post-install — plan at install.
+
+  - id: 6
+    front: |
+      What's the difference between SCC and PSA?
+    back: |
+      **SCC** = OCP-native admission webhook (predates PSA). **PSA** = K8s-native namespace-label-based (privileged / baseline / restricted). OCP runs both — design for restricted-v2 SCC + restricted PSA together.
+
+  - id: 7
+    front: |
+      When use OpenShift sandboxed containers (Kata)?
+    back: |
+      Multi-tenant workloads where stronger isolation than runc is needed: untrusted CI runners, customer-submitted code, sensitive-PII workloads. Per-Pod KVM-backed lightweight VM; container escape doesn't reach host. ~5-15% syscall overhead.
+
+  - id: 8
+    front: |
+      What does the File Integrity Operator do?
+    back: |
+      AIDE-based file-integrity monitoring on RHCOS nodes. Detects unauthorized changes to critical filesystem paths (/etc, /usr/bin, etc.). Generates alerts on drift. For tamper detection on immutable nodes.

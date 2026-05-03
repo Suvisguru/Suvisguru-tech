@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What is Source-to-Image (S2I)?
+    back: |
+      Build container images from source code without writing a Dockerfile. Builder images per-language (Java / Python / Node / etc.) encode build logic. `oc new-app https://github.com/my/repo` autodetects + creates BuildConfig + ImageStream + Service + Route + DC.
+
+  - id: 2
+    front: |
+      BuildConfig + Build + ImageStream — what does each do?
+    back: |
+      **BuildConfig**: declares source + strategy + output + triggers. **Build**: one execution of a BuildConfig. **ImageStream**: abstraction over image tags; decouples consumers from concrete SHAs.
+
+  - id: 3
+    front: |
+      Deployment vs DeploymentConfig — which to use?
+    back: |
+      Use **Deployment** (K8s standard) for new workloads. **DeploymentConfig** is OCP legacy with image-triggers + config-change triggers built in; still supported but Deployment + GitOps/Pipelines image-trigger is the modern path.
+
+  - id: 4
+    front: |
+      OpenShift Pipelines vs OpenShift GitOps?
+    back: |
+      **Pipelines** = Tekton; CI workflows (test/build/lint) as Tasks chained into Pipelines. **GitOps** = Argo CD; continuous reconciliation from git to cluster. Used together: Pipelines build + push + tag; GitOps deploys.
+
+  - id: 5
+    front: |
+      What is OpenShift Serverless?
+    back: |
+      Managed Knative — Knative Serving (autoscale to zero, request-based, traffic splitting) + Knative Eventing (event-driven workflows). For idle-tolerant request workloads + event consumers.
+
+  - id: 6
+    front: |
+      What is OpenShift Service Mesh?
+    back: |
+      Managed Istio — sidecar-injected mTLS, traffic management, observability. Multi-cluster mesh + Gateway API support. Service Mesh Operator + ServiceMeshControlPlane CR.
+
+  - id: 7
+    front: |
+      What is OpenShift Dev Spaces?
+    back: |
+      Managed Eclipse Che — cloud-hosted dev environments. Pods run editor + dev tools; browser access. Devfiles define workspace stack. For onboarding / demo / laptop-less dev.
+
+  - id: 8
+    front: |
+      Where do you find Helm in OCP?
+    back: |
+      **Developer Catalog** in the Developer perspective. Built-in Helm 3+ support (no Tiller). Add custom Helm chart repos via `HelmChartRepository` CR. RBAC via user's OCP credentials.

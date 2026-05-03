@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      OCP's default CNI?
+    back: |
+      **OVN-Kubernetes** (since OCP 4.12; SDN removed). OVN + OVS. Pod networking + Service networking + NetworkPolicy + EgressIP + Egress firewall + Multus integration.
+
+  - id: 2
+    front: |
+      Three OCP network ranges?
+    back: |
+      **Cluster network** (Pod CIDR; default 10.128.0.0/14), **Service network** (Service CIDR; default 172.30.0.0/16), **Machine network** (host subnet; nodes' IPs).
+
+  - id: 3
+    front: |
+      Three Route TLS termination modes?
+    back: |
+      **Edge** — TLS terminates at Router; Pod gets HTTP. **Passthrough** — TLS passes through; Pod terminates. **Re-encrypt** — Router terminates inbound TLS then re-encrypts to Pod with separate cert.
+
+  - id: 4
+    front: |
+      EgressIP — what does it do?
+    back: |
+      Assigns a deterministic source IP to a Project's egress traffic. Used when external systems whitelist by source IP. OVN-K handles failover if the holding node fails.
+
+  - id: 5
+    front: |
+      Egress firewall vs NetworkPolicy?
+    back: |
+      **NetworkPolicy** = Pod-to-Pod (in-cluster) allow/deny. **Egress firewall** = restricts Project's egress to specific *external* CIDRs / DNS names. Complementary; both common for zero-trust.
+
+  - id: 6
+    front: |
+      What does Multus give you?
+    back: |
+      Pods attached to **multiple networks** simultaneously. Default cluster network + 1+ additional networks defined as `NetworkAttachmentDefinition`. For VLANs / SR-IOV VFs / secondary VPCs.
+
+  - id: 7
+    front: |
+      When use SR-IOV + DPDK?
+    back: |
+      Telco / NFV workloads needing wire-speed packet processing — 5G UPF, vRouter, ultra-low-latency. SR-IOV Operator allocates NIC VFs; DPDK userspace network stack.
+
+  - id: 8
+    front: |
+      What is MetalLB Operator and when use it?
+    back: |
+      LoadBalancer Service support on **bare-metal** clusters (no cloud LB). L2 mode (ARP/NDP) or BGP mode. Address pools allocate VIPs. Required for `type: LoadBalancer` on bare-metal OCP.

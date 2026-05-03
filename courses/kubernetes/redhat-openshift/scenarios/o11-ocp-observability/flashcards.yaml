@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What is OCP's built-in Cluster Monitoring stack?
+    back: |
+      Prometheus + Thanos Querier + Alertmanager + kube-state-metrics + node-exporter + Telemeter Client. Auto-enabled. Managed by the Cluster Monitoring Operator (CMO).
+
+  - id: 2
+    front: |
+      What's the difference between Cluster Monitoring and User Workload Monitoring?
+    back: |
+      **Cluster Monitoring** covers platform metrics (kubelet, apiserver, ClusterOperators, etc.). **User Workload Monitoring (UWM)** = opt-in second Prometheus for app metrics via ServiceMonitor / PodMonitor in user namespaces.
+
+  - id: 3
+    front: |
+      OpenShift Logging stack — what replaced what?
+    back: |
+      **Vector** replaced Fluentd (collector). **Loki** replaced Elasticsearch (storage). LokiStack CR + ClusterLogForwarder for routing to Loki + external (Splunk / ES / Kafka / S3 / syslog).
+
+  - id: 4
+    front: |
+      Three OCP log streams?
+    back: |
+      **Application** (user namespaces), **Infrastructure** (kubelet + system namespaces), **Audit** (apiserver + OAuth — separate for compliance routing).
+
+  - id: 5
+    front: |
+      OpenShift Distributed Tracing — what replaced what?
+    back: |
+      **Tempo** replaced Jaeger (storage). **OpenTelemetry (OTel) Operator** manages collectors + auto-instrumentation. TempoStack CR + Instrumentation CR. TraceQL queries.
+
+  - id: 6
+    front: |
+      What is NetObserv?
+    back: |
+      Network Observability Operator — eBPF-based flow capture. DaemonSet on each node; stores flows in Loki. Console *Observe → Network Traffic* for flow graph + tabular view. NetworkPolicy decisions visible.
+
+  - id: 7
+    front: |
+      What is COO?
+    back: |
+      **Cluster Observability Operator** — unified config + multi-stack management for Prometheus + Tempo + Loki across Projects. Useful for multi-tenant OCP.
+
+  - id: 8
+    front: |
+      ClusterLogForwarder vs LokiStack?
+    back: |
+      **LokiStack** = the Loki cluster install (storage backend, retention, replication). **ClusterLogForwarder** = log routing — which streams go to which outputs (Loki / Splunk / ES / Kafka / S3 / syslog).

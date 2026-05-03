@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Five OLM CRs in the install pipeline?
+    back: |
+      **CatalogSource** (operator catalog), **Subscription** (declares operator+channel+approval), **InstallPlan** (resolves deps+RBAC+CRDs), **ClusterServiceVersion (CSV)** (deploys operator), **OperatorGroup** (defines scope).
+
+  - id: 2
+    front: |
+      Four OperatorGroup scope modes?
+    back: |
+      **AllNamespaces** (cluster-wide), **OwnNamespace** (only the install namespace), **SingleNamespace** (one specific namespace), **MultiNamespace** (multiple). Must match operator's declared installModes.
+
+  - id: 3
+    front: |
+      CSV phases?
+    back: |
+      Pending → InstallReady → Installing → Succeeded (or Failed). InstallReady = waiting for approval (Manual mode); auto-approval makes this transparent.
+
+  - id: 4
+    front: |
+      Subscription channels — pick by what?
+    back: |
+      By upgrade cadence + stability appetite: **stable** (prod), **fast** (latest GA), **preview** (pre-release), or version-pinned (e.g. 4.14). Operator authors define the channels.
+
+  - id: 5
+    front: |
+      Five CatalogSource types?
+    back: |
+      **Red Hat Operators** (Red Hat-supported), **Certified Operators** (third-party with RH certification), **Community Operators** (best-effort), **Red Hat Marketplace** (purchasable + billing), **custom CatalogSource** (internal mirror).
+
+  - id: 6
+    front: |
+      Manual vs Automatic approval — when use which?
+    back: |
+      **Manual**: regulated / change-control workflows; you have a process to approve InstallPlans regularly. **Automatic**: non-prod or operators with strong backward compatibility; saves human attention.
+
+  - id: 7
+    front: |
+      What does OLM dependency resolution do?
+    back: |
+      When Operator A requires Operator B, OLM's InstallPlan installs B first. If B is unavailable in any CatalogSource, A's install fails. `oc describe installplan` shows required + resolved deps.
+
+  - id: 8
+    front: |
+      Recovery for stuck CSV?
+    back: |
+      (1) Read `oc describe csv` for failure reason. (2) Delete Subscription + CSV; reinstall. (3) For dependency issues: change channels / CatalogSources to resolve conflict. (4) Last resort: clean up orphaned CRDs (rare; requires care).

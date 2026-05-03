@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      OCP triage playbook — first 4 steps?
+    back: |
+      (1) **Insights Advisor** (known issues). (2) `oc get co` (ClusterOperator health). (3) `oc get clusterversion` (CVO state). (4) `oc get mcp` (MachineConfigPool roll state).
+
+  - id: 2
+    front: |
+      ClusterOperator degraded — diagnostic command?
+    back: |
+      `oc describe co/<name>` — status conditions + reason. Then operator logs: `oc logs -n openshift-<name> deployment/<operator>`.
+
+  - id: 3
+    front: |
+      MachineConfigPool stuck — most common cause?
+    back: |
+      **PDB-blocked drain**: a node's workloads can't evict due to tight PodDisruptionBudgets. Fix: relax PDB temporarily OR scale replicas to give PDB headroom OR document + plan around the workload.
+
+  - id: 4
+    front: |
+      What is `oc adm must-gather`?
+    back: |
+      OCP's canonical diagnostic gather — collects ClusterOperator status, recent events, configs, logs into a tarball. Targeted variants per-operator: `--image=<operator>-must-gather`.
+
+  - id: 5
+    front: |
+      What is `oc adm inspect`?
+    back: |
+      Focused gather on specific namespaces / resources. Lighter than must-gather. For when you know which scope you need + don't want the full bundle.
+
+  - id: 6
+    front: |
+      What is `oc debug node/<name>`?
+    back: |
+      Privileged debug Pod on a specific node. `chroot /host` for full node OS access. Replaces SSH (RHCOS disabled SSH by default).
+
+  - id: 7
+    front: |
+      SCC denial Pod won't start — diagnostic ladder?
+    back: |
+      (1) `oc describe pod` — admission denial detail. (2) Identify the Pod's SA. (3) `oc adm policy who-can use scc/restricted-v2` + match against Pod's SCC requirements. (4) Determine fix: rewrite Pod for restricted-v2 (preferred) OR grant SA appropriate SCC.
+
+  - id: 8
+    front: |
+      What's Insights Advisor?
+    back: |
+      Red Hat's known-issue check service. console.redhat.com surfaces issues + KCS articles for YOUR cluster based on Insights telemetry. Disabled in air-gapped — manual KCS lookup is fallback.

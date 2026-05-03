@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A new team starting on OCP. They want to deploy a Spring Boot app. Walk through the simplest path.
+    answer: |
+      (1) Create a Project: `oc new-project myapp`. (2) `oc new-app https://github.com/team/myapp.git` — autodetects Java; uses Java S2I builder; creates BuildConfig + ImageStream + Deployment + Service. (3) `oc expose service/myapp` — creates a Route with auto-generated hostname. (4) Wait for Build to complete: `oc logs -f bc/myapp`. (5) App reachable at the Route URL. *~5 minutes from git URL to deployed Pod.* For prod: layer on Pipelines for CI gates + GitOps for deployment reconciliation.
+
+  - id: 2
+    prompt: |
+      An S2I build started failing after a builder image update. What's the diagnostic + recovery?
+    answer: |
+      (1) `oc get builds -n <project>` — find the failed Build. (2) `oc logs build/<name>` — error from S2I assemble script. (3) Compare against the previous (working) builder image: `oc describe is <builder-is>` for tag history. (4) Pin BuildConfig's strategy to a specific builder ImageStreamTag (don't auto-track latest): `spec.strategy.sourceStrategy.from.name: "openshift/java:11"`. (5) Re-trigger build. (6) For production: pin builder versions in BuildConfig; review builder image release notes before bumping.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO asks: "Why are we using OpenShift Pipelines instead of Jenkins we already have?" Defend.
+    answer: |
+      "**OpenShift Pipelines (Tekton) is K8s-native CI/CD.** Each Task runs as a Pod — no Jenkins server to operate, no plugin sprawl, no JVM tuning, no jobs queued behind a single coordinator. PipelineRuns + TaskRuns are CRs we can manage via GitOps. Tekton Hub has reusable Tasks for common operations (git clone, S2I build, Argo CD sync, etc.) — we share these across projects. Compared to Jenkins: zero infrastructure to operate; native to OCP's Operator + RBAC model; integrated with the Developer perspective for visibility. *Cost saving: we shut down 3 Jenkins controllers + ~12 agents that we were operating.* Where Jenkins still wins: shops with deep Jenkins-pipeline-as-code investments + custom Groovy + a Jenkins admin team — migration cost matters. For new shops, Pipelines is the default."

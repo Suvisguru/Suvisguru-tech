@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A Pod fails to start: "unable to validate against any SCC." Walk through the diagnostic.
+    answer: |
+      (1) `oc describe pod <name>` — admission denial messages list the failing SCC checks. (2) Identify the Pod's SA. (3) `oc get pod <name> -o yaml` — what does the Pod request (runAsUser, capabilities, hostPath, etc.)? (4) Compare against the SA's currently-granted SCCs: `oc adm policy who-can use scc/restricted-v2`. (5) Determine fix: rewrite Pod to fit restricted-v2 (best); OR grant the SA an SCC that allows the Pod's requests (`oc adm policy add-scc-to-user nonroot-v2 -z <sa>`); use the most restrictive SCC that satisfies the Pod's needs. Don't default to privileged.
+
+  - id: 2
+    prompt: |
+      The Compliance Operator scan reports 73 PCI-DSS failures. The team has 2 sprints to remediate. What's the workflow?
+    answer: |
+      (1) `oc get compliancecheckresult -n openshift-compliance` — full list of failures + severity. (2) `oc get complianceremediation -n openshift-compliance` — auto-applicable remediations (the operator generated). (3) Filter by severity: high-severity failures first. (4) Apply remediations: `oc patch compliancecheckresult/<name> --type=merge -p '{"metadata":{"annotations":{"compliance.openshift.io/apply-remediation":""}}}'`. Some remediations are MachineConfigs (require node reboot via MCO drain); plan a maintenance window. (5) Manual fixes for non-auto-remediable (typically RBAC + NetworkPolicy issues). (6) Re-run scan; track score over time. Target: 95%+ pass; document exceptions for the rest.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      It's an audit Saturday. Auditor asks: "Show me your runtime threat detection." The team has RHACS deployed. Walk through the demo.
+    answer: |
+      (1) Open RHACS Central UI. (2) Navigate to *Violations* — recent runtime detections (suspicious shell-in-container, unexpected process exec, lateral-movement attempts, crypto-miner signatures). (3) Click a violation: see Pod, image, SA, deployment, attack details, MITRE ATT&CK technique. (4) Show the *Network graph* — visual east-west traffic; flag deployments without NetworkPolicy. (5) Show *Vulnerability mgmt* — recent CVEs in running images. (6) Show *Compliance* dashboard — PCI/CIS scores. (7) Show *Admission policies* — which deploys were rejected at admission. *One pane for posture + runtime + admission across the fleet.*

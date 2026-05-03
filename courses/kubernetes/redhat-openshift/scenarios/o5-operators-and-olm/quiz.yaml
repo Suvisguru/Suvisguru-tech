@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      An operator install is stuck "InstallReady" for hours. Walk through diagnosis.
+    answer: |
+      (1) `oc get subscription <name>` — note `installPlanApproval` + `currentCSV`. (2) `oc get installplan` — find the InstallPlan with `spec.approved: false`. (3) `oc patch installplan <name> --type merge -p '{"spec":{"approved":true}}'` approves it. (4) Watch CSV: `oc get csv -w` — should progress through Installing → Succeeded. (5) If still stuck: `oc describe csv` for status conditions; common causes are missing CRD permissions, image pull failures, or dependency conflicts.
+
+  - id: 2
+    prompt: |
+      A team needs Postgres Operator per tenant Project. How do they install + scope?
+    answer: |
+      Per Project: (1) Create the Project. (2) Create an **OperatorGroup** in that Project with `spec.targetNamespaces: [<project>]` (OwnNamespace mode). (3) Create the Subscription in that Project pointing at the Postgres Operator (e.g., Crunchy) on a stable channel. (4) OLM installs the operator + CRDs into the Project; the operator only watches/manages CRs in that Project. *Per-tenant operator with strict isolation.* Verify the operator's installModes supports OwnNamespace before this works.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Saturday. The CTO Slacks: "We need Operator X installed in 30 minutes — board demo." You check OperatorHub: it's a Community Operator, dependency on Operator Y at version pinned to a channel that's no longer published. What do you do?
+    answer: |
+      (1) **Don't install Community Operator in prod for a board demo** — risk of failed install + worse demo. (2) Quick options: (a) Find a Red Hat or Certified equivalent operator that does the same job; install that. (b) Install Community Operator in a temporary scratch Project, demo from there, accept the demo cluster gets thrown away. (c) Pin the dep operator to a manually-mirrored CatalogSource pointing at the older version (custom CatalogSource); risky for time-pressure. (3) Communicate honest constraints to the CTO: "the supported path takes 2 weeks; the demo path is X with these caveats." Don't install Community-on-Community-on-conflict at 3pm before a 4pm demo. *Operator dependency hell at the wrong moment is the recipe for a failed demo.*

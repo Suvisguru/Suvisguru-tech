@@ -1065,3 +1065,57 @@ This separates the refactor from K-GKE delivery cleanly — K-GKE ships now via 
 **Alternatives considered:** Add K-GKE modules to the K-COM curriculum as L45+. Rejected — K-GKE is a separate course with a separate GCP-prereq audience. Reuse the K-Campus wings atlas with renamed plots for G1-G10. Rejected — the campus metaphor implies Azure-style \"lease wings of buildings + Registrar checks IDs\"; the garden metaphor better captures GCP\'s organic / AI-greenhouse + per-Pod-billing positioning. Bundle the multi-course refactor into the K-GKE delivery. Rejected — see Sub-decision F; would triple the risk of this delivery for marginal incremental cleanup. Skip the K-Garden universe + reuse K-Campus by renaming. Rejected — both consistency-through-reuse and metaphor-distinctness pulled in opposite directions; metaphor-distinctness wins for learner clarity.
 
 **Revisit when:** Either (a) the refactor is formally scheduled and ready to land (file the dedicated commit then) or (b) a sixth K-course is added (force-multiplies the refactor case).
+
+## 2026-05-03 — K-OCP course + K-Foundry analogical universe (sixth K-course; refactor pressure now real)
+
+**Context:** Founder asked for a sixth Kubernetes course: Red Hat OpenShift (K-OCP) — the OCP deep dive: architecture (modes, RHCOS, MCO, CVO, OLM, 8 deployment shapes), installation (IPI / UPI / Assisted / Agent + cluster shapes + disconnected), networking (OVN-K, Routes / Ingress / Gateway, NetworkPolicy, MetalLB, Multus, NetObserv), security (OAuth, SCCs, Compliance Operator, RHACS, FIPS, Kata), Operators + OLM, workloads + DevEx (S2I, BuildConfig, Pipelines, GitOps, Serverless, Service Mesh, Dev Spaces), storage (ODF, Local/LVM, cloud CSI, OADP), operations (ClusterVersion + EUS + MCO + MachineSets + etcd backup + must-gather + disconnected updates), virtualization + AI + edge (KubeVirt, OpenShift AI, SNO, MicroShift, Local Zones), multi-cluster (RHACM), observability (Cluster Monitoring + Loki + Tempo + NetObserv + COO), troubleshooting, capstone. **12 content modules + capstone = 13 modules total** — the largest K-course yet (vs 11 for K-VAN/K-EKS/K-AKS, 10 for K-GKE, 45 for K-COM). Prereq: K-COM. Reference version: OCP 4.21+.
+
+This is the explicit \"Revisit when\" trigger from the K-GKE entry — sixth K-course = refactor case force-multiplied.
+
+**Decision:** Continue the parallel-generator pattern for K-OCP (mirrors K-GKE); the multi-course-generator refactor is now formally scheduled as the next dedicated commit after K-OCP ships. Reasoning below.
+
+**Sub-decision A — K-Foundry universe.** Thirteen bays mapped one-to-one with O1-O13:
+
+| Module | Bay | Topic |
+|---|---|---|
+| O1 | Welcome Hall *(anchor)* | Architecture |
+| O2 | Construction Site | Installation |
+| O3 | Pipework & Conveyors | Networking (OVN-K, Routes, MetalLB) |
+| O4 | Safety Office | Security (SCCs, RHACS, Compliance) |
+| O5 | Operator Hub | Operators + OLM |
+| O6 | Mold Shop | Workloads + DevEx (S2I, Pipelines, GitOps) |
+| O7 | Inventory Warehouse | Storage (ODF, OADP) |
+| O8 | Maintenance Bay | Operations (EUS, MCO, etcd backup) |
+| O9 | Special Castings Wing | Virt + AI + Edge |
+| O10 | Multi-Foundry Network | RHACM |
+| O11 | Control Tower | Observability |
+| O12 | Diagnostic Lab | Troubleshooting |
+| O13 | Grand Opening | Capstone |
+
+The Welcome Hall is the K-Foundry anchor — every visitor arrives here; the Foundry Master hands you a hard hat at the door; the wall map shows the whole foundry layout.
+
+**Sub-decision B — Module count = 13.** Largest course yet. Atlas viewBox 800×420 (taller than other 10-11-bay courses). Audit `TOTAL_LESSONS_KOCP = 13`. Footer `O{N} of 13`. Strip dot count 13.
+
+**Sub-decision C — Pin prefix `ko-bay` (not `kf-`).** Universe name is K-Foundry but pin prefix uses K-OCP namespace to avoid collision with K-Frontier (`kf-site`). Documented in STYLE.md that universe naming and pin prefixes are independent — the prefix encodes course identity, the universe name encodes metaphor for human readability.
+
+**Sub-decision D — Parallel generator stack.** `scripts/k_ocp_lesson_generator.py` mirrors `k_gke_lesson_generator.py`: emits K-Foundry atlas + K-OCP concept rail + O-numbered footers + \"Module O{N} of 13\" labels. Reuses BASE_CSS, SCRIPT_BLOCK, dataclasses, _render_animation from `k8s_lesson_generator.py`. Lesson specs in `scripts/lessons_kocp/lessonNN.py`; animations in `scripts/lessons_kocp/animations.py`. Build helpers `scripts/build_scenario_folders_kocp.py` and `scripts/build_combined_course_kocp.py` mirror their K-GKE siblings.
+
+**Sub-decision E — File naming.** K-OCP uses `preview-kubernetes-ocp-lesson-NN.html`. Course folder slug: `redhat-openshift` (kebab-case lowercase per convention; user-facing name is \"Red Hat OpenShift\"). Combined-course HTML: `preview-kubernetes-ocp-course-all.html`.
+
+**Sub-decision F — Audit per course.** `scripts/audit_lessons_kocp.py` — mechanical + content checks for K-OCP. Auto-runs after every generation per the standing rule. **Six separate audits now** (K-COM mechanical + K-COM v2 + K-VAN + K-EKS + K-AKS + K-GKE + K-OCP) due to per-course id prefixes + counts (K-COM: 24 K-Town pins / 45 dots / `kt-pin*`; K-VAN: 11 K-Frontier sites / 11 dots / `kf-site*`; K-EKS: 11 K-Skyline floors / 11 dots / `ks-floor*`; K-AKS: 11 K-Campus wings / 11 dots / `kc-wing*`; K-GKE: 10 K-Garden plots / 10 dots / `kg-plot*`; **K-OCP: 13 K-Foundry bays / 13 dots / `ko-bay*`**).
+
+**Sub-decision G — Refactor formally scheduled.** With six parallel generator stacks shipped (~480 lines × 6 = ~2900 lines of structural duplication; growing on each new course), the multi-course-generator refactor is now next-up. Scope (locked in the K-GKE entry):
+1. Extract a shared `multi_course_renderer.py` with per-course config injection (atlas data, rail data, footer labels, district-emoji, course slug, total-lessons count, pin prefix).
+2. Each course generator becomes a thin file (~50 lines) specifying its config + calling the shared renderer.
+3. Each audit similarly extracts a shared core + per-course config.
+4. Regen all 101 lessons (45 K-COM + 11 K-VAN + 11 K-EKS + 11 K-AKS + 10 K-GKE + 13 K-OCP); verify clean across all 6 audits.
+5. JSDOM-verify animations across a sampled lesson per course.
+6. Single commit with full diff + before/after generator-line-count comparison.
+
+K-OCP shipped now via the established parallel pattern (consistent with the prior five courses; predictable delivery risk); refactor lands as the next dedicated commit. Estimated effort: half-day to a day; estimated savings: ~2000+ lines deleted; ongoing benefit: future K-courses become ~50-line config files.
+
+**Reasoning:** K-Foundry as the sixth universe (rather than reusing any prior) is justified because: (1) the metaphor changes a sixth time — K-COM is \"living in the city,\" K-VAN is \"building your own town,\" K-EKS is \"renting an AWS-tower floor,\" K-AKS is \"leasing Azure-campus wings,\" K-GKE is \"planting in a Google-managed garden,\" K-OCP is \"running a Red Hat enterprise factory.\" The factory metaphor specifically captures OpenShift\'s opinionated-platform nature (built-in CI/CD, integrated registry, OperatorHub-everywhere, RHCOS immutable nodes managed by MCO, ~30 ClusterOperators orchestrated by CVO) in a way distinct from city/homestead/tower/campus/garden. (2) The six universes are now visually distinct — a learner glancing at the map graphic instantly knows which course they\'re in.
+
+**Alternatives considered:** Add K-OCP modules to K-COM as L45+. Rejected — K-OCP is a separate course with a separate Red Hat-prereq audience. Reuse K-Skyline/K-Campus/K-Garden by renaming. Rejected — OpenShift\'s opinionated-platform metaphor is genuinely distinct (\"Red Hat as the Foundry Master\" vs \"AWS as building manager\" vs \"Azure as Facilities Director\"). Bundle the multi-course refactor into the K-OCP delivery. Rejected — same risk-multiplication argument from K-GKE entry; K-OCP is the largest course (13 modules), highest delivery risk.
+
+**Revisit when:** The multi-course-generator refactor commit is filed. After that, future K-courses (K-K3s for k3s/k0s/MicroK8s? K-Edge for K8s edge variants?) become ~50-line config files instead of ~480-line generators.

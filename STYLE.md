@@ -683,6 +683,50 @@ These are job titles for whichever entity is being discussed, not new cast membe
 - Sub-labels under each plot (\"architecture\", \"release channels\", \"VPC + Gateway + LB\") give a one-word reminder of the GCP service surface.
 - Strip dot count: **10** (one per module — K-GKE has 10 modules, not 11). Anchor at G1 (the Visitors\' Pavilion, where every visitor enters).
 
+### Unified analogical universe — Red Hat OpenShift (K-Foundry)
+
+K-OCP (Red Hat OpenShift Container Platform; prereq K-COM, ref OCP 4.21+) uses its own universe: **K-Foundry**. Where K-Town is the city, K-Frontier is the homestead, K-Skyline is the AWS-managed tower, K-Campus is the Azure-managed campus, and K-Garden is the Google-managed botanical garden, K-Foundry is the **Red Hat enterprise factory** — bays for forge, mold, safety, inventory, maintenance. The Foundry Master (you, the OCP platform admin) runs production with help from the Foreman (CVO) and the Safety Inspector (SCC + Compliance Operator). Each K-OCP module = one bay (or facility) of the foundry. **Pin prefix `ko-bay`** (K-OCP namespaced; the K-Foundry name is for human readability — not required to share initials).
+
+**Bay-to-module mapping (13 bays — largest course)**
+
+| Module | Bay | Topic |
+|---|---|---|
+| O1 | **Welcome Hall** *(anchor)* | OCP architecture (modes + RHCOS + MCO + CVO + OLM + 8 deployment shapes) |
+| O2 | **Construction Site** | Installation models (IPI / UPI / Assisted / Agent + cluster shapes + disconnected) |
+| O3 | **Pipework & Conveyors** | Networking (OVN-K, Routes / Ingress / Gateway, NetworkPolicy, MetalLB, Multus, NetObserv) |
+| O4 | **Safety Office** | Security (OAuth, SCCs, Compliance Operator, RHACS, FIPS, Kata) |
+| O5 | **Operator Hub** | Operators + OLM (CatalogSource → Subscription → InstallPlan → CSV → OperatorGroup) |
+| O6 | **Mold Shop** | Workloads + DevEx (S2I + BuildConfig + ImageStream + Pipelines + GitOps + Serverless + Mesh + Dev Spaces) |
+| O7 | **Inventory Warehouse** | Storage (ODF + Local/LVM + cloud CSI + RWX + OADP) |
+| O8 | **Maintenance Bay** | Operations (ClusterVersion + EUS + MCO + MachineSets + etcd backup + must-gather + disconnected updates) |
+| O9 | **Special Castings Wing** | Virtualization (KubeVirt) + AI (RHODS / OpenShift AI) + Edge (SNO + MicroShift + Local Zones) |
+| O10 | **Multi-Foundry Network** | Multi-Cluster (RHACM — ManagedClusters, Placement, ApplicationSets, Policy, ObservabilityAddon, HCP, Submariner) |
+| O11 | **Control Tower** | Observability (Cluster Monitoring + Loki + Tempo + NetObserv + COO) |
+| O12 | **Diagnostic Lab** | Troubleshooting (must-gather + 8 OCP-specific failure pattern families + Insights + KCS) |
+| O13 | **Grand Opening** | Capstone — defendable reference foundry with everything |
+
+The Welcome Hall is the K-Foundry anchor: every visitor enters here; the wall map shows the whole foundry layout (the OCP architecture overview); the Foundry Master hands you a hard hat at the door.
+
+**Cast (recurring)**
+
+K-Foundry shares the K-COM cast where helpful. New K-Foundry-specific roles (not named characters):
+
+- The **Foundry Master** — you (OCP platform admin), running production.
+- The **Foreman** — Cluster Version Operator (CVO), orchestrating the ~30 ClusterOperators on the floor.
+- The **Safety Inspector** — SCC enforcement + Compliance Operator + RHACS, checking every bay against safety regulations.
+
+These are job titles for whichever entity is being discussed, not new cast members. The 3-character cap from K-COM still applies.
+
+**Implementation rules**
+
+- Every K-OCP module opens with `🏭 K-Foundry bay: **[Bay Name]**.` (the K-OCP equivalent of K-COM\'s `📍 Today\'s stop in K-Town:`, K-VAN\'s `🏕️ K-Frontier site:`, K-EKS\'s `🏙️ K-Skyline floor:`, K-AKS\'s `🏛️ K-Campus wing:`, K-GKE\'s `🌿 K-Garden plot:`).
+- Every K-OCP module includes the K-Foundry map graphic with the current bay highlighted.
+- Map viewBox: 800×420 (slightly taller than K-Frontier / K-Skyline / K-Campus / K-Garden — needs an extra row for 13 bays vs 10-11).
+- Map renders by `scripts/k_ocp_lesson_generator.py:_render_kfoundry_map()` from the same KFOUNDRY_BAYS list.
+- Sub-labels under each bay (\"architecture\", \"installation\", \"OVN-K + Routes\") give a one-word reminder of the OpenShift surface.
+- Strip dot count: **13** (one per module — K-OCP has 13 modules, the largest course). Anchor at O1 (the Welcome Hall, where every visitor enters).
+- Pin prefix `ko-bay` (K-OCP namespaced; not `kf-` to avoid collision with K-Frontier `kf-site`).
+
 ## What never changes
 
 - The packet/request motion track follows the visible cable/connection trajectory exactly. No exceptions.

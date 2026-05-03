@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      The cluster's upgrade is stuck at 75% for 3 hours. ClusterOperator monitoring degraded. Walk through diagnosis.
+    answer: |
+      (1) `oc get clusterversion -o yaml` — current state + conditions. (2) `oc get co` — which CO's are Degraded? (3) For monitoring CO: `oc describe co/monitoring`. (4) Check CVO logs: `oc logs -n openshift-cluster-version deployment/cluster-version-operator`. (5) If MCO involved: `oc get mcp` — pools Updating? Stuck? (6) For stuck MCP roll: `oc describe mcp/worker` — node-level status, often points to PDB blocking drain. (7) Run `oc adm must-gather`; open Red Hat support case with bundle. (8) For PDB deadlock: identify offending workload; either fix the PDB (give it 1 unavailable allowance) or temporarily scale up replicas to release the drain.
+
+  - id: 2
+    prompt: |
+      A regulated bank wants to lock OCP to one minor for 2 years. Walk through the design.
+    answer: |
+      (1) Pick OCP Premium tier subscription (required for EUS access). (2) Install on a designated EUS minor (e.g., OCP 4.18 EUS). (3) Set channel to `eus-4.18` in ClusterVersion. (4) Cluster receives only patches within 4.18 for ~24 months. (5) Approaching EUS-EOS: plan + execute EUS-to-EUS upgrade (e.g., to `eus-4.20`) — CVO traverses skip-minor graph. (6) Scope: this works for 1 cluster or fleet via RHACM Cluster Lifecycle. *Trade-off: stability + low change-control burden vs missing latest features for 2 years.*
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Saturday at the SCIF. The on-call needs to apply a CVE patch. Cluster is air-gapped. Walk through the disconnected upgrade.
+    answer: |
+      (1) On internet-connected staging: `oc-mirror --config imageset-config.yaml` pulls new patch release + relevant Operator updates. Validate the imageset includes the upgrade-graph data. (2) Sneakernet (or data diode) the tarball to the SCIF. (3) On the SCIF mirror registry: `oc-mirror --from tarball --to docker://mirror.scif.example.com`. (4) Disconnected OSUS Operator should automatically pick up the new graph data; otherwise force refresh. (5) Verify ClusterVersion sees the new patch: `oc adm upgrade`. (6) Schedule maintenance window. (7) Run `oc adm upgrade --to=4.18.X`. (8) Monitor: `oc get clusterversion + oc get co + oc get mcp`. (9) Verify post-upgrade: `oc adm must-gather` as a baseline; standard smoke tests.

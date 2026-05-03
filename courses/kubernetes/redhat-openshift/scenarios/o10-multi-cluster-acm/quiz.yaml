@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team enables RHACM PolicySet enforce on a NetworkPolicy default-deny across 30 ManagedClusters. Some clusters have existing namespaces without labels matching the Policy's namespaceSelector. What happens, and what's the fix?
+    answer: |
+      The Policy applies only where its namespaceSelector matches. Namespaces without matching labels are skipped — the Policy doesn't fail, it just doesn't apply. Result: gaps in policy coverage. Fix: (1) Audit namespaces across the fleet for label drift via the Governance dashboard. (2) Apply missing labels via a separate Policy that enforces label presence. (3) Use a more inclusive namespaceSelector if appropriate (e.g., exclude only system namespaces). (4) Periodic compliance scans surface coverage gaps.
+
+  - id: 2
+    prompt: |
+      A SaaS wants to provision 200 tenant clusters on a budget. Walk through HCP via RHACM.
+    answer: |
+      (1) RHACM hub cluster + multicluster-engine. (2) Provision 4-5 HCP-host clusters (these are large OCP clusters with capacity to host control-plane Pods for many tenant clusters). (3) Per tenant: RHACM Cluster Lifecycle creates an HCP cluster — control plane runs as Pods on a host cluster; data plane (worker nodes) runs in tenant's VPC / cloud account. (4) RHACM imports the new HCP cluster as a ManagedCluster. (5) ApplicationSet deploys baseline services to the new cluster (RHACS Sensor, OADP, observability). (6) Tenant onboarding = git PR + ~5 minutes for provisioning vs hours-to-days for traditional 3-master clusters. (7) Cost: 4-5 host clusters' worth of control-plane infrastructure for 200 tenant clusters vs 200 × 3 = 600 master VMs.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO asks: "Why do we need RHACM? We have Argo CD already." Defend.
+    answer: |
+      "**Argo CD is one piece of fleet management; RHACM bundles five pieces.** Argo CD = ApplicationSet for fleet-wide deploys (RHACM ships managed Argo CD via OpenShift GitOps). RHACM adds: **Cluster Lifecycle** (provision OCP + HCP clusters from templates; import EKS/GKE/AKS/on-prem), **Policy** (enforce governance fleet-wide via PolicySets — CIS, PSA, NetworkPolicy presence), **Observability** (Thanos-based multi-cluster Prometheus aggregation), **Submariner integration** (cross-cluster Pod + Service networking). At our scale (50+ clusters across multiple clouds + on-prem), assembling these from individual OSS pieces would mean operating Cluster API + per-cluster Argo CD + Open Policy Agent + Thanos + Submariner separately. RHACM gives us one Red Hat-supported platform with one operations model. *Argo CD alone covers ~20% of fleet ops; RHACM covers all of it.*"

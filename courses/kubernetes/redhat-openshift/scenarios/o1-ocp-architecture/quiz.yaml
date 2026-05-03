@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A cluster admin runs `oc edit clusterversion` and changes the `desiredUpdate`. What happens next?
+    answer: |
+      The **Cluster Version Operator (CVO)** sees the desired version change, validates the upgrade graph (channel, conditional updates), then orchestrates the upgrade across all **ClusterOperators**: each CO upgrades its own piece (authentication, console, etcd, ingress, monitoring, network, etc.) in dependency order. CVO's ClusterVersion status reports progress. Upgrades typically take 30-60 min for the control plane; node pools follow via MachineConfigPool rollouts (covered in O8). *You don't kubectl-bump apiserver yourself; you set ClusterVersion.spec.desiredUpdate, CVO does the rest.*
+
+  - id: 2
+    prompt: |
+      A team's Helm chart uses `hostPath: /var/log` in their Deployment. Pod fails to start in OCP. What's happening, and what's the fix?
+    answer: |
+      OCP's default SCC `restricted-v2` blocks hostPath, hostNetwork, hostPID, hostIPC, runAsRoot, and several capabilities. Pod is rejected at admission. Fix paths: (1) Rewrite the workload to not need hostPath (typically just need stdout logs in OCP — the cluster-logging operator collects them). (2) If genuinely needed (e.g. a privileged DaemonSet for node monitoring), grant the Pod's ServiceAccount an SCC that allows it (e.g. `privileged` SCC via `oc adm policy add-scc-to-user`). Recommended: assess whether the workload genuinely needs hostPath; in OCP, most don't.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO walks in: "Why are we paying for OCP when we could run vanilla K8s for free?" Defend the line item.
+    answer: |
+      "**Red Hat's OCP is K8s with five things built in that we'd otherwise build + operate ourselves:** (1) Ingress + TLS (Routes), (2) Image registry + builds (BuildConfigs + ImageStreams + S2I), (3) Identity + RBAC (integrated OAuth + SCCs), (4) Operator-Hub-everywhere (curated, supported add-ons via OLM with one Red Hat support contract), (5) Web console with Admin + Dev perspectives. Plus RHCOS as the immutable node OS managed by MCO — eliminates the per-cluster patching + drift problem. *The cost is the support contract; the saving is not staffing a 10-person platform team to assemble these from open-source pieces and own the support burden across them.* If we genuinely have the engineers to operate vanilla K8s + 12 self-installed add-ons + custom RHCOS-equivalent immutable image pipeline, vanilla K8s is fine. Otherwise OCP is the platform-team-in-a-box."

@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      IPI vs UPI?
+    back: |
+      **IPI**: `openshift-install` creates all infra (VMs, network, LB, DNS); fastest. **UPI**: you pre-create infra; installer generates Ignition configs you serve. UPI for unsupported bare-metal flavors / custom networking / split-team ownership.
+
+  - id: 2
+    front: |
+      Assisted Installer vs Agent-based Installer?
+    back: |
+      **Assisted**: SaaS-hosted wizard on console.redhat.com; needs internet from your install host. **Agent-based**: same engine packaged into a self-contained ISO; for air-gapped / disconnected installs. Both target bare metal with guided UX.
+
+  - id: 3
+    front: |
+      Three OCP cluster shapes besides default 3+2?
+    back: |
+      **SNO** (single node = control plane + worker), **compact 3-node** (3 masters also schedule workers), **two-node compact** (2 nodes + witness for arbitration). Edge / cost-constrained scenarios.
+
+  - id: 4
+    front: |
+      What does the bootstrap node do?
+    back: |
+      Boots from RHCOS + bootstrap.ign. Runs a temporary apiserver + etcd. Real master nodes join the bootstrap apiserver, form real etcd quorum, real apiserver takes over. Bootstrap node is destroyed once `wait-for bootstrap-complete` succeeds.
+
+  - id: 5
+    front: |
+      What three DNS records do you need for OCP?
+    back: |
+      `api.<cluster>.<base>` (external apiserver), `api-int.<cluster>.<base>` (internal apiserver from nodes), `*.apps.<cluster>.<base>` (wildcard for Routes). Wrong DNS = bootstrap fails silently.
+
+  - id: 6
+    front: |
+      What is oc-mirror?
+    back: |
+      Red Hat tool to mirror OCP releases + Operator catalogs from public sources to an internal mirror registry. ImageSetConfiguration declaratively defines what to mirror (releases, operators, channels, additional images). Path-of-record for disconnected installs + ongoing updates.
+
+  - id: 7
+    front: |
+      What is OSUS?
+    back: |
+      **OpenShift Update Service** — the upgrade-graph service. Public clusters fetch from api.openshift.com; disconnected clusters need their own OSUS instance (Red Hat ships an Operator) fed by mirrored upgrade-graph data.
+
+  - id: 8
+    front: |
+      What is Ignition?
+    back: |
+      RHCOS first-boot config format. `openshift-install create ignition-configs` emits bootstrap.ign / master.ign / worker.ign. Each node boots RHCOS with a pointer to its Ignition file (kernel arg or HTTP). Ignition runs once at first boot; configures hostname, networking, k8s-cluster-id, kubelet, etc.

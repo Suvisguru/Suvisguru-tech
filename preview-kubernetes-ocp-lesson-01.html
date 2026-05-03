@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-OCP O1 · OpenShift Architecture</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-OCP module journey">
+  <span class="concept-rail-title">K-OCP modules</span>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>O1 OCP architecture</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O2 installation models</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O3 OCP networking</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O4 OCP security</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O5 Operators &amp; OLM</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O6 workloads &amp; DevEx</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O7 OCP storage</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O8 OCP operations</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O9 Virt + AI + Edge</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O10 multi-cluster (ACM)</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O11 observability</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O12 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>O13 capstone foundry</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-OCP · Module O1</span></a>
+    <span class="progress-pill">O1 · OCP architecture</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏭 K-Foundry bay: <strong>Welcome Hall</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" class="ktown-map" role="img" aria-label="K-Foundry map: O1">
+    <title>K-Foundry map · O1</title>
+    <desc>Stylised Red Hat OpenShift enterprise factory. Welcome Hall highlighted.</desc>
+    <defs>
+      <linearGradient id="ko-floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF1D6" stop-opacity="0.7"/><stop offset="100%" stop-color="#E8DDC8" stop-opacity="0.55"/></linearGradient>
+      <linearGradient id="ko-fire" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#A04832" stop-opacity="0.16"/><stop offset="100%" stop-color="#3F4A5E" stop-opacity="0.30"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="380" rx="14" fill="url(#ko-floor)" stroke="#A04832" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · FOUNDRY · RED HAT OPENSHIFT</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="240" x2="780" y2="240" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="350" x2="780" y2="350" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.3"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">welcome &amp; foundation bays</text>
+    <text x="48" y="232" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">production &amp; ops bays</text>
+    <text x="48" y="342" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">specialty &amp; multi-foundry bays</text>
+    <g class="pin pin-anchor active" id="ko-bay01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">O1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Welcome Hall</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="ko-bay02" transform="translate(280,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Construction Site</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">installation</text></g>
+    <g class="pin" id="ko-bay03" transform="translate(460,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Pipework &amp; Conveyors</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">OVN-K + Routes</text></g>
+    <g class="pin" id="ko-bay04" transform="translate(640,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Safety Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">SCC + RHACS</text></g>
+    <g class="pin" id="ko-bay05" transform="translate(100,180)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Operator Hub</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">OLM</text></g>
+    <g class="pin" id="ko-bay06" transform="translate(280,180)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Mold Shop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">S2I + Pipelines + GitOps</text></g>
+    <g class="pin" id="ko-bay07" transform="translate(460,180)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Inventory Warehouse</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">ODF + OADP</text></g>
+    <g class="pin" id="ko-bay08" transform="translate(640,180)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Maintenance Bay</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">EUS + MCO + upgrades</text></g>
+    <g class="pin" id="ko-bay09" transform="translate(100,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Special Castings Wing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Virt + AI + Edge</text></g>
+    <g class="pin" id="ko-bay10" transform="translate(280,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Multi-Foundry Network</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">ACM + Hypershift</text></g>
+    <g class="pin" id="ko-bay11" transform="translate(460,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Control Tower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Monitoring + Loki + Tempo</text></g>
+    <g class="pin" id="ko-bay12" transform="translate(640,290)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O12</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Diagnostic Lab</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">must-gather</text></g>
+    <g class="pin" id="ko-bay13" transform="translate(380,370)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">O13</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Grand Opening</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🏭 <strong>Welcome Hall</strong> <span>· O1 of 13</span><span class="visually-hidden">Module O1, Welcome Hall.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module O1 · the Welcome Hall — opinionated K8s + everything built-in</span>
+    <h1>O1 · OpenShift Architecture (what OCP adds + RHCOS + MCO + CVO + OLM + deployment shapes)</h1>
+    <p class="hero-sub">OpenShift Container Platform (OCP) = upstream Kubernetes <strong>plus</strong>: <strong>Routes</strong>, <strong>BuildConfigs</strong>, <strong>ImageStreams</strong>, <strong>S2I</strong>, <strong>Templates</strong>, <strong>SCCs</strong>, <strong>Projects</strong>, <strong>integrated OAuth</strong>, <strong>integrated registry</strong>, <strong>OperatorHub-everywhere</strong>. <strong>RHCOS</strong> = immutable ostree node OS managed by the <strong>Machine Config Operator (MCO)</strong>. <strong>Cluster Version Operator (CVO)</strong> orchestrates dozens of cluster operators. <strong>oc</strong> CLI extends kubectl. Deployment shapes: OCP self-managed / OpenShift Dedicated / ROSA / ARO / IBM Cloud / GCP / OKD / HyperShift / MicroShift / CRC.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OpenShift architecture: opinionated K8s distribution + RHCOS + Operators + integrated CI/CD/registry/OAuth.">
+  <rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6"/>
+  <text x="380" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E">Welcome Hall — opinionated K8s + everything-built-in</text>
+  <rect x="50" y="65" width="220" height="125" rx="10" fill="#A04832" stroke="#3F4A5E"/>
+  <text x="160" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">upstream Kubernetes</text>
+  <text x="160" y="105" text-anchor="middle" font-size="9" fill="#FFFFFF">apiserver · etcd · kubelet</text>
+  <text x="160" y="118" text-anchor="middle" font-size="9" fill="#FFFFFF">controllers · scheduler</text>
+  <text x="160" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">+ what OCP adds:</text>
+  <text x="160" y="155" text-anchor="middle" font-size="9" fill="#FFFFFF">Routes · BuildConfigs · ImageStreams</text>
+  <text x="160" y="168" text-anchor="middle" font-size="9" fill="#FFFFFF">S2I · SCCs · Projects · OAuth</text>
+  <text x="160" y="180" text-anchor="middle" font-size="9" fill="#FFFFFF">integrated registry · OperatorHub</text>
+  <rect x="290" y="65" width="200" height="125" rx="10" fill="#3F4A5E" stroke="#FBF1D6"/>
+  <text x="390" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#FBF1D6">RHCOS + MCO + CVO</text>
+  <text x="390" y="105" text-anchor="middle" font-size="9" fill="#FBF1D6">RHCOS = immutable ostree OS</text>
+  <text x="390" y="120" text-anchor="middle" font-size="9" fill="#FBF1D6">MCO = Machine Config Operator</text>
+  <text x="390" y="135" text-anchor="middle" font-size="9" fill="#FBF1D6">CVO = Cluster Version Operator</text>
+  <text x="390" y="155" text-anchor="middle" font-size="9" fill="#FBF1D6">OLM = Operator Lifecycle Manager</text>
+  <text x="390" y="170" text-anchor="middle" font-size="9" fill="#FBF1D6">oc CLI vs kubectl</text>
+  <text x="390" y="183" text-anchor="middle" font-size="9" fill="#FBF1D6">web console: Admin + Dev</text>
+  <rect x="510" y="65" width="200" height="125" rx="10" fill="#5A9F7A" stroke="#3F4A5E"/>
+  <text x="610" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">deployment shapes</text>
+  <text x="610" y="105" text-anchor="middle" font-size="9" fill="#FFFFFF">OCP self-managed</text>
+  <text x="610" y="118" text-anchor="middle" font-size="9" fill="#FFFFFF">OpenShift Dedicated (Red Hat-mgd)</text>
+  <text x="610" y="131" text-anchor="middle" font-size="9" fill="#FFFFFF">ROSA (AWS) · ARO (Azure)</text>
+  <text x="610" y="144" text-anchor="middle" font-size="9" fill="#FFFFFF">OpenShift on IBM / GCP</text>
+  <text x="610" y="157" text-anchor="middle" font-size="9" fill="#FFFFFF">OKD (community)</text>
+  <text x="610" y="172" text-anchor="middle" font-size="9" font-style="italic" fill="#FFFFFF">HyperShift · MicroShift · CRC</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. PagerDuty: <em>"ClusterOperator authentication degraded; OAuth login failing for everyone."</em> You SSH for the apiserver — wait, you can't (RHCOS is immutable, no SSH by default). You start typing <code>kubectl get pods -n openshift-authentication</code> — but the cluster has its own <em>Project</em> isolation, its own <em>Operator</em> reconciliation loops, its own <em>OAuth server</em> separate from upstream K8s. <em>You inherited the cluster two days ago and don't even know which 30+ cluster operators must be healthy for it to be "working."</em> Today's lesson: the OCP map.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>OCP = upstream K8s + Red Hat's opinionated additions (Routes, SCCs, OperatorHub-everywhere, integrated OAuth/registry/console). RHCOS is immutable + MCO-managed. CVO orchestrates ~30 cluster operators. Pick the deployment shape that matches your operating model: OCP / OSD / ROSA / ARO / OKD / HyperShift / MicroShift / CRC.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · what OCP adds on top of K8s</span>
+    <h2>What OCP adds on top of upstream K8s</h2>
+    <p><strong>OpenShift Container Platform (OCP)</strong> is Red Hat's opinionated K8s distribution. It includes upstream K8s plus a curated set of additions and replacements:</p>
+    <ul>
+      <li><strong>Routes</strong> — Red Hat's ingress primitive (predates Ingress; handles TLS edge / passthrough / re-encrypt termination cleanly). Coexists with K8s <code>Ingress</code> + Gateway API; OpenShift Routes are still the workhorse.</li>
+      <li><strong>BuildConfigs / Builds / ImageStreams / ImageStreamTags</strong> — built-in CI primitives. <strong>S2I (Source-to-Image)</strong> = build container images from source code without writing a Dockerfile.</li>
+      <li><strong>Templates</strong> — pre-OperatorHub mechanism for app templates; still used.</li>
+      <li><strong>Security Context Constraints (SCCs)</strong> — Red Hat's pre-PSA admission system. Default is <code>restricted-v2</code> (non-root, dropped capabilities, seccomp). Stricter than K8s' historical PSP defaults.</li>
+      <li><strong>Projects</strong> — OCP's namespace-with-extra-metadata. Every K8s namespace = a Project, with a <code>ProjectRequest</code>, default rolebinding policies, and self-provisioner support.</li>
+      <li><strong>Integrated OAuth server</strong> — own OAuth provider built into the cluster; backs HTPasswd, LDAP, OIDC, GitHub, etc., providers.</li>
+      <li><strong>Integrated container image registry</strong> — built-in registry (image-registry.openshift-image-registry.svc) for ImageStreams + builds.</li>
+      <li><strong>OperatorHub-everywhere</strong> — every add-on (logging, monitoring, networking, storage, dev tools) ships as an Operator via OLM.</li>
+    </ul>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · deployment shapes</span>
+    <h2>Eight deployment shapes — pick the operating model</h2>
+    <p>OCP isn't one product — it's a family of deployments under the same software:</p>
+    <ul>
+      <li><strong>OpenShift Container Platform (OCP)</strong> — self-managed; you operate the cluster + control plane. Bare metal, vSphere, AWS, Azure, GCP, OpenStack.</li>
+      <li><strong>OpenShift Dedicated (OSD)</strong> — Red Hat-managed OCP on AWS or GCP. Red Hat operates the control plane + nodes; you operate workloads.</li>
+      <li><strong>ROSA (Red Hat OpenShift Service on AWS)</strong> — joint AWS + Red Hat managed. Native AWS billing + integration; Red Hat does the K8s lifting.</li>
+      <li><strong>ARO (Azure Red Hat OpenShift)</strong> — joint Azure + Red Hat managed. Same idea on Azure.</li>
+      <li><strong>OpenShift on IBM Cloud</strong> + <strong>OpenShift on Google Cloud</strong> — managed-OCP on those clouds.</li>
+      <li><strong>OKD</strong> — community / upstream-development distribution of OCP. Same code, no Red Hat support.</li>
+      <li><strong>Hosted Control Planes (HyperShift)</strong> — control planes run as Pods inside another OCP cluster. Density: many lightweight clusters share underlying compute.</li>
+      <li><strong>MicroShift</strong> — single-node OCP for edge devices. <strong>OpenShift Local (CRC)</strong> — single-node OCP for laptops + dev environments.</li>
+    </ul>
+    <p><strong>Pick by operating-model intent:</strong> self-managed (OCP) for full control + bare-metal / hybrid; managed (ROSA / ARO / OSD / IBM / GCP) when Red Hat or your cloud provider should run the K8s lifting; HyperShift for cluster-fleet density; MicroShift / CRC for edge / dev.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · RHCOS + MCO + CVO + OLM</span>
+    <h2>RHCOS + MCO + CVO + OLM — the four operators that run OCP</h2>
+    <p><strong>RHCOS (Red Hat CoreOS)</strong> = OCP's node OS. <em>Immutable, ostree-based</em> — you don't apt/yum install on it; OS changes happen by redeploying a new ostree image. SSH disabled by default (use <code>oc debug node/...</code> instead). Includes CRI-O (container runtime), kubelet, NetworkManager, and a handful of system services.</p>
+    <p><strong>Machine Config Operator (MCO)</strong> manages RHCOS. You declare changes via <strong>MachineConfig</strong> YAML resources (kernel args, systemd units, files, ignition snippets). MCO renders them into a final ostree-like config per <strong>MachineConfigPool</strong> (master, worker, custom pools), drains nodes, applies the new config, reboots, validates. <em>This is how you customize node OS without SSH or hand-editing.</em></p>
+    <p><strong>Cluster Version Operator (CVO)</strong> orchestrates ~30 <strong>ClusterOperators</strong> — each manages one piece of OCP (authentication, console, dns, etcd, ingress, monitoring, network, storage, etc.). CVO ensures all CO's reconcile to the cluster's declared version. <em>Cluster health = all CO's Available + not Degraded + not Progressing (during steady state).</em></p>
+    <p><strong>OLM (Operator Lifecycle Manager)</strong> = the operator that manages other operators. OperatorHub catalogs (CatalogSources) → Subscription → InstallPlan → ClusterServiceVersion (CSV) → operator running. <em>Almost every OCP add-on installs through OLM.</em></p>
+    <p><strong>oc</strong> CLI = kubectl plus OCP-aware commands: <code>oc new-app</code>, <code>oc new-build</code>, <code>oc start-build</code>, <code>oc adm</code>, <code>oc debug</code>, <code>oc rsync</code>, <code>oc port-forward</code>. Works everywhere kubectl works; learn <em>both</em>.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A cluster operator (CO) named <code>authentication</code> reports Degraded for 10 minutes. Which operator orchestrates resolution?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">kubelet on each node.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Cluster Version Operator (CVO) — it watches all CO statuses, reports cluster-level health, and ensures CO's converge to the declared version. Investigate the <code>authentication</code> CO's logs first.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">OLM — it only manages add-on operators, not core CO's.</button></li>
+      </ul>
+      <p class="pause-check-feedback">CVO is the meta-operator that orchestrates every cluster operator. Cluster Available = all CO's Available + not Degraded.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · web console + edge variants</span>
+    <h2>Web console (Administrator + Developer) + edge variants</h2>
+    <p>The OCP <strong>web console</strong> ships two perspectives:</p>
+    <ul>
+      <li><strong>Administrator perspective</strong> — cluster-wide view: nodes, machines, operators, monitoring, storage, networking, RBAC. For platform engineers.</li>
+      <li><strong>Developer perspective</strong> — project-scoped: topology view (pods/services/routes graph), build pipeline, dev catalog (templates, helm charts, S2I builders), monitoring of own workloads. For app developers.</li>
+    </ul>
+    <p>Both perspectives sit on the same RBAC; users see what their roles allow.</p>
+    <p><strong>Edge variants:</strong>
+    <ul>
+      <li><strong>Single Node OpenShift (SNO)</strong> — full OCP on one node. Edge deployments at retail / branch / industrial.</li>
+      <li><strong>MicroShift</strong> — even smaller (~1 GB RAM): minimal OCP for ultra-edge devices, IoT gateways, small footprint deployments.</li>
+      <li><strong>OpenShift Local (CRC — CodeReady Containers)</strong> — single-node OCP on laptop. For dev + experimentation. Drives <code>crc start</code>; ~10 GB disk + ~10 GB RAM.</li>
+    </ul>
+    <p>All three variants register into a fleet via Red Hat Advanced Cluster Management (ACM) — covered in O10.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-OCP K8s deployments were assembly-required: pick a CNI, install Helm charts for ingress + monitoring + logging + GitOps + dev tools + registry; integrate auth via custom OIDC plumbing; bake AMIs / images per cloud; write per-cluster scripts for upgrades. <em>Six weeks of platform engineering before the first developer Pod ran.</em> No vendor accountability if any one piece broke.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>OCP ships an <strong>opinionated platform</strong>: Routes (ingress), integrated OAuth + registry + console + monitoring + logging, OperatorHub-everywhere (one place to install certified add-ons), CVO orchestrating cluster operators, RHCOS as the immutable node OS managed by MCO, oc CLI extending kubectl. <strong>Day-1 cluster is production-shaped</strong>; the trade-off is learning Red Hat's opinions (SCCs, Routes vs Ingress, Projects-as-namespaces, oc adm flow). One vendor accountable for the whole platform.</p></div>
+    </div>
+    <p class="ba-caption"><em>OCP trades K8s flexibility for Red Hat opinionation + enterprise support. The cost is learning Red Hat's additions; the benefit is platform-team-in-a-box.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this bay</h2>
+<p>K-Foundry is the Red Hat enterprise factory. The <strong>Welcome Hall</strong> is where every visitor enters. On the wall is a giant floor plan showing the whole foundry: 13 bays, each handling a different production stage. The Foundry Master (you, the OCP platform admin) hands you a hard hat at the door.</p>
+    <p>Unlike DIY K8s where you arrive with empty land, OCP's Welcome Hall has the building <em>already built</em>: the central forge (apiserver), the safety regulations posted (SCCs), the conveyor system installed (Routes + Service mesh), the safety inspector's booth ready (Compliance Operator), the operator hub stocked (OLM), the maintenance schedule on the wall (CVO + ClusterOperators). You add your products (workloads); the foundry comes equipped to make them.</p>
+    <p>The Foundry has 8 deployment shapes — same blueprint, different operating models. Self-build the foundry (OCP), rent a turnkey foundry from Red Hat (OSD), rent one jointly with a hyperscaler (ROSA on AWS / ARO on Azure / IBM Cloud / GCP), use the community blueprint (OKD), pack many foundries into one (HyperShift), or run a tiny one at the edge (MicroShift / SNO / CRC).</p>
+    <p>The <strong>Cluster Version Operator (CVO)</strong> is the Foundry Master's lieutenant — keeps every operator on the floor working. The <strong>Machine Config Operator (MCO)</strong> manages the floors themselves (RHCOS). The <strong>OLM</strong> manages all the specialty operators that visit the foundry.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in OpenShift / Red Hat</th></tr></thead>
+        <tbody>
+          <tr><td>Welcome Hall floor plan</td><td>OCP architecture overview</td></tr>
+          <tr><td>Foundry Master</td><td>OCP platform admin (you)</td></tr>
+          <tr><td>Foundry Master's lieutenant</td><td>Cluster Version Operator (CVO)</td></tr>
+          <tr><td>Floor manager</td><td>Machine Config Operator (MCO)</td></tr>
+          <tr><td>Specialty-operator scheduler</td><td>Operator Lifecycle Manager (OLM)</td></tr>
+          <tr><td>Conveyor system</td><td>Routes (TLS edge / passthrough / re-encrypt)</td></tr>
+          <tr><td>Build mold + casting press</td><td>S2I (Source-to-Image) + BuildConfig + ImageStream</td></tr>
+          <tr><td>Safety regulations posted</td><td>Security Context Constraints (SCCs)</td></tr>
+          <tr><td>Project area on the floor</td><td>OpenShift Project (= K8s namespace +)</td></tr>
+          <tr><td>Front desk badge issuer</td><td>Integrated OAuth server</td></tr>
+          <tr><td>Internal parts warehouse</td><td>Integrated container registry</td></tr>
+          <tr><td>Hardened immutable floor surface</td><td>RHCOS (immutable ostree node OS)</td></tr>
+          <tr><td>Foundry Master's CLI</td><td>oc CLI (kubectl + OCP-aware commands)</td></tr>
+          <tr><td>Two views of the floor</td><td>Web console — Administrator + Developer perspectives</td></tr>
+          <tr><td>Foundry-network of branch foundries</td><td>Hosted Control Planes (HyperShift) + ACM</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A real foundry has fixed equipment; OCP's opinionated platform is software-defined and reshapes via Operators. Some workloads need bespoke configs that fight the opinionated defaults — that's when the foundry metaphor breaks.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Red Hat sells a Kubernetes that's already set up like a factory — the conveyor belts, safety officers, registry, login, dev tools all built in. You can build your own factory (DIY K8s) or buy this one with all the equipment included.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>OpenShift = upstream K8s + Red Hat's opinionated additions (Routes, SCCs, BuildConfigs, S2I, Projects, OAuth, registry, OperatorHub-everywhere) + RHCOS immutable node OS + Machine Config Operator + Cluster Version Operator orchestrating ~30 ClusterOperators + Operator Lifecycle Manager for add-ons. Eight deployment shapes (OCP self-managed, OSD, ROSA, ARO, IBM, GCP, OKD, HyperShift, MicroShift / SNO / CRC). oc CLI extends kubectl. Web console has Admin + Dev perspectives.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How OpenShift teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">Bank — picks ROSA for managed OCP on AWS</p><p>A regulated bank standardising on OCP. They have an AWS-first cloud strategy. Pick <strong>ROSA</strong> — Red Hat operates the control plane + nodes via AWS native services; the bank operates workloads + identity. Native AWS billing; PrivateLink to existing AWS infra. <em>Compliance posture inherits from Red Hat's ROSA service controls.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Telco edge — SNO + MicroShift across 800 sites</p><p>A telco runs OCP at 800 cell sites. Each site has constrained compute. Edge sites get <strong>SNO</strong> (full OCP on one node) for the larger ones; remote IoT gateways get <strong>MicroShift</strong>. All registered in <strong>RHACM</strong> (covered in O10). One pane of glass for 800 mini-clusters.</p></div>
+      <div class="scenario"><p class="scenario-name">Migration — DIY K8s + 12 Helm-installed add-ons → OCP</p><p>A platform team running 6 self-managed K8s clusters with Argo CD, Prometheus, Loki, Linkerd, cert-manager, sealed-secrets, etc., all installed via Helm. Drift across charts; upgrade hell. Migration to OCP: each Helm chart maps to a Red Hat-supported Operator; OLM-installed; one supported version per Operator per OCP minor. <em>Reduced from 12 self-installed Helm charts to 12 OLM-managed Operators with vendor support.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Dev experience — CRC for laptop dev, OCP-bare-metal for prod</p><p>A 100-engineer team. Dev: <strong>OpenShift Local (CRC)</strong> on every developer laptop — same OCP APIs as prod; <code>oc new-app</code> + <code>oc new-build</code> work locally. Prod: OCP on bare metal in two on-prem data centres. <em>Same Routes, same SCCs, same OAuth — dev and prod feel identical from the developer's side.</em></p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>OCP architecture — what Red Hat adds + how the operators conduct it</h2>
+    <p>OCP = upstream K8s + Red Hat additions + RHCOS + MCO + CVO + OLM.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="70" width="150" height="90" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="115" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">upstream K8s</text><text x="115" y="108" text-anchor="middle" font-size="9" fill="#6B6058">+ Red Hat additions</text>
+        <rect x="220" y="60" width="200" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="320" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Routes + SCCs + OAuth</text><text x="320" y="98" text-anchor="middle" font-size="9" fill="#6B6058">OCP-native</text>
+        <rect x="220" y="130" width="200" height="50" rx="6" fill="#7AB3CC" stroke="#3F4A5E" stroke-width="1.5"/><text x="320" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">OperatorHub-everywhere</text><text x="320" y="168" text-anchor="middle" font-size="9" fill="#6B6058">OLM lifecycle</text>
+        <rect x="450" y="70" width="270" height="90" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="585" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">RHCOS + MCO + CVO</text><text x="585" y="108" text-anchor="middle" font-size="9" fill="#6B6058">immutable + machine config + version</text>
+        <g id="anim-pkg" opacity="0" transform="translate(115,115)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="walk">▶ OCP architecture overlay</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> the OCP architecture overlay.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "OCP is just K8s with a wrapper."</div><div class="misc-row misc-truth"><strong>Truth:</strong> OCP includes meaningful additions: Routes (predate Ingress, handle TLS termination), SCCs (predate PSA, stricter defaults), Projects (namespace + metadata + self-provisioning), OAuth server, integrated registry, ImageStreams, BuildConfigs, S2I, OperatorHub-everywhere, CVO orchestrating CO's. <em>You can use kubectl for everything but you'll miss half the workflow without oc + OCP-aware concepts.</em></div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "RHCOS is just RHEL with K8s installed."</div><div class="misc-row misc-truth"><strong>Truth:</strong> RHCOS is <strong>immutable ostree-based</strong> — no apt / yum / package install at runtime. Changes happen by deploying new ostree images managed by the <strong>Machine Config Operator</strong>. SSH disabled by default. <em>You customise nodes via <code>MachineConfig</code> YAML, not by SSH-ing to nodes</em>. RHEL is the upstream; RHCOS is OCP's opinionated subset for cluster nodes only.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "OLM is required for all my K8s operators."</div><div class="misc-row misc-truth"><strong>Truth:</strong> OLM manages OperatorHub-installed operators. You can <em>still</em> install bring-your-own operators directly via <code>kubectl apply -f operator.yaml</code> + RBAC + CRDs. OLM's value: lifecycle management (versions, upgrades, dependencies, channels) + a curated catalog. For Red Hat-supported workloads, OLM is the path. For custom internal operators, OLM is optional.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does OCP add on top of upstream K8s?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Routes</strong>, <strong>BuildConfigs</strong>, <strong>ImageStreams</strong>, <strong>S2I</strong>, <strong>Templates</strong>, <strong>SCCs</strong>, <strong>Projects</strong>, <strong>integrated OAuth</strong>, <strong>integrated registry</strong>, <strong>OperatorHub-everywhere</strong>. Plus RHCOS, MCO, CVO, OLM, oc CLI, and a two-perspective web console.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Eight OCP deployment shapes?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>OCP self-managed</strong>, <strong>OSD</strong> (Red Hat-managed on AWS/GCP), <strong>ROSA</strong> (joint AWS+RH), <strong>ARO</strong> (joint Azure+RH), <strong>IBM Cloud</strong>, <strong>GCP</strong>, <strong>OKD</strong> (community), <strong>HyperShift</strong> (hosted control planes), <strong>MicroShift</strong> (ultra-edge) / <strong>SNO</strong> (single-node) / <strong>CRC</strong> (laptop dev).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is RHCOS and how do you change it?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>RHCOS</strong> = immutable ostree-based node OS. SSH disabled by default. Customisation via <strong>MachineConfig</strong> YAML reconciled by the <strong>Machine Config Operator (MCO)</strong> — applied per <strong>MachineConfigPool</strong> (master, worker, custom). MCO drains, applies, reboots, validates.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does the CVO do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Cluster Version Operator</strong> orchestrates ~30 <strong>ClusterOperators</strong> (authentication, console, dns, etcd, ingress, monitoring, network, storage, etc.). Cluster Available = all CO's Available + not Degraded. CVO drives upgrades to the declared version.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is OLM and what does it manage?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Operator Lifecycle Manager</strong> manages add-on operators installed via OperatorHub. Pieces: <strong>CatalogSource</strong> → <strong>Subscription</strong> → <strong>InstallPlan</strong> → <strong>ClusterServiceVersion (CSV)</strong>. Channels (stable, fast, etc.). Manual vs automatic approval.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's a Project in OCP?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A K8s <strong>namespace</strong> + extra metadata (display name, description, requestor) + default RoleBindings + self-provisioner support via the OCP <code>ProjectRequest</code> API. Every namespace is a Project; every Project is a namespace.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">oc vs kubectl?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>oc</strong> is kubectl + OCP-aware commands: <code>oc new-app</code>, <code>oc new-build</code>, <code>oc start-build</code>, <code>oc adm</code> (cluster admin), <code>oc debug</code> (privileged debug Pod on a node), <code>oc rsync</code>, <code>oc port-forward</code>, <code>oc login</code> (OAuth flow). All kubectl commands work via oc.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When pick HyperShift?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">When you need to operate <strong>many lightweight clusters densely</strong>. HyperShift runs the control planes (apiserver + etcd + controllers + scheduler) as Pods inside another OCP cluster. Each tenant cluster's control plane is a Pod set; data planes are isolated. Reduces per-cluster overhead at fleet scale.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A cluster admin runs <code>oc edit clusterversion</code> and changes the <code>desiredUpdate</code>. What happens next?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The <strong>Cluster Version Operator (CVO)</strong> sees the desired version change, validates the upgrade graph (channel, conditional updates), then orchestrates the upgrade across all <strong>ClusterOperators</strong>: each CO upgrades its own piece (authentication, console, etcd, ingress, monitoring, network, etc.) in dependency order. CVO's ClusterVersion status reports progress. Upgrades typically take 30-60 min for the control plane; node pools follow via MachineConfigPool rollouts (covered in O8). <em>You don't kubectl-bump apiserver yourself; you set ClusterVersion.spec.desiredUpdate, CVO does the rest.</em></div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A team's Helm chart uses <code>hostPath: /var/log</code> in their Deployment. Pod fails to start in OCP. What's happening, and what's the fix?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>OCP's default SCC <code>restricted-v2</code> blocks hostPath, hostNetwork, hostPID, hostIPC, runAsRoot, and several capabilities. Pod is rejected at admission. Fix paths: (1) Rewrite the workload to not need hostPath (typically just need stdout logs in OCP — the cluster-logging operator collects them). (2) If genuinely needed (e.g. a privileged DaemonSet for node monitoring), grant the Pod's ServiceAccount an SCC that allows it (e.g. <code>privileged</code> SCC via <code>oc adm policy add-scc-to-user</code>). Recommended: assess whether the workload genuinely needs hostPath; in OCP, most don't.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The CTO walks in: "Why are we paying for OCP when we could run vanilla K8s for free?" Defend the line item.</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how the platform engineer answered the CTO</span>"<strong>Red Hat's OCP is K8s with five things built in that we'd otherwise build + operate ourselves:</strong> (1) Ingress + TLS (Routes), (2) Image registry + builds (BuildConfigs + ImageStreams + S2I), (3) Identity + RBAC (integrated OAuth + SCCs), (4) Operator-Hub-everywhere (curated, supported add-ons via OLM with one Red Hat support contract), (5) Web console with Admin + Dev perspectives. Plus RHCOS as the immutable node OS managed by MCO — eliminates the per-cluster patching + drift problem. <em>The cost is the support contract; the saving is not staffing a 10-person platform team to assemble these from open-source pieces and own the support burden across them.</em> If we genuinely have the engineers to operate vanilla K8s + 12 self-installed add-ons + custom RHCOS-equivalent immutable image pipeline, vanilla K8s is fine. Otherwise OCP is the platform-team-in-a-box."</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">OCP</div><div class="gloss-def">OpenShift Container Platform. Red Hat's opinionated K8s distribution. Self-managed deployment shape.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ROSA / ARO</div><div class="gloss-def">Joint Red Hat + cloud-provider managed OCP. ROSA on AWS, ARO on Azure.</div></div>
+      <div class="gloss-item"><div class="gloss-name">OSD</div><div class="gloss-def">OpenShift Dedicated — Red Hat-managed OCP on AWS or GCP.</div></div>
+      <div class="gloss-item"><div class="gloss-name">OKD</div><div class="gloss-def">Community / upstream-development distribution of OCP. Same code; no Red Hat support.</div></div>
+      <div class="gloss-item"><div class="gloss-name">HyperShift</div><div class="gloss-def">Hosted Control Planes — control planes run as Pods inside another OCP cluster. Density at fleet scale.</div></div>
+      <div class="gloss-item"><div class="gloss-name">MicroShift / SNO / CRC</div><div class="gloss-def">Edge / single-node / laptop variants of OCP.</div></div>
+      <div class="gloss-item"><div class="gloss-name">RHCOS</div><div class="gloss-def">Red Hat CoreOS — immutable ostree-based node OS for OCP. Customised via MachineConfig + MCO.</div></div>
+      <div class="gloss-item"><div class="gloss-name">MCO</div><div class="gloss-def">Machine Config Operator — manages RHCOS via MachineConfig YAML per MachineConfigPool.</div></div>
+      <div class="gloss-item"><div class="gloss-name">CVO</div><div class="gloss-def">Cluster Version Operator — orchestrates ~30 ClusterOperators; drives upgrades.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ClusterOperator (CO)</div><div class="gloss-def">An operator that manages one piece of OCP (authentication, console, dns, etcd, ingress, monitoring, network, storage, etc.). ~30 of them.</div></div>
+      <div class="gloss-item"><div class="gloss-name">OLM</div><div class="gloss-def">Operator Lifecycle Manager — manages add-on operators via CatalogSource → Subscription → InstallPlan → CSV.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Route</div><div class="gloss-def">OCP ingress primitive — TLS edge / passthrough / re-encrypt termination. Predates K8s Ingress.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SCC (Security Context Constraint)</div><div class="gloss-def">OCP's Pod-security admission system. Default: restricted-v2 (non-root, dropped caps, seccomp).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Project</div><div class="gloss-def">OCP namespace + metadata + default RoleBindings + ProjectRequest API for self-provisioning.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>OCP = upstream K8s + Red Hat's opinionated additions (Routes, SCCs, OperatorHub-everywhere, integrated OAuth/registry/console). RHCOS is immutable + MCO-managed. CVO orchestrates ~30 cluster operators. Pick the deployment shape that matches your operating model: OCP / OSD / ROSA / ARO / OKD / HyperShift / MicroShift / CRC.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module O1 complete</span>
+    <p>OpenShift = K8s + Red Hat opinionated additions + RHCOS + MCO + CVO + OLM + 8 deployment shapes. The Welcome Hall floor plan is internalised; choose the deployment shape + understand the four core operators (CVO, MCO, OLM, OAuth).</p>
+    <p class="recap-next"><strong>Next — O2: Installation Models.</strong> IPI vs UPI; Assisted Installer; Agent-based Installer; SNO + compact 3-node + two-node; bare-metal + vSphere + AWS + Azure + GCP + OpenStack; disconnected installs + mirrored registries + oc-mirror; install-config + Ignition + bootstrap node + OSUS.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-OCP · Module O1 of 13 · grounded in docs.openshift.com</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "walk", "mode_label": "Mode: upstream K8s + Red Hat additions + RHCOS + MCO + CVO + OLM", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Start with upstream K8s.", "move_to": [115, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Red Hat adds Routes, SCCs, OAuth, OperatorHub-everywhere.", "move_to": [320, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Add RHCOS (immutable node OS) + MCO (managing it) + CVO (orchestrating ClusterOperators).", "move_to": [585, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [115, 115];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does RHACM manage?
+    back: |
+      Multi-cluster fleet of OCP + non-OCP K8s clusters. Hub cluster + multicluster-engine (MCE) + klusterlet agent per managed cluster. Cluster lifecycle, Apps, Policy, Observability, multi-cluster networking.
+
+  - id: 2
+    front: |
+      Five RHACM core surfaces?
+    back: |
+      **Cluster Lifecycle** (provision + import), **Application Lifecycle** (ApplicationSet + Subscription), **Governance/Policy**, **Observability** (ObservabilityAddon), **multi-cluster networking** (Submariner integration).
+
+  - id: 3
+    front: |
+      What is Placement?
+    back: |
+      CR selecting ManagedClusters by labels (matchLabels / matchExpressions / NumberOfClusters / tolerations). Result: PlacementDecision. Used by ApplicationSet + Policy + ObservabilityAddon.
+
+  - id: 4
+    front: |
+      ApplicationSet vs Subscription model?
+    back: |
+      **ApplicationSet** (Argo CD-based) is the modern fleet-deploy primitive — generates Application per cluster matching Placement. **Subscription** (Channel + PlacementRule) is the older RHACM model; still works.
+
+  - id: 5
+    front: |
+      Policy modes?
+    back: |
+      **inform** — report compliance status only (no enforcement). **enforce** — RHACM reconciles cluster to desired state. PolicySet bundles related policies + Placement.
+
+  - id: 6
+    front: |
+      What is ObservabilityAddon?
+    back: |
+      Aggregates Prometheus + Grafana metrics from all ManagedClusters into a multi-cluster observability stack on the hub. Built on Thanos. Single console for fleet-wide dashboards + alerts.
+
+  - id: 7
+    front: |
+      Hosted Control Planes (HCP) at scale via RHACM?
+    back: |
+      HCP control planes run as Pods on hosting clusters (often the hub or dedicated HCP-host clusters); data plane workers in target environments. RHACM Cluster Lifecycle provisions HCP clusters. Density: dozens of clusters per host.
+
+  - id: 8
+    front: |
+      Submariner integration role in RHACM?
+    back: |
+      Federates Pod + Service networks across ManagedClusters. ServiceExport in cluster A → ServiceImport in cluster B → cross-cluster reachability. Foundation for multi-cluster service mesh + DR.

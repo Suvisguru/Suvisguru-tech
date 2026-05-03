@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A cluster's authentication CO has been degraded for 2 hours. Walk through the diagnostic ladder.
+    answer: |
+      (1) `oc get co/authentication` — confirm Degraded + check timestamps. (2) `oc describe co/authentication` — status conditions + reason (often points to OAuth backend issue or specific Pod failure). (3) `oc get pods -n openshift-authentication` — oauth-openshift Pods. (4) `oc logs -n openshift-authentication deployment/oauth-openshift` — runtime errors. (5) Common causes: identity provider unreachable (LDAP / OIDC down), TLS cert expired on IDP, NetworkPolicy blocking, kube-apiserver issue. (6) Insights Advisor for known issues. (7) `oc adm must-gather` + open Red Hat case if root cause unclear.
+
+  - id: 2
+    prompt: |
+      Disconnected cluster: new Operator install fails ImagePullBackOff. Walk through diagnostic.
+    answer: |
+      (1) `oc describe pod` — exact image ref + error (auth or NXDOMAIN). (2) `oc get imagecontentsourcepolicy + imagedigestmirrorset` — is the public image ref redirected to the mirror? (3) Mirror registry: reachable from cluster? (resolve DNS + curl from a debug Pod) (4) `oc adm release info <ocp-version>` + check whether the new Operator's catalog images are mirrored. (5) Likely fix: `oc-mirror` the missing images to mirror; restart pull. (6) For Operator install: ensure CatalogSource pod is healthy + can pull catalog index image.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Saturday at the SCIF. The on-call has a cascading failure: console down, Pipelines stuck, builds failing. Walk through triage.
+    answer: |
+      (1) **Don't panic — find the root via CO status.** `oc get co` from a working terminal: which CO's are Degraded with the earliest timestamp? Often DNS Operator, image-registry, or authentication = upstream root cause. (2) `oc get clusterversion + oc describe clusterversion` for CVO state. (3) `oc get mcp` for any node-roll issues. (4) Likely scenario: DNS or image-registry root cause; cascading symptoms in pipelines / builds. (5) Address root cause first; cascading CO's recover. (6) `oc adm must-gather` bundle for postmortem. (7) Update runbook with the cascade order: "if DNS / registry / authentication fails, expect builds / pipelines / console to follow within minutes." *Cascading failures look complex; usually have one root cause.*

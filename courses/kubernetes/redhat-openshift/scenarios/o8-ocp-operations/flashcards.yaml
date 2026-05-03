@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Update channels in OCP?
+    back: |
+      **stable-X.Y** (production), **fast-X.Y** (earlier GA), **candidate-X.Y** (release candidates), **eus-X.Y** (Extended Update Support, ~24 mo). Switch channel via `oc adm upgrade channel`.
+
+  - id: 2
+    front: |
+      What is EUS?
+    back: |
+      **Extended Update Support** — designated OCP minor versions with ~24-month support window. EUS-to-EUS upgrade paths skip non-EUS intermediate minors. For workloads that cannot upgrade quarterly.
+
+  - id: 3
+    front: |
+      MachineConfig + MCP + MachineSet — what does each manage?
+    back: |
+      **MachineConfig**: RHCOS node config (kernel args, systemd, files). **MachineConfigPool (MCP)**: group of nodes sharing a config roll (default: master, worker; custom for shape-specific). **MachineSet**: VM/instance scale set; CA scales these.
+
+  - id: 4
+    front: |
+      What is MachineHealthCheck (MHC)?
+    back: |
+      Automatic remediation for unhealthy Machines. Conditions (e.g., NotReady > 5min); MHC deletes + recreates the Machine via the MachineSet.
+
+  - id: 5
+    front: |
+      Where does Node Tuning Operator + PerformanceProfile fit?
+    back: |
+      Workload-tuned node configs: CPU pinning, hugepages, RT kernel, NUMA-aware. For telco / latency-sensitive workloads. Per-pool via custom MCP.
+
+  - id: 6
+    front: |
+      How do you backup etcd?
+    back: |
+      `oc debug node/<master>` + `cluster-backup.sh`. Schedule as CronJob on infra nodes; ship snapshots off-cluster (S3, NFS, NetApp). Hourly + daily + weekly retention typical.
+
+  - id: 7
+    front: |
+      What does `oc adm must-gather` do?
+    back: |
+      Collects diagnostic bundle (logs, configs, ClusterOperator status, events). Targeted variants per Operator. Tarball for Red Hat support cases or your own postmortem.
+
+  - id: 8
+    front: |
+      What is Insights and what does it do?
+    back: |
+      OCP phone-home telemetry (opt-out). Cluster sends anonymised health + version + Operator status to Red Hat. Insights Advisor surfaces known-issue alerts + recommendations in console.redhat.com.

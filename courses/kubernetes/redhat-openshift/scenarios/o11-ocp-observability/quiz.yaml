@@ -1,0 +1,21 @@
+# Quiz — K-OCP O (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Alertmanager fires 200 alerts in an hour during a non-incident. Walk through reducing the noise.
+    answer: |
+      (1) Audit current alert rules: `oc get prometheusrule -A`. (2) Categorise by SLO impact: which alerts indicate genuine SLO burn vs threshold blips? (3) Replace threshold-on-raw-metric alerts with **burn-rate alerts**: e.g., "alert if 28-day burn rate > 14× over 1h" instead of "alert if 5xx rate > 1%." (4) Adjust severity: most threshold alerts → ticket-level (low priority); only burn-rate alerts → page (high priority). (5) Use Alertmanager *inhibition rules* to suppress derived alerts when their root cause is firing. (6) Group alerts: per-namespace, per-service. (7) Re-route: low-severity to Slack channel; high-severity to PagerDuty. *Result: ~5-10 paged alerts per day, signal-rich; lots of tickets-in-Slack for tracking but not waking anyone.*
+
+  - id: 2
+    prompt: |
+      Migration plan: cluster currently runs OpenShift Logging with Fluentd + Elasticsearch (both deprecated). Walk through the migration to Vector + Loki.
+    answer: |
+      (1) Install LokiStack: install Loki Operator from OperatorHub; create LokiStack CR pointing to S3 / NooBaa storage. (2) Install + configure Logging Operator at current minor. (3) Update ClusterLogForwarder to route streams to LokiStack output (in addition to existing Fluentd → Elasticsearch). Run in parallel for a sprint to validate. (4) Validate Loki + Vector work end-to-end: log ingestion, console *Observe → Logs* queries, retention. (5) Cut over: remove Elasticsearch + Fluentd outputs; remove Elasticsearch operator + cluster. (6) Decommission Elasticsearch. (7) Postmortem any data-format / index differences. *Plan a 2-3 sprint migration; expect query semantics to change (LogQL vs Lucene).*
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO Slacks: "Why are we paying for OCP's observability when we already have Datadog?" Defend or pivot.
+    answer: |
+      "**Built-in Cluster Monitoring is free + auto-enabled** — Prometheus + Thanos + Alertmanager for platform metrics. We can't turn it off; it's part of OCP. Datadog can coexist for app-side observability; we use Datadog for distributed tracing + APM, OCP's built-in for platform health. **The OCP-managed Operators (Logging, Tracing, NetObserv, COO) are optional**; install only if we want self-hosted alternatives or SOC integration that needs in-cluster control. *Honest cost-benefit:* Datadog excels for SaaS-hosted observability with rich integrations; OCP-managed Operators excel for self-hosted/sovereign data + integration with Red Hat's support contract. Most shops pick one for primary + use the other selectively. We don't pay extra for OCP's built-in Cluster Monitoring; the optional Operators are part of our existing OCP subscription."

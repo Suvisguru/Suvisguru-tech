@@ -1,0 +1,50 @@
+# Flashcards — K-OCP O (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does OCP add on top of upstream K8s?
+    back: |
+      **Routes**, **BuildConfigs**, **ImageStreams**, **S2I**, **Templates**, **SCCs**, **Projects**, **integrated OAuth**, **integrated registry**, **OperatorHub-everywhere**. Plus RHCOS, MCO, CVO, OLM, oc CLI, and a two-perspective web console.
+
+  - id: 2
+    front: |
+      Eight OCP deployment shapes?
+    back: |
+      **OCP self-managed**, **OSD** (Red Hat-managed on AWS/GCP), **ROSA** (joint AWS+RH), **ARO** (joint Azure+RH), **IBM Cloud**, **GCP**, **OKD** (community), **HyperShift** (hosted control planes), **MicroShift** (ultra-edge) / **SNO** (single-node) / **CRC** (laptop dev).
+
+  - id: 3
+    front: |
+      What is RHCOS and how do you change it?
+    back: |
+      **RHCOS** = immutable ostree-based node OS. SSH disabled by default. Customisation via **MachineConfig** YAML reconciled by the **Machine Config Operator (MCO)** — applied per **MachineConfigPool** (master, worker, custom). MCO drains, applies, reboots, validates.
+
+  - id: 4
+    front: |
+      What does the CVO do?
+    back: |
+      **Cluster Version Operator** orchestrates ~30 **ClusterOperators** (authentication, console, dns, etcd, ingress, monitoring, network, storage, etc.). Cluster Available = all CO's Available + not Degraded. CVO drives upgrades to the declared version.
+
+  - id: 5
+    front: |
+      What is OLM and what does it manage?
+    back: |
+      **Operator Lifecycle Manager** manages add-on operators installed via OperatorHub. Pieces: **CatalogSource** → **Subscription** → **InstallPlan** → **ClusterServiceVersion (CSV)**. Channels (stable, fast, etc.). Manual vs automatic approval.
+
+  - id: 6
+    front: |
+      What's a Project in OCP?
+    back: |
+      A K8s **namespace** + extra metadata (display name, description, requestor) + default RoleBindings + self-provisioner support via the OCP `ProjectRequest` API. Every namespace is a Project; every Project is a namespace.
+
+  - id: 7
+    front: |
+      oc vs kubectl?
+    back: |
+      **oc** is kubectl + OCP-aware commands: `oc new-app`, `oc new-build`, `oc start-build`, `oc adm` (cluster admin), `oc debug` (privileged debug Pod on a node), `oc rsync`, `oc port-forward`, `oc login` (OAuth flow). All kubectl commands work via oc.
+
+  - id: 8
+    front: |
+      When pick HyperShift?
+    back: |
+      When you need to operate **many lightweight clusters densely**. HyperShift runs the control planes (apiserver + etcd + controllers + scheduler) as Pods inside another OCP cluster. Each tenant cluster's control plane is a Pod set; data planes are isolated. Reduces per-cluster overhead at fleet scale.
