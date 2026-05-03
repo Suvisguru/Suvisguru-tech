@@ -784,13 +784,25 @@ def _render_animation(anim: 'Animation') -> tuple:
 
     script_js = """
   // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
   try {{ (function() {{
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
     const SCENES = {scenes_json};
     const INITIAL_XY = {initial_xy_json};
-    const animModeLabel = document.getElementById('anim-mode-label');
-    const animReadout = document.getElementById('anim-readout');
-    const animPkg = document.getElementById('anim-pkg');
-    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
     if (!animPkg) return;
 
     let timer = null;
@@ -801,14 +813,14 @@ def _render_animation(anim: 'Animation') -> tuple:
     function setText(pairs) {{
       if (!pairs) return;
       pairs.forEach(p => {{
-        const el = document.getElementById(p[0]);
+        const el = _byId(p[0]);
         if (el) el.textContent = p[1];
       }});
     }}
     function setAttr(triples) {{
       if (!triples) return;
       triples.forEach(t => {{
-        const el = document.getElementById(t[0]);
+        const el = _byId(t[0]);
         if (el) el.setAttribute(t[1], t[2]);
       }});
     }}

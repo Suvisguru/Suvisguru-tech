@@ -12353,7 +12353,7 @@
 <section class="course-toc" id="course-toc">
   <h2>K-COM — the whole course in one page</h2>
   <p class="toc-sub">All 45 K-COM lessons concatenated into one scrollable document. Use the dropdown in the top bar to jump between lessons, or click a lesson title below.</p>
-  <div class="toc-caveat"><strong>Heads up:</strong> Animations are disabled in this combined view (per-lesson animation scripts use shared element IDs that would collide across sections). For interactive animations, open the per-lesson page directly. Static diagrams, flashcards, quizzes, and pause-and-checks all work in this combined view.</div>
+  <div class="toc-caveat"><strong>Heads up:</strong> Animations work in this combined view for generator-driven lessons (L19-L44); for hand-authored lessons (L01-L18 + L7-5) the animation script is per-lesson-only — open the per-lesson page directly to see those animations. Static diagrams, flashcards, quizzes, and pause-and-checks all work for every lesson in this combined view.</div>
   <ol>
     <li><a href="#lesson-01">Lesson 01 — What is Kubernetes?</a></li>
     <li><a href="#lesson-02">Lesson 02 — Virtualization vs Containerization</a></li>
@@ -25960,6 +25960,91 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 18 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  (function() {
+    const SCENES = [{"mode_id": "delete", "mode_label": "Mode: reclaimPolicy=Delete \u2014 disk removed with PVC", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> PVC submitted; <code>storageClassName: fast-ssd</code>.", "move_to": [285, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> StorageClass invokes the provisioner.", "move_to": [465, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Provisioner creates a PV; binds to PVC. Pod mounts <code>/data</code>.", "move_to": [650, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> User <code>kubectl delete pvc</code>. Reclaim=Delete \u2192 PV + underlying disk gone.", "move_to": [650, 140], "duration_ms": 900, "pause_after_ms": 2200, "set_text": [["anim-mode-label", "Mode: reclaimPolicy=Delete \u2014 disk removed with PVC"]], "set_attr": null}]}, {"mode_id": "retain", "mode_label": "Mode: reclaimPolicy=Retain \u2014 PV kept; data preserved", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> PVC submitted with <code>storageClassName: prod-retain</code>.", "move_to": [285, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Provisioner creates PV bound to the PVC.", "move_to": [650, 105], "duration_ms": 1100, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> User deletes PVC. PV moves to <code>Released</code> state \u2014 data still there.", "move_to": null, "duration_ms": 400, "pause_after_ms": 1800, "set_text": [["anim-mode-label", "Mode: reclaimPolicy=Retain \u2014 PV kept in Released state"]], "set_attr": null}, {"readout": "<strong>Step 4.</strong> A human reviews + deletes the PV manually when ready. Safer for production data.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2200, "set_text": null, "set_attr": null}]}, {"mode_id": "static", "mode_label": "Mode: static provisioning \u2014 admin pre-creates PVs", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Admin pre-creates a PV by hand (NFS export, pre-existing SAN volume).", "move_to": [650, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": [["anim-mode-label", "Mode: static \u2014 admin pre-creates PV"]], "set_attr": null}, {"readout": "<strong>Step 2.</strong> Later, a PVC is submitted that matches the existing PV's capacity + access mode.", "move_to": [105, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Controller binds the PVC to the existing PV. No provisioner involved.", "move_to": [650, 105], "duration_ms": 1100, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [105, 105];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })();
+</script>
 </section>
 <section class="course-section" id="lesson-19" aria-labelledby="lesson-19-banner">
   <div class="course-section-banner" id="lesson-19-banner">Lesson 19<span>· Storage Pt 2 · CSI, Snapshots, VolumeAttributesClass</span></div>
@@ -26352,6 +26437,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 19 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "snapshot", "mode_label": "Mode: VolumeSnapshot \u2014 point-in-time copy", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Apply a <code>VolumeSnapshot</code> referencing the PVC.", "move_to": [320, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> CSI driver calls <code>CreateSnapshot</code> on EBS \u2014 instant block-level snapshot.", "move_to": [600, 100], "duration_ms": 1000, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Snapshot stored as a <code>VolumeSnapshotContent</code>; survives PVC deletion.", "move_to": [150, 200], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "clone", "mode_label": "Mode: Clone \u2014 fast-path PVC copy", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Apply a new PVC with <code>dataSource: existing-PVC</code>.", "move_to": [370, 200], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> CSI driver does block-level copy-on-write \u2014 much faster than <code>kubectl cp</code>.", "move_to": [320, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Cloned PVC ready in seconds. Same StorageClass, same namespace, independent disk.", "move_to": [370, 200], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "vac", "mode_label": "Mode: VolumeAttributesClass \u2014 change perf live (1.34 GA)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Patch PVC: <code>volumeAttributesClassName: premium-burst</code>.", "move_to": [610, 200], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> CSI driver calls EBS <code>ModifyVolume</code> to bump IOPS \u2192 8000.", "move_to": [320, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Disk is re-tuned in place. No detach. No Pod restart. ~30 seconds.", "move_to": [600, 100], "duration_ms": 1000, "pause_after_ms": 1500, "set_text": [["anim-mode-label", "Mode: VolumeAttributesClass \u2014 live performance change"]], "set_attr": null}, {"readout": "<strong>Done.</strong> After the burst, patch back to the standard tier. Old playbook would have meant a failover.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [100, 100];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-20" aria-labelledby="lesson-20-banner">
   <div class="course-section-banner" id="lesson-20-banner">Lesson 20<span>· Configuration & Secrets · ConfigMap, Secret, KMS, ESO</span></div>
@@ -26739,6 +26921,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 20 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "cm-file", "mode_label": "Mode: ConfigMap mounted as a volume", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>kubectl apply -f cm.yaml</code> \u2014 ConfigMap stored in etcd as plain UTF-8.", "move_to": [310, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Kubelet sees the Pod's <code>volumes: configMap</code> mount.", "move_to": [515, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Each key becomes a file under the mount. Updates auto-resync within ~60s. App watches with inotify.", "move_to": [680, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "secret-env", "mode_label": "Mode: Secret as env var (read once at start)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Secret stored \u2014 base64-encoded in etcd. <em>Encrypted at rest only if KMS is configured.</em>", "move_to": [310, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Kubelet reads via API; injects as env var on Pod start.", "move_to": [515, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> App reads <code>os.environ[\"DB_PASSWORD\"]</code> once. <em>Rotation requires Pod restart</em>.", "move_to": [680, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "eso", "mode_label": "Mode: ESO syncs from Vault to a K8s Secret", "initial_set_text": [["anim-source-label", "Vault"]], "phases": [{"readout": "<strong>Step 1.</strong> Source of truth is HashiCorp Vault. <code>ExternalSecret</code> CRD points at a Vault path.", "move_to": [100, 110], "duration_ms": 400, "pause_after_ms": 600, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> ESO controller polls Vault on the refresh interval (default 1h).", "move_to": [310, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> ESO writes a K8s Secret. Kubelet projects it into the Pod normally.", "move_to": [515, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Vault rotation propagates: ESO refresh \u2192 Secret update \u2192 file watch \u2192 live reload.", "move_to": [680, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [100, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-21" aria-labelledby="lesson-21-banner">
   <div class="course-section-banner" id="lesson-21-banner">Lesson 21<span>· ServiceAccounts & Certificates · Tokens, cert-manager, PKI</span></div>
@@ -27141,6 +27420,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 21 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "bound", "mode_label": "Mode: bound projected token (1h \u00b7 audience-bound \u00b7 refreshed)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod spawns with <code>serviceAccountName: app-x</code>.", "move_to": [300, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Kubelet calls TokenRequest API; receives a short-lived JWT bound to Pod UID.", "move_to": [520, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod presents JWT as Bearer token; API server verifies signature + claims.", "move_to": [690, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> At ~50 min, kubelet refreshes. Leaked JWT useful for at most an hour.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "legacy", "mode_label": "Mode: legacy SA token (long-lived; pre-1.24)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> K8s pre-1.24 auto-created a Secret per SA holding a token that <em>never expired</em>.", "move_to": [300, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Pod mounted the Secret; presented its token.", "move_to": [520, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Leaked token = permanent compromise. Modern clusters disable this.", "move_to": [690, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "irsa", "mode_label": "Mode: IRSA \u2014 exchange JWT for cloud creds (no static AWS keys)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod's projected JWT carries audience <code>sts.amazonaws.com</code>.", "move_to": [520, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Pod calls AWS STS <code>AssumeRoleWithWebIdentity</code> presenting the JWT.", "move_to": [690, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": [["anim-mode-label", "Mode: IRSA \u2014 STS verifies via cluster's OIDC discovery endpoint"]], "set_attr": null}, {"readout": "<strong>Step 3.</strong> STS verifies via cluster's OIDC discovery endpoint, returns AWS creds. No static access key anywhere.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [100, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-22" aria-labelledby="lesson-22-banner">
   <div class="course-section-banner" id="lesson-22-banner">Lesson 22<span>· Scheduling Pt 1 · Affinity, Taints, Topology Spread</span></div>
@@ -27529,6 +27905,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 22 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "nodeselector", "mode_label": "Mode: nodeSelector restricts to zone us-1a only", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Scheduler's filter phase: keep only nodes labelled zone=us-1a.", "move_to": [665, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Candidates: node-A and node-C. node-C has a NoSchedule taint \u2192 excluded.", "move_to": [250, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod bound to node-A. <code>spec.nodeName: node-A</code>.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "taint", "mode_label": "Mode: Pod tolerates the taint on node-C", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod adds <code>tolerations: [key=gpu, value=true]</code> matching node-C's taint.", "move_to": [665, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> node-C is no longer excluded from filter. Now in the candidate set.", "move_to": [380, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Score phase picks node-C (least-allocated). Pod lands on the dedicated GPU node.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "spread", "mode_label": "Mode: topology spread enforces zone balance", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> 6 replicas in flight. Scheduler aims for 2-2-2 across zones.", "move_to": [665, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> us-1c has 0 Pods so far \u2192 highest score for node-E.", "move_to": [510, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod placed in us-1c. Skew across zones stays \u2264 1.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-23" aria-labelledby="lesson-23-banner">
   <div class="course-section-banner" id="lesson-23-banner">Lesson 23<span>· Scheduling Pt 2 · Priority, DRA, NUMA, Profiles</span></div>
@@ -27913,6 +28386,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 23 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "preempt", "mode_label": "Mode: PriorityClass + preemption", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> P=1000 Pod wants to schedule; cluster has no fit.", "move_to": [265, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Scheduler identifies a P=10 batch Pod whose eviction would free room.", "move_to": [450, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Batch Pod evicted gracefully (30s grace period for cleanup).", "move_to": [450, 145], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> P=1000 Pod scheduled. Total time-to-place: ~30s, not Pending forever.", "move_to": [650, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "dra", "mode_label": "Mode: DRA \u2014 match by attribute, not name", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod declares a <code>ResourceClaim</code>: H100 with \u2265 80 GiB, CUDA 12.4.", "move_to": [265, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": [["anim-mode-label", "Mode: DRA \u2014 Dynamic Resource Allocation (GA 1.34)"]], "set_attr": null}, {"readout": "<strong>Step 2.</strong> Scheduler reads <code>ResourceSlice</code> per node; matches by attribute selectors.", "move_to": [450, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod placed on a node with a matching MIG slice. Sharing without overprovisioning.", "move_to": [650, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "numa", "mode_label": "Mode: single-numa-node \u2014 CPU+RAM+device co-located", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Latency-sensitive Pod requests integer CPU + Guaranteed QoS.", "move_to": [265, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Topology Manager refuses any node where CPU/memory/device split across NUMA nodes.", "move_to": [450, 145], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod placed on a node where everything fits one NUMA. P99 latency drops.", "move_to": [650, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 145];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-24" aria-labelledby="lesson-24-banner">
   <div class="course-section-banner" id="lesson-24-banner">Lesson 24<span>· Networking Foundations · Linux Primitives, CNI, MTU</span></div>
@@ -28303,6 +28873,103 @@ ping -M do -s 1472 &lt;another-pod-ip&gt;   # 1472 + 28 (ICMP+IP) = 1500
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 24 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "samenode", "mode_label": "Mode: same-node \u2014 bridge only", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> pod-1 sends a packet via its <code>eth0</code> (one end of a veth pair).", "move_to": [80, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Other end of the veth is on the host bridge. Packet hits cni0.", "move_to": [150, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Bridge forwards to pod-2's host-side veth. No encapsulation, no routing table lookup.", "move_to": [150, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "vxlan", "mode_label": "Mode: cross-node, VXLAN encapsulation", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> pod-1 sends packet to pod-3's IP (10.1.2.4 \u2014 in node-B's CIDR).", "move_to": [80, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Routing table on node-A says: pod-3 is via the VXLAN tunnel to node-B.", "move_to": [380, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Packet wrapped in a 50-byte VXLAN/UDP header \u2014 adds overhead but works on any underlay.", "move_to": [615, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> node-B's tunnel endpoint unwraps. Packet enters node-B's bridge \u2192 pod-3.", "move_to": [580, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "native", "mode_label": "Mode: cross-node, native BGP routing", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Calico/Cilium BGP-peers with the top-of-rack switch. Pod CIDRs are routable.", "move_to": [380, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Packet leaves node-A unwrapped \u2014 full underlay MTU available.", "move_to": [615, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Packet routed directly to node-B's pod CIDR. No encap overhead. Faster.", "move_to": [580, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [80, 120];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-25" aria-labelledby="lesson-25-banner">
   <div class="course-section-banner" id="lesson-25-banner">Lesson 25<span>· Gateway API · Roles, Listeners, Routes, Ingress Sunset</span></div>
@@ -28691,6 +29358,103 @@ ping -M do -s 1472 &lt;another-pod-ip&gt;   # 1472 + 28 (ICMP+IP) = 1500
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 25 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "api", "mode_label": "Mode: GET /api \u2014 first HTTPRoute matches", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User requests <code>https://acme.com/api/v1/users</code>.", "move_to": [270, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Gateway terminates TLS, looks up matching HTTPRoute by host+path.", "move_to": [485, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> First HTTPRoute matches /api/* \u2192 backendRef svc-api.", "move_to": [675, 60], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "shop", "mode_label": "Mode: GET /shop \u2014 second HTTPRoute matches", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User requests <code>https://acme.com/shop/cart</code>.", "move_to": [270, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Gateway routes by path; /shop matches the second HTTPRoute.", "move_to": [485, 130], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> backendRef points at svc-shop. Different team, same Gateway.", "move_to": [675, 130], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "canary", "mode_label": "Mode: HTTPRoute backendRef weights 90/10 (canary)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> /api HTTPRoute has 2 backendRefs: svc-api (weight 90) + svc-api-v2 (weight 10).", "move_to": [485, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Gateway distributes traffic: ~9 of 10 requests \u2192 svc-api stable.", "move_to": [675, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> ~1 of 10 \u2192 svc-api-v2 canary. Pure declarative \u2014 no controller-specific annotations.", "move_to": [675, 130], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [90, 100];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-26" aria-labelledby="lesson-26-banner">
   <div class="course-section-banner" id="lesson-26-banner">Lesson 26<span>· AdminNetworkPolicy & FQDN-Based Egress</span></div>
@@ -29062,6 +29826,103 @@ ping -M do -s 1472 &lt;another-pod-ip&gt;   # 1472 + 28 (ICMP+IP) = 1500
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 26 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "github", "mode_label": "Mode: egress to github.com (allowed via FQDN policy)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Packet hits ANP first. No ANP rule matches github.com \u2192 fall through.", "move_to": [280, 64], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> NetworkPolicy: CNI extension <code>egress.toFQDNs</code> matches github.com \u2192 allow.", "move_to": [280, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Decision = allow. CNI installs short-lived per-IP rule for the resolved address.", "move_to": [490, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Packet reaches github.com. CI build can clone code.", "move_to": [670, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "pastebin", "mode_label": "Mode: egress to pastebin.com \u2014 caught by default-deny BANP", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Packet hits ANP. No specific rule for pastebin.com \u2192 fall through.", "move_to": [280, 64], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> NetworkPolicy: namespace has no egress allow for pastebin.com \u2192 fall through.", "move_to": [280, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> BANP: cluster default-deny on egress except DNS / kube-apiserver \u2192 deny.", "move_to": [280, 136], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Packet dropped. Exfiltration prevented.", "move_to": [490, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "kubesys", "mode_label": "Mode: egress to kube-system \u2014 ANP override denies", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Packet hits ANP. Rule: \"deny egress to kube-system from app namespaces.\"", "move_to": [280, 64], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> ANP Deny terminates evaluation immediately. Team policies cannot override.", "move_to": null, "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Packet dropped at the admin tier. Exactly the property NetworkPolicy v1 lacked.", "move_to": [490, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [90, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-27" aria-labelledby="lesson-27-banner">
   <div class="course-section-banner" id="lesson-27-banner">Lesson 27<span>· RBAC & Authentication · Roles, Bindings, OIDC</span></div>
@@ -29471,6 +30332,103 @@ ping -M do -s 1472 &lt;another-pod-ip&gt;   # 1472 + 28 (ICMP+IP) = 1500
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 27 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "user", "mode_label": "Mode: human user via OIDC", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User's kubectl presents an OIDC token from corp SSO.", "move_to": [260, 75], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> API server validates JWT signature; identity = alice@corp.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> RBAC: <code>cluster-admins</code> ClusterRoleBinding includes alice \u2192 allow.", "move_to": [435, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Admission OK. Read returns Secrets.", "move_to": [595, 85], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "sa", "mode_label": "Mode: Pod presents bound SA token", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod presents projected JWT from <code>/var/run/secrets/.../token</code>.", "move_to": [260, 75], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> API server validates signature + claims; identity = system:serviceaccount:app:web.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> RBAC: web SA has Role for ConfigMaps, NOT Secrets \u2192 deny.", "move_to": [435, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> 403 Forbidden. Pod sees the error; can't list Secrets.", "move_to": [595, 145], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "anon", "mode_label": "Mode: anonymous request (no token)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Request arrives with no Authorization header.", "move_to": [260, 75], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Authentication: identity = system:anonymous (if anonymous-auth=true) or 401.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> RBAC: no rule grants system:anonymous \u2192 deny. Production should disable anonymous-auth.", "move_to": [595, 145], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-28" aria-labelledby="lesson-28-banner">
   <div class="course-section-banner" id="lesson-28-banner">Lesson 28<span>· Admission Control · ValidatingAdmissionPolicy, PSA, Webhooks</span></div>
@@ -29865,6 +30823,103 @@ pod-security.kubernetes.io/warn: restricted</code></pre>
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 28 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "accept", "mode_label": "Mode: well-formed, policy-compliant Pod", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Mutating admission: nothing to add \u2014 Pod already has labels + requests.", "move_to": [255, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Validating admission: PSA <code>baseline</code> profile satisfied.", "move_to": [425, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Persisted to etcd. Scheduler picks it up.", "move_to": [640, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "mutate", "mode_label": "Mode: Pod missing label; mutator adds default", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod has no <code>team</code> label. Kyverno mutate policy injects <code>team: unassigned</code>.", "move_to": [255, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Validating admission then sees the now-mutated Pod with the required label.", "move_to": [425, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Accepted. Mutate-then-validate is the standard pattern.", "move_to": [640, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "reject", "mode_label": "Mode: PSA restricted denies privileged Pod", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Mutating admission: nothing to do.", "move_to": [255, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Validating: PSA reads namespace label <code>enforce: restricted</code>.", "move_to": [425, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod has <code>privileged: true</code> \u2192 rejected with clear message. Never reaches etcd.", "move_to": [640, 175], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-29" aria-labelledby="lesson-29-banner">
   <div class="course-section-banner" id="lesson-29-banner">Lesson 29<span>· Policy Engines · Kyverno and OPA Gatekeeper</span></div>
@@ -30284,6 +31339,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 29 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "kyverno", "mode_label": "Mode: Kyverno ClusterPolicy validates YAML rules", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Apply hits Kyverno admission webhook.", "move_to": [305, 75], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> ClusterPolicy validates: every container image must come from <code>cgr.dev/*</code>. Pass.", "move_to": [515, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> PolicyReport CRD updated; apply allowed.", "move_to": [675, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "gatekeeper", "mode_label": "Mode: Gatekeeper ConstraintTemplate (Rego)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Apply hits Gatekeeper admission webhook.", "move_to": [305, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Rego evaluates: <code>k8sallowedrepos</code> \u2014 same image-allow-list, expressed in Rego.", "move_to": [515, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Same PolicyReport format \u2192 consumable by the same dashboards as Kyverno.", "move_to": [675, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "vap", "mode_label": "Mode: ValidatingAdmissionPolicy in-cluster (no webhook)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Apply hits the API server. VAP CEL evaluated <em>inside</em> kube-apiserver.", "move_to": [305, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> CEL: <code>has(object.metadata.labels.team)</code> \u2014 fast, no network call.", "move_to": [515, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Decision returned. Latency essentially zero. Webhook count drops.", "move_to": [675, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [105, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-30" aria-labelledby="lesson-30-banner">
   <div class="course-section-banner" id="lesson-30-banner">Lesson 30<span>· Supply Chain Security · Cosign, Sigstore, SLSA, SBOM</span></div>
@@ -30661,6 +31813,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 30 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "signed", "mode_label": "Mode: full chain \u2014 signed image, SLSA provenance, SBOM", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> CI builds; SLSA L3 provenance attestation generated by GHA.", "move_to": [245, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Cosign keyless signs image; SBOM uploaded as OCI attestation.", "move_to": [430, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> K8s verifyImages: signature matches Fulcio cert from our GitHub org \u2192 pass.", "move_to": [600, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Pod runs. End-to-end auditable chain.", "move_to": [720, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "unsigned", "mode_label": "Mode: unsigned image \u2014 admission rejects", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Build pipeline didn't sign (or attacker pushed direct to registry).", "move_to": [430, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> verifyImages policy: no signature found \u2192 reject.", "move_to": [600, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod blocked at admission. Never reaches etcd.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "wrong-key", "mode_label": "Mode: image signed by an unknown key", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Image is signed \u2014 but Fulcio cert's OIDC subject doesn't match expected GitHub org.", "move_to": [430, 175], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> verifyImages: identity mismatch \u2192 reject. Catches stolen registry credentials.", "move_to": [600, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod blocked. Sigstore identity is the trust root, not just the registry credential.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-31" aria-labelledby="lesson-31-banner">
   <div class="course-section-banner" id="lesson-31-banner">Lesson 31<span>· Multi-Tenancy & Hardening · Quotas, kube-bench, HNC</span></div>
@@ -31042,6 +32291,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 31 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "cross", "mode_label": "Mode: cross-tenant traffic blocked by NetworkPolicy", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod in tenant-a tries to reach a Service in tenant-b.", "move_to": [285, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> NetworkPolicy ingress rule on tenant-b: deny except from same namespace + monitoring.", "move_to": [470, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Packet dropped. Cross-tenant lateral movement prevented.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "quota", "mode_label": "Mode: ResourceQuota refuses overrun", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> tenant-a applies a Pod requesting 200Gi memory.", "move_to": [105, 110], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> ResourceQuota for tenant-a caps total memory at 32Gi \u2192 admission rejects.", "move_to": [660, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod never created. Other tenants protected from noisy-neighbour eviction.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "psa", "mode_label": "Mode: PSA restricted refuses privileged Pod", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> tenant-a applies a Pod with <code>privileged: true</code>.", "move_to": [105, 145], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Namespace has <code>pod-security.kubernetes.io/enforce: restricted</code>.", "move_to": null, "duration_ms": 400, "pause_after_ms": 900, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> PSA rejects: container kernel-escape paths closed off.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [105, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-32" aria-labelledby="lesson-32-banner">
   <div class="course-section-banner" id="lesson-32-banner">Lesson 32<span>· Observability Pt 1 · Logs and Metrics</span></div>
@@ -31427,6 +32773,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 32 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "log", "mode_label": "Mode: app log line \u2192 Loki", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> App writes <code>ERROR: payment timeout</code> to stdout.", "move_to": [280, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> OTel Collector tails <code>/var/log/containers/...</code>; parses; ships via OTLP.", "move_to": [475, 50], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Loki indexes labels (app=payment, level=ERROR). Searchable in seconds.", "move_to": [665, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "metric", "mode_label": "Mode: /metrics scrape \u2192 Prometheus", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Prometheus scrapes <code>:9090/metrics</code> every 15s.", "move_to": [280, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> OTel Collector receives + adds labels (pod, namespace).", "move_to": [475, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Prometheus stores time-series; PromQL aggregations available.", "move_to": [665, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "alert", "mode_label": "Mode: error rate breaches threshold \u2192 alert + dashboard", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> AlertManager evaluates <code>rate(http_5xx[5m]) > 10</code>.", "move_to": [475, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Threshold breached \u2192 fire alert \u2192 Grafana panel turns red.", "move_to": [475, 175], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> On-call paged. Dashboard linked from runbook annotation.", "move_to": [665, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [105, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-33" aria-labelledby="lesson-33-banner">
   <div class="course-section-banner" id="lesson-33-banner">Lesson 33<span>· Observability Pt 2 · Traces, eBPF, SLOs</span></div>
@@ -31810,6 +33253,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 33 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "trace", "mode_label": "Mode: trace shows where time went", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Request enters gateway \u2192 checkout \u2192 auth \u2192 db. Each hop adds a span.", "move_to": [270, 95], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Spans shipped via OTLP to Tempo; reassembled by trace ID.", "move_to": [475, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Flame graph shows db span at 60ms (90% of total). Bug located in 5 minutes.", "move_to": [660, 100], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "ebpf", "mode_label": "Mode: eBPF observes kernel-level \u2014 no app changes", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Cilium/Hubble has eBPF probes on every TCP connect/accept on every node.", "move_to": [270, 175], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Per-flow telemetry: src=auth, dst=db, latency=58ms, status=200.", "move_to": null, "duration_ms": 400, "pause_after_ms": 900, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Catches the slowdown without touching app code. Useful for legacy + closed-source services.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "slo", "mode_label": "Mode: SLO 99.9% target \u2014 burn-rate alert decides", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> SLO: 99.9% of checkout under 200ms over 30 days. Budget = 0.1%.", "move_to": [570, 175], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Last 1h: 94% under 200ms. Burning budget at 6\u00d7 normal rate.", "move_to": null, "duration_ms": 400, "pause_after_ms": 900, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Multi-window burn-rate alert fires. Pages on-call <em>before</em> the SLO breaks.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [85, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-34" aria-labelledby="lesson-34-banner">
   <div class="course-section-banner" id="lesson-34-banner">Lesson 34<span>· Autoscaling · HPA, VPA, KEDA, Karpenter</span></div>
@@ -32187,6 +33727,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 34 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "hpa", "mode_label": "Mode: HPA scales replicas on CPU utilisation", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> CPU per replica jumps from 50% to 95%.", "move_to": [245, 65], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> HPA computes desired = 4 \u00d7 (95/70) = 6 replicas. Scales up.", "move_to": [400, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Some new Pods can't fit. Karpenter receives Pending Pods.", "move_to": [550, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Karpenter spins up the cheapest fitting instance type. Pods schedule.", "move_to": [690, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "keda", "mode_label": "Mode: KEDA scales on Kafka lag", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Kafka topic lag rises to 50K messages.", "move_to": [245, 105], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> KEDA scaler maps lag \u2192 desired replicas. Grows worker Deployment 0 \u2192 30.", "move_to": [400, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Karpenter provisions; workers drain the queue; KEDA scales back to 0.", "move_to": [690, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "vpa", "mode_label": "Mode: VPA observes actual usage; right-sizes requests", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod requests 1 CPU but actually uses 250m on average over a week.", "move_to": [245, 145], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> VPA recommender suggests requests=300m. Updater evicts + recreates Pod.", "move_to": [400, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> 3 small Pods can now fit on a node where 1 oversized one used to live.", "move_to": [550, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 90];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-35" aria-labelledby="lesson-35-banner">
   <div class="course-section-banner" id="lesson-35-banner">Lesson 35<span>· Reliability & HA · PDB, Multi-Zone, Regional DR</span></div>
@@ -32586,6 +34223,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 35 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "zone", "mode_label": "Mode: zone outage \u2014 topology spread saves the service", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Zone us-1c goes dark. 2 Pods unreachable; 4 healthy in 1a + 1b.", "move_to": null, "duration_ms": 400, "pause_after_ms": 900, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Service mesh / kube-proxy removes failed endpoints; traffic shifts.", "move_to": [150, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> HPA scales up + Karpenter adds nodes in healthy zones. Recovery in ~60s.", "move_to": [660, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "drain", "mode_label": "Mode: voluntary drain bounded by PodDisruptionBudget", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Operator runs <code>kubectl drain node-X</code> in zone us-1a.", "move_to": [85, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> PDB minAvailable=4 \u2014 eviction blocked until replacement Pod is Ready.", "move_to": [485, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod by Pod, drain proceeds. Service stays at \u2265 4 ready.", "move_to": [85, 125], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "dr", "mode_label": "Mode: us-east-1 region down \u2014 warm DR takes over", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Whole region us-east-1 unreachable. Detection via external probes.", "move_to": null, "duration_ms": 400, "pause_after_ms": 900, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> DNS-level failover (Route53) flips to us-west-2 warm cluster.", "move_to": [660, 55], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Warm cluster scales up to absorb full traffic. RTO ~15 min.", "move_to": [660, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [330, 100];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-36" aria-labelledby="lesson-36-banner">
   <div class="course-section-banner" id="lesson-36-banner">Lesson 36<span>· Kustomize · Overlay-Based Manifest Customisation</span></div>
@@ -32990,6 +34724,103 @@ components:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 36 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "dev", "mode_label": "Mode: build dev \u2014 base + tiny dev patch", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Read base/kustomization.yaml \u2192 3 resources.", "move_to": [280, 50], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Apply dev overlay: replicas \u2192 1, image \u2192 dev tag.", "move_to": [450, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Final manifest: same K8s objects, dev-specific values. Apply with <code>kubectl apply -k</code>.", "move_to": [640, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "staging", "mode_label": "Mode: build staging", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Same base.", "move_to": [280, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Apply staging overlay: replicas \u2192 2, env vars adjusted.", "move_to": [450, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Final manifest. Same shape as dev; different values.", "move_to": [640, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "prod", "mode_label": "Mode: build prod \u2014 base + heavier overlay", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Same base.", "move_to": [280, 150], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Prod overlay adds: replicas=6, HPA YAML, PDB YAML, NetworkPolicy.", "move_to": [450, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Final manifest: 6 K8s objects (3 base + 3 overlay-only). Production-ready.", "move_to": [640, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [105, 115];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-37" aria-labelledby="lesson-37-banner">
   <div class="course-section-banner" id="lesson-37-banner">Lesson 37<span>· Helm 3 · Charts, Values, Hooks, OCI</span></div>
@@ -33364,6 +35195,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 37 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "install", "mode_label": "Mode: helm install", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>helm install cm oci://registry/charts/cert-manager --version 1.14</code>.", "move_to": [255, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Helm pulls chart; merges values.yaml with user overrides.", "move_to": [405, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Renders templates \u2192 posts to K8s API.", "move_to": [555, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Release recorded as Secret <code>sh.helm.release.v1.cm.v1</code>.", "move_to": [690, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "upgrade", "mode_label": "Mode: helm upgrade \u2014 apply new version", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>helm upgrade cm ... --version 1.15</code>.", "move_to": [100, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Helm renders v1.15; diffs against previous render; applies changes.", "move_to": [405, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> New Release Secret <code>sh.helm.release.v1.cm.v2</code>. Old kept for rollback.", "move_to": [690, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "rollback", "mode_label": "Mode: helm rollback to previous revision", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>helm rollback cm 1</code>.", "move_to": [690, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Helm reads Secret v1; re-applies that manifest set.", "move_to": [555, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Cluster reverts to v1.14. Hooks that ran during upgrade are NOT undone \u2014 plan migrations to be reversible.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [100, 115];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-38" aria-labelledby="lesson-38-banner">
   <div class="course-section-banner" id="lesson-38-banner">Lesson 38<span>· GitOps with Argo CD · Application CRD, Sync, Drift</span></div>
@@ -33771,6 +35699,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 38 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "push", "mode_label": "Mode: developer pushes to git \u2192 Argo CD syncs", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Developer merges PR to main. Manifest updated.", "move_to": [105, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Argo CD polls git (or webhook); detects diff.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Argo CD applies via kube-apiserver. State = Synced.", "move_to": [415, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> UI shows green Synced + Healthy.", "move_to": [620, 55], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "drift", "mode_label": "Mode: hand-edit creates drift; Argo CD shows OutOfSync", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Engineer runs <code>kubectl edit deployment</code> during incident. Replicas changed.", "move_to": [415, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Argo CD's next compare detects: cluster \u2260 git.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> UI shows OutOfSync (orange). On-call sees the drift on the dashboard.", "move_to": [620, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "heal", "mode_label": "Mode: selfHeal=true reverts drift automatically", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Drift detected as before.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> selfHeal=true \u2192 Argo CD re-applies git state, overwriting the manual edit.", "move_to": [415, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> State back to Synced. Discipline enforced: git is the only mutator.", "move_to": [620, 175], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [105, 115];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-39" aria-labelledby="lesson-39-banner">
   <div class="course-section-banner" id="lesson-39-banner">Lesson 39<span>· GitOps with Flux CD · Multi-Controller Architecture</span></div>
@@ -34129,6 +36154,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 39 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "kustomize", "mode_label": "Mode: kustomize-controller applies a Kustomization", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> source-controller pulls git; exposes content.", "move_to": [250, 50], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> kustomize-controller reads Kustomization CRD; runs <code>kustomize build</code>.", "move_to": [250, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Applies the rendered manifest. Status updated on the Kustomization CRD.", "move_to": [415, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "helm", "mode_label": "Mode: helm-controller manages a release", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> source-controller fetches a chart from HelmRepository (or OCIRepository).", "move_to": [250, 50], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> helm-controller reads HelmRelease CRD; renders chart with values; applies.", "move_to": [250, 150], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Status reflects install/upgrade outcome. Drift triggers re-apply.", "move_to": [415, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "alert", "mode_label": "Mode: reconcile fails \u2192 notification-controller alerts", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> kustomize-controller fails to apply (CRD missing).", "move_to": [250, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> notification-controller picks up the event from CRD status.", "move_to": [620, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Provider (Slack webhook) fires. On-call sees the failure within seconds.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 115];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-40" aria-labelledby="lesson-40-banner">
   <div class="course-section-banner" id="lesson-40-banner">Lesson 40<span>· Progressive Delivery · Argo Rollouts and Flagger</span></div>
@@ -34492,6 +36614,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 40 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "promote", "mode_label": "Mode: canary success \u2014 promote", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Rollout enters canary phase: 10% \u2192 v1.3, 90% \u2192 v1.2.", "move_to": [270, 90], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Some traffic flows to canary v1.3.", "move_to": [485, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> AnalysisTemplate evaluates Prometheus query \u2192 success rate 99.7%.", "move_to": [670, 90], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Pass \u2192 ramp 25% \u2192 50% \u2192 100%. v1.3 promoted; v1.2 scaled down.", "move_to": [305, 175], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "abort", "mode_label": "Mode: canary fails analysis \u2014 abort", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Canary phase begins: 10% \u2192 v1.3.", "move_to": [270, 90], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> v1.3 has a bug: 5xx error rate spikes on canary Pods.", "move_to": [485, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> AnalysisTemplate fails. Threshold breached.", "move_to": [670, 90], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Auto-abort: drop traffic to 0% canary; scale v1.3 down. Total user impact: ~30s degraded for 10% of traffic.", "move_to": [605, 175], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "bluegreen", "mode_label": "Mode: blue/green \u2014 deploy + smoke + flip", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> v1.3 deployed alongside v1.2; no traffic yet.", "move_to": [485, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Smoke tests run against v1.3 internally. AnalysisTemplate checks pass.", "move_to": [670, 90], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Service selector flipped: 100% to v1.3 atomically. Old kept around for instant rollback.", "move_to": [305, 175], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [90, 90];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-41" aria-labelledby="lesson-41-banner">
   <div class="course-section-banner" id="lesson-41-banner">Lesson 41<span>· CRDs Deep Dive · Schema, CEL, Conversion Webhooks</span></div>
@@ -34858,6 +37077,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 41 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "cel", "mode_label": "Mode: CEL inline rule rejects bad input", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User applies CR with <code>maxReplicas: 3, replicas: 5</code>.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> API server runs CEL: <code>self.maxReplicas >= self.replicas</code> \u2192 false.", "move_to": [420, 75], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Apply rejected with clear error. No webhook involved.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "convert", "mode_label": "Mode: write v1alpha1; conversion webhook converts to v1 for storage", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User applies CR at apiVersion v1alpha1.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> CEL validation passes. Conversion webhook called: v1alpha1 \u2192 v1.", "move_to": [420, 135], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Stored in etcd as v1 (the storage version).", "move_to": [565, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Operator reads as v1 (its preferred version). Conversion is invisible to the operator.", "move_to": [690, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "status", "mode_label": "Mode: controller writes via /status subresource", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Reconciler observes desired state.", "move_to": [690, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Patches status: <code>kubectl patch ... --subresource=status</code>.", "move_to": [420, 135], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Spec untouched; status updated. Convention: spec = user; status = controller.", "move_to": [565, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [105, 115];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-42" aria-labelledby="lesson-42-banner">
   <div class="course-section-banner" id="lesson-42-banner">Lesson 42<span>· Operators with Kubebuilder · controller-runtime, OLM</span></div>
@@ -35217,6 +37533,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 42 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "create", "mode_label": "Mode: create \u2014 first reconcile", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User applies <code>PostgresCluster</code> CR.", "move_to": [240, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> API server writes to etcd; operator's informer cache sees the new object.", "move_to": [405, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Reconcile() runs: creates StatefulSet + Service + Secret with owner refs.", "move_to": [565, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Status patched on CR: <code>conditions: [{type: Ready, status: True}]</code>.", "move_to": [700, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "update", "mode_label": "Mode: update \u2014 reconcile diffs and patches", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User edits CR: replicas 3 \u2192 5.", "move_to": [240, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Watch fires on the operator. Reconcile() reads new spec.", "move_to": [405, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Reconciler patches StatefulSet replicas \u2192 5. Idempotent: re-running same input = same result.", "move_to": [700, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "delete", "mode_label": "Mode: delete \u2014 finalizer cleans up before letting CR vanish", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User runs <code>kubectl delete pgcluster x</code>. K8s sets DeletionTimestamp.", "move_to": [240, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Finalizer present \u2192 CR not yet deleted. Operator sees DeletionTimestamp.", "move_to": [405, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Reconciler runs cleanup: deletes external S3 backups, releases cloud resources.", "move_to": [565, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Removes its finalizer; CR deletion completes. Owned objects garbage-collected via owner refs.", "move_to": [700, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 115];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-43" aria-labelledby="lesson-43-banner">
   <div class="course-section-banner" id="lesson-43-banner">Lesson 43<span>· Service Mesh · Istio Ambient, Linkerd, Cilium Mesh</span></div>
@@ -35580,6 +37993,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 43 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "sidecar", "mode_label": "Mode: sidecar \u2014 proxy per Pod", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Service A makes plain HTTP to service B.", "move_to": [210, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Sidecar intercepts; wraps in mTLS using cert from control plane.", "move_to": [350, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Encrypted bytes traverse the network; B's sidecar unwraps + delivers to app.", "move_to": [490, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Telemetry emitted to control plane. Cost: ~200MB sidecar per Pod.", "move_to": [650, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "ambient", "mode_label": "Mode: ambient \u2014 node-level ztunnel handles L4", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Service A makes plain HTTP. No sidecar in the Pod.", "move_to": [210, 145], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Node's ztunnel intercepts at the network namespace boundary; wraps in mTLS.", "move_to": [350, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Encrypted bytes leave the node; B's ztunnel unwraps; delivers to app.", "move_to": [490, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Same mesh outcome. ~70% lower per-Pod overhead. L7 features need a waypoint Pod.", "move_to": [650, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "cilium", "mode_label": "Mode: Cilium \u2014 eBPF in-kernel; no extra proxy", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Service A sends. Cilium's eBPF intercepts at the kernel.", "move_to": [210, 145], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Per-flow policy + mTLS decided in eBPF programs. No userspace proxy hop.", "move_to": [350, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Bytes leave the node. Hubble emits per-flow telemetry from the same eBPF.", "move_to": [650, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [90, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <section class="course-section" id="lesson-44" aria-labelledby="lesson-44-banner">
   <div class="course-section-banner" id="lesson-44-banner">Lesson 44<span>· Troubleshooting Methodology + Drills (Capstone)</span></div>
@@ -35934,6 +38444,103 @@ spec:
 </main>
 
 <footer>Suvis Guru · K-COM · Lesson 44 of 45 · grounded in kubernetes.io</footer>
+<script>
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "pending", "mode_label": "Mode: PVC + multi-zone scheduling", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Symptom: Deployment's Pod stays Pending in a multi-zone cluster.", "move_to": [105, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Reproduce: <code>kubectl apply</code> Pod manifest reproducibly fails.", "move_to": [260, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Observe: <code>kubectl describe pod</code> events: \"FailedAttachVolume \u2014 disk in different zone\".", "move_to": [420, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Hypothesise: StorageClass uses <code>volumeBindingMode: Immediate</code>; PVC was provisioned in a different zone.", "move_to": [565, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> Fix: switch SC to <code>WaitForFirstConsumer</code>; recreate PVC; Pod schedules.", "move_to": [690, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "oom", "mode_label": "Mode: OOM kill investigation", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Symptom: Pod restarts every few minutes. <code>kubectl get pod</code> shows RESTARTS=12.", "move_to": [105, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Observe: <code>kubectl describe</code> \u2192 \"Last State: Terminated, Reason: OOMKilled\".", "move_to": [420, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> <code>kubectl logs --previous</code> for context before crash. Memory usage climbing.", "move_to": null, "duration_ms": 400, "pause_after_ms": 900, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Hypothesise: limit too low for actual workload. Profile + raise <code>resources.limits.memory</code>.", "move_to": [565, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> Fix verified: no more restarts; usage stable.", "move_to": [690, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "403", "mode_label": "Mode: 403 Forbidden \u2014 RBAC narrowing", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Symptom: Pod logs show \"403 Forbidden \u2014 secrets is forbidden\".", "move_to": [105, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Observe: <code>kubectl auth can-i list secrets --as=system:sa:ns:app</code> \u2192 no.", "move_to": [420, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Hypothesise: SA missing Role binding for the operation.", "move_to": [565, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Fix: add Role + RoleBinding granting <code>get</code> on the specific Secret name. Verify with <code>can-i</code>.", "move_to": [690, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [105, 115];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+</script>
 </section>
 <a href="#course-toc" class="course-back-to-toc">↑ TOC</a>
 <script>

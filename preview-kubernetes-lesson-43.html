@@ -726,13 +726,25 @@
   } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
   try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
     const SCENES = [{"mode_id": "sidecar", "mode_label": "Mode: sidecar \u2014 proxy per Pod", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Service A makes plain HTTP to service B.", "move_to": [210, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Sidecar intercepts; wraps in mTLS using cert from control plane.", "move_to": [350, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Encrypted bytes traverse the network; B's sidecar unwraps + delivers to app.", "move_to": [490, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Telemetry emitted to control plane. Cost: ~200MB sidecar per Pod.", "move_to": [650, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "ambient", "mode_label": "Mode: ambient \u2014 node-level ztunnel handles L4", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Service A makes plain HTTP. No sidecar in the Pod.", "move_to": [210, 145], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Node's ztunnel intercepts at the network namespace boundary; wraps in mTLS.", "move_to": [350, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Encrypted bytes leave the node; B's ztunnel unwraps; delivers to app.", "move_to": [490, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Same mesh outcome. ~70% lower per-Pod overhead. L7 features need a waypoint Pod.", "move_to": [650, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "cilium", "mode_label": "Mode: Cilium \u2014 eBPF in-kernel; no extra proxy", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Service A sends. Cilium's eBPF intercepts at the kernel.", "move_to": [210, 145], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Per-flow policy + mTLS decided in eBPF programs. No userspace proxy hop.", "move_to": [350, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Bytes leave the node. Hubble emits per-flow telemetry from the same eBPF.", "move_to": [650, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [90, 110];
-    const animModeLabel = document.getElementById('anim-mode-label');
-    const animReadout = document.getElementById('anim-readout');
-    const animPkg = document.getElementById('anim-pkg');
-    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
     if (!animPkg) return;
 
     let timer = null;
@@ -743,14 +755,14 @@
     function setText(pairs) {
       if (!pairs) return;
       pairs.forEach(p => {
-        const el = document.getElementById(p[0]);
+        const el = _byId(p[0]);
         if (el) el.textContent = p[1];
       });
     }
     function setAttr(triples) {
       if (!triples) return;
       triples.forEach(t => {
-        const el = document.getElementById(t[0]);
+        const el = _byId(t[0]);
         if (el) el.setAttribute(t[1], t[2]);
       });
     }

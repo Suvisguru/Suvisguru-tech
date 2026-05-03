@@ -747,13 +747,25 @@
   } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
   try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
     const SCENES = [{"mode_id": "preempt", "mode_label": "Mode: PriorityClass + preemption", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> P=1000 Pod wants to schedule; cluster has no fit.", "move_to": [265, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Scheduler identifies a P=10 batch Pod whose eviction would free room.", "move_to": [450, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Batch Pod evicted gracefully (30s grace period for cleanup).", "move_to": [450, 145], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> P=1000 Pod scheduled. Total time-to-place: ~30s, not Pending forever.", "move_to": [650, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "dra", "mode_label": "Mode: DRA \u2014 match by attribute, not name", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod declares a <code>ResourceClaim</code>: H100 with \u2265 80 GiB, CUDA 12.4.", "move_to": [265, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": [["anim-mode-label", "Mode: DRA \u2014 Dynamic Resource Allocation (GA 1.34)"]], "set_attr": null}, {"readout": "<strong>Step 2.</strong> Scheduler reads <code>ResourceSlice</code> per node; matches by attribute selectors.", "move_to": [450, 85], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod placed on a node with a matching MIG slice. Sharing without overprovisioning.", "move_to": [650, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "numa", "mode_label": "Mode: single-numa-node \u2014 CPU+RAM+device co-located", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Latency-sensitive Pod requests integer CPU + Guaranteed QoS.", "move_to": [265, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Topology Manager refuses any node where CPU/memory/device split across NUMA nodes.", "move_to": [450, 145], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Pod placed on a node where everything fits one NUMA. P99 latency drops.", "move_to": [650, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [95, 145];
-    const animModeLabel = document.getElementById('anim-mode-label');
-    const animReadout = document.getElementById('anim-readout');
-    const animPkg = document.getElementById('anim-pkg');
-    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
     if (!animPkg) return;
 
     let timer = null;
@@ -764,14 +776,14 @@
     function setText(pairs) {
       if (!pairs) return;
       pairs.forEach(p => {
-        const el = document.getElementById(p[0]);
+        const el = _byId(p[0]);
         if (el) el.textContent = p[1];
       });
     }
     function setAttr(triples) {
       if (!triples) return;
       triples.forEach(t => {
-        const el = document.getElementById(t[0]);
+        const el = _byId(t[0]);
         if (el) el.setAttribute(t[1], t[2]);
       });
     }

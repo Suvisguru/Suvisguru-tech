@@ -629,13 +629,25 @@ aws eks associate-access-policy \
   } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
   try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
     const SCENES = [{"mode_id": "human", "mode_label": "Mode: human auth via EKS Access Entry + RBAC", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User runs <code>kubectl</code> with their IAM role.", "move_to": [95, 110], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Access Entry maps the IAM principal to a Kubernetes group.", "move_to": [245, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> RBAC assigns roles by group \u2014 no aws-auth ConfigMap drift.", "move_to": [405, 110], "duration_ms": 900, "pause_after_ms": 1800, "set_text": null, "set_attr": null}]}, {"mode_id": "pod", "mode_label": "Mode: Pod identity to AWS via Pod Identity Agent + STS", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> App Pod wants to read an S3 object.", "move_to": [95, 190], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Pod Identity Agent (DaemonSet) intercepts the SDK call.", "move_to": [245, 190], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> STS AssumeRole returns scoped session creds for this Pod's role.", "move_to": [405, 190], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> S3 GetObject succeeds; CloudTrail audits the call.", "move_to": [555, 150], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> 200 OK back to the Pod.", "move_to": [690, 150], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [95, 110];
-    const animModeLabel = document.getElementById('anim-mode-label');
-    const animReadout = document.getElementById('anim-readout');
-    const animPkg = document.getElementById('anim-pkg');
-    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
     if (!animPkg) return;
 
     let timer = null;
@@ -646,14 +658,14 @@ aws eks associate-access-policy \
     function setText(pairs) {
       if (!pairs) return;
       pairs.forEach(p => {
-        const el = document.getElementById(p[0]);
+        const el = _byId(p[0]);
         if (el) el.textContent = p[1];
       });
     }
     function setAttr(triples) {
       if (!triples) return;
       triples.forEach(t => {
-        const el = document.getElementById(t[0]);
+        const el = _byId(t[0]);
         if (el) el.setAttribute(t[1], t[2]);
       });
     }

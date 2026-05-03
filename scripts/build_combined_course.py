@@ -94,7 +94,19 @@ def extract_style_and_body(path: str):
     body_end = content.index('</footer>', body_start) + len('</footer>')
     body = content[body_start:body_end].strip()
 
-    return style, body
+    # Extract the per-lesson animation IIFE so we can re-inject inside the
+    # combined HTML's section. Generator-driven lessons (L19-L44) use the
+    # `// -------- Animation --------` marker and are scope-aware in combined
+    # view via document.currentScript.closest('section.course-section').
+    # Hand-authored L01-L18 + L7-5 use a different marker; their scripts use
+    # global document.getElementById which would collide across sections in
+    # combined view, so we deliberately skip injecting them — animations
+    # for those lessons remain available only in the per-module page.
+    anim_script = ""
+    anim_m = re.search(r"(// -------- Animation --------.*?)</script>", content, re.DOTALL)
+    if anim_m:
+        anim_script = f"<script>\n  {anim_m.group(1).strip()}\n</script>"
+    return style, body, anim_script
 
 
 def main() -> None:
@@ -103,8 +115,8 @@ def main() -> None:
         path = os.path.join(ROOT, fname)
         if not os.path.exists(path):
             sys.exit(f"missing: {path}")
-        style, body = extract_style_and_body(path)
-        bundles.append({"num": num, "fname": fname, "title": title, "style": style, "body": body})
+        style, body, anim_script = extract_style_and_body(path)
+        bundles.append({"num": num, "fname": fname, "title": title, "style": style, "body": body, "anim_script": anim_script})
 
     # ---- Build the combined HTML ----
     out: list[str] = []
@@ -220,7 +232,7 @@ def main() -> None:
     out.append('<section class="course-toc" id="course-toc">')
     out.append("  <h2>K-COM — the whole course in one page</h2>")
     out.append(f"  <p class=\"toc-sub\">All {len(LESSONS)} K-COM lessons concatenated into one scrollable document. Use the dropdown in the top bar to jump between lessons, or click a lesson title below.</p>")
-    out.append("  <div class=\"toc-caveat\"><strong>Heads up:</strong> Animations are disabled in this combined view (per-lesson animation scripts use shared element IDs that would collide across sections). For interactive animations, open the per-lesson page directly. Static diagrams, flashcards, quizzes, and pause-and-checks all work in this combined view.</div>")
+    out.append("  <div class=\"toc-caveat\"><strong>Heads up:</strong> Animations work in this combined view for generator-driven lessons (L19-L44); for hand-authored lessons (L01-L18 + L7-5) the animation script is per-lesson-only — open the per-lesson page directly to see those animations. Static diagrams, flashcards, quizzes, and pause-and-checks all work for every lesson in this combined view.</div>")
     out.append("  <ol>")
     for b in bundles:
         cls = "primer" if "primer" in b["title"].lower() else ""
@@ -230,9 +242,15 @@ def main() -> None:
     out.append("</section>")
 
     # --- Each lesson as a section ---
-    # Strip per-lesson <script> blocks from each body — animations would
-    # collide on shared IDs (lesson-anim, anim-pkg, srv-1-rect, etc.) and
-    # JS variables (animTimer, currentMode) would be redefined 16 times.
+    # Strip per-lesson <script> blocks from each body. The body never contains
+    # the animation script (that lives outside body, after </footer>) — but
+    # legacy lessons may have inline scripts in body.
+    # For generator-driven L19-L44 lessons, we re-inject the animation IIFE
+    # inside the section. The IIFE is scope-aware (uses
+    # document.currentScript.closest('section.course-section')) so each
+    # lesson's animation isolates to its own section in combined view.
+    # Hand-authored L01-L18 + L7-5 don't have the animation marker; their
+    # animations remain available only in per-module pages.
     script_re = re.compile(r"<script>.*?</script>", re.DOTALL)
 
     for b in bundles:
@@ -241,6 +259,8 @@ def main() -> None:
         out.append(f'<section class="course-section" id="lesson-{b["num"]}" aria-labelledby="lesson-{b["num"]}-banner">')
         out.append(f'  <div class="course-section-banner" id="lesson-{b["num"]}-banner">Lesson {b["num"]}<span>· {b["title"]}</span></div>')
         out.append(body)
+        if b["anim_script"]:
+            out.append(b["anim_script"])
         out.append("</section>")
 
     # --- Back-to-TOC FAB ---

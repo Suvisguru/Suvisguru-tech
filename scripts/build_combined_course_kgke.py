@@ -32,7 +32,13 @@ def extract_style_and_body(path):
     body_start = content.index('</header>') + len('</header>')
     body_end = content.index('</footer>', body_start) + len('</footer>')
     body = content[body_start:body_end].strip()
-    return style, body
+    # Extract the per-lesson animation IIFE so we can re-inject it inside
+    # the lesson's <section> in the combined HTML. _render_animation's
+    # _scope = closest section.course-section trick then isolates each
+    # lesson's animation to its own DOM subtree.
+    anim_m = re.search(r"(// -------- Animation --------.*?)</script>", content, re.DOTALL)
+    anim_script = f"<script>\n  {anim_m.group(1).strip()}\n</script>" if anim_m else ""
+    return style, body, anim_script
 
 
 def main():
@@ -41,8 +47,8 @@ def main():
         path = os.path.join(ROOT, fname)
         if not os.path.exists(path):
             sys.exit(f"missing: {path}")
-        style, body = extract_style_and_body(path)
-        bundles.append({"num": num, "fname": fname, "title": title, "style": style, "body": body})
+        style, body, anim_script = extract_style_and_body(path)
+        bundles.append({"num": num, "fname": fname, "title": title, "style": style, "body": body, "anim_script": anim_script})
 
     out = [
         "<!DOCTYPE html>", '<html lang="en">', "<head>", '<meta charset="UTF-8">',
@@ -111,7 +117,7 @@ def main():
     out.append('<section class="course-toc" id="course-toc">')
     out.append("  <h2>K-GKE — Google GKE, Google-managed Kubernetes</h2>")
     out.append(f'  <p class="toc-sub">All {len(LESSONS)} K-GKE modules concatenated. Prereq: K-COM curriculum + GCP basics (IAM, VPC, GCE, Cloud LB, PD/Filestore, Cloud Logging/Monitoring).</p>')
-    out.append('  <div class="toc-caveat"><strong>Heads up:</strong> Animations are disabled in this combined view. For interactive animations, open a per-module page directly.</div>')
+    out.append('  <div class="toc-caveat"><strong>Heads up:</strong> Animations work in this combined view — each module\'s animation is isolated to its own section. Click a play button in any module to start its animation.</div>')
     out.append("  <ol>")
     for b in bundles:
         out.append(f'    <li><a href="#lesson-{b["num"]}">{b["title"]}</a></li>')
@@ -124,6 +130,10 @@ def main():
         out.append(f'<section class="course-section" id="lesson-{b["num"]}" aria-labelledby="lesson-{b["num"]}-banner">')
         out.append(f'  <div class="course-section-banner" id="lesson-{b["num"]}-banner">{b["title"]}</div>')
         out.append(body)
+        # Per-lesson animation script lives INSIDE the section so _scope
+        # (closest section.course-section) finds the right subtree.
+        if b["anim_script"]:
+            out.append(b["anim_script"])
         out.append("</section>")
 
     out.append('<a href="#course-toc" class="course-back-to-toc">↑ TOC</a>')

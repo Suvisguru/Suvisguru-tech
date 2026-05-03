@@ -737,13 +737,25 @@ spec:
   } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
   try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
     const SCENES = [{"mode_id": "install", "mode_label": "Mode: helm install", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>helm install cm oci://registry/charts/cert-manager --version 1.14</code>.", "move_to": [255, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Helm pulls chart; merges values.yaml with user overrides.", "move_to": [405, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Renders templates \u2192 posts to K8s API.", "move_to": [555, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Release recorded as Secret <code>sh.helm.release.v1.cm.v1</code>.", "move_to": [690, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "upgrade", "mode_label": "Mode: helm upgrade \u2014 apply new version", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>helm upgrade cm ... --version 1.15</code>.", "move_to": [100, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Helm renders v1.15; diffs against previous render; applies changes.", "move_to": [405, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> New Release Secret <code>sh.helm.release.v1.cm.v2</code>. Old kept for rollback.", "move_to": [690, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "rollback", "mode_label": "Mode: helm rollback to previous revision", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> <code>helm rollback cm 1</code>.", "move_to": [690, 115], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Helm reads Secret v1; re-applies that manifest set.", "move_to": [555, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Cluster reverts to v1.14. Hooks that ran during upgrade are NOT undone \u2014 plan migrations to be reversible.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [100, 115];
-    const animModeLabel = document.getElementById('anim-mode-label');
-    const animReadout = document.getElementById('anim-readout');
-    const animPkg = document.getElementById('anim-pkg');
-    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
     if (!animPkg) return;
 
     let timer = null;
@@ -754,14 +766,14 @@ spec:
     function setText(pairs) {
       if (!pairs) return;
       pairs.forEach(p => {
-        const el = document.getElementById(p[0]);
+        const el = _byId(p[0]);
         if (el) el.textContent = p[1];
       });
     }
     function setAttr(triples) {
       if (!triples) return;
       triples.forEach(t => {
-        const el = document.getElementById(t[0]);
+        const el = _byId(t[0]);
         if (el) el.setAttribute(t[1], t[2]);
       });
     }

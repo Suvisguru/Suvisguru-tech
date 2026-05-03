@@ -753,13 +753,25 @@ ping -M do -s 1472 &lt;another-pod-ip&gt;   # 1472 + 28 (ICMP+IP) = 1500
   } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
   try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
     const SCENES = [{"mode_id": "samenode", "mode_label": "Mode: same-node \u2014 bridge only", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> pod-1 sends a packet via its <code>eth0</code> (one end of a veth pair).", "move_to": [80, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Other end of the veth is on the host bridge. Packet hits cni0.", "move_to": [150, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Bridge forwards to pod-2's host-side veth. No encapsulation, no routing table lookup.", "move_to": [150, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "vxlan", "mode_label": "Mode: cross-node, VXLAN encapsulation", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> pod-1 sends packet to pod-3's IP (10.1.2.4 \u2014 in node-B's CIDR).", "move_to": [80, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Routing table on node-A says: pod-3 is via the VXLAN tunnel to node-B.", "move_to": [380, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Packet wrapped in a 50-byte VXLAN/UDP header \u2014 adds overhead but works on any underlay.", "move_to": [615, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> node-B's tunnel endpoint unwraps. Packet enters node-B's bridge \u2192 pod-3.", "move_to": [580, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "native", "mode_label": "Mode: cross-node, native BGP routing", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Calico/Cilium BGP-peers with the top-of-rack switch. Pod CIDRs are routable.", "move_to": [380, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Packet leaves node-A unwrapped \u2014 full underlay MTU available.", "move_to": [615, 155], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Packet routed directly to node-B's pod CIDR. No encap overhead. Faster.", "move_to": [580, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [80, 120];
-    const animModeLabel = document.getElementById('anim-mode-label');
-    const animReadout = document.getElementById('anim-readout');
-    const animPkg = document.getElementById('anim-pkg');
-    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
     if (!animPkg) return;
 
     let timer = null;
@@ -770,14 +782,14 @@ ping -M do -s 1472 &lt;another-pod-ip&gt;   # 1472 + 28 (ICMP+IP) = 1500
     function setText(pairs) {
       if (!pairs) return;
       pairs.forEach(p => {
-        const el = document.getElementById(p[0]);
+        const el = _byId(p[0]);
         if (el) el.textContent = p[1];
       });
     }
     function setAttr(triples) {
       if (!triples) return;
       triples.forEach(t => {
-        const el = document.getElementById(t[0]);
+        const el = _byId(t[0]);
         if (el) el.setAttribute(t[1], t[2]);
       });
     }

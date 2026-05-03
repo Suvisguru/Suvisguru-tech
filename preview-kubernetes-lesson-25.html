@@ -751,13 +751,25 @@
   } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
   try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
     const SCENES = [{"mode_id": "api", "mode_label": "Mode: GET /api \u2014 first HTTPRoute matches", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User requests <code>https://acme.com/api/v1/users</code>.", "move_to": [270, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Gateway terminates TLS, looks up matching HTTPRoute by host+path.", "move_to": [485, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> First HTTPRoute matches /api/* \u2192 backendRef svc-api.", "move_to": [675, 60], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "shop", "mode_label": "Mode: GET /shop \u2014 second HTTPRoute matches", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User requests <code>https://acme.com/shop/cart</code>.", "move_to": [270, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Gateway routes by path; /shop matches the second HTTPRoute.", "move_to": [485, 130], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> backendRef points at svc-shop. Different team, same Gateway.", "move_to": [675, 130], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "canary", "mode_label": "Mode: HTTPRoute backendRef weights 90/10 (canary)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> /api HTTPRoute has 2 backendRefs: svc-api (weight 90) + svc-api-v2 (weight 10).", "move_to": [485, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Gateway distributes traffic: ~9 of 10 requests \u2192 svc-api stable.", "move_to": [675, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> ~1 of 10 \u2192 svc-api-v2 canary. Pure declarative \u2014 no controller-specific annotations.", "move_to": [675, 130], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [90, 100];
-    const animModeLabel = document.getElementById('anim-mode-label');
-    const animReadout = document.getElementById('anim-readout');
-    const animPkg = document.getElementById('anim-pkg');
-    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
     if (!animPkg) return;
 
     let timer = null;
@@ -768,14 +780,14 @@
     function setText(pairs) {
       if (!pairs) return;
       pairs.forEach(p => {
-        const el = document.getElementById(p[0]);
+        const el = _byId(p[0]);
         if (el) el.textContent = p[1];
       });
     }
     function setAttr(triples) {
       if (!triples) return;
       triples.forEach(t => {
-        const el = document.getElementById(t[0]);
+        const el = _byId(t[0]);
         if (el) el.setAttribute(t[1], t[2]);
       });
     }

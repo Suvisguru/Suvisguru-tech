@@ -755,13 +755,25 @@
   } catch (e) { console.warn('pause-check setup failed', e); }
 
   // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
   try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
     const SCENES = [{"mode_id": "snapshot", "mode_label": "Mode: VolumeSnapshot \u2014 point-in-time copy", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Apply a <code>VolumeSnapshot</code> referencing the PVC.", "move_to": [320, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> CSI driver calls <code>CreateSnapshot</code> on EBS \u2014 instant block-level snapshot.", "move_to": [600, 100], "duration_ms": 1000, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Snapshot stored as a <code>VolumeSnapshotContent</code>; survives PVC deletion.", "move_to": [150, 200], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "clone", "mode_label": "Mode: Clone \u2014 fast-path PVC copy", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Apply a new PVC with <code>dataSource: existing-PVC</code>.", "move_to": [370, 200], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> CSI driver does block-level copy-on-write \u2014 much faster than <code>kubectl cp</code>.", "move_to": [320, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Cloned PVC ready in seconds. Same StorageClass, same namespace, independent disk.", "move_to": [370, 200], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "vac", "mode_label": "Mode: VolumeAttributesClass \u2014 change perf live (1.34 GA)", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Patch PVC: <code>volumeAttributesClassName: premium-burst</code>.", "move_to": [610, 200], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> CSI driver calls EBS <code>ModifyVolume</code> to bump IOPS \u2192 8000.", "move_to": [320, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Disk is re-tuned in place. No detach. No Pod restart. ~30 seconds.", "move_to": [600, 100], "duration_ms": 1000, "pause_after_ms": 1500, "set_text": [["anim-mode-label", "Mode: VolumeAttributesClass \u2014 live performance change"]], "set_attr": null}, {"readout": "<strong>Done.</strong> After the burst, patch back to the standard tier. Old playbook would have meant a failover.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
     const INITIAL_XY = [100, 100];
-    const animModeLabel = document.getElementById('anim-mode-label');
-    const animReadout = document.getElementById('anim-readout');
-    const animPkg = document.getElementById('anim-pkg');
-    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
     if (!animPkg) return;
 
     let timer = null;
@@ -772,14 +784,14 @@
     function setText(pairs) {
       if (!pairs) return;
       pairs.forEach(p => {
-        const el = document.getElementById(p[0]);
+        const el = _byId(p[0]);
         if (el) el.textContent = p[1];
       });
     }
     function setAttr(triples) {
       if (!triples) return;
       triples.forEach(t => {
-        const el = document.getElementById(t[0]);
+        const el = _byId(t[0]);
         if (el) el.setAttribute(t[1], t[2]);
       });
     }
