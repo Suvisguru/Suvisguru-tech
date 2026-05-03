@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-EKS E3 · AWS Networking</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-EKS module journey">
+  <span class="concept-rail-title">K-EKS modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>E1 EKS architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>E2 EKS Auto Mode</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>E3 AWS networking</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E4 IAM &amp; identity</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E5 storage (EBS / EFS / FSx)</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E6 compute &amp; autoscaling</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E7 EKS security</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E8 observability</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E9 upgrades &amp; ops</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E10 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E11 capstone tower</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-EKS · Module E3</span></a>
+    <span class="progress-pill">E3 · AWS networking</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏙️ K-Skyline floor: <strong>Communication Tower</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Skyline tower map: E3">
+    <title>K-Skyline tower map · E3</title>
+    <desc>Stylised AWS-managed tower. Communication Tower highlighted.</desc>
+    <defs>
+      <linearGradient id="ks-tower" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.7"/><stop offset="100%" stop-color="#ECEFF5" stop-opacity="0.6"/></linearGradient>
+      <linearGradient id="ks-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#A4B4D0" stop-opacity="0.16"/><stop offset="100%" stop-color="#3F4A5E" stop-opacity="0.30"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#ks-tower)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · SKYLINE · AWS REGION</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="370" x2="780" y2="370" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.3"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">tower lobby + main desks</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">operations + watch decks</text>
+    <text x="48" y="362" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">capstone</text>
+    <g class="pin pin-anchor" id="ks-floor01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">E1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Lobby & Floor Plan</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="ks-floor02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Concierge Service</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Auto Mode</text></g>
+    <g class="pin active" id="ks-floor03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Communication Tower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">VPC + LB + DNS</text></g>
+    <g class="pin" id="ks-floor04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Security Desk</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">IAM + IRSA</text></g>
+    <g class="pin" id="ks-floor05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Storage Vault</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">EBS + EFS + FSx</text></g>
+    <g class="pin" id="ks-floor06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Floor</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Karpenter + spot</text></g>
+    <g class="pin" id="ks-floor07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Vault Mezzanine</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">KMS + GuardDuty</text></g>
+    <g class="pin" id="ks-floor08" transform="translate(380,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observation Deck</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">CloudWatch + AMP</text></g>
+    <g class="pin" id="ks-floor09" transform="translate(520,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Maintenance Wing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">upgrades</text></g>
+    <g class="pin" id="ks-floor10" transform="translate(660,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Emergency Plaza</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshoot</text></g>
+    <g class="pin" id="ks-floor11" transform="translate(380,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Tower Complete</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🏙️ <strong>Communication Tower</strong> <span>· E3 of 11</span><span class="visually-hidden">Module E3, Communication Tower.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module E3 · the communication tower</span>
+    <h1>E3 · AWS Networking for EKS (VPC CNI, ALB/NLB, Gateway API, VPC Lattice)</h1>
+    <p class="hero-sub">EKS networking is AWS networking. <strong>AWS VPC CNI</strong> gives Pods real VPC IPs (no overlay) — fast, but burns IPs. <strong>AWS Load Balancer Controller</strong> turns Ingress/Service into ALB/NLB. <strong>VPC Lattice + Gateway API</strong> for service-to-service across VPCs/accounts. <strong>ExternalDNS</strong> for Route 53. <strong>PrivateLink</strong> + <strong>Transit Gateway</strong> for cross-account/region.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="VPC: 3 AZs with public + private subnets, ENIs from VPC CNI assigning Pod IPs, ALB at the edge, ExternalDNS to Route 53.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">AWS NETWORKING FOR EKS · VPC + CNI + LB</text>
+  <g transform="translate(40,50)">
+    <rect width="600" height="160" rx="8" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <text x="300" y="22" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">VPC · 3 AZs · public/private subnets</text>
+    <rect x="14" y="34" width="186" height="100" rx="4" fill="#E0EEF3" stroke="#4A8FA8"/>
+    <text x="107" y="50" text-anchor="middle" font-size="9" font-weight="700" fill="#3F4A5E">us-east-1a</text>
+    <rect x="22" y="58" width="68" height="20" rx="2" fill="#3F4A5E"/><text x="56" y="71" text-anchor="middle" font-size="7" fill="#FBF1D6">public</text>
+    <rect x="22" y="84" width="68" height="20" rx="2" fill="#5A9F7A"/><text x="56" y="97" text-anchor="middle" font-size="7" fill="#FFFFFF">private</text>
+    <rect x="22" y="110" width="170" height="18" rx="2" fill="#A04832"/><text x="107" y="123" text-anchor="middle" font-size="7" fill="#FBE8DC">VPC CNI: ENIs + IPs</text>
+    <rect x="206" y="34" width="186" height="100" rx="4" fill="#E0EFE6" stroke="#5A9F7A"/>
+    <text x="299" y="50" text-anchor="middle" font-size="9" font-weight="700" fill="#3F4A5E">us-east-1b</text>
+    <rect x="214" y="58" width="68" height="20" rx="2" fill="#3F4A5E"/><text x="248" y="71" text-anchor="middle" font-size="7" fill="#FBF1D6">public</text>
+    <rect x="214" y="84" width="68" height="20" rx="2" fill="#5A9F7A"/><text x="248" y="97" text-anchor="middle" font-size="7" fill="#FFFFFF">private</text>
+    <rect x="214" y="110" width="170" height="18" rx="2" fill="#A04832"/><text x="299" y="123" text-anchor="middle" font-size="7" fill="#FBE8DC">VPC CNI: ENIs + IPs</text>
+    <rect x="398" y="34" width="186" height="100" rx="4" fill="#FBF1D6" stroke="#8B5A00"/>
+    <text x="491" y="50" text-anchor="middle" font-size="9" font-weight="700" fill="#5A4F45">us-east-1c</text>
+    <rect x="406" y="58" width="68" height="20" rx="2" fill="#3F4A5E"/><text x="440" y="71" text-anchor="middle" font-size="7" fill="#FBF1D6">public</text>
+    <rect x="406" y="84" width="68" height="20" rx="2" fill="#5A9F7A"/><text x="440" y="97" text-anchor="middle" font-size="7" fill="#FFFFFF">private</text>
+    <rect x="406" y="110" width="170" height="18" rx="2" fill="#A04832"/><text x="491" y="123" text-anchor="middle" font-size="7" fill="#FBE8DC">VPC CNI: ENIs + IPs</text>
+    <rect x="14" y="138" width="572" height="18" rx="3" fill="#3F4A5E"/><text x="300" y="151" text-anchor="middle" font-size="8" fill="#FBF1D6">ALB Ingress · NLB Service · ExternalDNS → Route 53 · Gateway API → VPC Lattice</text>
+  </g>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Production cluster runs out of Pod IPs at noon during a traffic spike. Investigation: VPC CNI was using one secondary IP per Pod; instance type only supports 18 IPs. New Pods stuck Pending: <code>0/15 nodes available: 15 had no Pod IPs available</code>. Recovery: enable prefix delegation (16x more IPs per ENI), restart aws-node DaemonSet. <em>The default VPC CNI mode is wrong for any meaningful cluster — you fix it before launch or you fix it during the outage.</em></p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> AWS VPC CNI gives Pods real VPC IPs via secondary ENIs/IPs. <strong>Enable prefix delegation</strong> (16x more IPs per ENI) — this is non-negotiable for serious clusters. <strong>AWS LB Controller</strong> creates ALBs from Ingress/HTTPRoute, NLBs from Services. <strong>VPC Lattice + AWS Gateway API Controller</strong> for cross-VPC service-to-service. <strong>ExternalDNS</strong> for Route 53. <strong>SG-for-pods</strong> for per-Pod security groups. <strong>Cilium / Calico / AWS Cilium dataplane</strong> as alternatives.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>VPC CNI — IP exhaustion is the default</h2>
+    <p>AWS VPC CNI gives every Pod a real IP from your VPC subnet. No VXLAN, no overlay — Pods are first-class VPC citizens. Pod-to-Pod traffic stays in VPC routing; Pod-to-AWS-service traffic uses VPC endpoints; SG-for-pods works on real ENIs.</p>
+    <p>The cost: every Pod consumes a real VPC IP. Each EC2 instance type supports a fixed number of <strong>ENIs</strong> + <strong>IPs per ENI</strong>. A <code>t3.medium</code> supports 3 ENIs × 6 IPs = 18 IPs. A <code>m5.large</code> = 3 × 10 = 30. <em>That's your Pod limit per node</em>.</p>
+    <p><strong>Prefix delegation</strong> (default-disabled, but you should enable it): the CNI gets <code>/28</code> prefixes (16 IPs each) per ENI instead of single IPs. Same 3 ENIs now hold 48 IPs. <strong>Enable this on every cluster.</strong></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · CNI options + IP-exhaustion mitigations</span>
+    <h2>VPC CNI variants + alternatives</h2>
+    <ul>
+      <li><strong>AWS VPC CNI (default)</strong> — Pods get VPC IPs. Enable prefix delegation. Use <strong>custom networking</strong> if your VPC is small + you need separate Pod subnets (often a /16 just for Pods).</li>
+      <li><strong>SG-for-pods</strong> — assign SecurityGroups to specific Pods (not just nodes). Useful for fine-grained AWS-service ACLs (e.g., "only Pods with this SG can hit the RDS").</li>
+      <li><strong>IPv6 / dual-stack</strong> — every Pod gets an IPv6 (unlimited), eliminating IP exhaustion entirely. Some workloads fully on IPv6.</li>
+      <li><strong>Cilium on EKS</strong> — replace VPC CNI with Cilium. eBPF data plane, kube-proxy replacement, Hubble, FQDN policies. Trades VPC integration for Cilium features.</li>
+      <li><strong>Calico on EKS</strong> — overlay or BGP. Mature; FIPS variants.</li>
+      <li><strong>AWS Cilium dataplane</strong> — newer hybrid: AWS-supported Cilium with VPC CNI integration. Best of both.</li>
+    </ul>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">You launch an EKS cluster on m5.large nodes. Each node hits ~25 Pods, then new Pods stay Pending with "no IPs available." What's wrong + the fastest fix?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) Add more nodes</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Enable prefix delegation on the VPC CNI (one config change → 5x more IPs per node, no node replacement needed)</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Switch to Cilium</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> m5.large default IP limit ≈ 30 IPs/node. Prefix delegation bumps to ~110+. <code>kubectl set env -n kube-system ds/aws-node ENABLE_PREFIX_DELEGATION=true</code> + restart. New Pods provision IPs from <code>/28</code> prefixes. Don't add more nodes for an IP shortage problem.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · Load balancers + Gateway</span>
+    <h2>AWS LB Controller + Gateway API + VPC Lattice</h2>
+    <p><strong>AWS Load Balancer Controller</strong> watches K8s objects + provisions AWS LBs:</p>
+    <ul>
+      <li><strong>Ingress</strong> with <code>kubernetes.io/ingress.class: alb</code> → ALB (L7 routing, TLS termination, WAF integration).</li>
+      <li><strong>Service type=LoadBalancer</strong> with <code>service.beta.kubernetes.io/aws-load-balancer-type: external</code> → NLB (L4, low latency, static IP, EIP).</li>
+      <li><strong>Target type</strong>: <code>ip</code> (LB sends to Pod IPs directly — modern default; needs VPC CNI or Cilium with VPC routing) or <code>instance</code> (LB sends to node, kube-proxy redirects — legacy).</li>
+      <li>Annotations control: scheme (internal/internet-facing), subnets, SSL cert, WAF, access logs, and ~50 more.</li>
+    </ul>
+    <p><strong>AWS Gateway API Controller for VPC Lattice</strong> (released GA 2024): implements Gateway API for cross-VPC / cross-account service-to-service. Each VPC Lattice service group spans VPCs + accounts; service mesh-like without sidecars. New clusters in 2026 increasingly use this for multi-account architectures.</p>
+    <p><strong>ExternalDNS</strong>: K8s controller that watches Ingresses + Services + HTTPRoutes with hostname annotations + creates Route 53 records. Use private hosted zones for internal services.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · Beyond the cluster — VPC integration</span>
+    <h2>PrivateLink, TGW, EFA</h2>
+    <ul>
+      <li><strong>VPC Endpoints</strong>: Pods reach AWS services (ECR, S3, KMS, STS) without going to the internet. Required for private clusters.</li>
+      <li><strong>PrivateLink</strong>: expose your service via an interface VPC endpoint to other accounts. EKS itself uses PrivateLink for the private endpoint.</li>
+      <li><strong>Transit Gateway</strong>: hub-and-spoke connectivity between many VPCs. Pod traffic between VPCs routes via TGW.</li>
+      <li><strong>EFA (Elastic Fabric Adapter)</strong>: high-speed network for HPC/AI training. Pods running ML training across multiple nodes use EFA for low-latency, low-jitter all-to-all communication. Requires specific instance types (P4d/P5, etc.) + EFA device plugin.</li>
+    </ul>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>EFA + Kubernetes is a niche but high-value combo: distributed PyTorch / NCCL training scales near-linearly to 100s of GPUs over EFA. Without EFA, the network becomes the bottleneck at ~16 GPUs.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Default VPC CNI; IP exhaustion at 30 Pods/node. ALBs created by hand via console + DNS records typed into Route 53 by an SRE. Cross-VPC traffic via VPC peering + complex SGs. "Why is the LB stuck pending" answered with shrugs.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>VPC CNI with prefix delegation; 4-5x more Pods per node. AWS LB Controller turns Ingress YAML into ALB. ExternalDNS handles Route 53. Cross-VPC via VPC Lattice + Gateway API. Cluster networking is YAML.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">EKS networking is the place new shops trip on AWS-specific gotchas first. Prefix delegation + AWS LB Controller + ExternalDNS are the three you must get right at launch.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this floor</h2>
+<p>The Communication Tower stands tall above the K-Skyline. The building manager (AWS) operates the central exchange (VPC); the building's wiring (subnets) reaches every floor across three wings (AZs). Each tenant unit (Pod) has its own phone number on the building's public exchange (real VPC IPs via VPC CNI). The doorman (ALB / NLB) routes incoming visitors to the right unit. The address book (ExternalDNS → Route 53) keeps everything findable. And for tenants in different sister buildings (VPCs / accounts), the inter-building shuttle (VPC Lattice) lets them call each other directly.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in EKS / AWS</th></tr></thead>
+        <tbody>
+          <tr><td>Building's central exchange</td><td>VPC + subnets</td></tr>
+          <tr><td>Each unit's phone number from the building's book</td><td>Pod IP from VPC subnet (VPC CNI)</td></tr>
+          <tr><td>Limit on how many phones per floor</td><td>ENIs × IPs per instance type</td></tr>
+          <tr><td>Bulk-line phone bundle (more numbers per cable)</td><td>Prefix delegation (/28 per ENI)</td></tr>
+          <tr><td>Doorman accepting visitors</td><td>ALB / NLB via AWS LB Controller</td></tr>
+          <tr><td>Building address book</td><td>Route 53 via ExternalDNS</td></tr>
+          <tr><td>Inter-building shuttle</td><td>VPC Lattice + AWS Gateway API Controller</td></tr>
+          <tr><td>Per-unit call screening</td><td>SG-for-pods</td></tr>
+          <tr><td>Express line to the data centre across town</td><td>EFA for HPC/AI</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: VPC CNI is software running on each node, hooking into Linux networking namespaces. Real packet flow involves ENI attachments, ip-rule policies, and route table lookups — much more involved than "phone numbers."</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Every Pod gets a real address in the building. The doorman (ALB) sends visitors to the right Pod. The address book (Route 53) keeps everyone's number current.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>AWS VPC CNI gives Pods real VPC IPs (no overlay). Enable prefix delegation = 16x more IPs/ENI. AWS Load Balancer Controller turns Ingress → ALB, Service type=LB → NLB; target type IP for Pod-direct routing. AWS Gateway API Controller implements Gateway API via VPC Lattice for cross-VPC services. ExternalDNS syncs to Route 53. SG-for-pods for per-Pod SGs. Alternatives: Cilium on EKS, Calico, AWS Cilium dataplane.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How AWS-shop teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS hitting IP exhaustion at scale</p><p>Default VPC CNI; cluster grew from 50 to 500 Pods; nodes saturated at IP limits well before CPU/mem. Fix: enabled prefix delegation cluster-wide, no node replacement needed; per-node Pod density jumped 4x. Saved ~$8K/month on right-sizing nodes.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank using AWS LB Controller for ALB Ingress</p><p>Single ALB serves 40 hostnames via host-based routing rules; cert-manager populates ACM certs; ExternalDNS creates internal Route 53 records. Adding a new service is a YAML PR. Cost: ~$25/month for the LB; ~$0 for cert + DNS.</p></div>
+      <div class="scenario"><p class="scenario-name">A multi-account team using VPC Lattice</p><p>4 AWS accounts, 6 VPCs, dozens of services. Pre-Lattice: cross-account SG sprawl + custom service discovery + VPC peering complexity. Lattice: each service registered once; consumed by HTTPRoute from any account. Cross-account traffic just works.</p></div>
+      <div class="scenario"><p class="scenario-name">An ML team running PyTorch on EFA</p><p>32 P5 nodes, EFA enabled, NCCL configured. PyTorch DDP scales 32 GPUs at 92% efficiency; without EFA, was 65%. The EFA setup is non-trivial (instance types + driver + plugin) but pays off massively for distributed training.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>A request travels — Internet → ALB → IP-target → Pod ENI</h2>
+    <p>Two networking modes: ALB ingress with IP targets, then a service-mesh hop via VPC Lattice.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="90" width="110" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="95" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Internet client</text><text x="95" y="128" text-anchor="middle" font-size="9" fill="#6B6058">GET /api</text>
+        <rect x="180" y="90" width="130" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="245" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">ALB / NLB</text><text x="245" y="128" text-anchor="middle" font-size="9" fill="#6B6058">AWS LB Controller</text>
+        <rect x="340" y="90" width="130" height="60" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="405" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">TargetGroupBinding</text><text x="405" y="128" text-anchor="middle" font-size="9" fill="#6B6058">IP-mode targets</text>
+        <rect x="500" y="30" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="555" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">VPC CNI</text><text x="555" y="68" text-anchor="middle" font-size="9" fill="#6B6058">prefix delegation</text>
+        <rect x="500" y="100" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="555" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Pod ENI</text><text x="555" y="138" text-anchor="middle" font-size="9" fill="#6B6058">real VPC IP</text>
+        <rect x="500" y="170" width="110" height="50" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="555" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">VPC Lattice</text><text x="555" y="208" text-anchor="middle" font-size="9" fill="#6B6058">service mesh</text>
+        <rect x="640" y="90" width="100" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="690" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">Pod</text><text x="690" y="128" text-anchor="middle" font-size="9" fill="#6B6058">200 OK</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,120)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="alb">▶ ALB → Pod IP target</button>
+        <button class="anim-btn" type="button" data-mode="lattice">▶ VPC Lattice service hop</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a request reach an EKS Pod via AWS LB Controller.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Default VPC CNI is fine."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Default = single secondary IPs per ENI = severe Pod density limits on most instance types. Enable prefix delegation on every cluster at launch. Or use Cilium / dual-stack / IPv6.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "ALB target type instance is the safer default."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Target type <code>ip</code> is the modern default — LB sends directly to Pod IPs (skipping kube-proxy + the per-node hop). Faster, more accurate health checks. <code>instance</code> is legacy.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "VPC Lattice replaces a service mesh."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Lattice is AWS's opinionated cross-VPC service-to-service. It overlaps with mesh features but doesn't replace mesh entirely (no sidecar mTLS within a single cluster, fewer L7 features). Often paired with Cilium / Linkerd inside the cluster + Lattice across.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">How does AWS VPC CNI assign Pod IPs?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Pods get real IPs from VPC subnets. CNI manages secondary IPs on ENIs attached to each node. Default: 1 IP per slot. With prefix delegation: 16 IPs per slot.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why prefix delegation?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Default VPC CNI hits IP exhaustion at 30-60 Pods/node depending on instance type. Prefix delegation gives /28 (16 IPs) per slot, 4-5x density. Enable on every cluster.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">AWS LB Controller — what does it create?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">From Ingress: ALB (L7 routing, TLS, WAF). From Service type=LoadBalancer: NLB (L4, low latency, static IP). From HTTPRoute (Gateway API): ALB. Annotations control behavior.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Target type ip vs instance?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">ip: ALB/NLB sends directly to Pod IP (modern default; needs VPC CNI). instance: sends to node, kube-proxy hops to Pod (legacy; one extra hop, less accurate health checks).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is VPC Lattice?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">AWS service for cross-VPC / cross-account service-to-service connectivity + access control. Implements Gateway API via the AWS Gateway API Controller. Service-mesh-adjacent without sidecars.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">SG-for-pods?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Assign SecurityGroups to specific Pods (not just nodes). Enables fine-grained AWS-service ACLs (e.g., "only Pods with SG-X can reach RDS"). Configured via <code>SecurityGroupPolicy</code> CRD.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">ExternalDNS for EKS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">K8s controller. Watches Ingresses + Services + HTTPRoutes with hostname annotations; syncs to Route 53 (public + private hosted zones).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When to use Cilium on EKS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">When you want eBPF data plane + Hubble + kube-proxy replacement + FQDN policies. Trades VPC IP integration for Cilium's feature set. AWS Cilium dataplane is the hybrid newer offering.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">You're launching a new EKS cluster on c6i.large nodes. The team plans for ~50 Pods/node. Default VPC CNI. What's the IP-density check + fix?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>c6i.large</strong> default = 3 ENIs × 9 IPs = 27 IPs per node. 50 Pods/node won't fit. <strong>Two fixes:</strong> (1) <strong>Enable prefix delegation</strong> on the VPC CNI: <code>kubectl set env -n kube-system ds/aws-node ENABLE_PREFIX_DELEGATION=true</code> + restart. Now each ENI gets <code>/28</code> = 16 IPs; 3 ENIs × 16 = 48 IPs (still tight at 50 — bump instance to c6i.xlarge or use IPv6). (2) <strong>Custom networking</strong>: dedicate a separate VPC subnet for Pods (different CIDR), removes the node-subnet IP contention. <strong>Always test density at launch</strong>; learning about IP exhaustion in production is too late.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">Your team's Ingress shows <code>FailedDeployModel</code> with "unable to find any subnet with required tag." Diagnose.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>AWS LB Controller discovers subnets by tag: <code>kubernetes.io/role/elb</code> for internet-facing ALBs and <code>kubernetes.io/role/internal-elb</code> for internal. <strong>Fix:</strong> tag at least 2 subnets in different AZs with the appropriate value. <code>aws ec2 create-tags --resources subnet-xxx --tags Key=kubernetes.io/role/elb,Value=1</code>. Also: tag with <code>kubernetes.io/cluster/&lt;cluster-name&gt;: owned</code> (or <code>shared</code> if other clusters share). After tagging: <code>kubectl rollout restart -n kube-system deployment aws-load-balancer-controller</code>. New Ingress create should provision an ALB within minutes.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">You're asked to design networking for a 4-account, 6-VPC EKS multi-cluster architecture. <strong>Click for the playbook. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the playbook</span><strong>(1) Per-VPC EKS clusters.</strong> Each account/VPC has its own EKS cluster. Avoid the single-cluster-many-VPCs path (complex CNI + ENI mgmt). <strong>(2) VPC Lattice for cross-VPC services.</strong> Each cluster registers services into VPC Lattice; consumers from other clusters reference via Gateway API HTTPRoutes pointing at Lattice services. AWS handles cross-account routing + IAM-based authz. <strong>(3) Per-cluster Cilium</strong> (or Cilium dataplane) for in-cluster mTLS + L7 + observability (Hubble). Cilium's identity model integrates with Lattice authz at the boundary. <strong>(4) ExternalDNS</strong> per cluster, scoped to per-cluster zones. <strong>(5) Resource Access Manager (RAM)</strong> for sharing VPC Lattice service networks across accounts. <strong>(6) Transit Gateway</strong> for non-Lattice traffic (private DBs, on-prem, partners). <strong>(7) Pod Identity (E4) per cluster</strong> for AWS-service access; cross-account roles via STS AssumeRole. <strong>Result:</strong> each cluster autonomous, networking cleanly composable, identity flows through Lattice + IAM. Far simpler than peered-VPC + custom mesh sprawl.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">AWS VPC CNI</div><div class="gloss-def">Default EKS CNI. Pods get real IPs from VPC subnets via secondary ENIs/IPs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Prefix delegation</div><div class="gloss-def">VPC CNI mode: <code>/28</code> (16 IPs) per ENI slot instead of one. Enable on every cluster.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ENI (Elastic Network Interface)</div><div class="gloss-def">Virtual NIC attached to an EC2 instance. EKS Pods consume secondary IPs from these.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Custom networking (VPC CNI)</div><div class="gloss-def">Pods get IPs from a separate subnet (not the node subnet). Separates Pod IP space from node IP space.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SG-for-pods</div><div class="gloss-def">SecurityGroupPolicy CRD; assigns SGs to specific Pods. Per-Pod AWS-service ACLs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AWS Load Balancer Controller</div><div class="gloss-def">K8s controller; provisions ALB (from Ingress / HTTPRoute) and NLB (from Service type=LoadBalancer).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Target type (ALB/NLB)</div><div class="gloss-def">ip = direct to Pod IPs (modern). instance = to node + kube-proxy hop (legacy).</div></div>
+      <div class="gloss-item"><div class="gloss-name">AWS Gateway API Controller</div><div class="gloss-def">K8s controller; implements Gateway API via VPC Lattice. Cross-VPC + cross-account service-to-service.</div></div>
+      <div class="gloss-item"><div class="gloss-name">VPC Lattice</div><div class="gloss-def">AWS service for cross-VPC / cross-account service connectivity + IAM-based authz. Mesh-adjacent without sidecars.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ExternalDNS</div><div class="gloss-def">Watches K8s objects with hostname annotations + syncs Route 53 records (public + private zones).</div></div>
+      <div class="gloss-item"><div class="gloss-name">PrivateLink</div><div class="gloss-def">AWS service for exposing services across accounts via interface VPC endpoints.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Transit Gateway</div><div class="gloss-def">AWS hub-and-spoke router connecting many VPCs + on-prem.</div></div>
+      <div class="gloss-item"><div class="gloss-name">EFA</div><div class="gloss-def">Elastic Fabric Adapter. High-speed network for HPC / AI distributed training. Specific instance types only.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> AWS VPC CNI gives Pods real VPC IPs via secondary ENIs/IPs. <strong>Enable prefix delegation</strong> (16x more IPs per ENI) — this is non-negotiable for serious clusters. <strong>AWS LB Controller</strong> creates ALBs from Ingress/HTTPRoute, NLBs from Services. <strong>VPC Lattice + AWS Gateway API Controller</strong> for cross-VPC service-to-service. <strong>ExternalDNS</strong> for Route 53. <strong>SG-for-pods</strong> for per-Pod security groups. <strong>Cilium / Calico / AWS Cilium dataplane</strong> as alternatives.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module E3 complete</span>
+    <p>VPC CNI = real Pod IPs (enable prefix delegation). AWS LB Controller = ALB/NLB from K8s YAML. Gateway API + VPC Lattice = cross-VPC/account services. ExternalDNS for Route 53. SG-for-pods for fine-grained AWS ACLs.</p>
+    <p class="recap-next"><strong>Next — E4: Identity and Access (EKS-Specific).</strong> IAM access entries, IRSA, Pod Identity. The two-axis identity model (AWS IAM + K8s RBAC).</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-EKS · Module E3 of 11 · grounded in docs.aws.amazon.com/eks</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+
+  // -------- Animation --------
+  (function() {
+    const SCENES = [{"mode_id": "alb", "mode_label": "Mode: ALB ingress, IP-mode targets, VPC CNI Pod IP", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Internet client hits the ALB DNS name.", "move_to": [95, 120], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> ALB created by AWS LB Controller; route table has IP-mode targets.", "move_to": [245, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> TargetGroupBinding tracks the live Pod IPs.", "move_to": [405, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> VPC CNI assigned this Pod a real VPC IP via prefix delegation.", "move_to": [555, 55], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> Packet hits Pod ENI on the worker node \u2014 no NAT, no overlay.", "move_to": [555, 125], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 6.</strong> Pod returns 200 OK.", "move_to": [690, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}, {"mode_id": "lattice", "mode_label": "Mode: cross-VPC service hop via VPC Lattice", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod calls a service in another VPC.", "move_to": [555, 125], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> VPC Lattice fronts the service; no peering needed.", "move_to": [555, 195], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Lattice handles auth + retries; response returns to caller.", "move_to": [690, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 120];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })();
+
+</script>
+
+</body>
+</html>

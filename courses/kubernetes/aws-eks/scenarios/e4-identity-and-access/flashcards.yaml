@@ -1,0 +1,50 @@
+# Flashcards — K-EKS E (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Two EKS identity layers?
+    back: |
+      AWS IAM (cluster-level: eks:* permissions, kubeconfig retrieval). K8s RBAC (in-cluster: get pods, edit deployments). Bridge via access entries / aws-auth.
+
+  - id: 2
+    front: |
+      Access entries vs aws-auth?
+    back: |
+      Access entries: API-managed, AWS-validated, modern (2024 GA). aws-auth: legacy ConfigMap edited in `kube-system`; lockout-prone. New clusters use access entries only.
+
+  - id: 3
+    front: |
+      IRSA flow?
+    back: |
+      Cluster has OIDC provider; IAM role has trust policy referencing that OIDC + a specific SA; SA is annotated with role ARN; Pod's JWT is exchanged via STS for AWS creds.
+
+  - id: 4
+    front: |
+      EKS Pod Identity flow?
+    back: |
+      Pod Identity Agent (managed add-on) running. IAM role trusts `pods.eks.amazonaws.com`. Pod Identity association maps (cluster, namespace, SA) → role. Pods get creds via agent.
+
+  - id: 5
+    front: |
+      Why Pod Identity > IRSA?
+    back: |
+      No per-cluster OIDC provider needed; trust policies uniform across clusters; cross-account is one association; agent handles the JWT-exchange complexity.
+
+  - id: 6
+    front: |
+      IAM Identity Center role in EKS access?
+    back: |
+      Federated SSO. Corp SSO → IAM Identity Center → assume IAM role → access entry maps to K8s group → RBAC.
+
+  - id: 7
+    front: |
+      When does aws-auth precedence kick in?
+    back: |
+      Both access entries + aws-auth can exist; for the same principal, access entries take precedence. Migrate by adding access entries; once verified, remove from aws-auth.
+
+  - id: 8
+    front: |
+      ECR / Secrets Manager / KMS access from Pods?
+    back: |
+      Pod Identity association to a role with the relevant AWS permissions. SDKs in the Pod auto-pick up creds. No long-lived AWS access keys.

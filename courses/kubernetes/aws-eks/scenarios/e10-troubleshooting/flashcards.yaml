@@ -1,0 +1,50 @@
+# Flashcards — K-EKS E (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      "Unable to locate credentials" in a Pod — IRSA diagnosis?
+    back: |
+      Check: SA annotated with role ARN, IAM role trust policy includes the cluster's OIDC + correct SA path, OIDC provider registered, Pod restarted after annotation. Most common bug: trust policy SA path typo.
+
+  - id: 2
+    front: |
+      Pod Identity "Unable to locate credentials" diagnosis?
+    back: |
+      Check: Pod Identity Agent installed, association exists for (cluster, namespace, SA), IAM role trust includes `pods.eks.amazonaws.com`, Pod restarted after association.
+
+  - id: 3
+    front: |
+      "You must be logged in to the server" — diagnosis?
+    back: |
+      AWS IAM works (you got the kubeconfig) but no access entry / aws-auth mapping for your IAM principal. Add access entry mapping to a K8s group.
+
+  - id: 4
+    front: |
+      ALB Ingress stays Pending — what to check?
+    back: |
+      Subnets must have `kubernetes.io/role/elb` tag (internet-facing) or `internal-elb` (internal). LB controller IAM. Logs: `kubectl logs -n kube-system deploy/aws-load-balancer-controller`.
+
+  - id: 5
+    front: |
+      "Pod has no IPs available" — fix?
+    back: |
+      VPC CNI IP exhaustion. Enable prefix delegation: `kubectl set env -n kube-system ds/aws-node ENABLE_PREFIX_DELEGATION=true` + restart aws-node DaemonSet. Or: bigger instance types, or add Pod subnets via custom networking.
+
+  - id: 6
+    front: |
+      "FailedAttachVolume — volume in different AZ"?
+    back: |
+      EBS is single-AZ; Pod scheduled in different AZ from volume. Fix: StorageClass `volumeBindingMode: WaitForFirstConsumer`; recreate PVC.
+
+  - id: 7
+    front: |
+      Karpenter not provisioning nodes — common causes?
+    back: |
+      (1) NodePool requirements too restrictive. (2) IAM role lacks ec2:RunInstances. (3) NodeClass subnet/SG selectors match nothing. (4) Instance type unavailable in zone. (5) Spot interruption rate exceeds limits. Check `kubectl get nodeclaims` + Karpenter logs.
+
+  - id: 8
+    front: |
+      AWS API throttling — mitigate?
+    back: |
+      Tune controller poll intervals; request quota increases; batch requests; exponential backoff. Karpenter and add-on controllers respect backoff by default.

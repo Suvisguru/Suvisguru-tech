@@ -1,0 +1,21 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Your team's AMP costs jumped 4x last month. Diagnose.
+    answer: |
+      **Active series + ingestion.** AMP cost = ingested samples ($0.30 per 10M) + active series stored ($0.10 per 1000 per month) + queries. **Common cause: high cardinality.** Someone added a metric label like `user_id` or `request_id`; series count exploded. **Diagnose:** AMP's `topk(10, count by (__name__) ({{__name__=~".+"}}))` shows per-metric series count. Find the offender. **Fix:** drop the high-cardinality label at the OTel collector or Prometheus relabel; or change the metric to use a low-cardinality bucket. **Prevent:** alert if any single metric exceeds 100K series. Cardinality budget per workload.
+
+  - id: 2
+    prompt: |
+      You enable Split Cost Allocation Data for EKS. The numbers don't match what your finance team has. Diagnose.
+    answer: |
+      **Common reasons:** (1) *Lag*: Cost Explorer data is 24-48 hours behind; finance might be looking at older data. (2) *Untagged resources*: EBS volumes without proper tags don't allocate cleanly. Add cluster + namespace tags to PV provisioning (StorageClass parameters or Kyverno mutation). (3) *Shared resources*: ALBs, NAT gateways, S3 buckets shared across namespaces. Split Cost Allocation handles EC2 + EBS Pod-allocated; other costs allocated separately by tag. (4) *System namespaces*: kube-system + amazon-cloudwatch + similar are typically not allocated to teams; they're platform overhead. Document this. **Reconciliation:** work with finance to define what "team cost" means: just direct EKS workload, or platform overhead share too?
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're building an observability stack for a new EKS cluster. **Click for the launch playbook. ▼**
+    answer: |
+      **(1) At cluster create**: enable all 5 control-plane log types. Don't skip — retroactive enabling doesn't backfill. **(2) Container Insights add-on**: `aws eks create-addon --addon-name amazon-cloudwatch-observability`. Pre-built dashboards in CloudWatch immediately. **(3) AMP workspace** + IAM role for ADOT: `aws amp create-workspace`. **(4) ADOT collector** as DaemonSet: scrape Prometheus annotations on Pods + node-exporter metrics + ServiceMonitor; remote_write to AMP. Plus OTLP receiver for app traces → X-Ray. **(5) AMG workspace**: AWS Console; add AMP + CloudWatch + X-Ray as data sources. Connect to IAM Identity Center for SSO. Import recommended Grafana dashboards (kube-state, node-exporter, etc.). **(6) Fluent Bit** (already part of the Container Insights add-on): tune to ship app logs to a separate CloudWatch Log Group per namespace. **(7) Split Cost Allocation**: enable in Cost Explorer + tag every workload with namespace + team. Wait 24h for first reports. **(8) Alerts**: AlertManager (in AMP) or CloudWatch Alarms for: control-plane errors, Pod CrashLoopBackOff, node NotReady, AMP cost spike, control-plane log spike. **(9) Runbooks** per alert. **(10) Quarterly review**: AMP cost trend, control-plane log volume, Container Insights alarm noise. **Total launch time:** 1 sprint. **Result**: production observability from day 1.

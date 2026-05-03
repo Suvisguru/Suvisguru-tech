@@ -1,0 +1,21 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You've finished Phase A + B. Phase C's upgrade rehearsal: `aws eks update-cluster-version --kubernetes-version 1.36`. After 30 min, kubectl returns errors. Diagnose.
+    answer: |
+      **Likely cause: VPC CNI / kube-proxy add-on incompatibility post-upgrade.** Check: (1) `aws eks describe-update --cluster-name X --update-id Y` shows the upgrade status. (2) `kubectl describe pod -n kube-system aws-node-XXX` for CNI errors. **Fix:** upgrade managed add-ons in lockstep — `aws eks update-addon --addon-name vpc-cni --addon-version <compatible>`. Repeat for kube-proxy, CoreDNS, EBS CSI. **Recovery if hung:** AWS Support for control plane stuck issues; otherwise wait it out (control-plane upgrades are eventually consistent + AWS retries internally). **Document:** the add-on upgrade order + version compatibility in `docs/runbooks/eks-upgrade-vX-to-vY.md`.
+
+  - id: 2
+    prompt: |
+      Phase C's DR drill: simulate AZ failure on the lab cluster. Workloads survive but Karpenter logs show "insufficient capacity" trying to provision replacement nodes. Diagnose.
+    answer: |
+      **Auto Mode (Karpenter) wants to replace nodes lost to the failed AZ.** The remaining 2 AZs may not have spot capacity for the requested instance types. **Fix in real-time:** NodeClass requirements broaden across instance families + capacity-type In [spot, on-demand]. Verify via `kubectl get nodeclaims -A`; failed claims have reasons. **Validate workloads still serve:** 2/3 of replicas alive; HPA scales remaining; Pod-Disruption-Budgets honored. **Document:** the NodePool needs to span enough AZs / instance types that AZ failure doesn't break provisioning. Add to architecture doc + runbook.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're the senior engineer reviewing a colleague's K-EKS capstone. **Click for the rubric. ▼**
+    answer: |
+      **(1) Architecture doc clarity**: one page; sizing, network plan (CIDRs non-overlapping with corp), endpoint mode, OS choice, IAM strategy, KMS strategy, observability plan, upgrade cadence, DR plan. Decisions justified. **(2) Working cluster**: multi-AZ; control plane HA-tested (kill cp-1 — irrelevant for EKS, but kill all worker nodes in one AZ); Container Insights showing Pod metrics; AMG dashboards rendering. **(3) EKS Blueprints repo**: `terraform apply` from scratch in a fresh AWS account reproduces the cluster identically. **(4) Pod Identity**: per-namespace IAM roles with least privilege; no IRSA; no aws-auth. **(5) KMS CMK**: Secrets, EBS, EFS, ECR all encrypted with team-controlled CMK. **(6) GitOps**: Argo CD App-of-Apps reconciles add-ons + workloads. Drift detection working. **(7) Backups**: Velero restore tested on staging cluster + worked. **(8) Eight runbooks**: each tested; each reproducible. **(9) Upgrade rehearsal**: documented + executed on staging at least once. **(10) DR plan**: AZ failure tested; region failure plan documented. **(11) Defense**: walk me through any decision; reasoning solid. **(12) Live demo**: introduce an E10 chaos failure on the lab cluster; colleague recovers in < 30 min using their runbook. **If all 12 pass: K-EKS-complete.** Common failure modes: "works but undocumented", "documented but unreproducible", "reproducible but no DR drilled."

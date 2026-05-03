@@ -1,0 +1,21 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You're tasked with migrating a 2-year-old EKS cluster from aws-auth ConfigMap + IRSA to access entries + Pod Identity. Plan?
+    answer: |
+      **Two parallel migrations.** **Migration A: aws-auth → access entries.** (1) **Audit current aws-auth**: `kubectl -n kube-system get cm aws-auth -o yaml`. List every IAM principal + their K8s groups. (2) **Create access entries** for each principal via Terraform / eksctl. Both aws-auth + access entries can coexist; access entries take precedence. (3) **Validate** each principal can still authenticate (smoke-test with `kubectl auth can-i`). (4) **Remove from aws-auth** once validated. Final aws-auth = empty (just node groups' system:nodes). **Migration B: IRSA → Pod Identity.** (1) **Install Pod Identity Agent** as a managed add-on. (2) **Per-SA migration**: create a Pod Identity association referencing the same IAM role; smoke-test from a Pod that the AWS SDK picks up creds; remove the IRSA annotation; restart the Pod. (3) **Track progress** in a sheet; ~1 SA per day for medium clusters. **Total project**: 2-4 weeks for a typical cluster.
+
+  - id: 2
+    prompt: |
+      Your team's aws-auth ConfigMap got corrupted; nobody can `kubectl`. What's the recovery without re-creating the cluster?
+    answer: |
+      **Best path: pre-existing access entries.** If you have an access entry for an IAM admin, that path is unaffected by the ConfigMap mistake. `aws eks update-kubeconfig` + immediately `kubectl edit cm aws-auth` to fix. **If no access entries:** (1) AWS Console: the cluster's creator IAM principal has implicit cluster-admin via the original create-cluster identity. Use that IAM principal's credentials. `aws sts assume-role` if it's a role. (2) **Re-add yourself to aws-auth.** (3) **Then create access entries** so this never happens again. **Lesson:** the EKS cluster creator role is your last-resort admin path. Document who/what created the cluster + maintain access to that identity. Migration to access entries removes this fragility.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to design EKS auth for a 4-team org with shared infrastructure. **Click for the design. ▼**
+    answer: |
+      **(1) IAM Identity Center** as the SSO source. Every human authenticates via corp SSO. **(2) IAM permission sets** per team (PlatformAdmin, AppDev, SRE, Auditor). Permission sets allow `eks:DescribeCluster` + role assumption. **(3) Per-team IAM roles** the permission sets assume into. Naming: `arn:aws:iam::123:role/team-a-app-dev`. **(4) Per-cluster access entries** mapping each team role to a K8s group. PlatformAdmin → `system:masters`. AppDev → `app-dev-team-a` group, with a namespace-scoped Role granting CRUD on Deployments + Services. **(5) Pod Identity Agent** per cluster. **(6) Per-(namespace, SA) Pod Identity associations** for AWS-service access. Per-team IAM roles for Pods (e.g., `team-a-app-pods` with read-only S3 in team-a buckets only). **(7) GitOps for everything**. All access entries, IAM roles, permission sets in Terraform / IaC. Audit trail in CloudTrail. **Result:** SSO → IAM → access entry → K8s group → namespace-Role. End-to-end identity flow. Zero shared kubeconfigs. Auditable.

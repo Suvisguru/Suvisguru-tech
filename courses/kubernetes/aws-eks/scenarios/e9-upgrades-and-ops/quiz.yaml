@@ -1,0 +1,21 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Pre-upgrade scan finds 12 Deployments using `autoscaling/v2beta2` (removed in 1.26). Walk the remediation.
+    answer: |
+      **Same as vanilla (K-VAN V8).** (1) Map deployments → owning teams. (2) Per-Deployment fix: `kubectl convert -f hpa.yaml --output-version autoscaling/v2`. Edit + re-apply. (3) PR + Argo CD diff review. (4) Apply on staging first; validate HPA still scales. (5) Apply on production. (6) Re-run Pluto to confirm clean. (7) Add CI check that fails PRs introducing deprecated APIs. **EKS-specific note**: if these are on Helm charts from upstream operators, you may need to bump operator version + chart version together. Verify operator compatibility with new K8s minor.
+
+  - id: 2
+    prompt: |
+      Your team needs to upgrade a 6-cluster fleet from 1.32 → 1.36 in 3 months. Plan?
+    answer: |
+      **4 minor jumps × 6 clusters = 24 cluster upgrades.** **(1) Lab cluster** first: walk all 4 jumps end-to-end; document gotchas; build runbooks. **(2) Staging clusters** next: 2 weeks per jump; soak time after each. **(3) Production**: 1 cluster at a time, 1 jump per week per cluster. Order clusters by criticality (lowest stakes first). **Total timeline**: 4 weeks lab + 8 weeks staging + 4 weeks production rolling = 16 weeks. **Speed it up** if PluTo + operator compat is clean: parallel staging clusters; 2-week production cadence per cluster. **Alternative**: blue-green for production: new clusters at 1.36 from scratch; migrate workloads via Argo CD; decommission old. ~8 weeks total but doubled infra cost during overlap.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Your cluster's control-plane upgrade succeeded. After upgrade, VPC CNI Pods crashloop. **Click for the diagnostic. ▼**
+    answer: |
+      **Common cause: VPC CNI version incompatible with new K8s minor.** Each EKS K8s version has a recommended add-on version compatibility matrix. **Diagnose:** (1) `kubectl describe pod -n kube-system aws-node-XXX` — look at the failure reason. (2) `aws eks describe-addon-versions --kubernetes-version 1.36 --addon-name vpc-cni` — see compatible CNI versions. (3) **Fix:** `aws eks update-addon --cluster-name prod --addon-name vpc-cni --addon-version v1.x.y-eksbuild.z`. AWS rolls the DaemonSet. **Other common post-upgrade issues**: CoreDNS missing required RBAC (auto-fixed by add-on update); kube-proxy ipvs binding errors (rare); EBS CSI driver schema mismatch (update CSI add-on). **Prevention:** in pre-upgrade staging, upgrade add-ons in lockstep with control plane; capture the recommended version pairs in your runbook.

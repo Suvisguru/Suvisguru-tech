@@ -1,0 +1,50 @@
+# Flashcards — K-EKS E (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does EKS Secrets encryption do?
+    back: |
+      AWS adds a KMS-based envelope encryption layer on top of etcd Secrets storage. Each Secret value encrypted with KMS-derived data key. Set at cluster create or update.
+
+  - id: 2
+    front: |
+      GuardDuty EKS Protection vs Runtime Monitoring?
+    back: |
+      Protection: analyses K8s audit logs for suspicious API patterns. Runtime Monitoring: eBPF agent (DaemonSet) detects in-cluster threats (process / network / file). Both managed by AWS.
+
+  - id: 3
+    front: |
+      Amazon Inspector for ECR?
+    back: |
+      Continuous CVE scanning of ECR images. Snyk-powered. Findings in Security Hub. Severity-based reporting + alerting.
+
+  - id: 4
+    front: |
+      Cosign vs AWS Signer?
+    back: |
+      Cosign = OSS Sigstore CLI. AWS Signer = managed signing service. Both integrate with ECR. Cosign keyless via GitHub OIDC (modern); AWS Signer for fully managed.
+
+  - id: 5
+    front: |
+      ECR pull-through cache?
+    back: |
+      Proxy public registries (Docker Hub, Quay, GitHub Container Registry) through private ECR. First pull fetches + caches; subsequent pulls hit ECR. Resilient to public-registry outages + rate limits.
+
+  - id: 6
+    front: |
+      Bottlerocket OS?
+    back: |
+      AWS's minimal, immutable, container-optimised Linux. Read-only root + dm-verity. Auto-updates via update operator. Default for EKS Auto Mode.
+
+  - id: 7
+    front: |
+      Private cluster endpoint?
+    back: |
+      `endpointPrivateAccess: true, endpointPublicAccess: false`. kubectl reachable only from VPC (or VPN / Direct Connect / SSM tunneling).
+
+  - id: 8
+    front: |
+      IAM Access Analyzer for EKS?
+    back: |
+      Detects IAM / S3 / KMS / SQS / etc resource policies allowing unintended cross-account access. Continuous; findings in Security Hub.

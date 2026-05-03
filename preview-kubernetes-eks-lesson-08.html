@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-EKS E8 · EKS Observability</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-EKS module journey">
+  <span class="concept-rail-title">K-EKS modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>E1 EKS architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>E2 EKS Auto Mode</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>E3 AWS networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>E4 IAM &amp; identity</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>E5 storage (EBS / EFS / FSx)</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>E6 compute &amp; autoscaling</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>E7 EKS security</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>E8 observability</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E9 upgrades &amp; ops</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E10 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>E11 capstone tower</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-EKS · Module E8</span></a>
+    <span class="progress-pill">E8 · observability</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏙️ K-Skyline floor: <strong>Observation Deck</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Skyline tower map: E8">
+    <title>K-Skyline tower map · E8</title>
+    <desc>Stylised AWS-managed tower. Observation Deck highlighted.</desc>
+    <defs>
+      <linearGradient id="ks-tower" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FBF7F0" stop-opacity="0.7"/><stop offset="100%" stop-color="#ECEFF5" stop-opacity="0.6"/></linearGradient>
+      <linearGradient id="ks-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#A4B4D0" stop-opacity="0.16"/><stop offset="100%" stop-color="#3F4A5E" stop-opacity="0.30"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#ks-tower)" stroke="#E8DDC8" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · SKYLINE · AWS REGION</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="370" x2="780" y2="370" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.3"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">tower lobby + main desks</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">operations + watch decks</text>
+    <text x="48" y="362" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">capstone</text>
+    <g class="pin pin-anchor" id="ks-floor01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">E1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Lobby & Floor Plan</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="ks-floor02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Concierge Service</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Auto Mode</text></g>
+    <g class="pin" id="ks-floor03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Communication Tower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">VPC + LB + DNS</text></g>
+    <g class="pin" id="ks-floor04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Security Desk</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">IAM + IRSA</text></g>
+    <g class="pin" id="ks-floor05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Storage Vault</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">EBS + EFS + FSx</text></g>
+    <g class="pin" id="ks-floor06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Power Floor</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Karpenter + spot</text></g>
+    <g class="pin" id="ks-floor07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Vault Mezzanine</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">KMS + GuardDuty</text></g>
+    <g class="pin active" id="ks-floor08" transform="translate(380,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observation Deck</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">CloudWatch + AMP</text></g>
+    <g class="pin" id="ks-floor09" transform="translate(520,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Maintenance Wing</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">upgrades</text></g>
+    <g class="pin" id="ks-floor10" transform="translate(660,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Emergency Plaza</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">troubleshoot</text></g>
+    <g class="pin" id="ks-floor11" transform="translate(380,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">E11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Tower Complete</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🏙️ <strong>Observation Deck</strong> <span>· E8 of 11</span><span class="visually-hidden">Module E8, Observation Deck.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module E8 · the observation deck</span>
+    <h1>E8 · EKS Observability (Container Insights, AMP, AMG, ADOT, X-Ray, control-plane logs)</h1>
+    <p class="hero-sub">AWS-native observability stack for EKS: <strong>CloudWatch Container Insights</strong> for K8s metrics + logs; <strong>AMP / AMG</strong> for Prometheus + Grafana managed; <strong>ADOT</strong> (AWS Distro for OpenTelemetry) for ingestion; <strong>X-Ray</strong> for traces; <strong>control-plane logs</strong> to CloudWatch; <strong>Split Cost Allocation Data</strong> for per-namespace cost.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Observation deck: panes labeled CloudWatch Container Insights, AMP, AMG, ADOT, X-Ray, control-plane logs, Split Cost Allocation.">
+  <rect width="680" height="220" rx="12" fill="#F5EFE3"/>
+  <text x="340" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1.5">OBSERVATION DECK · EKS OBSERVABILITY STACK</text>
+  <g transform="translate(40,50)">
+    <rect width="600" height="160" rx="8" fill="#FFFFFF" stroke="#5A4F45" stroke-width="1.5"/>
+    <rect x="14" y="34" width="180" height="40" rx="3" fill="#3F4A5E"/><text x="104" y="50" text-anchor="middle" font-size="9" fill="#FBF1D6" font-weight="700">CloudWatch Container Insights</text><text x="104" y="62" text-anchor="middle" font-size="7" fill="#FBE8DC">enhanced — Pods + nodes</text>
+    <rect x="200" y="34" width="180" height="40" rx="3" fill="#A04832"/><text x="290" y="50" text-anchor="middle" font-size="9" fill="#FFFFFF" font-weight="700">AMP (Managed Prometheus)</text><text x="290" y="62" text-anchor="middle" font-size="7" fill="#FBE8DC">scrape + remote-write</text>
+    <rect x="386" y="34" width="200" height="40" rx="3" fill="#5A9F7A"/><text x="486" y="50" text-anchor="middle" font-size="9" fill="#FFFFFF" font-weight="700">AMG (Managed Grafana)</text><text x="486" y="62" text-anchor="middle" font-size="7" fill="#FBE8DC">dashboards + IAM SSO</text>
+    <rect x="14" y="80" width="180" height="40" rx="3" fill="#FBF1D6" stroke="#8B5A00"/><text x="104" y="96" text-anchor="middle" font-size="9" font-weight="700" fill="#8B5A00">ADOT (OTel)</text><text x="104" y="108" text-anchor="middle" font-size="7" fill="#5A4F45">collector → AMP / X-Ray</text>
+    <rect x="200" y="80" width="180" height="40" rx="3" fill="#FBE8DC" stroke="#A04832"/><text x="290" y="96" text-anchor="middle" font-size="9" font-weight="700" fill="#A04832">Fluent Bit → CloudWatch Logs</text>
+    <rect x="386" y="80" width="200" height="40" rx="3" fill="#E0EEF3" stroke="#4A8FA8"/><text x="486" y="96" text-anchor="middle" font-size="9" font-weight="700" fill="#3F4A5E">X-Ray (traces)</text>
+    <rect x="14" y="126" width="572" height="22" rx="3" fill="#3F4A5E"/><text x="300" y="140" text-anchor="middle" font-size="8" fill="#FBF1D6">Control-plane logs (api/audit/authenticator/cm/scheduler) → CloudWatch · Split Cost Allocation per namespace</text>
+  </g>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>Outage at 2 AM. The on-call SRE opens the dashboards: blank. The team had <em>installed</em> Prometheus + Grafana six months ago, but it stopped scraping after a kubelet upgrade. Nobody noticed because nobody looked. Or: control-plane audit logs were never enabled — when AWS support asks for them to debug an apiserver issue, you have nothing. <em>EKS observability is opt-in, not on-by-default</em>. This module is the launch-time checklist.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> AWS-native EKS observability: <strong>CloudWatch Container Insights (enhanced)</strong> for Pod/node metrics + logs; <strong>Amazon Managed Prometheus (AMP)</strong> for scaled metrics; <strong>Amazon Managed Grafana (AMG)</strong> for dashboards (IAM SSO); <strong>ADOT</strong> (AWS Distro for OpenTelemetry) collector → AMP / X-Ray; <strong>Fluent Bit → CloudWatch Logs</strong> for app logs; <strong>X-Ray</strong> for distributed traces; <strong>Control-plane logs</strong> (api / audit / authenticator / controllerManager / scheduler) → CloudWatch; <strong>AWS Split Cost Allocation Data</strong> for per-namespace cost.</p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1 · Concept</span>
+    <h2>Two paths: AWS-native vs OSS-on-AWS</h2>
+    <p>For EKS observability you can run either:</p>
+    <ul>
+      <li><strong>AWS-native</strong>: CloudWatch Container Insights + Logs + X-Ray. Pay-per-use; no infra to operate; tight IAM integration; comes pre-wired into many AWS services.</li>
+      <li><strong>OSS-on-AWS</strong>: AMP (managed Prometheus) + AMG (managed Grafana) + ADOT (managed OTel collector). Same OSS APIs (PromQL, Grafana dashboards) but AWS handles the infra.</li>
+    </ul>
+    <p>Most teams in 2026 use a hybrid: <strong>CloudWatch for control-plane + node + container logs</strong> (free first-tier, deeply integrated); <strong>AMP + AMG for app metrics + dashboards</strong> (PromQL + open Grafana ecosystem); <strong>X-Ray or Tempo via OTel for traces</strong>; <strong>Fluent Bit</strong> ships logs to CloudWatch + optionally to a SIEM.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.5 · CloudWatch Container Insights</span>
+    <h2>Pods + nodes + control-plane in one console</h2>
+    <p><strong>Container Insights enhanced</strong> (released 2023): Pod-level + node-level metrics + logs in CloudWatch with native EKS dashboards. Setup: enable observability via the EKS console or CLI; AWS deploys a managed CloudWatch agent + Fluent Bit DaemonSet.</p>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code># Enable Container Insights via add-on
+aws eks create-addon \
+  --cluster-name prod \
+  --addon-name amazon-cloudwatch-observability</code></pre>
+    <p>Provides:</p>
+    <ul>
+      <li>Per-Pod CPU + memory + filesystem + network</li>
+      <li>Per-node aggregated metrics</li>
+      <li>Per-namespace cost (with Split Cost Allocation enabled)</li>
+      <li>Container-level logs via Fluent Bit (managed) → CloudWatch Log Groups</li>
+      <li>Pre-built dashboards covering cluster health + workload trends</li>
+    </ul>
+    <p><strong>Cost</strong>: GB-ingested for logs + per-metric for custom metrics. For a typical 50-Pod cluster: $50-200/month.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.7 · AMP + AMG + ADOT</span>
+    <h2>Managed Prometheus + Grafana for EKS</h2>
+    <p><strong>Amazon Managed Service for Prometheus (AMP)</strong>: serverless Prometheus-compatible metrics store. Accepts <code>remote_write</code> from in-cluster collectors; serves PromQL queries. Pay per ingestion + storage. No Prometheus servers to operate.</p>
+    <p><strong>Amazon Managed Grafana (AMG)</strong>: serverless Grafana. IAM Identity Center SSO; data sources include AMP, CloudWatch, X-Ray. Pay per active user.</p>
+    <p><strong>AWS Distro for OpenTelemetry (ADOT)</strong>: AWS-supported OTel collector. Run as DaemonSet (collect node + Pod telemetry) + Deployment (gateway-style aggregation). Routes to AMP, X-Ray, CloudWatch, third-party.</p>
+    <pre style="background:var(--bg-soft);padding:8px 12px;border-radius:6px;font-size:12px;overflow:auto"><code># ADOT collector config (snippet)
+exporters:
+  awsxray: {}
+  prometheusremotewrite:
+    endpoint: https://aps-workspaces.us-east-1.amazonaws.com/.../api/v1/remote_write
+    auth:
+      authenticator: sigv4auth
+  awscloudwatchlogs:
+    log_group_name: /aws/eks/prod/app-logs
+
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus]
+      exporters: [prometheusremotewrite]
+    traces:
+      receivers: [otlp]
+      exporters: [awsxray]
+    logs:
+      receivers: [otlp]
+      exporters: [awscloudwatchlogs]</code></pre>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Your EKS cluster has been running 2 months. AWS Support asks for the apiserver audit log for an investigation. You realise it was never enabled. What now?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">a) AWS has the logs anyway in their internal systems</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">b) Enable control-plane logs now; AWS only has logs from when you enabled it forward — the past 2 months are gone for that cluster</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">c) Reboot the cluster to recover them</button></li>
+      </ul>
+      <p class="pause-check-feedback"><strong>Answer: b.</strong> Control-plane logs are opt-in per cluster. AWS doesn't store them retroactively. Enable on every cluster at create time. Document the launch-time checklist + audit quarterly.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.9 · Control-plane logs + X-Ray + cost</span>
+    <h2>The other essentials</h2>
+    <ul>
+      <li><strong>Control-plane logs</strong> (opt-in, <em>enable on every cluster</em>): five types — api, audit, authenticator, controllerManager, scheduler — to CloudWatch Log Groups. Required for compliance + debugging "the apiserver did/didn't...". Costs ~$5-50/month per cluster depending on volume.</li>
+      <li><strong>X-Ray</strong>: AWS-native distributed tracing. ADOT collector sends spans; X-Ray UI shows service maps + per-trace timing. Alternative: Tempo / Jaeger backed by OSS Grafana stack.</li>
+      <li><strong>AWS Split Cost Allocation Data for EKS</strong>: enable in Cost Explorer; AWS attributes EC2 + EBS costs to specific Pods + namespaces using Container Insights data. <em>The right way to answer "what does team X cost?"</em></li>
+      <li><strong>Per-tool integration</strong>: Datadog, New Relic, Honeycomb, Grafana Cloud all integrate via ADOT or their own DaemonSets. Often paired with AWS-native at base layer.</li>
+    </ul>
+    <p class="skip-block"><span class="skip-pill">[ deep dive — skip if new ]</span>For high-cardinality metrics + long retention, AMP scales to 100M active series (vs OSS Prometheus single-instance ceiling ~10M). Or use Mimir / Cortex / Thanos for full self-managed at scale; AMP for managed.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>OSS Prometheus + Grafana installed via Helm 6 months ago. Stopped scraping after a kubelet upgrade; nobody noticed. No control-plane logs. Per-team cost = wishful spreadsheet.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Container Insights for K8s metrics. AMP + AMG for app dashboards (PromQL + Grafana). ADOT for trace ingestion to X-Ray + Tempo. Fluent Bit ships logs. Control-plane logs always on. Split Cost Allocation breaks down per-namespace cost.</p></div>
+    </div>
+    <p style="margin-top:18px;color:var(--ink-soft);font-size:15px;font-style:italic">EKS observability with managed services costs roughly the same as OSS but with zero ops + tighter IAM. The trade for hybrid: standardise on PromQL + Grafana for portability while AWS-managing the infra.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this floor</h2>
+<p>The Observation Deck is the floor with the panoramic glass. Multiple instruments here. The <strong>cluster status panel</strong> (Container Insights) shows every Pod + node metric in one place. The <strong>star map</strong> (AMP + AMG) renders all the application telemetry into Grafana dashboards. The <strong>relay router</strong> (ADOT) sits in the data flow, sending metrics to AMP, traces to X-Ray, logs to CloudWatch. The <strong>activity ledger</strong> (control-plane logs) records every API request. And on a separate desk: the <strong>cost-allocation report</strong> showing what each tenant's slice of the building cost this month.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in EKS / AWS</th></tr></thead>
+        <tbody>
+          <tr><td>Cluster status panel</td><td>CloudWatch Container Insights enhanced</td></tr>
+          <tr><td>Star map dashboards</td><td>AMG (Managed Grafana)</td></tr>
+          <tr><td>Star data store</td><td>AMP (Managed Prometheus)</td></tr>
+          <tr><td>Telemetry relay router</td><td>ADOT (AWS Distro for OTel) collector</td></tr>
+          <tr><td>Activity ledger</td><td>Control-plane logs (api/audit/authn/cm/scheduler)</td></tr>
+          <tr><td>Trail of every request through the building</td><td>X-Ray traces</td></tr>
+          <tr><td>Building log archive</td><td>CloudWatch Logs (Fluent Bit DaemonSet)</td></tr>
+          <tr><td>Per-tenant utility breakdown</td><td>AWS Split Cost Allocation Data for EKS</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The analogy stops here: real EKS observability is N agents + collectors writing to N AWS services + IAM permissions + cost models. The deck metaphor undersells the integration work.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Lots of windows looking at the cluster. Some show numbers, some show pictures, some show what every visitor did. AWS provides the windows; you decide what to display.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>Two-path observability: AWS-native (CloudWatch Container Insights + Logs + X-Ray) or OSS-on-AWS (AMP + AMG + ADOT). Most teams hybrid: Container Insights for cluster health + control-plane logs; AMP + AMG for app metrics; ADOT for ingestion to multiple destinations; X-Ray or Tempo for traces; Fluent Bit for log shipping; Split Cost Allocation for per-namespace cost.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How AWS-shop teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">A SaaS using AWS-native end-to-end</p><p>Container Insights enhanced enabled at cluster create. ADOT collector ships PromQL metrics to AMP + traces to X-Ray + logs to CloudWatch. AMG dashboards via IAM Identity Center SSO. Total observability cost: ~$300/month for a 50-Pod cluster. Zero ops on observability infra.</p></div>
+      <div class="scenario"><p class="scenario-name">A bank running hybrid: AMP + AMG + Datadog</p><p>AMP + AMG as the primary K8s metrics + dashboard. Datadog APM for app traces (existing licence). Both feed Container Insights + control-plane logs into a SIEM. Cost: managed AWS + Datadog licences ~$2K/month for 200-node cluster.</p></div>
+      <div class="scenario"><p class="scenario-name">A startup using OSS Prometheus + Grafana on EKS for cost</p><p>kube-prometheus-stack via Helm. Self-hosted Grafana. Cheaper at small scale; SRE time invested. Migrate to AMP + AMG when scale or ops cost passes the threshold.</p></div>
+      <div class="scenario"><p class="scenario-name">A team using Split Cost Allocation</p><p>Per-namespace cost report shared with each team monthly. Team A: $2400/month. Team B: $480. Team C: $5800 (turns out they were running an unused load-test cluster constantly). Visibility drove a 30% cluster spend reduction in 2 months.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>A signal travels from a Pod to PagerDuty</h2>
+    <p>ADOT fans out signals; AMG joins them; an alert fires.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="80" width="110" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="95" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Pod</text><text x="95" y="118" text-anchor="middle" font-size="9" fill="#6B6058">emits metric</text>
+        <rect x="180" y="80" width="130" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="245" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">ADOT collector</text><text x="245" y="118" text-anchor="middle" font-size="9" fill="#6B6058">DaemonSet</text>
+        <rect x="340" y="30" width="130" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">AMP</text><text x="405" y="68" text-anchor="middle" font-size="9" fill="#6B6058">Prometheus metrics</text>
+        <rect x="340" y="100" width="130" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">CloudWatch</text><text x="405" y="138" text-anchor="middle" font-size="9" fill="#6B6058">logs + Container Insights</text>
+        <rect x="340" y="170" width="130" height="50" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="405" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">X-Ray</text><text x="405" y="208" text-anchor="middle" font-size="9" fill="#6B6058">traces</text>
+        <rect x="500" y="80" width="110" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="555" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">AMG dashboard</text><text x="555" y="118" text-anchor="middle" font-size="9" fill="#6B6058">joined view</text>
+        <rect x="640" y="80" width="100" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="690" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">alert fires</text><text x="690" y="118" text-anchor="middle" font-size="9" fill="#6B6058">PagerDuty</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,110)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="trace">▶ signal flow</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a metric → ADOT → AMP → AMG → alert.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "AMP is just remote Prometheus."</div><div class="misc-row misc-truth"><strong>Truth:</strong> AMP exposes the same APIs (remote_write + PromQL) but it's a managed scaled service handling 100M+ active series. No Prometheus server you operate. Different operational shape.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Control-plane logs are noise; skip them."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Audit logs are required for compliance, breach forensics, and root-causing apiserver issues. Volume tunable via audit policy. Always enable from cluster create.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Container Insights replaces application observability."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Container Insights is K8s + node metrics. App-level metrics + traces + logs still need OTel SDKs in your apps. Container Insights complements; doesn't replace.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is CloudWatch Container Insights enhanced?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">AWS-managed Pod + node + container metrics + logs DaemonSet for EKS. Pre-built dashboards. Enable as the <code>amazon-cloudwatch-observability</code> add-on.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">AMP vs OSS Prometheus?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Same APIs (remote_write + PromQL); AMP is serverless + scales to 100M+ active series + AWS handles ops. Cost = ingestion + storage + queries.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">AMG vs OSS Grafana?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Same UI; AMG handles infra; IAM Identity Center SSO; data sources include AMP, CloudWatch, X-Ray. Pay per active user.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">ADOT — what does it do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">AWS-supported OpenTelemetry collector. DaemonSet + Deployment. Receives Prometheus + OTLP; routes to AMP, X-Ray, CloudWatch, third-party.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Five EKS control-plane log types?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">api, audit, authenticator, controllerManager, scheduler. Each goes to CloudWatch Log Groups. Enable per-cluster.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">X-Ray for EKS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">AWS distributed tracing. ADOT sends spans; X-Ray UI shows service maps + trace flame graphs. Alternative: OTel → Tempo / Jaeger / Honeycomb.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">AWS Split Cost Allocation for EKS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Cost Explorer feature attributing EC2 + EBS to Pods + namespaces using Container Insights data. The right way to answer per-team cost.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Fluent Bit for EKS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Lightweight log shipper. Container Insights observability add-on includes a managed Fluent Bit DaemonSet. Ships container logs to CloudWatch Log Groups.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">Your team's AMP costs jumped 4x last month. Diagnose.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Active series + ingestion.</strong> AMP cost = ingested samples ($0.30 per 10M) + active series stored ($0.10 per 1000 per month) + queries. <strong>Common cause: high cardinality.</strong> Someone added a metric label like <code>user_id</code> or <code>request_id</code>; series count exploded. <strong>Diagnose:</strong> AMP's <code>topk(10, count by (__name__) ({{__name__=~".+"}}))</code> shows per-metric series count. Find the offender. <strong>Fix:</strong> drop the high-cardinality label at the OTel collector or Prometheus relabel; or change the metric to use a low-cardinality bucket. <strong>Prevent:</strong> alert if any single metric exceeds 100K series. Cardinality budget per workload.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">You enable Split Cost Allocation Data for EKS. The numbers don't match what your finance team has. Diagnose.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Common reasons:</strong> (1) <em>Lag</em>: Cost Explorer data is 24-48 hours behind; finance might be looking at older data. (2) <em>Untagged resources</em>: EBS volumes without proper tags don't allocate cleanly. Add cluster + namespace tags to PV provisioning (StorageClass parameters or Kyverno mutation). (3) <em>Shared resources</em>: ALBs, NAT gateways, S3 buckets shared across namespaces. Split Cost Allocation handles EC2 + EBS Pod-allocated; other costs allocated separately by tag. (4) <em>System namespaces</em>: kube-system + amazon-cloudwatch + similar are typically not allocated to teams; they're platform overhead. Document this. <strong>Reconciliation:</strong> work with finance to define what "team cost" means: just direct EKS workload, or platform overhead share too?</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">You're building an observability stack for a new EKS cluster. <strong>Click for the launch playbook. ▼</strong></p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the launch playbook</span><strong>(1) At cluster create</strong>: enable all 5 control-plane log types. Don't skip — retroactive enabling doesn't backfill. <strong>(2) Container Insights add-on</strong>: <code>aws eks create-addon --addon-name amazon-cloudwatch-observability</code>. Pre-built dashboards in CloudWatch immediately. <strong>(3) AMP workspace</strong> + IAM role for ADOT: <code>aws amp create-workspace</code>. <strong>(4) ADOT collector</strong> as DaemonSet: scrape Prometheus annotations on Pods + node-exporter metrics + ServiceMonitor; remote_write to AMP. Plus OTLP receiver for app traces → X-Ray. <strong>(5) AMG workspace</strong>: AWS Console; add AMP + CloudWatch + X-Ray as data sources. Connect to IAM Identity Center for SSO. Import recommended Grafana dashboards (kube-state, node-exporter, etc.). <strong>(6) Fluent Bit</strong> (already part of the Container Insights add-on): tune to ship app logs to a separate CloudWatch Log Group per namespace. <strong>(7) Split Cost Allocation</strong>: enable in Cost Explorer + tag every workload with namespace + team. Wait 24h for first reports. <strong>(8) Alerts</strong>: AlertManager (in AMP) or CloudWatch Alarms for: control-plane errors, Pod CrashLoopBackOff, node NotReady, AMP cost spike, control-plane log spike. <strong>(9) Runbooks</strong> per alert. <strong>(10) Quarterly review</strong>: AMP cost trend, control-plane log volume, Container Insights alarm noise. <strong>Total launch time:</strong> 1 sprint. <strong>Result</strong>: production observability from day 1.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">CloudWatch Container Insights</div><div class="gloss-def">AWS K8s metrics + logs DaemonSet. Enable as observability add-on. Pre-built dashboards.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Amazon Managed Prometheus (AMP)</div><div class="gloss-def">Serverless Prometheus-compatible metrics store. Scales to 100M+ active series.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Amazon Managed Grafana (AMG)</div><div class="gloss-def">Serverless Grafana. IAM Identity Center SSO. Data sources: AMP, CloudWatch, X-Ray.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ADOT (AWS Distro for OpenTelemetry)</div><div class="gloss-def">AWS-supported OTel collector. DaemonSet + Deployment. Routes to AMP / X-Ray / CloudWatch.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Control-plane logs</div><div class="gloss-def">Five types: api, audit, authenticator, controllerManager, scheduler. To CloudWatch. Per-cluster opt-in.</div></div>
+      <div class="gloss-item"><div class="gloss-name">X-Ray</div><div class="gloss-def">AWS distributed tracing. Service maps + trace flame graphs. Alternative: Tempo / Jaeger.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Fluent Bit (managed)</div><div class="gloss-def">Lightweight log shipper. Part of CloudWatch observability add-on; ships container logs to CloudWatch Log Groups.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AWS Split Cost Allocation Data</div><div class="gloss-def">Cost Explorer feature attributing EC2 + EBS to Pods + namespaces using Container Insights data.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ServiceMonitor / PodMonitor</div><div class="gloss-def">Prometheus Operator CRDs for declarative scrape config. ADOT supports them.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Active series (AMP)</div><div class="gloss-def">Distinct (metric_name, labels) combinations stored. Cardinality drives cost.</div></div>
+      <div class="gloss-item"><div class="gloss-name">remote_write (Prometheus)</div><div class="gloss-def">Protocol for shipping metrics from a collector to a remote store. AMP accepts via SigV4-signed remote_write.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AWS observability hybrid pattern</div><div class="gloss-def">CloudWatch for cluster health + logs; AMP + AMG for app metrics; X-Ray or Tempo for traces. Most teams' choice.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> AWS-native EKS observability: <strong>CloudWatch Container Insights (enhanced)</strong> for Pod/node metrics + logs; <strong>Amazon Managed Prometheus (AMP)</strong> for scaled metrics; <strong>Amazon Managed Grafana (AMG)</strong> for dashboards (IAM SSO); <strong>ADOT</strong> (AWS Distro for OpenTelemetry) collector → AMP / X-Ray; <strong>Fluent Bit → CloudWatch Logs</strong> for app logs; <strong>X-Ray</strong> for distributed traces; <strong>Control-plane logs</strong> (api / audit / authenticator / controllerManager / scheduler) → CloudWatch; <strong>AWS Split Cost Allocation Data</strong> for per-namespace cost.</p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module E8 complete</span>
+    <p>Observability stack = CloudWatch Container Insights (cluster health) + AMP / AMG (app metrics + dashboards) + ADOT (ingestion) + X-Ray (traces) + Fluent Bit (logs) + control-plane logs to CloudWatch + Split Cost Allocation. Most enable at cluster create.</p>
+    <p class="recap-next"><strong>Next — E9: EKS Upgrades and Operations.</strong> Standard support, extended support, version skew, control-plane + node + add-on upgrades, blue-green migration.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-EKS · Module E8 of 11 · grounded in docs.aws.amazon.com/eks</footer>
+
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const stored = localStorage.getItem('lesson-theme');
+  if (stored) {
+    document.body.setAttribute('data-theme', stored);
+    themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+  }
+  themeToggle.addEventListener('click', () => {
+    const cur = document.body.getAttribute('data-theme');
+    const next = cur === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', next);
+    themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+    localStorage.setItem('lesson-theme', next);
+  });
+  document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  document.querySelectorAll('.quiz-reveal').forEach(btn => {
+    const showText = btn.textContent;
+    const hideText = showText.replace(/^Show/, 'Hide');
+    btn.addEventListener('click', () => {
+      const ans = btn.parentElement.querySelector('.quiz-answer');
+      const open = ans.classList.toggle('show');
+      btn.textContent = open ? hideText : showText;
+    });
+  });
+  document.querySelectorAll('.pause-check-box').forEach(box => {
+    const opts = box.querySelectorAll('.pause-check-opt');
+    const fb = box.querySelector('.pause-check-feedback');
+    opts.forEach(opt => opt.addEventListener('click', () => {
+      opts.forEach(o => o.classList.remove('correct','wrong'));
+      opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+      fb.classList.add('show');
+    }));
+  });
+
+  // -------- Animation --------
+  (function() {
+    const SCENES = [{"mode_id": "trace", "mode_label": "Mode: ADOT collects, AMP/CW/X-Ray store, AMG visualizes, alert fires", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod emits a Prometheus metric + a structured log + a span.", "move_to": [95, 110], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> ADOT collector (per-node DaemonSet) fans out by signal type.", "move_to": [245, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Metric \u2192 AMP (managed Prometheus).", "move_to": [405, 55], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Log \u2192 CloudWatch + Container Insights.", "move_to": [405, 125], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> Span \u2192 X-Ray.", "move_to": [405, 195], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 6.</strong> AMG dashboard joins the three; an alert rule sees an SLO breach.", "move_to": [555, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 7.</strong> PagerDuty fires; on-call gets paged.", "move_to": [690, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You enable Auto Mode on a new cluster. After 1 hour, your dashboards show 25 small nodes coming up + going down. Diagnosis?
+    answer: |
+      **Consolidation thrashing.** Common causes: (1) *consolidateAfter too short*. Default is fine; if you set 0s, Auto Mode reconsiders every cycle. Bump to 30s+. (2) *Pod placement is unstable*. Workloads coming + going (e.g., a Deployment with PreferNoSchedule that flips placement). Fix: tune affinity / topology spread for stability. (3) *Mismatched disruption budgets*: PDBs + NodePool budgets fighting. Verify both. **Diagnostic:** `kubectl get nodeclaims -A` + `kubectl get events -A | grep -i nodeclaim` show consolidation reasoning. **Long-term:** graph node count over time + cluster cost; if cost is volatile, tune.
+
+  - id: 2
+    prompt: |
+      You're running Karpenter v1.0 + EKS managed Node Group + AWS LB Controller (Helm). Migration plan to Auto Mode?
+    answer: |
+      **Pre-migration:** staging cluster on Auto Mode; validate workloads (especially Deployments with hostNetwork or kernel-version assumptions). **Production migration:** (1) **Pause Karpenter** consolidation by setting all NodePools to 0 limits. (2) **Enable Auto Mode** on the cluster (`aws eks update-cluster-config --compute-config enabled=true`). (3) **Define new NodePools** in the karpenter.sh API; Auto Mode picks them up. (4) **Drain existing Karpenter nodes** one at a time; Auto Mode provisions replacements. (5) **Uninstall Karpenter Helm release**; remove RBAC. (6) **Uninstall AWS LB Controller** Helm; Auto Mode's built-in version takes over. **Roll-back path:** disable Auto Mode (`compute-config enabled=false`) + reinstall Karpenter from values.yaml in git. Test the rollback in staging before prod. **Total time:** 1-2 weeks for a 30-node cluster including validation.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to recommend Auto Mode vs Karpenter vs Managed NG for a new cluster. **Click for the decision tree. ▼**
+    answer: |
+      **Step 1: do you need custom AMIs / kernel modules / specific Bottlerocket variants?** Yes → Managed NG (Auto Mode's AMI is fixed). No → continue. **Step 2: do you have an existing Karpenter investment + a strong opinion about its config (custom plugins, custom controllers)?** Yes → keep Karpenter; revisit Auto Mode in 12 months. No → continue. **Step 3: is your team small (≤2 SREs) and are you fine with AWS-bundled add-ons?** Yes → Auto Mode (saves the most time). No → continue. **Step 4: do you have predictable, sustained workloads where reserved capacity or Savings Plans dominate cost?** Yes → Managed NG with RIs/SP optimised. No → Auto Mode (consolidation handles it). **Step 5: are you in a region without Auto Mode yet?** Yes → Managed NG + Karpenter; migrate when available. **Most teams in 2026 land on Auto Mode** by default + a small Managed NG for special workloads. **Karpenter DIY** remains for shops that want full control of the compute layer.

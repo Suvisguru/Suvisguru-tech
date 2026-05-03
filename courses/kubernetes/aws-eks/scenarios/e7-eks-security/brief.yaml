@@ -1,0 +1,62 @@
+# Intake brief — E7, K-EKS
+# Topic: E7 · EKS Security (KMS, GuardDuty, ECR signing, Bottlerocket, audit)
+# Module E7 · EKS Security
+
+lesson:
+  title: 'E7 · EKS Security (KMS, GuardDuty, ECR signing, Bottlerocket, audit)'
+  slug: 'e7-eks-security'
+  domain: 'kubernetes'
+  course_slug: 'aws-eks'
+  position: 07
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Skyline · Vault Mezzanine — The Vault Mezzanine sits one floor above the lobby — visible from below, but glass-walled and key-locked. Inside: the master keychain (KMS), the radar dish scanning for intruders (GuardDuty), the conv'
+  module: 'Module E7 · EKS Security'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'AWS basics: VPC, IAM, EC2, S3, CloudWatch.'
+    - 'K-EKS modules 1-6 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain layer AWS on top of K8s security.'
+  - 'Learner can explain secrets, EBS, EFS, ECR.'
+  - 'Learner can explain guardDuty EKS + Inspector + signing.'
+
+sections:
+  - 'Layer AWS on top of K8s security'
+  - 'Secrets, EBS, EFS, ECR'
+  - 'GuardDuty EKS + Inspector + signing'
+  - 'Bottlerocket, PSA, private endpoint, CloudTrail, FIPS'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'GuardDuty EKS Audit + Runtime Monitoring on.'
+    - 'EKS endpoint private only.'
+    - 'Enabled secrets encryption at cluster create with the AWS-managed default key.'
+    - 'Heavy use of public images (postgres, redis, busybox).'
+
+section_6_animated_svg:
+  modes_count: 1-3
+  description: 'See preview-kubernetes-eks-lesson-07.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-eks-lesson-07.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'EKS security baseline: **KMS envelope encryption** for K8s Secrets + EBS + EFS (CMK, not default key); **GuardDuty EKS Protection** (audit) + **Runtime Monitoring** (eBPF threat detection); **Inspector + ECR enhanced scanning** (Snyk-powered CVE); **Cosign + AWS Signer** for image signing + verifyImages admission; **ECR replication + pull-through cache**; **Bottlerocket** immutable nodes; **PSA Restricted**; **private cluster endpoint**; **CloudTrail audit**; **IAM Access Analyzer**; **FIPS** for regulated.'
+
+fact_check_anchors:
+  - 'https://docs.aws.amazon.com/eks/latest/userguide/'
+  - 'https://docs.aws.amazon.com/eks/latest/best-practices/'
+  - 'https://kubernetes.io/docs/'

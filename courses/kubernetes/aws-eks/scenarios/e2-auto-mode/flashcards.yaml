@@ -1,0 +1,50 @@
+# Flashcards — K-EKS E (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does Auto Mode bundle?
+    back: |
+      Karpenter-style compute (NodePools + NodeClasses) + core add-ons (VPC CNI, EBS CSI, AWS LB controller, CoreDNS, kube-proxy, GPU plugins) + Bottlerocket AMIs. AWS owns lifecycle of all.
+
+  - id: 2
+    front: |
+      NodePool vs NodeClass?
+    back: |
+      NodePool = workload-facing (requirements, taints, disruption budget, expireAfter). NodeClass = AWS-specific (subnets, SGs, IAM role, AMI). Multiple NodePools per cluster is normal.
+
+  - id: 3
+    front: |
+      What is consolidation?
+    back: |
+      Auto Mode periodically checks if running nodes can be replaced with fewer/cheaper ones. WhenUnderutilized = aggressive (drain + replace lightly-loaded). WhenEmpty = only fully-empty nodes.
+
+  - id: 4
+    front: |
+      expireAfter / max node lifetime?
+    back: |
+      Time after which Auto Mode replaces a node regardless of load. Default 720h (30 days). Forces AMI rotation + bounds patch drift.
+
+  - id: 5
+    front: |
+      disruption budget (Auto Mode)?
+    back: |
+      Per-NodePool cap on simultaneous voluntary disruptions. Coordinated with PodDisruptionBudgets at the workload level. Prevents over-aggressive consolidation.
+
+  - id: 6
+    front: |
+      Auto Mode vs Karpenter?
+    back: |
+      Functionally similar at compute layer. Auto Mode = AWS bundles + manages it. DIY Karpenter = you install + upgrade. Auto Mode adds bundled add-ons; DIY Karpenter is just compute.
+
+  - id: 7
+    front: |
+      Auto Mode vs Managed NG?
+    back: |
+      Managed NG = you pick instance type + count per NG; AWS does lifecycle. Auto Mode = AWS picks instance type per Pod + does lifecycle + consolidation. Auto Mode is dynamic; NG is static.
+
+  - id: 8
+    front: |
+      Auto Mode pricing model?
+    back: |
+      Per-vCPU-hour management premium on top of underlying EC2. ~12-15% for typical workloads. Trades cost for SRE time saved.

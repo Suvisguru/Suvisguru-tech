@@ -1,0 +1,31 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Your team's ML training Pod fails with `permission denied` mounting an EFS access point. The IAM policy looks correct. Diagnose.
+    answer: |
+      **Likely two-tier issue:** (1) **EFS access point POSIX UID/GID.** The access point creates files as a specific UID/GID. The Pod's container runs as a different UID. `fsGroup` in PodSpec should match the EFS access-point GID. (2) **Pod Identity / IRSA** for the EFS CSI controller pods. The controller needs IAM permissions to call EFS. Verify the SA association. **Diagnose:** `kubectl describe pvc` for events; `kubectl logs -n kube-system efs-csi-controller-XXX`; check the EFS access-point definition in AWS Console for UID/GID. **Fix:** align Pod's fsGroup with EFS access-point GID; verify IAM policy includes `elasticfilesystem:DescribeAccessPoints + ClientMount + ClientWrite`.
+
+  - id: 2
+    prompt: |
+      You're asked to make an EBS-backed Postgres survive an AZ outage. What design?
+    answer: |
+      **EBS is single-AZ; can't survive AZ loss directly.** Two patterns: (1) **Postgres replication across AZs**: 3 Postgres Pods (StatefulSet), each in its own AZ via topology-spread, each with its own EBS. Postgres handles replication (sync or async). AZ outage → 2 surviving Pods take over. (2) **Aurora / RDS Multi-AZ**: take Postgres out of EKS entirely; let AWS handle Multi-AZ. Pods connect to RDS endpoint. **For pure-K8s in EKS:** pattern 1, often via the Crunchy or CloudNativePG operator. **Snapshot strategy**: VolumeSnapshot per replica nightly to S3-backed snapshot storage. **Don't** rely on EBS Multi-AZ — there isn't a thing for general EBS volumes; only specific io2 multi-attach (limited).
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Migration from EBS-only to EBS + S3 Mountpoint for ML training data. **Click for the playbook. ▼**
+    answer: |
+      **(1) Move dataset to S3.** If currently on EBS / EFS, copy to an S3 bucket. Versioned bucket recommended. **(2) Install S3 Mountpoint CSI** as a managed add-on. **(3) Create IAM role + Pod Identity association** for the training SA: read access to the dataset bucket. **(4) Define StorageClass + PVC**: apiVersion: v1
+      kind: PersistentVolume
+      metadata: {name: training-data}
+      spec:
+        capacity: {storage: 4Ti}
+        accessModes: [ReadOnlyMany]
+        csi:
+          driver: s3.csi.aws.com
+          volumeAttributes:
+            bucketName: training-data-prod
+            mountOptions: "--allow-other,--region us-east-1" **(5) PVC + Pod**: PVC binds to the static PV; Pod mounts at `/data`. PyTorch reads directly. **(6) Validate** training throughput vs old EBS-staged approach. **(7) Decommission EBS staging** volumes after validation. **Cost**: S3 storage at $0.023/GB-month + read requests per epoch — vs EBS $0.08/GB constantly. For a 4 TB dataset trained 10× per month: S3 ~$95/month vs EBS ~$320/month + staging time. **Caveat:** S3 Mountpoint write semantics limited; if your training writes intermediate checkpoints, separate EBS PVC for that.

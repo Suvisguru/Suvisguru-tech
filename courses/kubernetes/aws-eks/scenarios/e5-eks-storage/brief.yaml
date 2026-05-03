@@ -1,0 +1,62 @@
+# Intake brief — E5, K-EKS
+# Topic: E5 · EKS Storage (EBS, EFS, FSx, S3 Mountpoint)
+# Module E5 · EKS Storage
+
+lesson:
+  title: 'E5 · EKS Storage (EBS, EFS, FSx, S3 Mountpoint)'
+  slug: 'e5-eks-storage'
+  domain: 'kubernetes'
+  course_slug: 'aws-eks'
+  position: 05
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Skyline · Storage Vault — The Storage Vault occupies a quiet floor of K-Skyline. Walk in: rows of safe-deposit boxes (EBS — one tenant per box, RWO), shared filing cabinets (EFS — many tenants, RWX), specialty vaults for HPC t'
+  module: 'Module E5 · EKS Storage'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'AWS basics: VPC, IAM, EC2, S3, CloudWatch.'
+    - 'K-EKS modules 1-4 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain pick storage by access pattern, not by name.'
+  - 'Learner can explain gp3 / io2 + VolumeAttributesClass.'
+  - 'Learner can explain when EBS isn''t enough.'
+
+sections:
+  - 'Pick storage by access pattern, not by name'
+  - 'gp3 / io2 + VolumeAttributesClass'
+  - 'When EBS isn''t enough'
+  - 'Cross-cutting decisions'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Standard StorageClass: gp3 3000 IOPS / 125 MB/s.'
+    - '3 Postgres replicas, each with own EBS via volumeClaimTemplates.'
+    - '4 TB image dataset in S3.'
+    - 'HPA scaled a StatefulSet from 1 → 3.'
+
+section_6_animated_svg:
+  modes_count: 1-3
+  description: 'See preview-kubernetes-eks-lesson-05.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-eks-lesson-05.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'Storage CSI drivers (managed add-ons): **EBS CSI** (RWO block; gp3 default; **VolumeAttributesClass for live IOPS/throughput tuning**), **EFS CSI** (RWX, multi-AZ), **FSx CSI** (Lustre / NetApp ONTAP / OpenZFS), **S3 Mountpoint CSI** (object as FS, read-heavy). **snapshot-controller** for VolumeSnapshot. **KMS encryption** on every StorageClass. **WaitForFirstConsumer** for zone-aware provisioning.'
+
+fact_check_anchors:
+  - 'https://docs.aws.amazon.com/eks/latest/userguide/'
+  - 'https://docs.aws.amazon.com/eks/latest/best-practices/'
+  - 'https://kubernetes.io/docs/'

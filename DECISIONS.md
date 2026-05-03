@@ -930,3 +930,41 @@ The parallel generator stack (rather than refactoring k8s_lesson_generator.py to
 **Alternatives considered:** Add K-VAN modules into the K-COM curriculum as L45+. Rejected — K-VAN is a separate course with a separate prereq + audience; K-COM ends at L44 capstone. Reuse K-Town atlas with new district pins for V1-V11. Rejected — would push K-Town past 35 districts; map becomes unreadable; metaphor confused. Make the K-COM generator domain-agnostic. Rejected — too much refactor risk for too little reuse benefit. Use one combined audit script. Rejected — different expected counts per course; clearer to keep them separate.
 
 **Revisit when:** A future K-related course is added (K-EKS, K-GKE, K-AKS for managed-cloud-specific deep dives; K-EDGE for edge K8s). At that point: each gets its own course slug + its own analogical universe (or reuses K-Frontier if the metaphor fits) + its own generator + its own audit. Update STYLE.md with the new universe + DECISIONS.md with the new entry.
+
+## 2026-05-03 — K-EKS course + K-Skyline analogical universe
+
+**Context:** Founder asked for a third Kubernetes course: Amazon EKS (K-EKS) — the AWS-managed-K8s deep dive: architecture, Auto Mode, AWS networking, IAM/identity, storage, autoscaling, security, observability, upgrades, troubleshooting, and a multi-AZ capstone. 11 modules: E1 architecture, E2 Auto Mode, E3 AWS networking, E4 identity, E5 storage, E6 compute & autoscaling, E7 security, E8 observability, E9 upgrades, E10 troubleshooting, E11 capstone. Prereq: K-COM + AWS basics (VPC, IAM, EC2, S3, CloudWatch). The K-VAN entry's "Revisit when" clause anticipated exactly this — K-EKS is the first managed-cloud K-course, and the K-Frontier (homestead/build-it-yourself) metaphor doesn't fit because EKS is fundamentally about renting AWS-owned infrastructure.
+
+**Decision:** New course at `courses/kubernetes/aws-eks/` with its own analogical universe (K-Skyline — AWS-managed tower metaphor) and a parallel generator stack mirroring K-VAN.
+
+**Sub-decision A — K-Skyline universe.** Eleven floors mapped one-to-one with E1-E11:
+
+| Module | Floor | Topic |
+|---|---|---|
+| E1 | Lobby & Floor Plan *(anchor)* | Shared responsibility |
+| E2 | Concierge Service | Auto Mode |
+| E3 | Communication Tower | VPC + LB + DNS |
+| E4 | Security Desk | IAM / IRSA / Pod Identity |
+| E5 | Storage Vault | EBS / EFS / FSx |
+| E6 | Power Floor | Karpenter / spot / GPU |
+| E7 | Vault Mezzanine | KMS / GuardDuty |
+| E8 | Observation Deck | CloudWatch / AMP / AMG |
+| E9 | Maintenance Wing | Upgrades |
+| E10 | Emergency Plaza | Troubleshooting |
+| E11 | Tower Complete | Capstone |
+
+The Lobby is the K-Skyline anchor: every visitor enters through the lobby, and the floor plan on the wall is the AWS↔customer shared-responsibility model that frames every other floor.
+
+**Sub-decision B — Parallel generator stack.** `scripts/k_eks_lesson_generator.py` mirrors `k_van_lesson_generator.py`: emits K-Skyline atlas + K-EKS concept rail + E-numbered footers + "Module E{N} of 11" labels. Reuses BASE_CSS, SCRIPT_BLOCK, dataclasses, _render_animation from `k8s_lesson_generator.py` (no duplication of shared infrastructure). Lesson specs in `scripts/lessons_keks/lessonNN.py`; animations in `scripts/lessons_keks/animations.py`. Build helpers `scripts/build_scenario_folders_keks.py` and `scripts/build_combined_course_keks.py` mirror their K-VAN siblings.
+
+**Sub-decision C — File naming.** Per the existing "Per-domain preview filename pattern" (DECISIONS 2026-05-01) extended for sub-courses: K-EKS uses `preview-kubernetes-eks-lesson-NN.html` (domain stays `kubernetes`; course identifier `eks` added). Course folder slug: `aws-eks` (kebab-case lowercase per convention; the user-facing name is "Amazon EKS"). Combined-course HTML: `preview-kubernetes-eks-course-all.html`.
+
+**Sub-decision D — Audit per course.** `scripts/audit_lessons_keks.py` — mechanical + content checks for K-EKS. Audit-runs-immediately-after-generation rule honoured: `k_eks_lesson_generator.py` auto-runs the K-EKS audit after every generation pass. K-COM, K-VAN, and K-EKS now have three separate audits because the expected counts and id prefixes differ (K-COM: 24 K-Town pins / 45 strip dots / `kt-pin*`; K-VAN: 11 K-Frontier sites / 11 strip dots / `kf-site*`; K-EKS: 11 K-Skyline floors / 11 strip dots / `ks-floor*`).
+
+**Reasoning:** K-Skyline as a third universe (rather than reusing K-Town or K-Frontier) is justified because: (1) the metaphor changes a third time — K-COM is "living in the city" (consuming K8s primitives), K-VAN is "building your own town" (operating K8s yourself), K-EKS is "renting space in an AWS-managed tower" (consuming a managed service where AWS owns the lobby + elevators). The shared-responsibility split is the central learning frame, and a tower metaphor (lobby = AWS, floors = your workloads) makes that split visually obvious. (2) The three universes are now visually distinct (city street grid vs homestead vs tower silhouette) so a learner glancing at the map graphic instantly knows which course they are in.
+
+The parallel generator stack (rather than refactoring k_van into a shared multi-course generator) is justified because: (1) the K-VAN generator has K-Frontier-specific atlas data hard-coded; refactoring risks regressions across the 11 published K-VAN lessons. (2) Reusing BASE_CSS + SCRIPT_BLOCK + dataclasses + _render_animation as imports means shared infra still has one source of truth; the K-EKS generator is ~480 lines like the K-VAN one. (3) Per-course audits remain cleaner than one polyglot audit handling three sets of expected ids/counts.
+
+**Alternatives considered:** Add K-EKS modules to the K-COM curriculum as L45+. Rejected — K-EKS is a separate course with a separate AWS-prereq audience; K-COM ends at L44. Reuse the K-Frontier homestead atlas with renamed sites for E1-E11. Rejected — the homestead metaphor literally is "build it yourself," which contradicts the EKS shared-responsibility frame; would confuse beginners. Refactor the three K-generators into one parameterised generator. Deferred — three is not yet enough churn pressure to justify the refactor risk; revisit if a fourth K-course is added. Combine audits. Rejected — same reasons as the K-VAN entry; confirmed by adding a third course.
+
+**Revisit when:** A fourth managed-cloud K-course (K-GKE for GKE, K-AKS for AKS) is added. At that point: three parallel generators is the trip-wire to refactor into a shared multi-course generator with per-course atlas/rail data injected. Each new course still gets its own analogical universe + audit, but the rendering core would unify.

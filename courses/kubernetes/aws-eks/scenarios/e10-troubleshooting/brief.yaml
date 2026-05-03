@@ -1,0 +1,62 @@
+# Intake brief — E10, K-EKS
+# Topic: E10 · EKS Troubleshooting (AWS-Specific)
+# Module E10 · EKS Troubleshooting
+
+lesson:
+  title: 'E10 · EKS Troubleshooting (AWS-Specific)'
+  slug: 'e10-troubleshooting'
+  domain: 'kubernetes'
+  course_slug: 'aws-eks'
+  position: 10
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Skyline · Emergency Plaza — The Emergency Plaza is the K-Skyline''s practice ground for unusual incidents. Pinned on the wall: eight scenario cards, each with a runbook. The dispatcher (CloudTrail) records every API call to the b'
+  module: 'Module E10 · EKS Troubleshooting'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'AWS basics: VPC, IAM, EC2, S3, CloudWatch.'
+    - 'K-EKS modules 1-9 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain why EKS-specific troubleshooting deserves its own module.'
+  - 'Learner can explain the recurring incidents.'
+  - 'Learner can explain the other four.'
+
+sections:
+  - 'Why EKS-specific troubleshooting deserves its own module'
+  - 'The recurring incidents'
+  - 'The other four'
+  - 'CloudTrail, CloudWatch, kubectl'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Practice each of the eight scenarios on a non-prod cluster.'
+    - 'Old IRSA roles still in use; pre-migration audit found 47 unique trust policies, several with subtle SA path bugs.'
+    - 'Cluster scaled 50 → 500 nodes during a marketing event.'
+    - 'Pod can''t reach RDS.'
+
+section_6_animated_svg:
+  modes_count: 1-3
+  description: 'See preview-kubernetes-eks-lesson-10.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-eks-lesson-10.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'EKS-specific failure modes need EKS-specific debugging. Top eight: **(1) IAM/RBAC unauth** (access entries vs aws-auth precedence); **(2) node NotReady / NG launch fail** (IAM, AMI, subnet capacity); **(3) VPC CNI IP exhaustion** (enable prefix delegation); **(4) LB pending** (subnet tags, IAM); **(5) EBS multi-AZ attach** (WaitForFirstConsumer); **(6) IRSA / Pod Identity** (trust policy, OIDC, association); **(7) Karpenter / Auto Mode stuck** (instance availability, IAM, NodeClass); **(8) API throttling** (CloudWatch + CloudTrail RCA, request limits). **CloudTrail + CloudWatch + Container Insights** are the diagnostic surfaces.'
+
+fact_check_anchors:
+  - 'https://docs.aws.amazon.com/eks/latest/userguide/'
+  - 'https://docs.aws.amazon.com/eks/latest/best-practices/'
+  - 'https://kubernetes.io/docs/'

@@ -1,0 +1,21 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Your team's Karpenter is launching r6i.large for a Pod that requests 0.5 CPU + 1 GiB RAM. Why is it picking such a big instance?
+    answer: |
+      **Diagnose the NodePool requirements.** If `karpenter.k8s.aws/instance-size` doesn't exclude small types, Karpenter should pick a smaller one. Likely causes: (1) *NodePool excludes small types* — fix the requirement. (2) *Subnet IP exhaustion* — Karpenter picks bigger types if small types can't get IPs (smaller types have fewer ENI slots). Check subnet IP availability + enable VPC CNI prefix delegation (E3). (3) *Pod has additional resource requests you didn't see* — sidecars, init containers, ephemeral storage. `kubectl describe pod` shows the full resource picture. (4) *Topology constraints* — if Pod requires a zone that has only large instance availability, Karpenter goes with what's there. **Long-term:** log Karpenter decisions: `kubectl logs -n karpenter deploy/karpenter` + look for `Launched node` events with the reasoning.
+
+  - id: 2
+    prompt: |
+      You want to migrate a CPU-based inference service to Inferentia for cost savings. Plan?
+    answer: |
+      **(1) Compile the model with Neuron SDK.** Some model architectures compile cleanly (TF, PyTorch via TorchScript / Optimum); some need rework. Validate accuracy + latency match the CPU baseline. **(2) Build a Neuron-aware container image.** Base image: `763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-inference-neuron:...`. Bundle the Neuron-compiled model. **(3) Add a Karpenter NodePool**: Inf2.xlarge, taint `aws.amazon.com/neuron`:NoSchedule. **(4) Update Deployment**: tolerate the taint, request `aws.amazon.com/neuron: 1` (Neuron device plugin advertises this resource). **(5) Roll out behind a feature flag / canary.** Compare p99 latency + error rate to CPU. **(6) Validate cost.** Inf2.xlarge ~ $0.76/hr vs c6i.4xlarge ~$0.68/hr — but Inferentia handles 3-5x throughput per chip, so per-request cost drops 50-70%. **(7) Decommission CPU pool.**
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to optimize a $10K/month EKS bill. **Click for the playbook. ▼**
+    answer: |
+      **(1) Visibility first.** Enable **AWS Split Cost Allocation Data for EKS** + Cost Explorer view per namespace + Kubecost or OpenCost. Map cost to teams + workloads. Find the top 5 spenders. **(2) Karpenter consolidation** on the biggest cluster. If you're on managed NGs, install Karpenter (or migrate to Auto Mode). Estimated savings: 20-30%. **(3) Spot adoption** for stateless / batch workloads. NodePool with spot+on-demand; Pods tolerate spot via Karpenter's default behaviour. Estimated additional savings: 15-30% of the spot-eligible portion. **(4) Graviton** for new workloads or trivially-portable existing ones (Java/Go/Python). Multi-arch images; NodePool allows arm64. Savings: 20-25% on those workloads. **(5) Savings Plans** on the post-optimization baseline (the consistent 24/7 floor). Don't lock in to RIs / SPs *before* optimizing — you'd lock in waste. **(6) Right-sizing**: AWS Compute Optimizer + Karpenter consolidation handle this; review quarterly. **(7) Storage**: gp3 instead of gp2 (cheaper + better perf); EFS Lifecycle to IA; S3 Mountpoint instead of staging to EBS. **Total: typically 30-50% reduction** for a cluster that's never been optimized. **$10K → $5-7K**.

@@ -561,6 +561,47 @@ These are job titles for whichever operator/SRE is being discussed, not new cast
 - Sub-labels under each site (\"design\", \"OS prep\", \"kubeadm\") give a one-word reminder.
 - Strip dot count: 11 (one per module). Anchor at V1 (the Drafting Hut, where any homestead build starts).
 
+### Unified analogical universe — Amazon EKS (K-Skyline)
+
+K-EKS (Amazon EKS, AWS-managed K8s; prereq K-COM + AWS basics) uses its own universe: **K-Skyline**. Where K-Town is the city you live in and K-Frontier is the homestead you build by hand, K-Skyline is the AWS-managed *tower* you rent space in. AWS owns the elevators, HVAC, and security desk; you furnish the floors. Each K-EKS module = one floor (or facility) of the tower.
+
+**Floor-to-module mapping**
+
+| Module | Floor | Topic |
+|---|---|---|
+| E1 | **Lobby & Floor Plan** *(anchor)* | EKS architecture & shared responsibility |
+| E2 | **Concierge Service** | EKS Auto Mode |
+| E3 | **Communication Tower** | AWS networking (VPC CNI, ALB/NLB, Gateway API, VPC Lattice) |
+| E4 | **Security Desk** | Identity (Access Entries, IRSA, Pod Identity) |
+| E5 | **Storage Vault** | EKS storage (EBS, EFS, FSx, S3 Mountpoint) |
+| E6 | **Power Floor** | Compute & autoscaling (Karpenter, spot, Graviton, GPU) |
+| E7 | **Vault Mezzanine** | EKS security (KMS, GuardDuty, ECR signing, Bottlerocket) |
+| E8 | **Observation Deck** | Observability (Container Insights, AMP, AMG, ADOT, X-Ray) |
+| E9 | **Maintenance Wing** | Upgrades & operations |
+| E10 | **Emergency Plaza** | Troubleshooting (AWS-specific) |
+| E11 | **Tower Complete** | Capstone — multi-AZ Auto Mode tower |
+
+The Lobby is the anchor (analogous to Mayor's Office in K-Town) — every visitor enters through the lobby; the floor plan on the wall is the shared-responsibility model that frames everything else.
+
+**Cast (recurring)**
+
+K-Skyline shares the K-COM cast where helpful (Katie may appear in E1 as the building manager who hands over the floor plan). New K-Skyline-specific roles (not named characters):
+
+- The **Tenant** — the AWS-shop platform team (you) leasing floors. Every K-EKS module is told from the Tenant's POV.
+- The **Building Manager** — AWS itself, who runs the elevators, HVAC, and lobby (control plane, encryption, region wiring) but never enters tenant floors.
+- The **Concierge** — Auto Mode, who furnishes empty floors on request and quietly recycles them when unused.
+
+These are job titles for whichever entity is being discussed, not new cast members. The 3-character cap from K-COM still applies.
+
+**Implementation rules**
+
+- Every K-EKS module opens with `🏙️ K-Skyline floor: **[Floor Name]**.` (the K-EKS equivalent of K-COM's `📍 Today's stop in K-Town: **[District Name]**.` and K-VAN's `🏕️ K-Frontier site:`).
+- Every K-EKS module includes the K-Skyline map graphic with the current floor highlighted.
+- Map viewBox: 800×400 (matches K-Frontier — fewer modules than K-COM).
+- Map renders by `scripts/k_eks_lesson_generator.py:_render_kskyline_map()` from the same KSKYLINE_FLOORS list.
+- Sub-labels under each floor (\"architecture\", \"Auto Mode\", \"VPC + LB + DNS\") give a one-word reminder of the AWS service surface.
+- Strip dot count: 11 (one per module). Anchor at E1 (the Lobby, where every visitor enters).
+
 ## What never changes
 
 - The packet/request motion track follows the visible cable/connection trajectory exactly. No exceptions.

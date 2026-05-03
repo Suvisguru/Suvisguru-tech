@@ -1,0 +1,21 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You're launching a new EKS cluster on c6i.large nodes. The team plans for ~50 Pods/node. Default VPC CNI. What's the IP-density check + fix?
+    answer: |
+      **c6i.large** default = 3 ENIs × 9 IPs = 27 IPs per node. 50 Pods/node won't fit. **Two fixes:** (1) **Enable prefix delegation** on the VPC CNI: `kubectl set env -n kube-system ds/aws-node ENABLE_PREFIX_DELEGATION=true` + restart. Now each ENI gets `/28` = 16 IPs; 3 ENIs × 16 = 48 IPs (still tight at 50 — bump instance to c6i.xlarge or use IPv6). (2) **Custom networking**: dedicate a separate VPC subnet for Pods (different CIDR), removes the node-subnet IP contention. **Always test density at launch**; learning about IP exhaustion in production is too late.
+
+  - id: 2
+    prompt: |
+      Your team's Ingress shows `FailedDeployModel` with "unable to find any subnet with required tag." Diagnose.
+    answer: |
+      AWS LB Controller discovers subnets by tag: `kubernetes.io/role/elb` for internet-facing ALBs and `kubernetes.io/role/internal-elb` for internal. **Fix:** tag at least 2 subnets in different AZs with the appropriate value. `aws ec2 create-tags --resources subnet-xxx --tags Key=kubernetes.io/role/elb,Value=1`. Also: tag with `kubernetes.io/cluster/<cluster-name>: owned` (or `shared` if other clusters share). After tagging: `kubectl rollout restart -n kube-system deployment aws-load-balancer-controller`. New Ingress create should provision an ALB within minutes.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to design networking for a 4-account, 6-VPC EKS multi-cluster architecture. **Click for the playbook. ▼**
+    answer: |
+      **(1) Per-VPC EKS clusters.** Each account/VPC has its own EKS cluster. Avoid the single-cluster-many-VPCs path (complex CNI + ENI mgmt). **(2) VPC Lattice for cross-VPC services.** Each cluster registers services into VPC Lattice; consumers from other clusters reference via Gateway API HTTPRoutes pointing at Lattice services. AWS handles cross-account routing + IAM-based authz. **(3) Per-cluster Cilium** (or Cilium dataplane) for in-cluster mTLS + L7 + observability (Hubble). Cilium's identity model integrates with Lattice authz at the boundary. **(4) ExternalDNS** per cluster, scoped to per-cluster zones. **(5) Resource Access Manager (RAM)** for sharing VPC Lattice service networks across accounts. **(6) Transit Gateway** for non-Lattice traffic (private DBs, on-prem, partners). **(7) Pod Identity (E4) per cluster** for AWS-service access; cross-account roles via STS AssumeRole. **Result:** each cluster autonomous, networking cleanly composable, identity flows through Lattice + IAM. Far simpler than peered-VPC + custom mesh sprawl.

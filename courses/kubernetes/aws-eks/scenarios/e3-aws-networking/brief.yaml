@@ -1,0 +1,62 @@
+# Intake brief — E3, K-EKS
+# Topic: E3 · AWS Networking for EKS (VPC CNI, ALB/NLB, Gateway API, VPC Lattice)
+# Module E3 · AWS Networking
+
+lesson:
+  title: 'E3 · AWS Networking for EKS (VPC CNI, ALB/NLB, Gateway API, VPC Lattice)'
+  slug: 'e3-aws-networking'
+  domain: 'kubernetes'
+  course_slug: 'aws-eks'
+  position: 03
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Skyline · Communication Tower — The Communication Tower stands tall above the K-Skyline. The building manager (AWS) operates the central exchange (VPC); the building''s wiring (subnets) reaches every floor across three wings (AZs). E'
+  module: 'Module E3 · AWS Networking'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'AWS basics: VPC, IAM, EC2, S3, CloudWatch.'
+    - 'K-EKS modules 1-2 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain vPC CNI — IP exhaustion is the default.'
+  - 'Learner can explain vPC CNI variants + alternatives.'
+  - 'Learner can explain aWS LB Controller + Gateway API + VPC Lattice.'
+
+sections:
+  - 'VPC CNI — IP exhaustion is the default'
+  - 'VPC CNI variants + alternatives'
+  - 'AWS LB Controller + Gateway API + VPC Lattice'
+  - 'PrivateLink, TGW, EFA'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Default VPC CNI; cluster grew from 50 to 500 Pods; nodes saturated at IP limits well before CPU/mem.'
+    - 'Single ALB serves 40 hostnames via host-based routing rules; cert-manager populates ACM certs; ExternalDNS creates internal Route 53 records.'
+    - '4 AWS accounts, 6 VPCs, dozens of services.'
+    - '32 P5 nodes, EFA enabled, NCCL configured.'
+
+section_6_animated_svg:
+  modes_count: 1-3
+  description: 'See preview-kubernetes-eks-lesson-03.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-eks-lesson-03.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - 'AWS VPC CNI gives Pods real VPC IPs via secondary ENIs/IPs. **Enable prefix delegation** (16x more IPs per ENI) — this is non-negotiable for serious clusters. **AWS LB Controller** creates ALBs from Ingress/HTTPRoute, NLBs from Services. **VPC Lattice + AWS Gateway API Controller** for cross-VPC service-to-service. **ExternalDNS** for Route 53. **SG-for-pods** for per-Pod security groups. **Cilium / Calico / AWS Cilium dataplane** as alternatives.'
+
+fact_check_anchors:
+  - 'https://docs.aws.amazon.com/eks/latest/userguide/'
+  - 'https://docs.aws.amazon.com/eks/latest/best-practices/'
+  - 'https://kubernetes.io/docs/'

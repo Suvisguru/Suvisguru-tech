@@ -1,0 +1,38 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You enable GuardDuty EKS Runtime Monitoring. After 24 hours, dashboards show 1500 "impossible-travel" findings. Diagnose.
+    answer: |
+      **False positives from CI / build automation.** GuardDuty's impossible-travel detector flags an IAM principal authenticating from geographically distant locations within a short window. CI/CD systems (GitHub Actions runners, AWS CodeBuild) span regions; legitimate but flagged. **Fix:** (1) Add suppression rules for known CI principals + their regions. (2) Review actual findings — manual triage. (3) Tune severity thresholds. **For Runtime Monitoring specifically** (eBPF threats): expect noisy first 1-2 weeks as the model baselines your workloads. Tune by suppressing well-known patterns (kubelet probes, node-local DNS). **Long-term:** threat triage as a weekly ritual; runbooks per finding type.
+
+  - id: 2
+    prompt: |
+      Your team needs to verify image signatures at admission. Cosign keyless signing in CI; you want EKS to verify. Walk the setup.
+    answer: |
+      **(1) Build pipeline**: cosign sign keyless via GitHub OIDC: `cosign sign $IMAGE`; signature stored as OCI attestation in ECR. **(2) Install Kyverno** in the cluster (Helm). **(3) Define ClusterPolicy**: apiVersion: kyverno.io/v2beta1
+      kind: ClusterPolicy
+      metadata: {name: verify-images}
+      spec:
+        validationFailureAction: Enforce
+        rules:
+        - name: check-signature
+          match:
+            resources:
+              kinds: [Pod]
+              namespaces: [prod]
+          verifyImages:
+          - imageReferences: ["123.dkr.ecr.us-east-1.amazonaws.com/*"]
+            attestors:
+            - entries:
+              - keyless:
+                  issuer: "https://token.actions.githubusercontent.com"
+                  subject: "https://github.com/myorg/.*" **(4) Test**: deploy a signed image (succeeds) + an unsigned image (rejected). **(5) Pod Identity** for Kyverno: cosign needs network access to Sigstore + OCI; ensure egress works. **(6) Soak in Audit mode first** (`validationFailureAction: Audit`) for 1-2 weeks; review PolicyReports; then switch to Enforce. **(7) Add to CI**: PR check that fails if any deployed image isn't signed.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Your team is starting from a blank EKS cluster. **Click for the security launch checklist. ▼**
+    answer: |
+      **(1) Cluster create**: `endpointPrivateAccess: true, endpointPublicAccess: false` (or hybrid with allowlist). KMS CMK for Secrets encryption. **(2) Access entries** (E4): map IAM roles → K8s groups; no aws-auth dependence. **(3) Pod Identity Agent** as managed add-on. Per-namespace IAM roles for Pod-to-AWS via Pod Identity associations. **(4) PSA labels**: every namespace gets `pod-security.kubernetes.io/enforce: restricted` (or baseline for legacy). Exception namespaces (kube-system, csi-) labeled privileged. **(5) GuardDuty**: enable EKS Protection + Runtime Monitoring. Forward findings to SIEM / PagerDuty. **(6) Inspector** + ECR Enhanced Scanning on every repo. **(7) Cosign + Kyverno verifyImages**: every prod image must be signed. **(8) Bottlerocket** nodes (default with Auto Mode; for managed NG, set AMI). **(9) StorageClasses** all KMS-encrypted with the CMK. **(10) NetworkPolicy default-deny** per namespace; AdminNetworkPolicy for cluster-wide rules. **(11) CloudTrail**: control-plane logs to CloudWatch (E8); EKS API logs to S3 + SIEM. **(12) IAM Access Analyzer** on the AWS account. **(13) Backup**: Velero with KMS encryption. **(14) Document break-glass admin**: a separate IAM principal with cluster-admin via access entry; usage alerts to Slack. **(15) kube-bench in CronJob**: weekly score, alert on regression. **Total time**: ~1 sprint for an experienced team. **Result**: production-grade security posture from day 1.

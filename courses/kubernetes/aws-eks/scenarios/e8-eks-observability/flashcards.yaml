@@ -1,0 +1,50 @@
+# Flashcards — K-EKS E (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What is CloudWatch Container Insights enhanced?
+    back: |
+      AWS-managed Pod + node + container metrics + logs DaemonSet for EKS. Pre-built dashboards. Enable as the `amazon-cloudwatch-observability` add-on.
+
+  - id: 2
+    front: |
+      AMP vs OSS Prometheus?
+    back: |
+      Same APIs (remote_write + PromQL); AMP is serverless + scales to 100M+ active series + AWS handles ops. Cost = ingestion + storage + queries.
+
+  - id: 3
+    front: |
+      AMG vs OSS Grafana?
+    back: |
+      Same UI; AMG handles infra; IAM Identity Center SSO; data sources include AMP, CloudWatch, X-Ray. Pay per active user.
+
+  - id: 4
+    front: |
+      ADOT — what does it do?
+    back: |
+      AWS-supported OpenTelemetry collector. DaemonSet + Deployment. Receives Prometheus + OTLP; routes to AMP, X-Ray, CloudWatch, third-party.
+
+  - id: 5
+    front: |
+      Five EKS control-plane log types?
+    back: |
+      api, audit, authenticator, controllerManager, scheduler. Each goes to CloudWatch Log Groups. Enable per-cluster.
+
+  - id: 6
+    front: |
+      X-Ray for EKS?
+    back: |
+      AWS distributed tracing. ADOT sends spans; X-Ray UI shows service maps + trace flame graphs. Alternative: OTel → Tempo / Jaeger / Honeycomb.
+
+  - id: 7
+    front: |
+      AWS Split Cost Allocation for EKS?
+    back: |
+      Cost Explorer feature attributing EC2 + EBS to Pods + namespaces using Container Insights data. The right way to answer per-team cost.
+
+  - id: 8
+    front: |
+      Fluent Bit for EKS?
+    back: |
+      Lightweight log shipper. Container Insights observability add-on includes a managed Fluent Bit DaemonSet. Ships container logs to CloudWatch Log Groups.

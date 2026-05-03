@@ -1,0 +1,50 @@
+# Flashcards — K-EKS E (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does AWS manage in EKS?
+    back: |
+      Control plane: kube-apiserver, etcd, scheduler, controller-manager, addon controllers. Across 3 AZs. Auto-patched. Highly available. Hidden infrastructure you never SSH into.
+
+  - id: 2
+    front: |
+      Five EKS node options?
+    back: |
+      Managed Node Groups (EC2 ASG AWS lifecycle), Self-managed (your EC2), AWS Fargate (serverless Pods), EKS Auto Mode (AWS picks instances), EKS Hybrid Nodes (on-prem joining EKS).
+
+  - id: 3
+    front: |
+      EKS version support window?
+    back: |
+      14 months standard support + 12 months extended support per minor. Extended is +$0.60/hour per cluster.
+
+  - id: 4
+    front: |
+      Cluster endpoint access modes?
+    back: |
+      Public (internet-reachable), Private (VPC-only via PrivateLink-like ENIs), Hybrid (both). Production = private (or private + strict-CIDR public).
+
+  - id: 5
+    front: |
+      What is EKS platform version?
+    back: |
+      AWS's versioning of the cluster: minor K8s + patch + AWS-specific addons + features. Released ~monthly. `aws eks describe-cluster --query cluster.platformVersion`.
+
+  - id: 6
+    front: |
+      What's eksctl for?
+    back: |
+      AWS-blessed CLI (Weaveworks). Single YAML defines cluster + nodegroups + addons + IAM + IRSA. Standard for hands-on use.
+
+  - id: 7
+    front: |
+      What are EKS Blueprints?
+    back: |
+      Terraform modules + reference architectures from AWS for production EKS. Batteries-included; opinionated. The 2026 IaC default for serious EKS shops.
+
+  - id: 8
+    front: |
+      Crossplane for EKS?
+    back: |
+      Declarative AWS resources via K8s CRDs. A management cluster creates + reconciles EKS workload clusters via YAML. Useful for fleet management.

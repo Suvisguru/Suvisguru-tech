@@ -1,0 +1,50 @@
+# Flashcards — K-EKS E (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      How does AWS VPC CNI assign Pod IPs?
+    back: |
+      Pods get real IPs from VPC subnets. CNI manages secondary IPs on ENIs attached to each node. Default: 1 IP per slot. With prefix delegation: 16 IPs per slot.
+
+  - id: 2
+    front: |
+      Why prefix delegation?
+    back: |
+      Default VPC CNI hits IP exhaustion at 30-60 Pods/node depending on instance type. Prefix delegation gives /28 (16 IPs) per slot, 4-5x density. Enable on every cluster.
+
+  - id: 3
+    front: |
+      AWS LB Controller — what does it create?
+    back: |
+      From Ingress: ALB (L7 routing, TLS, WAF). From Service type=LoadBalancer: NLB (L4, low latency, static IP). From HTTPRoute (Gateway API): ALB. Annotations control behavior.
+
+  - id: 4
+    front: |
+      Target type ip vs instance?
+    back: |
+      ip: ALB/NLB sends directly to Pod IP (modern default; needs VPC CNI). instance: sends to node, kube-proxy hops to Pod (legacy; one extra hop, less accurate health checks).
+
+  - id: 5
+    front: |
+      What is VPC Lattice?
+    back: |
+      AWS service for cross-VPC / cross-account service-to-service connectivity + access control. Implements Gateway API via the AWS Gateway API Controller. Service-mesh-adjacent without sidecars.
+
+  - id: 6
+    front: |
+      SG-for-pods?
+    back: |
+      Assign SecurityGroups to specific Pods (not just nodes). Enables fine-grained AWS-service ACLs (e.g., "only Pods with SG-X can reach RDS"). Configured via `SecurityGroupPolicy` CRD.
+
+  - id: 7
+    front: |
+      ExternalDNS for EKS?
+    back: |
+      K8s controller. Watches Ingresses + Services + HTTPRoutes with hostname annotations; syncs to Route 53 (public + private hosted zones).
+
+  - id: 8
+    front: |
+      When to use Cilium on EKS?
+    back: |
+      When you want eBPF data plane + Hubble + kube-proxy replacement + FQDN policies. Trades VPC IP integration for Cilium's feature set. AWS Cilium dataplane is the hybrid newer offering.

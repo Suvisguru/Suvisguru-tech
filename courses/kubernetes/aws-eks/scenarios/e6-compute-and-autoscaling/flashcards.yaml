@@ -1,0 +1,50 @@
+# Flashcards — K-EKS E (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Karpenter vs Cluster Autoscaler?
+    back: |
+      Karpenter: per-Pod instance picking, 20-40s spin-up, consolidation built-in, spot-aware. CA: ASG-based, 60-120s spin-up, fixed instance type per ASG, no consolidation. Karpenter wins on EKS.
+
+  - id: 2
+    front: |
+      NodePool + EC2NodeClass — what each defines?
+    back: |
+      NodePool = workload constraints (arch, capacity type, instance family, disruption). EC2NodeClass = AWS specifics (subnets, SGs, AMI, IAM role). Multiple NodePools per cluster.
+
+  - id: 3
+    front: |
+      Karpenter consolidation modes?
+    back: |
+      WhenUnderutilized = aggressive (replace lightly-loaded nodes with fewer/cheaper). WhenEmpty = only fully-empty nodes. Default is WhenUnderutilized for cost optimization.
+
+  - id: 4
+    front: |
+      How does spot interruption work?
+    back: |
+      AWS sends 2-min interruption notice. Karpenter (or Auto Mode) detects, drains the node gracefully, schedules replacement. PodDisruptionBudgets respected. Workloads with retries / replicas tolerate well.
+
+  - id: 5
+    front: |
+      Graviton workload requirements?
+    back: |
+      Multi-arch container image (or arm64-only image). Most managed runtimes (JVM, Go, Python, Node) run on ARM cleanly. Native binary dependencies need testing. NodePool: `arch In [arm64]` or both archs.
+
+  - id: 6
+    front: |
+      When use Inferentia / Trainium vs NVIDIA?
+    back: |
+      Inferentia: cheap inference (3-5x cheaper than GPU for served models). Trainium: training at large scale. Both require Neuron SDK + Neuron device plugin. NVIDIA: established + flexible; safest for novel models.
+
+  - id: 7
+    front: |
+      EFA — when?
+    back: |
+      Distributed multi-node GPU training (PyTorch DDP, Horovod, NCCL all-reduce). Specific instance types (P5, Trn2). NodePool requirement: `vpc.amazonaws.com/efa: "true"`.
+
+  - id: 8
+    front: |
+      Cost optimization stack on EKS?
+    back: |
+      Karpenter (per-Pod sizing + consolidation) + Spot (60-90% off, retry-tolerant workloads) + Graviton (~25% cheaper) + Savings Plans on always-on baseline + right-sizing.

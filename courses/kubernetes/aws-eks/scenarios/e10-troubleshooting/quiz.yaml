@@ -1,0 +1,21 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Your Pod logs `403 Forbidden: User arn:aws:sts::123:assumed-role/PodRole/i-abc is not authorized to perform: s3:GetObject on resource ...`. Diagnose.
+    answer: |
+      **The Pod is using the EC2 instance role, not its IRSA / Pod Identity role.** The `i-abc` in the assumed-role ARN is the instance ID, not the SA name. **Causes:** (1) IRSA: SA not annotated, or annotation typo, or trust policy mismatch — Pod falls back to the node's instance profile. (2) Pod Identity: association doesn't exist for this (cluster, ns, SA), or Pod started before association was created — Pod Identity Agent gives no creds, AWS SDK falls back. **Fix:** verify SA annotation (IRSA) or association (Pod Identity); restart Pod. **Verify after restart**: `kubectl exec POD -- aws sts get-caller-identity` should show the role ARN, not the instance role.
+
+  - id: 2
+    prompt: |
+      Karpenter logs show `insufficient capacity: spot price exceeded` for 30 minutes. Diagnose.
+    answer: |
+      **Spot capacity dynamics.** AWS's spot market for the instance types in your NodePool isn't offering capacity at acceptable prices in target AZs. **Mitigations:** (1) **Broaden instance types in NodePool**: more diversity = more spot pools = better availability. Add multiple families (c6i, c7i, m6i, m7i, c6a) + multiple sizes. (2) **Add on-demand fallback**: NodePool capacity-type In [spot, on-demand]; Karpenter prefers spot, falls back. (3) **Multi-AZ**: ensure NodeClass subnet selectors hit all AZs. (4) **Lower spot bid by accepting older generations**: m5 / c5 often have better spot availability than m7i / c7i. (5) **Quota**: vCPU spot quota per region — request increase preemptively. **Long-term:** graph spot capacity rejection rate by instance type per region; build a NodePool that mostly succeeds.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're building runbooks for the eight EKS failure patterns. **Click for the structure. ▼**
+    answer: |
+      **Each runbook has 6 sections:** **(1) Symptom**: exact error message + where it appears (kubectl, Pod logs, AWS Console). **(2) Likely causes**: ranked by frequency. **(3) Diagnostic commands**: copy-paste-ready. `aws eks describe-cluster`, `kubectl describe`, `aws cloudtrail lookup-events`, etc. **(4) Recovery procedure**: step-by-step fix. Conservative path first; nuclear option last. **(5) Prevention**: what to set up so this doesn't recur. **(6) Drill scenario**: how to reproduce on a non-prod cluster. **Storage:** in git alongside the platform repo. Linked from PagerDuty alert annotations. **Maintenance:** after each real incident, update the relevant runbook with what surprised people. **Cadence:** quarterly chaos day exercising 2-3 runbooks; new on-call runs through all 8 within 6 months. **Result:** mean time to mitigation drops from "figure it out" to "execute the runbook." The runbook library is a force-multiplier for the team; treat it as a first-class artefact.

@@ -1,0 +1,21 @@
+# Quiz — K-EKS E (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You're sizing a new EKS cluster for a small SaaS. ~10 microservices, modest traffic, dev team of 5. What architecture?
+    answer: |
+      **Single cluster, multi-AZ.** 3 AZs in a single region; private subnets for nodes, public for ELBs. **Endpoint:** private + hybrid with corporate IP allowlist (so `kubectl` works from offices). **Nodes:** EKS Auto Mode (no node ops for the tiny team) — or 1-2 small managed Node Groups if Auto Mode isn't available in your region yet. **IaC:** eksctl YAML to start; migrate to EKS Blueprints (Terraform) at scale. **Add-ons:** AWS LB Controller, ExternalDNS, EBS CSI, cert-manager via add-on or Helm. **Cost ballpark:** $0.10/h cluster + ~3 t3.medium nodes ($90/month) + EBS + ELB ~$30/month + traffic. ~$200/month for the platform; workload cost on top.
+
+  - id: 2
+    prompt: |
+      Your EKS cluster is on K8s 1.32. AWS bills you $0.10/hour. Six months later you see a charge of $0.70/hour. What happened?
+    answer: |
+      **Standard support ended on K8s 1.32.** AWS is now charging the $0.60/hour **extended support** premium on top of the $0.10/hour cluster fee. **Two paths:** (1) Upgrade to a supported minor (1.33+) — eliminates the premium. **Recommended.** (2) Keep paying extended support if you genuinely can't upgrade now (e.g., a deprecated CRD-using operator). Eventually AWS will fully deprecate the version even on extended support; you'll be forced upgrade. **Lesson:** track `aws eks describe-cluster-versions` output in CI; alert when standard support ends in < 90 days. Don't learn this from a billing spike.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      You're asked to choose between eksctl, EKS Blueprints (Terraform), Crossplane for production cluster provisioning. **Click for the decision walk. ▼**
+    answer: |
+      **Pick eksctl when:** you're iterating on cluster shape, single team owns the cluster, you don't already have IaC tooling. Single YAML; fastest path; well-documented; AWS-supported. **Pick EKS Blueprints (Terraform) when:** you're a multi-team org with existing Terraform investment, you'll operate ≥ 3 clusters, you want production defaults baked in (Karpenter + ALB + IRSA + add-ons all pre-configured). Most production shops in 2026 land here. **Pick Crossplane when:** you're building a platform team that operates many clusters, you want to declare clusters as K8s YAML (so the same GitOps flow that manages workloads also manages clusters), you have a management cluster running. **Decision tree:** <3 clusters → eksctl. ≥ 3 clusters + Terraform shop → Blueprints. Many clusters + platform team → Crossplane. **Common starting pattern:** eksctl in dev to learn; promote to Blueprints for staging/prod. Cluster API on EKS (CAPA + EKS provider) is another emerging path — similar to Crossplane but K8s-SIG-native.

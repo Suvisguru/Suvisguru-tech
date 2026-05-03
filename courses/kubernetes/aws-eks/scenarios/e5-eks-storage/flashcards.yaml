@@ -1,0 +1,50 @@
+# Flashcards — K-EKS E (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Four EKS CSI driver families?
+    back: |
+      EBS (RWO block), EFS (RWX NFS multi-AZ), FSx (Lustre / ONTAP / OpenZFS specialty), S3 Mountpoint (object as FS read-heavy). All as managed add-ons.
+
+  - id: 2
+    front: |
+      Why WaitForFirstConsumer in multi-AZ?
+    back: |
+      EBS is single-AZ. Immediate binding provisions volume before Pod scheduling; Pod may land in different AZ → FailedAttachVolume. WaitForFirstConsumer aligns volume to Pod's zone.
+
+  - id: 3
+    front: |
+      What is VolumeAttributesClass on EBS?
+    back: |
+      K8s 1.34 GA. Live re-tune IOPS / throughput on a PVC by changing label. EBS CSI invokes ModifyVolume — no detach, no Pod restart, ~30s.
+
+  - id: 4
+    front: |
+      snapshot-controller — what is it?
+    back: |
+      K8s SIG-Storage component (separate from CSI driver). Translates VolumeSnapshot API objects into CSI snapshot calls. Install once per cluster.
+
+  - id: 5
+    front: |
+      gp3 vs io2 vs st1?
+    back: |
+      gp3: general SSD, default, $0.08/GB. io2: provisioned IOPS for > 16K IOPS, $0.125/GB. st1: HDD for cold/batch, $0.045/GB.
+
+  - id: 6
+    front: |
+      EFS — when to use?
+    back: |
+      RWX shared filesystem. Multi-AZ. Slower than local EBS but pay-per-use. Good for shared content, log staging, multi-Pod readers.
+
+  - id: 7
+    front: |
+      FSx Lustre — when?
+    back: |
+      HPC, ML training. Parallel filesystem, very high throughput. Pricey; long provision time (15+ min).
+
+  - id: 8
+    front: |
+      S3 Mountpoint — when?
+    back: |
+      Read-heavy ML datasets, immutable content, archive logs. Cheap (S3 storage prices). Limited write semantics.

@@ -1,0 +1,50 @@
+# Flashcards — K-EKS E (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      EKS standard support window?
+    back: |
+      14 months per K8s minor. After that, extended support kicks in at $0.60/hour cluster fee.
+
+  - id: 2
+    front: |
+      Extended support window?
+    back: |
+      12 months at +$0.60/h. Buys time to upgrade. AWS forcibly upgrades after extended ends.
+
+  - id: 3
+    front: |
+      EKS upgrade order?
+    back: |
+      Pre-flight scan + Velero → control plane (AWS handles) → Managed NG (rolling drain) → self-managed nodes → Fargate Pod refresh → add-ons (CNI / CoreDNS / kube-proxy / EBS CSI) → verify.
+
+  - id: 4
+    front: |
+      Can EKS skip minor versions?
+    back: |
+      No. +1 minor per update. Multi-version jumps require sequential updates or blue-green cluster.
+
+  - id: 5
+    front: |
+      How long does control-plane upgrade take?
+    back: |
+      ~30-60 min. AWS rolls the apiserver instances behind the LB; cluster API stays available.
+
+  - id: 6
+    front: |
+      Managed Node Group upgrade flow?
+    back: |
+      `aws eks update-nodegroup-version`. AWS uses the same lifecycle controller to drain + replace nodes one at a time. Respects PDBs.
+
+  - id: 7
+    front: |
+      Fargate Pod refresh on upgrade?
+    back: |
+      New Pods get the new platform version automatically. Existing Pods stay until natural restart. Force-refresh = trigger rolling deploy.
+
+  - id: 8
+    front: |
+      When use blue-green cluster?
+    back: |
+      High-stakes upgrades, multi-version jumps, regulated workloads, distrust of in-place. Twice the infra cost during cutover; zero in-place risk.
