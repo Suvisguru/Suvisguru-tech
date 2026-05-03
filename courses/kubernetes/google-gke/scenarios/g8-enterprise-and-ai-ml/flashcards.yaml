@@ -1,0 +1,50 @@
+# Flashcards — K-GKE G (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What is a GKE Fleet?
+    back: |
+      A logical grouping of clusters (GKE + Anthos-registered non-GKE) under one governance plane. Enables Config Sync, Policy Controller, CSM, Connect Gateway, MCI/MCG, fleet-default settings. Register with `gcloud container fleet memberships register`.
+
+  - id: 2
+    front: |
+      What does Config Sync do?
+    back: |
+      Continuous GitOps reconciliation. RootSync + RepoSync CRDs reconcile manifests from Git into clusters. Drift detection on; manual edits reverted. Three repo patterns: per-tenant / per-environment / per-cluster.
+
+  - id: 3
+    front: |
+      What is Connect Gateway?
+    back: |
+      Run kubectl against any registered fleet cluster via the GCP control plane. No need to expose individual cluster apiserver IPs to humans; auth via GCP IAM. Works for clusters behind NAT / on-prem / in other clouds.
+
+  - id: 4
+    front: |
+      GKE on AWS / Azure / VMware / bare metal — what are these?
+    back: |
+      Anthos Multi-Cloud + on-prem variants of GKE. Full GKE control plane runs in customer's AWS / Azure / vSphere / bare-metal estate. Workloads on local infra. All register into the same Fleet for unified governance.
+
+  - id: 5
+    front: |
+      What is Kueue?
+    back: |
+      Kubernetes-native batch queueing. ClusterQueue (cluster-wide capacity + priority) + LocalQueue (namespace-level) + Workload CRD. Quota borrowing across teams; priority + preemption. Replaces DIY batch schedulers.
+
+  - id: 6
+    front: |
+      What is JobSet API?
+    back: |
+      Orchestrate sets of K8s Jobs together: success / failure / dependency relationships. For multi-host distributed training where N Jobs must launch simultaneously and fail/succeed as a unit (e.g., TPU multi-host pods, multi-node GPU training).
+
+  - id: 7
+    front: |
+      What is MIG and when use it?
+    back: |
+      **Multi-Instance GPU** — slice a single H100/H200 into multiple smaller virtual GPUs (e.g., 7 × 10GB MIGs from one 80GB H100). Use when you have inference workloads that don't need the full GPU; share a high-end GPU across multiple Pods cost-effectively.
+
+  - id: 8
+    front: |
+      What does GKE Inference Gateway add over regular Gateway?
+    back: |
+      Model-aware routing: route by model name; KV-cache locality (follow-up requests in a conversation go back to the same Pod with warm cache); prompt-size routing (small prompts → high-throughput Pods, large prompts → large-memory Pods). Optimises cost-per-token for LLM serving.

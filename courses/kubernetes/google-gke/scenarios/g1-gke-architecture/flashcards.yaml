@@ -1,0 +1,50 @@
+# Flashcards — K-GKE G (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three GKE modes — what differs?
+    back: |
+      **Standard**: you manage node pools, scaling, ops. **Autopilot**: Google manages nodes; per-Pod billing; Pod-level SLA; admission webhooks enforce safety baseline. **Enterprise**: add-on tier on top of Standard or Autopilot for fleets, Config Sync, Policy Controller, Cloud Service Mesh, multi-cluster Ingress.
+
+  - id: 2
+    front: |
+      Regional vs zonal control plane — what survives?
+    back: |
+      **Regional**: apiserver + etcd in 3 zones; survives 1-zone outage. **Zonal**: apiserver + etcd in 1 zone; zone outage = control plane down (workloads keep running but no deploys). Production default = regional.
+
+  - id: 3
+    front: |
+      What is GKE Enterprise (formerly Anthos)?
+    back: |
+      A *tier-on-top* of Standard / Autopilot for governance: fleet management across GCP/AWS/Azure/on-prem, Config Sync (GitOps), Policy Controller (managed Gatekeeper), Cloud Service Mesh (managed Istio), Connect Gateway (kubectl across clusters), multi-cluster Ingress / Gateway.
+
+  - id: 4
+    front: |
+      Multi-zonal node pools — what is it?
+    back: |
+      A node pool spread across multiple zones via `--node-locations`. Autoscaler distributes nodes per zone. Combine with regional control plane + Pod topology-spread constraints for true multi-zone resilience.
+
+  - id: 5
+    front: |
+      Three apiserver-locking-down options?
+    back: |
+      **Master authorized networks** (firewall public endpoint), **private cluster + public endpoint** (nodes private, apiserver public-restricted), **fully private cluster** (apiserver via Private Service Connect).
+
+  - id: 6
+    front: |
+      Four GKE provisioning paths?
+    back: |
+      **gcloud CLI** (interactive / runbooks), **Terraform Google provider** (most popular cross-platform), **Config Connector** (GCP-as-K8s-CRDs, GitOps-native), **Pulumi** (real programming languages).
+
+  - id: 7
+    front: |
+      What does the Compute Engine default service account do, and why rotate it?
+    back: |
+      GKE clusters use a node SA — defaults to the Compute Engine default SA which has *over-broad project Editor permissions*. Rotate to a least-privilege per-cluster SA: only what nodes actually need (logging.logWriter, monitoring.metricWriter, storage.objectViewer for image pull, etc.).
+
+  - id: 8
+    front: |
+      Per-Pod billing in Autopilot — what does it actually mean?
+    back: |
+      Autopilot bills *per Pod-second based on requested CPU/memory*, not per node. Pod with `requests: 100m/256Mi` running 1 hour = ~0.1 vCPU-hour + ~0.25 GiB-hour billed. Off-hours scale-to-zero of a Deployment = $0 cost. (Standard always bills per node, regardless of Pod density.)

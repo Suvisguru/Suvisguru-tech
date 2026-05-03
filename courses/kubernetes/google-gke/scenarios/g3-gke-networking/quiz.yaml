@@ -1,0 +1,21 @@
+# Quiz — K-GKE G (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      200 Pods stuck Pending, scheduler logs say "insufficient cpu/memory" but `kubectl top nodes` shows nodes mostly idle. The cluster has been growing for months. What's the likely cause and the fix?
+    answer: |
+      **Pod secondary IP range exhaustion.** VPC-native clusters allocate per-node alias IP ranges out of the cluster's Pod secondary range. As nodes grow, the per-node alias bites further into the secondary; eventually the secondary is exhausted and new Pods can't get IPs even on nodes with free CPU. Fix: cannot resize in place — create a new node pool with a larger Pod CIDR range; cordon + drain old node pool with PDB safety; delete old pool. Future: plan Pod range generously at cluster creation; use Discontiguous Multi-Pod CIDR for very large clusters.
+
+  - id: 2
+    prompt: |
+      The team has Cloud Armor + Identity-Aware Proxy + Backend Service config to apply to an Ingress. Should they keep using the legacy Ingress object or migrate to Gateway API? Walk through the trade-offs.
+    answer: |
+      **Both work; Gateway is the modern preferred path.** Legacy Ingress: simpler if you have a single LB per cluster + per-app annotations + features fully supported by the Ingress annotation set. Gateway API: cleaner separation of concerns (platform team owns Gateway/GatewayClass; app teams own HTTPRoute), supports multi-cluster Gateway, future GKE feature investment. Migration tactic: parallel-run for a sprint (point a test DNS at the new Gateway-fronted endpoint), validate Cloud Armor + IAP behavior, swap DNS, decommission old Ingress. *For new ingresses, start with Gateway API; for stable existing Ingresses without pain, migrate at a calmer time.*
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Black Friday morning. Suddenly every customer-facing endpoint returns 503. Cloud Monitoring shows NEG backends 100% unhealthy. What's the first thing you check?
+    answer: |
+      **Firewall rule allowing GFE health-check IP ranges** — `35.191.0.0/16` and `130.211.0.0/22` must permit ingress to the Pod range over the health-check port. Most common cause of "all backends unhealthy at once": a recent Terraform/firewall change removed or modified that rule. Validate via `gcloud compute firewall-rules list` + check the relevant *allow-rules*. Fix: restore the rule. Postmortem: add a Cloud Monitoring alert on NEG backend health 5 min; pin the GFE-allow rule with a Terraform comment + lifecycle ignore_changes block to prevent accidental drift.

@@ -1,0 +1,21 @@
+# Quiz — K-GKE G (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Your prod cluster is on Regular channel with maintenance window Tuesdays 02-06 UTC. The team is launching a new feature on Tuesday 5pm; rollout window is Tue-Thu. What configuration prevents an auto-upgrade during the launch?
+    answer: |
+      Set a **maintenance exclusion** for the date range Tue 12:00 UTC → Fri 12:00 UTC (or longer to give buffer), scope **no upgrades** (or *no minor upgrades* if you still want security patches). Pub/Sub upgrade notifications also let you confirm Google didn't pre-queue something; if it did, the exclusion suppresses it. After the launch validates, remove the exclusion (or let it auto-expire).
+
+  - id: 2
+    prompt: |
+      You're running a v1.29 cluster on Regular channel. EOS is approaching. What's the upgrade plan?
+    answer: |
+      (1) Check the GKE Release Notes for v1.30 / v1.31 in Regular — pick the target. (2) Run gcpdiag + kubent against the cluster to find deprecated API usage. (3) Schedule the upgrade in the maintenance window; consider a maintenance exclusion right after to prevent piggyback patches. (4) Subscribe to Pub/Sub upgrade notifications. (5) If gcpdiag finds blockers, fix workloads first. (6) When the upgrade fires, Google upgrades the control plane in place; node pools roll with surge headroom. (7) If you don't take action, GKE auto-upgrades you to the next supported minor before EOS — you're not stranded; you may just upgrade later than convenient.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO walks in: "Why are we on Regular channel? Latest features are in Rapid; let's switch." Defend or pivot.
+    answer: |
+      "**Rapid is for canary clusters and platform-team validation, not for prod we run customer workloads on.** The reason: Rapid gets new minors within weeks of upstream K8s release; some of those minors have known issues that the GKE team patches in subsequent weeks before promoting to Regular. We'd be running with the latest minors *and* their teething problems. The pattern that gets us the latest features safely: keep prod on Regular; spin up a small canary cluster on Rapid for the platform team to test new features + APIs. When something interesting lands in Rapid, we exercise it on canary, build the migration plan, then prod gets it 2-6 weeks later when it's in Regular and stable. *Regular gets the same features as Rapid, just slightly later, with better SLA and fewer surprises.*"

@@ -1,0 +1,50 @@
+# Flashcards — K-GKE G (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Four phases of the K-GKE capstone?
+    back: |
+      **Phase A** base (regional Autopilot + Cilium + Stable channel + private + WIF). **Phase B** platform (MCG + WIF + storage + GMP/AMG/SLO). **Phase C** ops + AI (BinAuth + Policy Controller + Config Sync + Backup for GKE + Inference Gateway + vLLM). **Phase D** defence + live drill.
+
+  - id: 2
+    front: |
+      What does "defendable" mean for the reference garden?
+    back: |
+      Every choice can be justified by trade-offs the operator can articulate: why Autopilot over Standard, why Cilium, why Stable channel, why MCG, why Backup for GKE, why Inference Gateway. A peer reviewer can ask "why X?" for each component and get a coherent answer.
+
+  - id: 3
+    front: |
+      Three Config Sync repo patterns?
+    back: |
+      **cluster-config** (Fleet seed + RootSync), **platform** (Container Insights, MCG, MI/role assignments), **workloads** (per-tenant or per-team apps). Each has its own RBAC + reviewer set.
+
+  - id: 4
+    front: |
+      Five chaos events in the live drill?
+    back: |
+      (1) Kill a node — Autopilot replaces. (2) Revoke a G-SA IAM role — Pod 401, Audit Logs surface, fix. (3) CTD finding — triage + remediation + admission policy hardening. (4) DR restore — Backup for GKE into sibling cluster within RTO. (5) 10× inference burst — Inference Gateway + vLLM scaling holds SLO.
+
+  - id: 5
+    front: |
+      Why include AI inference in the reference capstone?
+    back: |
+      Most modern GKE deployments include some AI/ML serving workload. The capstone showcases the modern AI inference pattern: Inference Gateway + vLLM + Compute Class Accelerator + Kueue/JobSet for batch + cost-per-token KPI. Operating an AI workload defendably is part of the K-GKE skill bundle.
+
+  - id: 6
+    front: |
+      What makes the upgrade runbook safe?
+    back: |
+      Stable release channel + planned maintenance window + maintenance exclusion calendar + Pub/Sub upgrade notifications + pre-flight via gcpdiag / kubent. PDB-tested workloads + blue-green node-pool fallback for high-stakes.
+
+  - id: 7
+    front: |
+      What does "K-GKE-complete" mean as a deliverable?
+    back: |
+      Terraform code + per-cluster architecture Markdown + DR runbook + AI inference runbook + live-drill recording. A successor operator can read the docs, run the runbooks, and operate the garden without you.
+
+  - id: 8
+    front: |
+      Why is the egress allow-list (Cloud NAT + FQDN-allow firewall) part of the capstone?
+    back: |
+      Catches data exfiltration at the network layer. A compromised Pod with WIF-bound G-SA to Storage can still try to exfil to an arbitrary FQDN; firewall denies anything not on the allow-list. Defence in depth — WIF scope + NetworkPolicy + Cloud NAT + firewall + CTD runtime detection.

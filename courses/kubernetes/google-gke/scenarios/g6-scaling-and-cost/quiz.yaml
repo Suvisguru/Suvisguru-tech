@@ -1,0 +1,21 @@
+# Quiz — K-GKE G (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A developer enables HPA on a Deployment with no `maxReplicas`. Custom metrics adapter sees a queue spike; HPA tries to scale to thousands of Pods. What happens, and what's the right config?
+    answer: |
+      HPA scales toward the computed target (potentially massive). Cluster Autoscaler / NAP adds nodes to schedule them. Cluster cost spikes; subnet may IP-exhaust. **Right config:** always set `spec.maxReplicas` on every HPA — pick a defensible cap. Plus alert on Pod count > X, plus quotas on namespace resources. *HPA without a cap is the runaway-cost story; cap it.*
+
+  - id: 2
+    prompt: |
+      The platform team wants "per-namespace cost visibility for chargeback." Walk through the wire-up.
+    answer: |
+      (1) Enable **BigQuery billing export** at the billing-account level — exports daily billing data to a BQ dataset. (2) Enable **GKE cost allocation** on the cluster — adds K8s metadata (namespace, workload) to the per-row cost data. (3) Build a Looker Studio (or Grafana / Looker) dashboard joining cost rows with namespace → tenant mapping (your tenancy CMDB or labels). (4) Optionally schedule a monthly export to email tenants their bill. *Total wire-up: ~half a day; recurring value: chargeback discipline.*
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees the GKE bill and asks: "Are we using Spot for everything we can?" Defend or correct.
+    answer: |
+      "**No — and we shouldn't be.** Spot saves up to 91% but evictions happen with 30 seconds notice. We use Spot for: (1) batch / training jobs with checkpointing — eviction = lose < 10 min work, cheaper than on-demand. (2) Stateless replicas behind a load balancer with multi-zone anti-affinity — losing one Pod is invisible. (3) CI runners — jobs are idempotent. We do *not* use Spot for: stateful primaries (eviction = data loss), latency-sensitive customer-facing endpoints (eviction = visible 5xx during reschedule), workloads with no checkpoint protocol. We use Compute Class with Spot *fallback* on eligible workloads — get the discount when Spot is available, fall back cleanly when it's not. Pushing more workloads onto Spot than this would generate SLA breaches that cost more than the saving."

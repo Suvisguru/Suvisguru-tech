@@ -1,0 +1,63 @@
+# Intake brief — G5, K-GKE
+# Topic: G5 · GKE Storage (PD, Hyperdisk + Storage Pools, Filestore, GCS FUSE, Parallelstore)
+# Module G5 · GKE Storage
+
+lesson:
+  title: 'G5 · GKE Storage (PD, Hyperdisk + Storage Pools, Filestore, GCS FUSE, Parallelstore)'
+  slug: 'g5-gke-storage'
+  domain: 'kubernetes'
+  course_slug: 'google-gke'
+  position: 05
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Garden · Reservoir &amp; Compost — The **Reservoir & Compost** is the K-Garden''s storage building. Five backends.
+    **Personal water tanks** (Persistent Disk): one tank per gardener, fast, locked. The tank lives in a specific zone of'
+  module: 'Module G5 · GKE Storage'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'GCP basics: IAM, VPC, GCE, Cloud LB, PD/Filestore, Cloud Logging/Monitoring.'
+    - 'K-GKE modules 1-4 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain persistent Disk CSI — RWO default.'
+  - 'Learner can explain hyperdisk + Storage Pools + VolumeAttributesClass.'
+  - 'Learner can explain filestore CSI + GCS FUSE CSI + Parallelstore CSI.'
+
+sections:
+  - 'Persistent Disk CSI — RWO default'
+  - 'Hyperdisk + Storage Pools + VolumeAttributesClass'
+  - 'Filestore CSI + GCS FUSE CSI + Parallelstore CSI'
+  - 'Backup for GKE + Secret Manager CSI + topology-aware scheduling'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A small Postgres workload on GKE — single primary, no streaming replica yet.'
+    - 'ML team needs read-only access to 200 TB image datasets across hundreds of training Pods.'
+    - 'Postgres workload on Hyperdisk Balanced provisioned at 3,000 IOPS / 240 MiB/s.'
+    - 'A bank schedules nightly Backup for GKE backups: cluster-wide manifests + all PV snapshots, cross-region replication to the paired DR region.'
+
+section_6_animated_svg:
+  modes_count: 1-2
+  description: 'See preview-kubernetes-gke-lesson-05.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-gke-lesson-05.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Default to PD CSI (pd-balanced) with WaitForFirstConsumer for RWO; Regional PD for cross-zone resilience; Hyperdisk + Storage Pools + VolumeAttributesClass for tunable performance; Filestore for RWX; GCS FUSE for cheap object datasets; Parallelstore for HPC/AI; Backup for GKE for managed DR.**'
+
+fact_check_anchors:
+  - 'https://cloud.google.com/kubernetes-engine/docs/'
+  - 'https://cloud.google.com/kubernetes-engine/docs/best-practices'
+  - 'https://kubernetes.io/docs/'

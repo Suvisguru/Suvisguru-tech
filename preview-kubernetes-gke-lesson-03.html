@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-GKE G3 · GKE Networking</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-GKE module journey">
+  <span class="concept-rail-title">K-GKE modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G1 GKE architecture &amp; modes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G2 versioning &amp; channels</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>G3 GKE networking</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G4 identity &amp; security</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G5 GKE storage</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G6 scaling &amp; cost</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G7 GKE observability</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G8 Enterprise (Fleets) &amp; AI/ML</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G9 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G10 capstone harvest</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-GKE · Module G3</span></a>
+    <span class="progress-pill">G3 · GKE networking</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🌿 K-Garden plot: <strong>Pathways &amp; Trellises</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Garden map: G3">
+    <title>K-Garden map · G3</title>
+    <desc>Stylised Google-managed garden / orchard. Pathways &amp; Trellises highlighted.</desc>
+    <defs>
+      <linearGradient id="kg-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8EFE0" stop-opacity="0.7"/><stop offset="100%" stop-color="#A8C896" stop-opacity="0.55"/></linearGradient>
+      <linearGradient id="kg-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.16"/><stop offset="100%" stop-color="#3F4A5E" stop-opacity="0.30"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kg-soil)" stroke="#7BA068" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · GARDEN · GCP REGION</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">front of garden — pavilion &amp; planting</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">deeper plots — operations &amp; harvest</text>
+    <g class="pin pin-anchor" id="kg-plot01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">G1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Visitors' Pavilion</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="kg-plot02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Almanac Hut</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">release channels</text></g>
+    <g class="pin active" id="kg-plot03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Pathways &amp; Trellises</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">VPC + Gateway + LB</text></g>
+    <g class="pin" id="kg-plot04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Gatekeeper's Lodge</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">WIF + BinAuth + Posture</text></g>
+    <g class="pin" id="kg-plot05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Reservoir &amp; Compost</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">PD + Filestore + Hyperdisk</text></g>
+    <g class="pin" id="kg-plot06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Auto-Greenhouse</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scaling + cost</text></g>
+    <g class="pin" id="kg-plot07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">GMP + Cloud Mon + Trace</text></g>
+    <g class="pin" id="kg-plot08" transform="translate(380,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Research Greenhouse</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Fleets + AI/ML</text></g>
+    <g class="pin" id="kg-plot09" transform="translate(520,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Plant Doctor's Hut</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">GCP-specific RCA</text></g>
+    <g class="pin" id="kg-plot10" transform="translate(660,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harvest Festival</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🌿 <strong>Pathways &amp; Trellises</strong> <span>· G3 of 10</span><span class="visually-hidden">Module G3, Pathways &amp; Trellises.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module G3 · the Pathways &amp; Trellises</span>
+    <h1>G3 · GKE Networking (VPC-native, Dataplane V2, Gateway, multi-cluster, CSM)</h1>
+    <p class="hero-sub"><strong>VPC-native (alias IP)</strong> with pod/service secondary ranges (routes-based is legacy). <strong>GKE Dataplane V2</strong> = Cilium-based eBPF, default for new clusters. <strong>GKE Ingress</strong> (Cloud LB programmed by Ingress objects, legacy path) and the modern <strong>GKE Gateway controller</strong> (first-class Gateway API + multi-cluster Gateway). <strong>NEG</strong> + container-native LB. <strong>Multi Cluster Ingress / Multi Cluster Services (MCI/MCS)</strong>. <strong>Cloud Service Mesh</strong> (managed Istio). Plus Network Connectivity Center, Shared VPC, firewall rules, DNS.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GKE networking — VPC-native, Dataplane V2, Gateway, NEG, multi-cluster, Cloud Service Mesh.">
+  <rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6"/>
+  <text x="380" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E">Pathways &amp; Trellises — six networking surfaces</text>
+  <rect x="40" y="70" width="160" height="120" rx="10" fill="#5A9F7A" stroke="#3F4A5E"/>
+  <text x="120" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">VPC-native (alias IP)</text>
+  <text x="120" y="105" text-anchor="middle" font-size="9" fill="#FFFFFF">Pod range secondary</text>
+  <text x="120" y="118" text-anchor="middle" font-size="9" fill="#FFFFFF">Svc range secondary</text>
+  <text x="120" y="135" text-anchor="middle" font-size="9" fill="#FFFFFF">IP planning matters</text>
+  <text x="120" y="148" text-anchor="middle" font-size="9" fill="#FFFFFF">routes-based legacy</text>
+  <rect x="220" y="70" width="160" height="120" rx="10" fill="#A04832" stroke="#3F4A5E"/>
+  <text x="300" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Dataplane V2</text>
+  <text x="300" y="105" text-anchor="middle" font-size="9" fill="#FFFFFF">Cilium-based eBPF</text>
+  <text x="300" y="118" text-anchor="middle" font-size="9" fill="#FFFFFF">default for new</text>
+  <text x="300" y="135" text-anchor="middle" font-size="9" fill="#FFFFFF">NetworkPolicy + obs</text>
+  <text x="300" y="155" text-anchor="middle" font-size="9" fill="#FFFFFF">no kube-proxy</text>
+  <rect x="400" y="70" width="160" height="120" rx="10" fill="#7AB3CC" stroke="#3F4A5E"/>
+  <text x="480" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Gateway controller</text>
+  <text x="480" y="105" text-anchor="middle" font-size="9" fill="#FBF1D6">Gateway API native</text>
+  <text x="480" y="118" text-anchor="middle" font-size="9" fill="#FBF1D6">multi-cluster Gateway</text>
+  <text x="480" y="135" text-anchor="middle" font-size="9" fill="#FBF1D6">NEG (container-native)</text>
+  <text x="480" y="155" text-anchor="middle" font-size="9" fill="#FBF1D6">Ingress (Cloud LB) legacy</text>
+  <rect x="580" y="70" width="140" height="120" rx="10" fill="#3F4A5E" stroke="#FBF1D6"/>
+  <text x="650" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">multi-cluster + mesh</text>
+  <text x="650" y="105" text-anchor="middle" font-size="9" fill="#FBF1D6">MCI / MCS</text>
+  <text x="650" y="118" text-anchor="middle" font-size="9" fill="#FBF1D6">Cloud Service Mesh</text>
+  <text x="650" y="135" text-anchor="middle" font-size="9" fill="#FBF1D6">Shared VPC</text>
+  <text x="650" y="148" text-anchor="middle" font-size="9" fill="#FBF1D6">NCC + private DNS</text>
+  <text x="650" y="170" text-anchor="middle" font-size="9" font-style="italic" fill="#FBF1D6">Cloud NAT + firewall</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. <em>"NEG health checks failing for ingress backend; 503s to all customers."</em> You realise the firewall rule blocking GFE health-check IP ranges (<code>35.191.0.0/16</code>, <code>130.211.0.0/22</code>) was overwritten by a Terraform refactor yesterday. NEG can't mark Pod IPs healthy; load balancer drains backends. <em>Half your traffic now goes nowhere.</em> Today's lesson: GKE networking surfaces and how to reason about each one.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>VPC-native + Dataplane V2 + Gateway API + NEG container-native LB is the modern default. Plan IP space (Pod + Service secondary ranges) generously; firewall the GFE health-check ranges open; use Cloud NAT for egress; Cloud Service Mesh for mTLS + traffic management.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · VPC-native + IP planning</span>
+    <h2>VPC-native (alias IP) + IP planning</h2>
+    <p><strong>VPC-native</strong> clusters give every Pod and Service a real VPC IP via <em>alias IP ranges</em> on the node. Pods communicate directly via VPC routing — no NAT, no overlay encap. <em>The default for new GKE clusters; routes-based legacy is deprecated.</em></p>
+    <p>VPC-native clusters need three IP ranges:</p>
+    <ul>
+      <li><strong>Node range (primary subnet)</strong> — IPs for nodes themselves. Plan: max-nodes you'll ever scale to.</li>
+      <li><strong>Pod secondary range</strong> — IPs allocated to Pods. Per-node alias range carved from this. Plan: <code>(max-nodes × default-max-pods-per-node × 2 buffer)</code>. <em>Default 110 Pods per node × 1024 nodes = ~225K IPs needed</em>; underspecify and you stop scheduling Pods even with empty CPU.</li>
+      <li><strong>Service secondary range</strong> — IPs for ClusterIP Services. Smaller; default sufficient for most clusters.</li>
+    </ul>
+    <p><strong>IP exhaustion mitigation:</strong> use larger Pod secondary ranges from the start (you can't resize a Pod range in place — need new node pool with different range). Tune <code>--max-pods-per-node</code> (default 110; can be lowered to reduce per-node alias usage). Use Discontiguous Multi-Pod CIDR for very large clusters. <em>Plan IP space at cluster creation; this bites later otherwise.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · Dataplane V2 + NetworkPolicy + Cloud NAT</span>
+    <h2>Dataplane V2 + NetworkPolicy + Cloud NAT</h2>
+    <p><strong>GKE Dataplane V2</strong> = Cilium-based eBPF dataplane. Default for new clusters. Replaces kube-proxy (iptables / IPVS). Faster service routing, better observability (Hubble flow visibility), L4 + L7 NetworkPolicy.</p>
+    <p><strong>NetworkPolicy</strong>: standard K8s NetworkPolicy works on Dataplane V2. Plus <em>FQDN NetworkPolicy</em> (block egress to specific DNS names — useful for data-exfiltration prevention). Plus Cilium NetworkPolicy CRD for L7 rules ("allow GET /api on this service, deny POST"). <em>Default-deny per namespace + explicit allow lists</em> is the standard zero-trust posture.</p>
+    <p><strong>Cloud NAT</strong> for egress: Pods on private clusters have no public IPs. Outbound to internet (Stripe, package registries, third-party APIs) goes through Cloud NAT — managed NAT, scales NAT ports per attached IP. Avoids the SNAT-exhaustion class of outage that LB-shared SNAT causes on other clouds.</p>
+    <p><strong>Master authorized networks</strong> + <strong>private cluster</strong> from G1 apply at the network layer — control-plane access restricted to specific CIDRs, nodes private with Cloud NAT for egress.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · Ingress, Gateway, NEG, container-native LB</span>
+    <h2>Ingress, Gateway, NEG, container-native load balancing</h2>
+    <p><strong>GKE Ingress</strong> (legacy path) — controller programs a Google Cloud Load Balancer (HTTP(S) LB) from <code>Ingress</code> objects. Backend = NEG (Network Endpoint Group) of Pod IPs (container-native LB). Annotations on the Ingress configure the LB (TLS cert, backend config, Cloud Armor policy, IAP).</p>
+    <p><strong>GKE Gateway controller</strong> (modern) — first-class <strong>Gateway API</strong> support. Resources: <code>GatewayClass</code> (e.g. <code>gke-l7-global-external-managed</code>), <code>Gateway</code>, <code>HTTPRoute</code>, <code>TLSRoute</code>, <code>TCPRoute</code>. Cleaner separation of platform-team (Gateway) and app-team (HTTPRoute) responsibilities. Supports <em>multi-cluster Gateway</em> across clusters in a fleet.</p>
+    <p><strong>NEG (Network Endpoint Group)</strong> = the GCP LB primitive that holds Pod IPs (container-native LB) instead of node IPs (instance-group LB). Faster failure detection (LB sees Pod IP go away immediately instead of via kube-proxy NAT chain), lower latency. <em>Required for Ingress / Gateway in modern GKE.</em></p>
+    <p><strong>Multi Cluster Ingress (MCI) + Multi Cluster Services (MCS)</strong> = single Ingress / Service that fronts Pods across multiple GKE clusters in a fleet (different regions). MCI gives you a global anycast IP with traffic routed to the nearest healthy cluster. MCS lets a Service in cluster A address Pods in cluster B. <em>Foundation for multi-region active-active.</em></p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A new GKE cluster has 200 nodes and Pods are stuck Pending with "InsufficientPodCapacity." Where do you look first?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Add more CPU.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Inspect the Pod secondary range size — was it sized for 200 × 110 Pods × 2 buffer at create time?</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Re-roll the cluster.</button></li>
+      </ul>
+      <p class="pause-check-feedback">VPC-native Pod IPs come from the Pod secondary range. Underspecify it and you exhaust IPs before exhausting CPU; the only fix is a new node pool with a larger Pod range — can't resize the existing range in place.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · Cloud Service Mesh, Shared VPC, NCC, firewall, DNS</span>
+    <h2>Cloud Service Mesh, Shared VPC, NCC, firewall + DNS</h2>
+    <p><strong>Cloud Service Mesh (CSM)</strong> = managed Istio for GKE. Sidecars on Pods for mTLS / traffic management / observability; Google operates the control plane. Works fleet-wide via GKE Enterprise — <em>cross-cluster mTLS without DIY mesh-of-meshes</em>.</p>
+    <p><strong>Shared VPC</strong> — host project owns the VPC + subnets; service projects (multiple GKE clusters across teams) attach. Centralised network ops; team-level cluster autonomy. Common enterprise pattern.</p>
+    <p><strong>Network Connectivity Center (NCC)</strong> = hub-spoke connectivity orchestrator: cross-region VPC peering, on-prem hybrid (Cloud Interconnect / Cloud VPN spokes), inter-cloud connectivity. For multi-cluster + hybrid topologies.</p>
+    <p><strong>Firewall rules</strong> — <em>critical:</em> firewall must allow GFE health-check IP ranges (<code>35.191.0.0/16</code>, <code>130.211.0.0/22</code>) to reach NEG-backed Pods, or LBs report all backends unhealthy. Plus standard Pod-to-Pod permits (Cilium NetworkPolicy is layered on top).</p>
+    <p><strong>DNS troubleshooting</strong>: <strong>Cloud DNS for GKE</strong> (managed kube-dns alternative, scales better; use <code>--cluster-dns=clouddns</code>). NodeLocal DNSCache to reduce DNS latency + load on cluster DNS. CoreDNS in default mode for compatibility. <em>DNS issues are the #2 cause of intermittent failures after IP exhaustion.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-Dataplane-V2 GKE used kube-proxy (iptables/IPVS) for service routing. Pre-Gateway-controller, ingress meant the legacy Ingress object + Cloud LB. Multi-cluster anything = bring-your-own. Network Policy was bring-your-own (Calico). Mesh was bring-your-own (self-installed Istio). Routes-based clusters were the default — slow VPC-route lookups capped at low scale. IP planning was an afterthought.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Modern GKE ships <strong>VPC-native + Dataplane V2 + Gateway API + NEG container-native LB</strong> as defaults. Multi Cluster Ingress + Multi Cluster Services let one Service span clusters. <strong>Cloud Service Mesh</strong> is managed Istio. <strong>Cloud DNS for GKE</strong> + NodeLocal DNSCache solve scale-related DNS issues. <em>Operations + workloads share a coherent network model.</em></p></div>
+    </div>
+    <p class="ba-caption"><em>Plan IP space generously at creation; everything else is reasonable defaults.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this plot</h2>
+<p>The <strong>Pathways &amp; Trellises</strong> are the hidden infrastructure of the K-Garden — paths visitors walk, irrigation pipes that connect plots, trellises that direct climbing plants where to grow. Six surfaces.</p>
+    <p>The <strong>address scheme</strong>: every plant has a real garden address (VPC-native alias IP), not just a tag. The garden has three address books: one for the plot beds (Node range), one for the plants (Pod secondary range), and one for the watering taps (Service secondary range). <em>Underspecify the plant address book and you can't plant new flowers even in empty beds.</em></p>
+    <p>The <strong>path engineer</strong> is the <em>Cilium runner</em> (Dataplane V2) who delivers messages between plants via eBPF lanes — much faster than the old hand-delivered (kube-proxy) routes. The Cilium runner also enforces "who can talk to whom" rules (NetworkPolicy).</p>
+    <p>The <strong>front gates</strong> — visitors used to enter through the slow gatekeeper (legacy Ingress controller programming Cloud LB). The modern garden has a Concierge (Gateway controller) who works the same Cloud LB but speaks Gateway API natively and can run a single concierge desk across multiple gardens at once (multi-cluster Gateway).</p>
+    <p>The <strong>plant directory</strong> (NEG) lists each plant's exact address; the front-gate Concierge sends visitors directly to the plant, not via a generic plot lookup.</p>
+    <p>The <strong>delivery dock</strong> (Cloud NAT) handles all packages leaving the garden — managed by Google, scales to plenty.</p>
+    <p>And the <strong>plant-to-plant courier service</strong> (Cloud Service Mesh) is a managed Istio offering: every plant gets a personal courier (sidecar) for mTLS-encrypted notes between plants — and you can extend the courier service across multiple gardens worldwide.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in GKE / GCP</th></tr></thead>
+        <tbody>
+          <tr><td>Garden address scheme</td><td>VPC-native (alias IP)</td></tr>
+          <tr><td>Plot bed address book</td><td>Node range (primary subnet)</td></tr>
+          <tr><td>Plant address book</td><td>Pod secondary range (alias IP per node)</td></tr>
+          <tr><td>Watering-tap address book</td><td>Service secondary range (ClusterIP)</td></tr>
+          <tr><td>Cilium runner with eBPF lanes</td><td>Dataplane V2</td></tr>
+          <tr><td>"Who can talk to whom" rules</td><td>NetworkPolicy (incl. FQDN, L7 via Cilium)</td></tr>
+          <tr><td>Slow gatekeeper</td><td>GKE Ingress (legacy controller path)</td></tr>
+          <tr><td>Modern Concierge</td><td>GKE Gateway controller (Gateway API)</td></tr>
+          <tr><td>Concierge across gardens</td><td>Multi-cluster Gateway / MCI</td></tr>
+          <tr><td>Plant directory</td><td>NEG (Network Endpoint Group, container-native LB)</td></tr>
+          <tr><td>Delivery dock</td><td>Cloud NAT (egress for private clusters)</td></tr>
+          <tr><td>Plant-to-plant courier</td><td>Cloud Service Mesh (managed Istio)</td></tr>
+          <tr><td>Shared garden plumbing</td><td>Shared VPC (host + service projects)</td></tr>
+          <tr><td>Inter-garden tunnel network</td><td>Network Connectivity Center</td></tr>
+          <tr><td>Health inspector visit lane</td><td>Firewall rule allowing 35.191.0.0/16 + 130.211.0.0/22 (GFE health checks)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A garden's path layout is fixed; GKE's VPC-native is software-defined and reshapes per node-pool config — but Pod CIDRs cannot be resized in place, so the metaphor under-states this constraint.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Plants in the garden have real addresses (not nicknames) so they can talk to each other directly. A fast runner delivers messages and enforces the rules of who-can-talk-to-whom. The front gate has a modern Concierge who handles visitors. Letters out of the garden go through a delivery dock. And there's a courier service for private notes between plants.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>GKE networking = VPC-native (alias IP, real Pod IPs) with three IP ranges (node + Pod secondary + Service secondary — plan generously). Dataplane V2 (Cilium-based eBPF, default) replaces kube-proxy + adds NetworkPolicy + L7 + Hubble. GKE Gateway controller (Gateway API) is the modern ingress; legacy Ingress works but Gateway is preferred. NEG = container-native LB (Pod IPs in the LB backend, not node IPs). MCI/MCS for multi-cluster. Cloud Service Mesh = managed Istio. Cloud NAT for egress. Firewall must allow GFE health-check ranges 35.191.0.0/16 + 130.211.0.0/22.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How GCP-shop teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">SaaS — multi-region active-active via Multi Cluster Ingress</p><p>A SaaS runs three regional GKE clusters (us, eu, asia). Single Multi Cluster Ingress provides one global anycast IP; traffic routed to the nearest healthy cluster. Failover automatic if a region degrades. <em>One DNS name, one cert, three clusters.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Bank — Shared VPC + Cloud Service Mesh fleet-wide mTLS</p><p>A bank's host project owns the VPC; six service projects each run team-owned GKE clusters. Cloud Service Mesh (managed Istio) registered in the fleet provides mTLS between Pods across clusters + projects. Network team owns the VPC + firewall; team clusters consume it. <em>Centralised compliance, distributed app teams.</em></p></div>
+      <div class="scenario"><p class="scenario-name">IP exhaustion outage — Pod range too small</p><p>A cluster created with default Pod secondary range (/14 ≈ 256K IPs sounded plenty). Six months later, autoscaling hits 800 nodes × 110 Pods × per-node alias overhead = exhausted. New Pods stuck Pending with no IPs. Fix: create new node pool with much larger Pod range; drain old workloads; delete old pool. <em>Cannot resize in place.</em></p></div>
+      <div class="scenario"><p class="scenario-name">NEG health-check 503s root-caused by missing firewall rule</p><p>An ingress backend started returning 503s. NEG marked all Pod IPs unhealthy. Root cause: Terraform refactor removed the firewall rule allowing <code>35.191.0.0/16</code> + <code>130.211.0.0/22</code> (GFE health-check IPs) into the Pod range. Restored rule; NEG marked Pods healthy in 30 seconds. <em>Postmortem: pin the GFE-allow rule with a documented Terraform comment so future refactors don't remove it.</em></p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>A request walks — internet → Gateway → NEG → Pod (alias IP) → Cloud NAT egress</h2>
+    <p>Two flows: ingress + egress; the modern GKE networking pattern.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="90" width="110" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="95" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">internet client</text><text x="95" y="128" text-anchor="middle" font-size="9" fill="#6B6058">GET /api</text>
+        <rect x="180" y="90" width="130" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="245" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">GKE Gateway</text><text x="245" y="128" text-anchor="middle" font-size="9" fill="#6B6058">Gateway API</text>
+        <rect x="340" y="90" width="130" height="60" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="405" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">NEG (container-native)</text><text x="405" y="128" text-anchor="middle" font-size="9" fill="#6B6058">Pod IPs</text>
+        <rect x="500" y="30" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="555" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Cilium dataplane</text><text x="555" y="68" text-anchor="middle" font-size="9" fill="#6B6058">Dataplane V2</text>
+        <rect x="500" y="100" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="555" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Pod (alias IP)</text><text x="555" y="138" text-anchor="middle" font-size="9" fill="#6B6058">VPC-native</text>
+        <rect x="500" y="170" width="110" height="50" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="555" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">Cloud NAT</text><text x="555" y="208" text-anchor="middle" font-size="9" fill="#6B6058">egress (no SNAT exhaust)</text>
+        <rect x="640" y="90" width="100" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="690" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">→ outbound API</text><text x="690" y="128" text-anchor="middle" font-size="9" fill="#6B6058">Stripe / GitHub</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,120)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="ingress">▶ ingress: internet → Pod</button>
+        <button class="anim-btn" type="button" data-mode="egress">▶ egress via Cloud NAT</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a request reach a GKE Pod via Gateway controller.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Routes-based clusters still work fine."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Routes-based GKE clusters are <em>legacy</em> and deprecated. They use VPC routes for Pod traffic, hitting per-VPC route quota at low scale (a few hundred routes total). All new clusters should be VPC-native (alias IP); existing routes-based clusters need migration via blue-green to a new VPC-native cluster.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "NEG and Instance Group LB backends are interchangeable."</div><div class="misc-row misc-truth"><strong>Truth:</strong> <strong>NEG (container-native LB)</strong> = LB sends traffic directly to Pod IPs (via VPC-native alias IPs). Faster failure detection, lower latency, kube-proxy not in the data path. <strong>Instance Group LB</strong> = LB sends traffic to node external IPs; kube-proxy NATs to Pods. Slower failure detection, kube-proxy hop. <em>NEG is required for modern Ingress / Gateway and for Cloud Service Mesh.</em></div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Dataplane V2 only matters for NetworkPolicy."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Dataplane V2 also: replaces kube-proxy (faster service routing, fewer iptables rules), enables Hubble flow observability, supports FQDN NetworkPolicy and L7 policies via Cilium, accelerates Service ClusterIP performance at scale. NetworkPolicy is one feature; the dataplane upgrade affects everything.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is VPC-native (alias IP)?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">GKE's default networking: Pods + Services get real VPC IPs via alias ranges on nodes. Three IP ranges needed: node primary subnet + Pod secondary range + Service secondary range. Routes-based is legacy.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why is IP planning critical at cluster creation?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Pod secondary range cannot be resized in place. Underspecifying = stop scheduling Pods even with empty CPU. Plan: <code>(max-nodes × max-pods-per-node × 2 buffer)</code>. Migration off requires new node pool with larger range + drain + delete old.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is GKE Dataplane V2?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Cilium-based eBPF dataplane. Default for new clusters. Replaces kube-proxy. Faster service routing + L4/L7 NetworkPolicy + FQDN NetworkPolicy + Hubble flow observability. No kube-proxy iptables sprawl.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">GKE Gateway controller vs legacy Ingress?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Gateway controller</strong>: first-class Gateway API (HTTPRoute, TCPRoute, TLSRoute, GatewayClass), supports multi-cluster Gateway. <strong>Legacy Ingress</strong>: Ingress objects programming Cloud LB; still supported but Gateway is the modern path.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a NEG?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Network Endpoint Group</strong> = container-native LB primitive that holds Pod IPs (not node IPs). Required for modern Ingress / Gateway / Cloud Service Mesh. Faster failure detection, kube-proxy not in data path.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Multi Cluster Ingress (MCI) — what does it solve?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">One global anycast IP serving Pods across multiple GKE clusters in a fleet (different regions). Traffic routed to nearest healthy cluster. Failover automatic. Foundation for multi-region active-active without per-region DNS gymnastics.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What two firewall ranges must be allowed for NEG health checks?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>35.191.0.0/16</code> and <code>130.211.0.0/22</code> — GFE health-check source ranges. Without these, LB marks all NEG-backed Pods unhealthy. Pin this firewall rule with a comment so refactors don't remove it.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is Cloud Service Mesh?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Managed Istio for GKE. Google operates the control plane; sidecars on Pods give mTLS / traffic management / observability. Works fleet-wide via GKE Enterprise — cross-cluster mTLS without DIY mesh-of-meshes.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">200 Pods stuck Pending, scheduler logs say "insufficient cpu/memory" but <code>kubectl top nodes</code> shows nodes mostly idle. The cluster has been growing for months. What's the likely cause and the fix?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Pod secondary IP range exhaustion.</strong> VPC-native clusters allocate per-node alias IP ranges out of the cluster's Pod secondary range. As nodes grow, the per-node alias bites further into the secondary; eventually the secondary is exhausted and new Pods can't get IPs even on nodes with free CPU. Fix: cannot resize in place — create a new node pool with a larger Pod CIDR range; cordon + drain old node pool with PDB safety; delete old pool. Future: plan Pod range generously at cluster creation; use Discontiguous Multi-Pod CIDR for very large clusters.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">The team has Cloud Armor + Identity-Aware Proxy + Backend Service config to apply to an Ingress. Should they keep using the legacy Ingress object or migrate to Gateway API? Walk through the trade-offs.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Both work; Gateway is the modern preferred path.</strong> Legacy Ingress: simpler if you have a single LB per cluster + per-app annotations + features fully supported by the Ingress annotation set. Gateway API: cleaner separation of concerns (platform team owns Gateway/GatewayClass; app teams own HTTPRoute), supports multi-cluster Gateway, future GKE feature investment. Migration tactic: parallel-run for a sprint (point a test DNS at the new Gateway-fronted endpoint), validate Cloud Armor + IAP behavior, swap DNS, decommission old Ingress. <em>For new ingresses, start with Gateway API; for stable existing Ingresses without pain, migrate at a calmer time.</em></div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">Black Friday morning. Suddenly every customer-facing endpoint returns 503. Cloud Monitoring shows NEG backends 100% unhealthy. What's the first thing you check?</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how on-call diagnosed Black Friday 503s in 4 minutes</span><strong>Firewall rule allowing GFE health-check IP ranges</strong> — <code>35.191.0.0/16</code> and <code>130.211.0.0/22</code> must permit ingress to the Pod range over the health-check port. Most common cause of "all backends unhealthy at once": a recent Terraform/firewall change removed or modified that rule. Validate via <code>gcloud compute firewall-rules list</code> + check the relevant <em>allow-rules</em>. Fix: restore the rule. Postmortem: add a Cloud Monitoring alert on NEG backend health < 100% for >5 min; pin the GFE-allow rule with a Terraform comment + lifecycle ignore_changes block to prevent accidental drift.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">VPC-native cluster</div><div class="gloss-def">GKE default — Pods + Services get real VPC IPs via alias ranges. Routes-based is legacy.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Pod secondary range</div><div class="gloss-def">Subnet secondary range from which Pod IPs are allocated. Can't resize in place; plan generously.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Service secondary range</div><div class="gloss-def">Subnet secondary range for ClusterIP Services.</div></div>
+      <div class="gloss-item"><div class="gloss-name">GKE Dataplane V2</div><div class="gloss-def">Cilium-based eBPF dataplane. Default for new GKE clusters. Replaces kube-proxy + adds NetworkPolicy + Hubble + L7.</div></div>
+      <div class="gloss-item"><div class="gloss-name">GKE Gateway controller</div><div class="gloss-def">Modern ingress: first-class Gateway API support; multi-cluster Gateway; cleaner platform/app separation.</div></div>
+      <div class="gloss-item"><div class="gloss-name">NEG (Network Endpoint Group)</div><div class="gloss-def">Container-native LB primitive holding Pod IPs. Required for modern Ingress / Gateway / CSM. kube-proxy out of data path.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Multi Cluster Ingress (MCI)</div><div class="gloss-def">One global anycast IP fronting Pods across multiple GKE clusters in a fleet. Traffic to nearest healthy cluster.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Multi Cluster Services (MCS)</div><div class="gloss-def">A Service in cluster A can address Pods in cluster B (across fleet). Foundation for cross-cluster service mesh.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Cloud Service Mesh (CSM)</div><div class="gloss-def">Managed Istio for GKE. Google operates control plane; sidecars provide mTLS, traffic management, observability.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Shared VPC</div><div class="gloss-def">Host project owns VPC + subnets; service projects (multiple GKE clusters) attach. Centralised network ops; team-level autonomy.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Cloud NAT</div><div class="gloss-def">Managed NAT for egress. For private clusters: outbound to internet (registries, third-party APIs).</div></div>
+      <div class="gloss-item"><div class="gloss-name">GFE health-check ranges</div><div class="gloss-def"><code>35.191.0.0/16</code> + <code>130.211.0.0/22</code>. Firewall must allow these to Pod range, or NEG backends mark unhealthy.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>VPC-native + Dataplane V2 + Gateway API + NEG container-native LB is the modern default. Plan IP space (Pod + Service secondary ranges) generously; firewall the GFE health-check ranges open; use Cloud NAT for egress; Cloud Service Mesh for mTLS + traffic management.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module G3 complete</span>
+    <p>Six surfaces: VPC-native + Dataplane V2 + Gateway/Ingress + NEG + MCI/MCS + CSM. Plan IP space at creation; firewall the GFE ranges; Cloud NAT for egress.</p>
+    <p class="recap-next"><strong>Next — G4: GKE Identity and Security.</strong> IAM + RBAC + IAM Conditions; Workload Identity Federation for GKE; Binary Authorization; Security Posture; Container Threat Detection (SCC); Confidential GKE Nodes (AMD SEV / Intel TDX); Shielded GKE Nodes; Secret Manager CSI; Artifact Registry; Policy Controller + Config Sync; GKE Sandbox (gVisor); CMEK.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-GKE · Module G3 of 10 · grounded in cloud.google.com/kubernetes-engine</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  try { (function() {
+    const SCENES = [{"mode_id": "ingress", "mode_label": "Mode: GKE Gateway + NEG + VPC-native + Dataplane V2", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Internet client hits Gateway global anycast IP.", "move_to": [95, 120], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> GKE Gateway controller programs Cloud LB; matches HTTPRoute.", "move_to": [245, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> NEG holds Pod IPs (container-native LB); kube-proxy not in path.", "move_to": [405, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Cilium eBPF dataplane (Dataplane V2) routes; NetworkPolicy enforced.", "move_to": [555, 55], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> Pod has real VPC IP via alias range; serves the request.", "move_to": [555, 125], "duration_ms": 900, "pause_after_ms": 2000, "set_text": null, "set_attr": null}]}, {"mode_id": "egress", "mode_label": "Mode: Pod \u2192 outbound API via Cloud NAT", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod calls outbound API (Stripe).", "move_to": [555, 125], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Egress routes via Cloud NAT \u2014 managed; per-IP SNAT scales automatically.", "move_to": [555, 195], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> External API responds; return path same.", "move_to": [690, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 120];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

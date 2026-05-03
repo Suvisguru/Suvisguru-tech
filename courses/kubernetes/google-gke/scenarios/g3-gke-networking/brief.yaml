@@ -1,0 +1,62 @@
+# Intake brief — G3, K-GKE
+# Topic: G3 · GKE Networking (VPC-native, Dataplane V2, Gateway, multi-cluster, CSM)
+# Module G3 · GKE Networking
+
+lesson:
+  title: 'G3 · GKE Networking (VPC-native, Dataplane V2, Gateway, multi-cluster, CSM)'
+  slug: 'g3-gke-networking'
+  domain: 'kubernetes'
+  course_slug: 'google-gke'
+  position: 03
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Garden · Pathways &amp; Trellises — The **Pathways & Trellises** are the hidden infrastructure of the K-Garden — paths visitors walk, irrigation pipes that connect plots, trellises that direct climbing plants where to grow. Six surfaces'
+  module: 'Module G3 · GKE Networking'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'GCP basics: IAM, VPC, GCE, Cloud LB, PD/Filestore, Cloud Logging/Monitoring.'
+    - 'K-GKE modules 1-2 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain vPC-native (alias IP) + IP planning.'
+  - 'Learner can explain dataplane V2 + NetworkPolicy + Cloud NAT.'
+  - 'Learner can explain ingress, Gateway, NEG, container-native load balancing.'
+
+sections:
+  - 'VPC-native (alias IP) + IP planning'
+  - 'Dataplane V2 + NetworkPolicy + Cloud NAT'
+  - 'Ingress, Gateway, NEG, container-native load balancing'
+  - 'Cloud Service Mesh, Shared VPC, NCC, firewall + DNS'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A SaaS runs three regional GKE clusters (us, eu, asia).'
+    - 'A bank''s host project owns the VPC; six service projects each run team-owned GKE clusters.'
+    - 'A cluster created with default Pod secondary range (/14 ≈ 256K IPs sounded plenty).'
+    - 'An ingress backend started returning 503s.'
+
+section_6_animated_svg:
+  modes_count: 1-2
+  description: 'See preview-kubernetes-gke-lesson-03.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-gke-lesson-03.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**VPC-native + Dataplane V2 + Gateway API + NEG container-native LB is the modern default. Plan IP space (Pod + Service secondary ranges) generously; firewall the GFE health-check ranges open; use Cloud NAT for egress; Cloud Service Mesh for mTLS + traffic management.**'
+
+fact_check_anchors:
+  - 'https://cloud.google.com/kubernetes-engine/docs/'
+  - 'https://cloud.google.com/kubernetes-engine/docs/best-practices'
+  - 'https://kubernetes.io/docs/'

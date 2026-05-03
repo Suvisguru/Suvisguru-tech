@@ -1,0 +1,21 @@
+# Quiz — K-GKE G (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      The peer reviewer asks: "Why did you pick Autopilot + Stable channel instead of Standard + Regular?" Walk the answer.
+    answer: |
+      **(1) Autopilot operational depth:** Google manages nodes; per-Pod billing aligns spend to actual usage; Pod-level SLA; admission webhooks enforce safety baseline. We don't want platform engineers managing node SKUs at this stage. **(2) Stable channel:** for prod, the upgrade premium of conservative cadence is worth more than the latest features. New minors land in Rapid first; bake in Regular; arrive in Stable when validated. We test new features on a separate canary cluster on Rapid. **(3) Trade-offs accepted:** Autopilot blocks privileged / hostNetwork / hostPath workloads — none of our app patterns need them. Stable means we get features 4-12 weeks later than Rapid — fine for our launch cadence. **(4) Alternatives valid:** Standard for clusters with niche kernel needs; Regular for teams that want the latest features sooner. The capstone is opinionated; alternatives have their place.
+
+  - id: 2
+    prompt: |
+      During the live drill the reviewer revokes a G-SA Storage Object Viewer role. Pod 401s. Walk the response under 15 minutes.
+    answer: |
+      (1) AMG dashboard fires red (Pod returns 5xx). PagerDuty via Pub/Sub Notification Channel. (2) Open AMG; confirm failing service via RED dashboard. (3) Open Logs Explorer with saved query for IAM audit; filter to past 30 min; find the role assignment removal in `cloudaudit.googleapis.com/activity` with timestamp + initiator. (4) Re-create role assignment via gcloud: `gcloud projects add-iam-policy-binding ... --member=serviceAccount:G-SA --role=roles/storage.objectViewer`. (5) Pod's next SDK call succeeds (token refreshed by WIF metadata server automatically). (6) Postmortem note: this kind of reverted manual change should have been blocked by Policy Controller / Org Policy on IAM — file improvement.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO walks in: "Why are we paying for GKE Enterprise on top of Autopilot? That's a lot of zeros." Final defence.
+    answer: |
+      "**Enterprise pays off for our scale (3 regions × multiple clusters + planned multi-cloud).** Without Enterprise: per-cluster Argo CD with chart drift; per-cluster Helm-installed Gatekeeper with admission policies that drift; mesh-of-meshes for cross-cluster mTLS; manual coordination of multi-cluster ingress. With Enterprise: Config Sync + Policy Controller + Cloud Service Mesh + Connect Gateway + MCG come as managed surfaces; one repo describes the rules; reconciled fleet-wide; one global anycast IP. The Enterprise license is real money but trades against per-cluster ops + the chart drift / mesh-of-meshes complexity that bites at our scale. *If we were running 1-2 clusters total, Enterprise would be premature.* At our 3-region active-active footprint, it's the right call."

@@ -1,0 +1,21 @@
+# Quiz — K-GKE G (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A Pod uses WIF for GKE bound to a G-SA with Storage Object Viewer. Pod returns 403 trying to write a Storage object. The team "just adds Storage Admin" to the G-SA. Why is this dangerous, and what's the right fix?
+    answer: |
+      Storage Admin lets the G-SA delete buckets, change ACLs, etc. — overscoped for one workload that needs to write objects. **Right fix:** grant *Storage Object Creator* (write) and *Storage Object Viewer* (read) on the specific bucket only — minimum needed. Use IAM Conditions if you need contextual scoping (e.g., only from this cluster's WIF principal). Add Security Posture and CTD alerts on G-SA scope creep so the next over-grant gets flagged.
+
+  - id: 2
+    prompt: |
+      The team enables BinAuth in *enforce* mode. Suddenly half the deploys fail. What's likely going on, and how do you debug?
+    answer: |
+      Existing images don't have attestations from the configured Attestor. BinAuth rejects them at admission. **Debug:** (1) Check BinAuth audit logs (`logName="projects/PROJECT/logs/cloudaudit.googleapis.com%2Fdata_access"`) for the rejection reasons. (2) Identify which images need attestations. (3) Either backfill attestations (have your scan-pipeline emit one for each existing-clean image) or temporarily switch BinAuth to *dry-run* mode (still logs rejections without blocking) while fixing pipelines. **Roll-out pattern:** always enable BinAuth in dry-run first; observe rejections; fix; then enforce. Big-bang enforce = your nightmare.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Container Threat Detection alert: a Pod is making outbound calls to a known crypto-miner pool. The Pod's WIF-bound G-SA has Storage Object Admin on production data. How do you respond in the next 30 minutes?
+    answer: |
+      (1) **Immediate isolation**: kubectl cordon the node + delete the Pod (or scale Deployment to 0). (2) **Revoke trust**: remove the K8s SA *annotation* that binds it to the G-SA, OR detach the federated credential at the Workload Identity Pool level — no new tokens. (3) **Audit what was accessed**: Storage audit logs filtered to the G-SA; identify object reads/writes during the window. (4) **Rotate any keys/credentials the Pod might have touched**. (5) **Postmortem**: how did the malicious image get past Binary Authorization? Was BinAuth in audit mode? Was the image signed but compromised? Tighten image-scan + attestation pipeline. (6) Re-enable WIF binding only after image is rebuilt + scanned + attested clean.

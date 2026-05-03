@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-GKE G5 · GKE Storage</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-GKE module journey">
+  <span class="concept-rail-title">K-GKE modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G1 GKE architecture &amp; modes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G2 versioning &amp; channels</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G3 GKE networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G4 identity &amp; security</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>G5 GKE storage</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G6 scaling &amp; cost</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G7 GKE observability</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G8 Enterprise (Fleets) &amp; AI/ML</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G9 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G10 capstone harvest</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-GKE · Module G5</span></a>
+    <span class="progress-pill">G5 · GKE storage</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🌿 K-Garden plot: <strong>Reservoir &amp; Compost</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Garden map: G5">
+    <title>K-Garden map · G5</title>
+    <desc>Stylised Google-managed garden / orchard. Reservoir &amp; Compost highlighted.</desc>
+    <defs>
+      <linearGradient id="kg-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8EFE0" stop-opacity="0.7"/><stop offset="100%" stop-color="#A8C896" stop-opacity="0.55"/></linearGradient>
+      <linearGradient id="kg-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.16"/><stop offset="100%" stop-color="#3F4A5E" stop-opacity="0.30"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kg-soil)" stroke="#7BA068" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · GARDEN · GCP REGION</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">front of garden — pavilion &amp; planting</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">deeper plots — operations &amp; harvest</text>
+    <g class="pin pin-anchor" id="kg-plot01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">G1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Visitors' Pavilion</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="kg-plot02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Almanac Hut</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">release channels</text></g>
+    <g class="pin" id="kg-plot03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Pathways &amp; Trellises</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">VPC + Gateway + LB</text></g>
+    <g class="pin" id="kg-plot04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Gatekeeper's Lodge</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">WIF + BinAuth + Posture</text></g>
+    <g class="pin active" id="kg-plot05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Reservoir &amp; Compost</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">PD + Filestore + Hyperdisk</text></g>
+    <g class="pin" id="kg-plot06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Auto-Greenhouse</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scaling + cost</text></g>
+    <g class="pin" id="kg-plot07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">GMP + Cloud Mon + Trace</text></g>
+    <g class="pin" id="kg-plot08" transform="translate(380,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Research Greenhouse</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Fleets + AI/ML</text></g>
+    <g class="pin" id="kg-plot09" transform="translate(520,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Plant Doctor's Hut</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">GCP-specific RCA</text></g>
+    <g class="pin" id="kg-plot10" transform="translate(660,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harvest Festival</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🌿 <strong>Reservoir &amp; Compost</strong> <span>· G5 of 10</span><span class="visually-hidden">Module G5, Reservoir &amp; Compost.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module G5 · the Reservoir &amp; Compost</span>
+    <h1>G5 · GKE Storage (PD, Hyperdisk + Storage Pools, Filestore, GCS FUSE, Parallelstore)</h1>
+    <p class="hero-sub">Five storage backends as managed CSI drivers. <strong>Persistent Disk CSI</strong> for RWO block (pd-balanced default; pd-ssd; Regional PD for multi-zone HA). <strong>Hyperdisk + Storage Pools</strong> for independent IOPS / throughput tuning + <strong>VolumeAttributesClass</strong> for live tier changes. <strong>Filestore CSI</strong> for RWX (NFS; Enterprise tier multi-zone). <strong>GCS FUSE CSI</strong> for object-as-filesystem. <strong>Parallelstore CSI</strong> for HPC/AI training. Plus <strong>Backup for GKE</strong> as the managed DR primitive.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GKE storage CSI drivers — PD, Hyperdisk + Storage Pools, Filestore, GCS FUSE, Parallelstore, Backup for GKE.">
+  <rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6"/>
+  <text x="380" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E">Reservoir &amp; Compost — five storage backends</text>
+  <rect x="40" y="70" width="135" height="120" rx="10" fill="#5A9F7A" stroke="#3F4A5E"/>
+  <text x="107" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Persistent Disk CSI</text>
+  <text x="107" y="105" text-anchor="middle" font-size="9" fill="#FFFFFF">RWO block</text>
+  <text x="107" y="118" text-anchor="middle" font-size="9" fill="#FFFFFF">pd-balanced (default)</text>
+  <text x="107" y="131" text-anchor="middle" font-size="9" fill="#FFFFFF">pd-ssd</text>
+  <text x="107" y="148" text-anchor="middle" font-size="9" fill="#FFFFFF">Regional PD (multi-zone)</text>
+  <rect x="190" y="70" width="135" height="120" rx="10" fill="#A04832" stroke="#3F4A5E"/>
+  <text x="257" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Hyperdisk</text>
+  <text x="257" y="105" text-anchor="middle" font-size="9" fill="#FFFFFF">Storage Pools</text>
+  <text x="257" y="118" text-anchor="middle" font-size="9" fill="#FFFFFF">independent IOPS</text>
+  <text x="257" y="131" text-anchor="middle" font-size="9" fill="#FFFFFF">VolumeAttributesClass</text>
+  <text x="257" y="148" text-anchor="middle" font-size="9" fill="#FFFFFF">live tier change</text>
+  <rect x="340" y="70" width="135" height="120" rx="10" fill="#7AB3CC" stroke="#3F4A5E"/>
+  <text x="407" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Filestore CSI</text>
+  <text x="407" y="105" text-anchor="middle" font-size="9" fill="#FBF1D6">RWX shared FS</text>
+  <text x="407" y="118" text-anchor="middle" font-size="9" fill="#FBF1D6">NFS</text>
+  <text x="407" y="135" text-anchor="middle" font-size="9" fill="#FBF1D6">Filestore Enterprise</text>
+  <text x="407" y="148" text-anchor="middle" font-size="9" fill="#FBF1D6">multi-zone option</text>
+  <rect x="490" y="70" width="135" height="120" rx="10" fill="#E8B547" stroke="#3F4A5E"/>
+  <text x="557" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#5A4F45">GCS FUSE CSI</text>
+  <text x="557" y="105" text-anchor="middle" font-size="9" fill="#5A4F45">object as FS</text>
+  <text x="557" y="118" text-anchor="middle" font-size="9" fill="#5A4F45">cheap · ML datasets</text>
+  <text x="557" y="135" text-anchor="middle" font-size="9" fill="#5A4F45">Parallelstore CSI</text>
+  <text x="557" y="148" text-anchor="middle" font-size="9" fill="#5A4F45">HPC / AI training</text>
+  <rect x="640" y="70" width="80" height="120" rx="10" fill="#3F4A5E" stroke="#FBF1D6"/>
+  <text x="680" y="88" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Backup</text>
+  <text x="680" y="103" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">for GKE</text>
+  <text x="680" y="125" text-anchor="middle" font-size="9" fill="#FBF1D6">managed</text>
+  <text x="680" y="140" text-anchor="middle" font-size="9" fill="#FBF1D6">cluster-wide</text>
+  <text x="680" y="170" text-anchor="middle" font-size="9" font-style="italic" fill="#FBF1D6">DR primitive</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. Postgres CrashLoopBackOff: <em>"failed to attach disk: zone mismatch"</em>. PVC bound to a single-zone pd-ssd in <code>us-central1-a</code>; Pod was scheduled in <code>us-central1-c</code>. Cross-zone disk attach is not supported. <em>You used a custom StorageClass without <code>WaitForFirstConsumer</code>.</em> Today's lesson: pick the right storage backend; configure zone-awareness right; have Backup for GKE wired before you need it.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Default to PD CSI (pd-balanced) with WaitForFirstConsumer for RWO; Regional PD for cross-zone resilience; Hyperdisk + Storage Pools + VolumeAttributesClass for tunable performance; Filestore for RWX; GCS FUSE for cheap object datasets; Parallelstore for HPC/AI; Backup for GKE for managed DR.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · Persistent Disk CSI</span>
+    <h2>Persistent Disk CSI — RWO default</h2>
+    <p><strong>Persistent Disk CSI driver</strong> = default RWO storage. Backed by Compute Engine Persistent Disks. Tiers in increasing performance/cost:</p>
+    <ul>
+      <li><strong>pd-standard</strong> (HDD, cheapest) — for cold / archival workloads.</li>
+      <li><strong>pd-balanced</strong> (recommended default) — SSD-backed; balanced cost/perf for most stateful workloads.</li>
+      <li><strong>pd-ssd</strong> — high-IOPS SSD; for latency-sensitive DBs.</li>
+      <li><strong>pd-extreme</strong> (legacy) — superseded by Hyperdisk.</li>
+    </ul>
+    <p><strong>Zone affinity (critical):</strong> a standard PD lives in <em>one zone</em>. A Pod can mount a PD only if scheduled in that same zone. The default StorageClass has <code>volumeBindingMode: WaitForFirstConsumer</code> — disk provisioning waits until the Pod is scheduled, then provisions in the right zone. <em>Custom StorageClasses without this setting re-introduce the zone-mismatch bug.</em></p>
+    <p><strong>Regional PD</strong> = synchronous replication across two zones in a region. Survives single-zone failure; can attach to a Pod in either zone. Higher latency than zonal; the right choice for stateful workloads needing HA without app-level replication.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · Hyperdisk + Storage Pools + VolumeAttributesClass</span>
+    <h2>Hyperdisk + Storage Pools + VolumeAttributesClass</h2>
+    <p><strong>Hyperdisk</strong> = next-gen GCP block storage. Variants:</p>
+    <ul>
+      <li><strong>Hyperdisk Balanced</strong> — general-purpose; replaces pd-balanced for many use cases.</li>
+      <li><strong>Hyperdisk Throughput</strong> — high-throughput workloads (analytics, log processing).</li>
+      <li><strong>Hyperdisk Extreme</strong> — extreme IOPS; for SAP HANA, large OLTP.</li>
+      <li><strong>Hyperdisk ML</strong> — optimised for ML training data loading; multi-attach supported.</li>
+    </ul>
+    <p><strong>Storage Pools</strong> = the pool-based capacity model: provision capacity + IOPS + throughput at the <em>pool</em> level; carve PVCs out of the pool. <em>Decouples per-PVC over-provisioning from total cost.</em> Many workloads at low utilisation share the pool; cost reflects actual consumption.</p>
+    <p><strong>VolumeAttributesClass</strong> (K8s GA feature) — change a PV's performance attributes <em>online</em>, no remount. With Hyperdisk: change IOPS / throughput targets via a <code>VolumeAttributesClass</code> reference on the PVC. Example: tune Postgres from 3,000 IOPS to 16,000 for a holiday-traffic event without restarting the Pod.</p>
+    <p><strong>Snapshots</strong> (K8s VolumeSnapshot CRD) — point-in-time backup of a PV; restore by creating a new PVC with <code>dataSource</code> pointing at the snapshot. Cross-region snapshot replication via the Compute Engine snapshot location.</p>
+    <p><strong>Online expansion</strong> — increase PVC size; Hyperdisk + PD support online filesystem grow without unmount.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · Filestore + GCS FUSE + Parallelstore</span>
+    <h2>Filestore CSI + GCS FUSE CSI + Parallelstore CSI</h2>
+    <p><strong>Filestore CSI</strong> = RWX shared filesystem via NFS. Tiers: <em>Basic HDD/SSD</em> (legacy), <em>Zonal</em> (single zone), <em>Enterprise</em> (multi-zone HA). Use cases: shared writable storage across multiple Pods (CMS uploads, build artifacts, ML scratch). <em>Avoid for high-IOPS DB workloads</em> — Hyperdisk Extreme is the right tier for that.</p>
+    <p><strong>GCS FUSE CSI</strong> = mount a GCS bucket as a filesystem in a Pod. Backed by Cloud Storage FUSE. Use cases: huge ML training datasets read sequentially (TBs at object-storage cost ~$0.02/GB-month vs PD ~$0.17/GB-month for Standard tier); image/asset libraries; cheap append-only logs. <em>Performance is not block-class</em> — fine for sequential reads, not transactional DBs. Caching modes available for repeat-read workloads.</p>
+    <p><strong>Parallelstore CSI</strong> = managed parallel filesystem for HPC + AI training. Backed by DDN EXAScaler. Throughput in the GiB/s range across multiple clients. Use cases: distributed training where multiple GPU nodes need to read training data simultaneously at line rate; HPC simulations; anything that hits the bandwidth wall on standard NFS. <em>Pricier per GB; the right answer when training-step time is bottlenecked on data loading.</em></p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A Pod with a pd-ssd PVC keeps failing to start in a multi-zone cluster. Why?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Switch to pd-standard.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Use the default StorageClass with <code>volumeBindingMode: WaitForFirstConsumer</code> so the PD provisions in the Pod's zone — or use Regional PD for multi-zone resilience.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Increase replicas.</button></li>
+      </ul>
+      <p class="pause-check-feedback">Single-zone PDs cannot attach across zones. WaitForFirstConsumer aligns provisioning with scheduling; Regional PD adds cross-zone replication.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · Backup for GKE + Secret Manager CSI + topology</span>
+    <h2>Backup for GKE + Secret Manager CSI + topology-aware scheduling</h2>
+    <p><strong>Backup for GKE</strong> = managed backup service. Captures cluster-wide K8s manifests + Persistent Volume snapshots + (optionally) cross-region restoration. Schedule + retention policies via the Backup for GKE API. Restore into the same or a different cluster. <em>The DR primitive — wire this in early; it's much harder to retrofit during an incident.</em></p>
+    <p><strong>Secret Manager CSI driver</strong> (covered in G4) — mount Secret Manager secrets as files in Pods, WIF-authenticated, auto-rotation. The clean way to consume secrets without K8s Secrets in etcd.</p>
+    <p><strong>Topology-aware scheduling:</strong> StorageClass <code>allowedTopologies</code> can constrain disks to specific zones (e.g., force DB disks into <code>us-central1-a</code> for a hot/warm DR pattern). Combined with Pod nodeSelector or topology-spread constraints to keep workloads + storage co-located.</p>
+    <p><strong>CMEK across storage:</strong> all five backends support CMEK via Cloud KMS — disks, Filestore, GCS, Parallelstore, snapshots — for compliance + key sovereignty. Key rotation is a Cloud KMS operation; PVs continue to work transparently.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-CSI GKE used in-tree volume drivers — limited features, no online resize for a long time, no VolumeSnapshot CRD, no VolumeAttributesClass. RWX needed third-party Helm-installed nfs-server-provisioner with manual Filestore wiring. ML training data on PD = expensive; HPC parallel filesystems were DIY (Lustre on GCE). DR was "hope you have a snapshot script."</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Modern GKE ships <strong>five managed CSI drivers</strong> (PD, Hyperdisk + Storage Pools, Filestore, GCS FUSE, Parallelstore) with VolumeSnapshot, online expansion, VolumeAttributesClass for live tier changes. <strong>Backup for GKE</strong> is the managed DR primitive (cluster-wide manifests + PV snapshots; cross-region restoration). Secret Manager CSI for keyless secrets. <em>Storage in GKE is now declarative, performant, and survivable.</em></p></div>
+    </div>
+    <p class="ba-caption"><em>Pick the backend that matches the access mode + performance class. Don't skip Backup for GKE — DR not wired before incident = DR not available during incident.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this plot</h2>
+<p>The <strong>Reservoir &amp; Compost</strong> is the K-Garden's storage building. Five backends.</p>
+    <p><strong>Personal water tanks</strong> (Persistent Disk): one tank per gardener, fast, locked. The tank lives in a specific zone of the garden; for cross-zone resilience, use the Regional PD twin-tank that replicates synchronously across two zones.</p>
+    <p><strong>Hyperdisk pool</strong>: instead of buying a personal tank, you draw from a <em>shared reservoir</em> the head gardener provisions; capacity, IOPS, and throughput are pool-level. A magical valve (VolumeAttributesClass) lets you turn the pressure up live without unhooking your hose. Variants: balanced for general use, throughput-tuned for big sprinklers, extreme for HANA-class precision irrigation, ML-tuned for training-data multi-attach.</p>
+    <p><strong>Shared communal sink</strong> (Filestore): multiple gardeners use the same NFS sink for shared seedling washing. Enterprise tier replicates across zones.</p>
+    <p><strong>Compost pile / mulch warehouse</strong> (GCS FUSE): cheap stacks holding 200 TB of training data; you fetch by armful when needed. Sequential reads only — not for transactional grabs.</p>
+    <p><strong>HPC parallel pump system</strong> (Parallelstore): when 100 gardeners are all loading training data simultaneously and your throughput needs are GiB/s.</p>
+    <p>And the <strong>Disaster-Relief Vault</strong> (Backup for GKE) is the managed insurance: weekly snapshots of the whole garden's state, restorable into a new garden in a different region.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in GKE / GCP</th></tr></thead>
+        <tbody>
+          <tr><td>Personal water tank</td><td>Persistent Disk CSI — RWO PV</td></tr>
+          <tr><td>Tank in a specific zone</td><td>Single-zone pd-ssd / pd-balanced</td></tr>
+          <tr><td>Twin-tank cross-zone</td><td>Regional PD</td></tr>
+          <tr><td>Shared reservoir + magical valve</td><td>Hyperdisk + Storage Pools + VolumeAttributesClass</td></tr>
+          <tr><td>Magical pressure valve</td><td>VolumeAttributesClass — live IOPS / throughput change</td></tr>
+          <tr><td>Communal sink (NFS)</td><td>Filestore CSI — RWX</td></tr>
+          <tr><td>Filestore zonal vs Enterprise</td><td>Single-zone vs multi-zone HA</td></tr>
+          <tr><td>Compost pile / mulch warehouse</td><td>GCS FUSE CSI</td></tr>
+          <tr><td>HPC parallel pump system</td><td>Parallelstore CSI (HPC / AI training)</td></tr>
+          <tr><td>Disaster-Relief Vault</td><td>Backup for GKE</td></tr>
+          <tr><td>Vault key-fetch desk</td><td>Secret Manager CSI driver (covered in G4)</td></tr>
+          <tr><td>"Wait for the gardener before issuing the tank"</td><td><code>volumeBindingMode: WaitForFirstConsumer</code></td></tr>
+          <tr><td>Photocopying a chapter</td><td>VolumeSnapshot CRD</td></tr>
+          <tr><td>Adding shelves to existing tank</td><td>Online volume expansion</td></tr>
+          <tr><td>"Padlock with your key on every storage room"</td><td>CMEK via Cloud KMS</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A garden's tanks are physical and bounded; CSI drivers can be added or upgraded without rebuilding the cluster. Real Hyperdisk has compatibility constraints with specific machine families the metaphor doesn't capture.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Five storage choices: a personal tank, a shared reservoir with a magical pressure valve, a communal sink, a compost-warehouse for huge cheap stuff, and a parallel-pump for HPC. Plus an insurance vault that backs up the whole garden weekly.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>GKE storage = five managed CSI drivers. <strong>PD CSI</strong> for RWO (pd-balanced default; pd-ssd; <strong>Regional PD</strong> for cross-zone HA; default StorageClass uses WaitForFirstConsumer for zone-correct provisioning). <strong>Hyperdisk + Storage Pools</strong> for tunable IOPS/throughput + VolumeAttributesClass live changes. <strong>Filestore CSI</strong> for RWX (NFS, Enterprise tier multi-zone). <strong>GCS FUSE CSI</strong> for cheap object-as-FS (ML datasets). <strong>Parallelstore CSI</strong> for HPC/AI parallel filesystem. Plus <strong>Backup for GKE</strong> for managed DR (cluster-wide manifests + PV snapshots, cross-region restore). VolumeSnapshot CRD for backup; online expansion supported; CMEK across all backends.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How GCP-shop teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">Postgres on GKE — Regional PD for HA without app-level replication</p><p>A small Postgres workload on GKE — single primary, no streaming replica yet. Team uses <strong>Regional PD</strong> on a Hyperdisk Balanced StorageClass. PVC bound to a Regional PD that replicates synchronously across us-central1-a + us-central1-c. Pod scheduled in either zone can mount. <em>Single-zone failure: Pod re-schedules to surviving zone with same data.</em></p></div>
+      <div class="scenario"><p class="scenario-name">ML team — GCS FUSE for 200 TB training data</p><p>ML team needs read-only access to 200 TB image datasets across hundreds of training Pods. PD for this = $30K+/month. <strong>GCS FUSE</strong> mounts the bucket as a Pod filesystem; sequential reads with caching mode. Cost: ~$4K/month (Cool tier). <em>Same throughput; ~85% saving.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Hyperdisk + VolumeAttributesClass for Black Friday burst</p><p>Postgres workload on Hyperdisk Balanced provisioned at 3,000 IOPS / 240 MiB/s. Black Friday traffic 10×. Team creates a VolumeAttributesClass with 16,000 IOPS / 800 MiB/s, references it from the PVC. Hyperdisk applies online; no Pod restart. After the event, switch back to the lower-spec VAC. <em>Pay for high tier only during the burst.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Bank — quarterly Backup for GKE drill restored cluster in 35 minutes</p><p>A bank schedules nightly Backup for GKE backups: cluster-wide manifests + all PV snapshots, cross-region replication to the paired DR region. Quarterly drill: spin up empty cluster in DR region; restore from latest backup; verify workloads. <em>Last drill: restoration completed in 35 minutes; auditor approved RTO target of &lt; 1 hour.</em></p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>A PVC picks the right CSI driver</h2>
+    <p>Same PVC; different access modes; very different storage backends.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="80" width="110" height="60" rx="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1.5"/><text x="95" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">PVC submitted</text><text x="95" y="118" text-anchor="middle" font-size="9" fill="#6B6058">RWO or RWX?</text>
+        <rect x="180" y="80" width="130" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="245" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">StorageClass picker</text><text x="245" y="118" text-anchor="middle" font-size="9" fill="#6B6058">PD vs Files vs Hyperdisk</text>
+        <rect x="340" y="30" width="130" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">pd-balanced</text><text x="405" y="68" text-anchor="middle" font-size="9" fill="#6B6058">RWO single-zone</text>
+        <rect x="340" y="100" width="130" height="50" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Hyperdisk + Pool</text><text x="405" y="138" text-anchor="middle" font-size="9" fill="#6B6058">live IOPS retier (VAC)</text>
+        <rect x="340" y="170" width="130" height="50" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="405" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">Filestore RWX / GCS FUSE</text><text x="405" y="208" text-anchor="middle" font-size="9" fill="#6B6058">shared / object</text>
+        <rect x="500" y="80" width="110" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="555" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">WaitForFirstConsumer</text><text x="555" y="118" text-anchor="middle" font-size="9" fill="#6B6058">AZ-aligned</text>
+        <rect x="640" y="80" width="100" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="690" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">Pod Running</text><text x="690" y="118" text-anchor="middle" font-size="9" fill="#6B6058">PV mounted</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,110)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="pd">▶ RWO → pd-balanced</button>
+        <button class="anim-btn" type="button" data-mode="hyperdisk">▶ Hyperdisk + VAC live retier</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> PVC binding for different access modes.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Regional PD doubles my storage cost for free HA."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Regional PD synchronously replicates across two zones. Cost is roughly 2x a single-zone disk + small write-latency overhead (sync replication). For workloads that don't need cross-zone attach, single-zone PD + Backup for GKE for DR is cheaper. Pick Regional PD when the workload genuinely needs cross-zone attach.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Storage Pools are for cost-saving teams; everyone else uses individual Hyperdisks."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Storage Pools shine when you have <em>many PVCs at low utilisation</em>. Pool capacity and IOPS budget shared = aggregate spend matches actual peak rather than sum-of-per-PVC peaks. For one or two huge PVCs at sustained 100% utilisation, individual Hyperdisks are simpler. The mental model: pool when you have many tenants; individual when you have few large ones.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "GCS FUSE is fine for transactional databases."</div><div class="misc-row misc-truth"><strong>Truth:</strong> GCS FUSE is object-storage-as-FS. Eventual consistency on metadata + non-POSIX semantics (no fsync guarantees, no real file locking, latency in the 100ms+ range for object operations). Catastrophic for transactional DBs. Excellent for ML datasets, image/asset libraries, append-only log archives — anything sequential-read.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Five GKE managed storage CSI drivers?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Persistent Disk</strong> (RWO block; pd-balanced default; Regional PD), <strong>Hyperdisk + Storage Pools</strong> (tunable IOPS/throughput + VolumeAttributesClass), <strong>Filestore</strong> (RWX NFS), <strong>GCS FUSE</strong> (object-as-FS), <strong>Parallelstore</strong> (HPC/AI parallel filesystem). Plus <strong>Backup for GKE</strong> for DR.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why is WaitForFirstConsumer critical for multi-zone GKE?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Single-zone PDs can't cross-zone-attach. WaitForFirstConsumer delays disk provisioning until the Pod is scheduled, so the disk lands in the right zone. Without it, the scheduler may place the Pod in zone A but disk got provisioned in zone B = attach failure.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's a Regional PD?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Persistent Disk synchronously replicated across two zones in a region. Cross-zone attach supported. Survives single-zone failures. ~2x cost + small write-latency overhead vs zonal PD.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does VolumeAttributesClass do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">K8s GA feature — change a PV's performance attributes (IOPS, throughput) <em>online</em>, no remount. With Hyperdisk: tune IOPS up for a holiday burst, then back down — Pod doesn't restart.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When use GCS FUSE CSI?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Read-heavy sequential workloads on huge cheap data: ML training datasets (TBs at object-storage prices), image/asset libraries, append-only logs. Not for transactional DBs (eventual consistency on metadata + non-POSIX semantics).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When use Parallelstore CSI?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">HPC + AI training where multiple clients read at GiB/s. Distributed training across many GPU nodes. HPC simulations. Backed by DDN EXAScaler. Pricier per GB; right answer when training-step time is data-loading-bound.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is Backup for GKE?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Managed backup service: captures cluster-wide K8s manifests + PV snapshots; supports cross-region restoration. Schedule + retention policies via the Backup for GKE API. Wire in early; the DR primitive.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Storage Pools vs individual Hyperdisks?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Storage Pools</strong> = pool capacity + IOPS + throughput; carve PVCs out. Best when many low-utilisation PVCs share a pool — total cost reflects actual peak. <strong>Individual Hyperdisks</strong> = simpler for few large PVCs at sustained high utilisation.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A team migrates a stateful workload to a multi-zone GKE cluster. They wrote a custom StorageClass without specifying <code>volumeBindingMode</code>. Pods now intermittently fail to start. What's happening?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Default volumeBindingMode is <code>Immediate</code> — disks provision as soon as the PVC is created, in whichever zone the controller picks. The kube-scheduler then schedules the Pod independently — and may place it in a different zone. Cross-zone attach is unsupported for single-zone PDs. Fix: edit the StorageClass to <code>volumeBindingMode: WaitForFirstConsumer</code>; new PVCs provision in the correct zone. (Existing mis-zoned PVCs need recreating in the right zone or migration to Regional PD.)</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A Hyperdisk Balanced PVC was provisioned at 3000 IOPS / 240 MiB/s for Postgres. Black Friday traffic 10×. The team needs 16K IOPS for 5 days. What's the safe path that doesn't require Pod restart?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Create a <strong>VolumeAttributesClass</strong> with target 16K IOPS / 800 MiB/s; reference it from the PVC: <code>spec.volumeAttributesClassName: postgres-burst</code>. Hyperdisk applies online; no detach, no remount, no Pod restart. Postgres continues serving traffic; new IOPS available within seconds. After 5 days: switch the PVC to a lower-spec VAC; pay only for the burst window.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The CFO sees the storage bill: "Why is observability + Backup for GKE costing more than half our cluster compute?" The platform engineer investigates. What are the levers?</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how the platform engineer tuned the backup bill</span>Backup costs come from: (1) snapshot frequency (nightly vs hourly), (2) retention period (30 days × all PVs = a lot), (3) cross-region replication. Levers: (a) tune backup schedule to RPO needs — most workloads don't need hourly backups. (b) tier retention by data class (PHI longer; ephemeral shorter). (c) cross-region replication only for genuinely DR-tier workloads, not all. (d) review GCS retention + storage class on snapshot data. <em>Common pattern: drop snapshot retention on dev/staging clusters from 30 days to 7; cross-region only for prod regulated workloads. Often 50%+ saving without compromising real DR posture.</em></div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Persistent Disk CSI</div><div class="gloss-def">Default RWO storage. pd-standard / pd-balanced / pd-ssd tiers. WaitForFirstConsumer in default StorageClass for zone-correct provisioning.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Regional PD</div><div class="gloss-def">Persistent Disk synchronously replicated across two zones. Cross-zone attach. Survives single-zone failures.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Hyperdisk</div><div class="gloss-def">Next-gen GCP block storage. Variants: Balanced, Throughput, Extreme, ML. Decoupled IOPS / throughput tuning.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Storage Pools</div><div class="gloss-def">Pool-based capacity model: capacity + IOPS + throughput at the pool level; carve PVCs out. Best for many low-utilisation PVCs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">VolumeAttributesClass</div><div class="gloss-def">K8s GA feature — change PV performance attributes online, no remount. With Hyperdisk: live IOPS / throughput retier.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Filestore CSI</div><div class="gloss-def">RWX storage via NFS. Tiers: Zonal, Enterprise (multi-zone HA).</div></div>
+      <div class="gloss-item"><div class="gloss-name">GCS FUSE CSI</div><div class="gloss-def">Mount a Cloud Storage bucket as a Pod filesystem. Cheap; sequential-read workloads (ML datasets, asset libraries).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Parallelstore CSI</div><div class="gloss-def">Managed parallel filesystem (DDN EXAScaler) for HPC + AI training. GiB/s throughput across clients.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Backup for GKE</div><div class="gloss-def">Managed cluster-wide backup: K8s manifests + PV snapshots; cross-region restore. The DR primitive.</div></div>
+      <div class="gloss-item"><div class="gloss-name">VolumeSnapshot</div><div class="gloss-def">K8s standard CRD for point-in-time PV backup. Backed by Compute Engine snapshots.</div></div>
+      <div class="gloss-item"><div class="gloss-name">WaitForFirstConsumer</div><div class="gloss-def">StorageClass binding mode that delays PV provisioning until the Pod is scheduled — ensures zone alignment.</div></div>
+      <div class="gloss-item"><div class="gloss-name">CMEK on storage</div><div class="gloss-def">Customer-Managed Encryption Keys via Cloud KMS — applies to PD, Filestore, GCS, Parallelstore, snapshots.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Default to PD CSI (pd-balanced) with WaitForFirstConsumer for RWO; Regional PD for cross-zone resilience; Hyperdisk + Storage Pools + VolumeAttributesClass for tunable performance; Filestore for RWX; GCS FUSE for cheap object datasets; Parallelstore for HPC/AI; Backup for GKE for managed DR.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module G5 complete</span>
+    <p>Five storage backends mapped to use cases; Hyperdisk + Storage Pools + VolumeAttributesClass for tunable performance; Backup for GKE wired early; multi-zone via Regional PD or topology + WaitForFirstConsumer.</p>
+    <p class="recap-next"><strong>Next — G6: GKE Scaling and Cost.</strong> Cluster Autoscaler, Node Auto-Provisioning (NAP), Autopilot scheduling/billing, Compute Classes (Balanced / Performance / Scale-Out / Accelerator), Spot, GPU (A3/A4 with H100/H200/B200), TPU (Trillium / Ironwood), HPA with custom metrics, BigQuery cost export.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-GKE · Module G5 of 10 · grounded in cloud.google.com/kubernetes-engine</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  try { (function() {
+    const SCENES = [{"mode_id": "pd", "mode_label": "Mode: RWO PVC \u2192 pd-balanced + WaitForFirstConsumer", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod requests RWO 50 GiB pd-balanced.", "move_to": [95, 110], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Default SC has WaitForFirstConsumer \u2014 wait for Pod scheduling.", "move_to": [245, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Scheduler picks node in us-central1-a; PD provisions in same zone.", "move_to": [405, 55], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Mount succeeds; Pod Running.", "move_to": [555, 110], "duration_ms": 900, "pause_after_ms": 2000, "set_text": null, "set_attr": null}]}, {"mode_id": "hyperdisk", "mode_label": "Mode: Hyperdisk + Storage Pool + VolumeAttributesClass", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod's PVC bound to Hyperdisk Balanced from a Storage Pool.", "move_to": [245, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Black Friday burst \u2014 apply VAC with target 16K IOPS.", "move_to": [405, 125], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Hyperdisk applies online; no Pod restart; new IOPS available.", "move_to": [555, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

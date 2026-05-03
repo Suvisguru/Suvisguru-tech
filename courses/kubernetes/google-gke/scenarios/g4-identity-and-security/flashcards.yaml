@@ -1,0 +1,50 @@
+# Flashcards — K-GKE G (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Two GKE identity surfaces?
+    back: |
+      **Human → cluster:** GCP IAM (with KE Developer/Admin/Viewer) + K8s RBAC (additive) + IAM Conditions for context-aware grants. **Pod → GCP service:** Workload Identity Federation for GKE — K8s SA bound to G-SA; Pod gets short-lived GCP token via metadata server; no secret in cluster.
+
+  - id: 2
+    front: |
+      What is Binary Authorization (BinAuth)?
+    back: |
+      Deploy-time signature/attestation enforcement. Policy: "Pods may run only images with an attestation from Attestor X." Attestors are KMS-signed pipelines (e.g., scan-then-sign). Unattested images rejected at admission. Foundation of supply-chain security.
+
+  - id: 3
+    front: |
+      What does Artifact Registry give you beyond "hold images"?
+    back: |
+      Continuous vulnerability scanning, remote repos (proxy upstream Docker Hub / GitHub CR), virtual repos (combine sources behind one URL), KMS-signed attestations metadata. Plus CMEK at rest.
+
+  - id: 4
+    front: |
+      Policy Controller vs Binary Authorization?
+    back: |
+      **Policy Controller** = managed OPA Gatekeeper for arbitrary admission policies (require labels, restrict registries, etc.) — fleet-wide via GKE Enterprise. **BinAuth** = deploy-time enforcement of image trust (signature / attestation). Complementary; use both.
+
+  - id: 5
+    front: |
+      What is GKE Security Posture dashboard?
+    back: |
+      Continuous evaluation of cluster + workloads against GKE security baseline + CIS K8s Benchmark. Findings: PSA missing, NetworkPolicy missing, CVEs in running images. Integrates with Security Command Center.
+
+  - id: 6
+    front: |
+      Container Threat Detection (CTD) — what is it part of?
+    back: |
+      Part of **Security Command Center (SCC)**. Runtime threat detection on GKE: suspicious shell-in-container, crypto-miner, lateral movement, K8s TTPs. Alerts ship to SCC + Cloud Logging.
+
+  - id: 7
+    front: |
+      When use Confidential GKE Nodes?
+    back: |
+      When the workload requires *memory encryption with attestation at silicon level* — AMD SEV / SEV-SNP or Intel TDX. PHI / financial / regulated workloads where Google operators must not be able to read RAM. Specific SKUs (N2D / C2D); CPU + boot cost.
+
+  - id: 8
+    front: |
+      What is GKE Sandbox?
+    back: |
+      gVisor user-space kernel runtime for Pods. Stronger isolation than default container runtime; intercepts syscalls. Use for multi-tenant clusters running untrusted workloads (CI runners, customer code). Performance ~5-15% syscall overhead.

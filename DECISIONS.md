@@ -1012,3 +1012,56 @@ The decision to **continue parallel generators** rather than refactor into a uni
 **Alternatives considered:** Add K-AKS modules to the K-COM curriculum as L45+. Rejected — K-AKS is a separate course with a separate Azure-prereq audience. Reuse the K-Skyline tower atlas with renamed floors for A1-A11. Rejected — the tower metaphor implies AWS-style \"rent floors in a building\"; Azure\'s campus framing better captures the central role of Entra ID (Registrar) in AKS. Refactor immediately into a shared multi-course generator. Deferred — see reasoning above.
 
 **Revisit when:** Adding a *fifth* K-course (K-GKE / K-EDGE / K-OS-shift / etc.). At that point refactor is justified — four parallel generators is enough to abstract from confidently. Until then, each new K-course gets its own parallel stack mirroring the most-recent prior course.
+
+## 2026-05-03 — K-GKE course + K-Garden universe + refactor-trip-wire decision
+
+**Context:** Founder asked for a fifth Kubernetes course: Google GKE (K-GKE) — the GKE deep dive: architecture (Standard / Autopilot / Enterprise), versioning + release channels (Rapid / Regular / Stable / Extended), networking (VPC-native, Dataplane V2, Gateway, NEG, MCI/MCG, CSM), identity + security (WIF for GKE, BinAuth, Posture, CTD, Confidential, Sandbox, CMEK), storage (PD, Hyperdisk + Storage Pools, Filestore, GCS FUSE, Parallelstore, Backup for GKE), scaling + cost (CA, NAP, Autopilot per-Pod billing, Compute Classes, Spot, GPU A3/A4 with H100/H200/B200, TPU Trillium/Ironwood, BQ export), observability (Cloud Logging + Monitoring + GMP + managed Grafana + Trace + Profiler + SLO), Enterprise (Fleets) + AI/ML (JobSet, Kueue, GPU Operator, MIG, TPU multi-host, Ray, Inference Gateway with KV-cache routing, vLLM/NIM/Triton), GCP-specific troubleshooting, capstone with AI inference. **9 content modules + capstone = 10 modules total** (one fewer than K-EKS / K-AKS / K-VAN). Prereq: K-COM + GCP basics.
+
+This is the explicit \"Revisit when\" trigger from the K-AKS entry above (\"Adding a *fifth* K-course\"). Decision time on the trip-wire.
+
+**Decision:** Continue the parallel-generator pattern for K-GKE one more time; refactor explicitly **scheduled** for the next K-course (or as a standalone cleanup if no sixth course materialises). Reasoning below.
+
+**Sub-decision A — K-Garden universe.** Ten plots mapped one-to-one with G1-G10:
+
+| Module | Plot | Topic |
+|---|---|---|
+| G1 | Visitors\' Pavilion *(anchor)* | Architecture & modes |
+| G2 | The Almanac Hut | Versioning + release channels |
+| G3 | Pathways & Trellises | VPC + Gateway + NEG + Dataplane V2 |
+| G4 | Gatekeeper\'s Lodge | WIF + BinAuth + Posture |
+| G5 | Reservoir & Compost | PD + Hyperdisk + Filestore + GCS FUSE + Backup |
+| G6 | Auto-Greenhouse | CA + NAP + Autopilot billing + Compute Classes |
+| G7 | Watchtower | Cloud Logging + Monitoring + GMP + Grafana + Trace |
+| G8 | Research Greenhouse | Fleets + AI/ML (JobSet/Kueue/GPU Op/MIG/TPU/Ray/Inference Gateway/vLLM) |
+| G9 | Plant Doctor\'s Hut | gcpdiag + Logs Explorer + Cloud Status |
+| G10 | Harvest Festival | Capstone — defendable reference garden with AI inference |
+
+The Visitors\' Pavilion is the K-Garden anchor: every visitor arrives there; the wall map shows the whole garden\'s plot layout (the shared-responsibility model); the choice between Standard, Autopilot, and Enterprise is presented at the door.
+
+**Sub-decision B — Module count = 10, not 11.** K-COM has 45 lessons; K-VAN / K-EKS / K-AKS have 11 modules (10 content + capstone). K-GKE has 9 content + capstone = 10 modules — the user\'s brief explicitly enumerated G1-G9 + Capstone. The atlas, audit (TOTAL_LESSONS_KGKE = 10), strip dot count, and footer (\"Module G{N} of 10\") all reflect this. Operationally, 10 vs 11 is a constant; the per-course audit handles it.
+
+**Sub-decision C — Parallel generator stack one more time.** `scripts/k_gke_lesson_generator.py` mirrors `k_aks_lesson_generator.py`: emits K-Garden atlas + K-GKE concept rail + G-numbered footers + \"Module G{N} of 10\" labels. Reuses BASE_CSS, SCRIPT_BLOCK, dataclasses, _render_animation from `k8s_lesson_generator.py`. Lesson specs in `scripts/lessons_kgke/lessonNN.py`; animations in `scripts/lessons_kgke/animations.py`. Build helpers `scripts/build_scenario_folders_kgke.py` and `scripts/build_combined_course_kgke.py` mirror their K-AKS siblings.
+
+**Sub-decision D — File naming.** K-GKE uses `preview-kubernetes-gke-lesson-NN.html`. Course folder slug: `google-gke` (kebab-case lowercase per convention; user-facing name is \"Google GKE\"). Combined-course HTML: `preview-kubernetes-gke-course-all.html`.
+
+**Sub-decision E — Audit per course.** `scripts/audit_lessons_kgke.py` — mechanical + content checks for K-GKE. `k_gke_lesson_generator.py` auto-runs the K-GKE audit after every generation pass per the standing rule. Five separate audits now (K-COM mechanical + K-COM v2 + K-VAN + K-EKS + K-AKS + K-GKE) because the expected counts and id prefixes differ (K-COM: 24 K-Town pins / 45 strip dots / `kt-pin*`; K-VAN: 11 K-Frontier sites / 11 strip dots / `kf-site*`; K-EKS: 11 K-Skyline floors / 11 strip dots / `ks-floor*`; K-AKS: 11 K-Campus wings / 11 strip dots / `kc-wing*`; **K-GKE: 10 K-Garden plots / 10 strip dots / `kg-plot*`**).
+
+**Sub-decision F — The refactor-trip-wire decision.** The K-AKS entry committed to refactoring at the fifth K-course. Reviewing now with K-GKE actually being shipped:
+
+The refactor *is* justified now by structural-duplication math (5 generators × ~480 lines each = ~2400 lines of nearly-parallel rendering glue). But shipping K-GKE content alongside the refactor would have tripled the risk of this delivery: K-GKE is the user\'s current ask; refactoring K-COM/K-VAN/K-EKS/K-AKS/K-GKE generators into a shared multi-course core risks regressions across **88 published lessons** (45 K-COM + 11 K-VAN + 11 K-EKS + 11 K-AKS + 10 K-GKE), each of which would need re-rendering + re-auditing.
+
+**The refactor is now formally scheduled** as a standalone cleanup task. Scope:
+1. Extract a shared `multi_course_renderer.py` with per-course config injection (atlas data, rail data, footer labels, district-emoji, course slug).
+2. Each course generator becomes a thin file specifying its config + calling the shared renderer.
+3. Each audit similarly extracts a shared core + per-course config (id prefix, expected counts).
+4. Regen all 88 lessons; verify clean across all five course audits.
+5. JSDOM-verify animations across a sampled lesson per course.
+6. Single commit with full diff + before/after generator-line-count comparison.
+
+This separates the refactor from K-GKE delivery cleanly — K-GKE ships now via the established pattern (consistent with the prior four courses; low delivery risk); refactor lands as a follow-up commit when scheduled. *Estimated refactor effort: half-day to a day; estimated savings: ~1500 lines deleted; ongoing benefit: future K-courses become ~50-line config files.*
+
+**Reasoning:** K-Garden as the fifth universe (rather than reusing any prior) is justified because: (1) the metaphor changes a fifth time — K-COM is \"living in the city\" (consume), K-VAN is \"building your own town\" (build-it-yourself), K-EKS is \"renting a floor in an AWS-owned tower\", K-AKS is \"leasing wings of an Azure-managed campus where the Registrar checks every visitor\", K-GKE is \"planting in a Google-managed botanical garden where AI greenhouses + organic-growth metaphors meet.\" The garden metaphor specifically captures Google\'s strong AI/ML + per-Pod billing + Autopilot opinionation in a way distinct from city/homestead/tower/campus. (2) The five universes are now visually distinct (city street grid / homestead / tower silhouette / campus quad / botanical garden) so a learner at any module instantly knows which course they\'re in.
+
+**Alternatives considered:** Add K-GKE modules to the K-COM curriculum as L45+. Rejected — K-GKE is a separate course with a separate GCP-prereq audience. Reuse the K-Campus wings atlas with renamed plots for G1-G10. Rejected — the campus metaphor implies Azure-style \"lease wings of buildings + Registrar checks IDs\"; the garden metaphor better captures GCP\'s organic / AI-greenhouse + per-Pod-billing positioning. Bundle the multi-course refactor into the K-GKE delivery. Rejected — see Sub-decision F; would triple the risk of this delivery for marginal incremental cleanup. Skip the K-Garden universe + reuse K-Campus by renaming. Rejected — both consistency-through-reuse and metaphor-distinctness pulled in opposite directions; metaphor-distinctness wins for learner clarity.
+
+**Revisit when:** Either (a) the refactor is formally scheduled and ready to land (file the dedicated commit then) or (b) a sixth K-course is added (force-multiplies the refactor case).

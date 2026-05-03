@@ -1,0 +1,21 @@
+# Quiz — K-GKE G (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Your team picks Autopilot for the prod cluster. A developer adds a Helm chart for an old monitoring agent that uses `hostPath: /var/log`. Deploy fails with admission rejection. What's happening, and what's the path forward?
+    answer: |
+      Autopilot blocks hostPath (and hostNetwork, privileged, hostPID, etc.) at admission via built-in webhooks — security baseline cannot be disabled. The chart was written for unprivileged Standard. Two paths: (1) Pick a Cloud-Logging-aware monitoring tool (GKE auto-ships container logs to Cloud Logging without an agent — Container Logs are available in Logs Explorer). (2) If you genuinely need hostPath, run that workload in a Standard node pool (Autopilot workload class lets you keep most of the cluster on Autopilot pricing while specific workloads run on a managed node pool). Don't fight Autopilot's constraints; they're what give you the per-Pod billing + Pod-level SLA.
+
+  - id: 2
+    prompt: |
+      A platform team has 30 clusters across GCP, EKS, and on-prem K8s. They want one place to deploy a NetworkPolicy and have it land everywhere. What's the GCP-native answer?
+    answer: |
+      Enable **GKE Enterprise**; register all 30 clusters into a **fleet** (including the EKS and on-prem ones via Connect agent + Connect Gateway). Use **Config Sync** from a single Git repo: one NetworkPolicy YAML; reconciled to every fleet member. **Policy Controller** (managed Gatekeeper) enforces the same admission policies fleet-wide. Cloud Service Mesh extends mTLS across the fleet; Connect Gateway lets you `kubectl` any registered cluster via the GCP control plane.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees the cluster bill: "Why are our six clusters all regional? Switch them to zonal — the apiserver runs three replicas, that's overkill." Defend the choice.
+    answer: |
+      "**Regional means the apiserver + etcd quorum runs across three zones — survives one zone going dark.** Zonal means apiserver + etcd in one zone; if that zone has a control-plane outage, we can't deploy, can't scale, can't fail-over Pods, can't flip a feature flag for half a day. We've had at least one customer-facing incident where the only fix was a kubectl edit; on a zonal cluster during that zone's control-plane outage, that incident becomes a multi-hour outage. The control-plane premium is roughly 3× — but our control plane is a small fraction of total spend; nodes + storage + LBs dominate. Regional is a few hundred dollars per cluster per month; zonal cluster outage is six-figure customer impact. We keep regional."

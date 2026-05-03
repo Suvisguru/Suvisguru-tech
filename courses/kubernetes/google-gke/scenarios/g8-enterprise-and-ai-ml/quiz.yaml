@@ -1,0 +1,21 @@
+# Quiz — K-GKE G (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A platform team wants to roll out a single PSA Restricted label change across 25 GKE clusters in 3 regions + 5 GKE-on-AWS clusters. They have no Fleet today. What's the rollout plan?
+    answer: |
+      (1) Enable GKE Enterprise on the project. (2) Register all 30 clusters into a Fleet (the GKE-on-AWS clusters via the Connect agent). (3) Create a Config Sync RootSync from a Git repo containing the namespace label change. (4) Apply RootSync to all fleet members (or a subset via labels / selectors). (5) Config Sync reconciles to every cluster within minutes. (6) Verify via Connect Gateway: `kubectl --context fleet/cluster-X get ns -L pod-security.kubernetes.io/enforce`. *Total: hours, not weeks; future changes are one git commit.*
+
+  - id: 2
+    prompt: |
+      An LLM team serves Llama 3 70B from 12 vLLM Pods on A4 H200. Latency is high; cost-per-token is 2× what they expect. They use a regular Gateway with round-robin load balancing. What's the obvious upgrade?
+    answer: |
+      **GKE Inference Gateway with KV-cache locality routing.** Round-robin sends each conversation's follow-up requests to a random Pod — KV cache is cold; vLLM has to recompute attention over the prompt prefix. Inference Gateway routes follow-up requests in the same conversation back to the same Pod with the warm KV cache, often reducing per-request compute by 50-80% on long conversations. Throughput goes up; cost-per-token drops. Plus model-aware routing — split traffic by prompt size (small to high-throughput Pods, large to large-memory Pods).
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO walks in: "We have 5 clusters, no Fleet. Why would we pay for GKE Enterprise?" Defend the line item.
+    answer: |
+      "**Fleet pays off when you have governance work that should be uniform across clusters.** At 5 clusters: Config Sync removes per-cluster Argo CD operation. Policy Controller enforces admission policies fleet-wide instead of per-cluster Helm chart drift. Cloud Service Mesh handles cross-cluster mTLS without DIY mesh-of-meshes. Connect Gateway lets the on-call team kubectl any cluster from one CLI without per-cluster auth setup. MCI/MCG provides global anycast IP for active-active across regions. *The 5-cluster threshold is where the per-cluster ops cost crosses the Fleet license cost; below that, vanilla GKE is fine. Above that, Fleet is the operational unifier.* If we plan to grow past 10 clusters or add multi-cloud, enable Fleet now and front-load the muscle memory."

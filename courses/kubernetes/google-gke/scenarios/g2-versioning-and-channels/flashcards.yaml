@@ -1,0 +1,50 @@
+# Flashcards — K-GKE G (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Four GKE release channels?
+    back: |
+      **Rapid** (newest minors first; canary; no SLA on latest minor), **Regular** (default; balanced; SLA), **Stable** (conservative for risk-averse prod), **Extended** (~2-year LTS for designated minors; premium tier).
+
+  - id: 2
+    front: |
+      What's the difference between maintenance window and maintenance exclusion?
+    back: |
+      **Maintenance window** schedules *when* upgrades may fire (time-of-week slots). **Maintenance exclusion** blocks upgrades for a date range (with scope: no upgrades / no minor / no minor + node). Use both: window for routine; exclusion for freezes.
+
+  - id: 3
+    front: |
+      Three maintenance-exclusion scopes?
+    back: |
+      **no upgrades** (block everything: minor + patch + node-image), **no minor upgrades** (still apply patches + security), **no minor or node upgrades** (block everything except control-plane patches). Max length depends on scope (30-180 days).
+
+  - id: 4
+    front: |
+      Do GKE control planes support rollback?
+    back: |
+      **No.** Control-plane upgrades are forward-only. Roll-forward via patch is the path. GKE auto-pauses upgrades on health-check failure and node-pool upgrades roll back the affected pool — but the control plane itself moves only forward.
+
+  - id: 5
+    front: |
+      What's the purpose of Pub/Sub upgrade notifications?
+    back: |
+      GKE publishes a Pub/Sub message before maintenance fires. Subscribe with Cloud Functions / Workflows / Slack webhook to get a heads-up — typically hours-to-days notice. Lets the on-call team verify the target version is safe before it lands.
+
+  - id: 6
+    front: |
+      When should you use Extended channel?
+    back: |
+      When the workload cannot upgrade quarterly: regulated industries, ISV-bundled workloads, infrastructure with long change-control cycles. Extended pins the cluster to a designated minor for ~2 years. Premium-tier feature.
+
+  - id: 7
+    front: |
+      What's a no-channel cluster, and why avoid it?
+    back: |
+      A cluster not enrolled in Rapid / Regular / Stable / Extended. Auto-upgrades disabled; you must manually upgrade and track EOS. Discouraged for prod — you become responsible for security patches, EOS dates, and force-migrating off unsupported versions.
+
+  - id: 8
+    front: |
+      Pre-flight tools before a minor upgrade?
+    back: |
+      **gcpdiag** (GCP-aware pre-flight), **kube-no-trouble (kubent)** (deprecated API scan against live cluster), **Pluto** (Helm chart manifest scan). Plus reading the GKE Release Notes for the target version.

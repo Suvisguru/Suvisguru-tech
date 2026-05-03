@@ -643,6 +643,46 @@ These are job titles for whichever entity is being discussed, not new cast membe
 - Sub-labels under each wing (\"architecture\", \"Entra + Workload ID\", \"VNet + AGC + DNS\") give a one-word reminder of the Azure service surface.
 - Strip dot count: 11 (one per module). Anchor at A1 (the Welcome Center, where every visitor enters).
 
+### Unified analogical universe — Google GKE (K-Garden)
+
+K-GKE (Google GKE, Google-managed K8s; prereq K-COM + GCP basics) uses its own universe: **K-Garden**. Where K-Town is the city you live in, K-Frontier is the homestead you build by hand, K-Skyline is the AWS-managed tower you rent space in, and K-Campus is the Azure-managed campus complex, K-Garden is the **Google-managed botanical garden / orchard** — the Head Gardener (Google) operates the climate, the irrigation, and the AI-assisted greenhouse; the Plot Holders (you) plant their crops in their reserved plots. Each K-GKE module = one plot or facility of the garden.
+
+**Plot-to-module mapping**
+
+| Module | Plot | Topic |
+|---|---|---|
+| G1 | **Visitors' Pavilion** *(anchor)* | GKE architecture & modes (Standard / Autopilot / Enterprise) |
+| G2 | **The Almanac Hut** | Versioning + release channels (Rapid / Regular / Stable / Extended) |
+| G3 | **Pathways & Trellises** | Networking (VPC-native, Dataplane V2, Gateway, NEG, MCI/MCG, CSM) |
+| G4 | **Gatekeeper's Lodge** | Identity + security (WIF for GKE, BinAuth, Posture, CTD, Confidential, Sandbox) |
+| G5 | **Reservoir & Compost** | Storage (PD, Hyperdisk + Storage Pools, Filestore, GCS FUSE, Parallelstore, Backup for GKE) |
+| G6 | **Auto-Greenhouse** | Scaling + cost (CA, NAP, Autopilot billing, Compute Classes, Spot, GPU, TPU, BQ export) |
+| G7 | **Watchtower** | Observability (Cloud Logging + Monitoring + GMP + Grafana + Trace + Profiler + SLO) |
+| G8 | **Research Greenhouse** | Enterprise (Fleets) + AI/ML (JobSet, Kueue, GPU Operator, MIG, TPU multi-host, Ray, Inference Gateway, vLLM/NIM/Triton) |
+| G9 | **Plant Doctor's Hut** | GCP-specific troubleshooting (gcpdiag, GKE Recommender, Logs Explorer, Cloud Status) |
+| G10 | **Harvest Festival** | Capstone — defendable reference garden with AI inference |
+
+The Visitors' Pavilion is the K-Garden anchor: every visitor arrives there; the wall map shows the whole garden\'s plot layout (the shared-responsibility model); the choice between Standard, Autopilot, and Enterprise is presented at the door.
+
+**Cast (recurring)**
+
+K-Garden shares the K-COM cast where helpful. New K-Garden-specific roles (not named characters):
+
+- The **Plot Holder** — you (Faculty / department head equivalent), planting crops in your reserved beds.
+- The **Head Gardener** — Google\'s GKE management plane: operates climate, irrigation, AI-assisted greenhouse; never enters tenant plots.
+- The **Almanac Keeper** — release-channel stewardship (the Almanac Hut staff who track when each new variety becomes available + EOS dates).
+
+These are job titles for whichever entity is being discussed, not new cast members. The 3-character cap from K-COM still applies.
+
+**Implementation rules**
+
+- Every K-GKE module opens with `🌿 K-Garden plot: **[Plot Name]**.` (the K-GKE equivalent of K-COM\'s `📍 Today\'s stop in K-Town:`, K-VAN\'s `🏕️ K-Frontier site:`, K-EKS\'s `🏙️ K-Skyline floor:`, K-AKS\'s `🏛️ K-Campus wing:`).
+- Every K-GKE module includes the K-Garden map graphic with the current plot highlighted.
+- Map viewBox: 800×400 (matches K-Frontier / K-Skyline / K-Campus — fewer modules than K-COM).
+- Map renders by `scripts/k_gke_lesson_generator.py:_render_kgarden_map()` from the same KGARDEN_PLOTS list.
+- Sub-labels under each plot (\"architecture\", \"release channels\", \"VPC + Gateway + LB\") give a one-word reminder of the GCP service surface.
+- Strip dot count: **10** (one per module — K-GKE has 10 modules, not 11). Anchor at G1 (the Visitors\' Pavilion, where every visitor enters).
+
 ## What never changes
 
 - The packet/request motion track follows the visible cable/connection trajectory exactly. No exceptions.

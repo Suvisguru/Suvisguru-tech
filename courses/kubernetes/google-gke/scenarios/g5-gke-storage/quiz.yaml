@@ -1,0 +1,21 @@
+# Quiz — K-GKE G (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team migrates a stateful workload to a multi-zone GKE cluster. They wrote a custom StorageClass without specifying `volumeBindingMode`. Pods now intermittently fail to start. What's happening?
+    answer: |
+      Default volumeBindingMode is `Immediate` — disks provision as soon as the PVC is created, in whichever zone the controller picks. The kube-scheduler then schedules the Pod independently — and may place it in a different zone. Cross-zone attach is unsupported for single-zone PDs. Fix: edit the StorageClass to `volumeBindingMode: WaitForFirstConsumer`; new PVCs provision in the correct zone. (Existing mis-zoned PVCs need recreating in the right zone or migration to Regional PD.)
+
+  - id: 2
+    prompt: |
+      A Hyperdisk Balanced PVC was provisioned at 3000 IOPS / 240 MiB/s for Postgres. Black Friday traffic 10×. The team needs 16K IOPS for 5 days. What's the safe path that doesn't require Pod restart?
+    answer: |
+      Create a **VolumeAttributesClass** with target 16K IOPS / 800 MiB/s; reference it from the PVC: `spec.volumeAttributesClassName: postgres-burst`. Hyperdisk applies online; no detach, no remount, no Pod restart. Postgres continues serving traffic; new IOPS available within seconds. After 5 days: switch the PVC to a lower-spec VAC; pay only for the burst window.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees the storage bill: "Why is observability + Backup for GKE costing more than half our cluster compute?" The platform engineer investigates. What are the levers?
+    answer: |
+      Backup costs come from: (1) snapshot frequency (nightly vs hourly), (2) retention period (30 days × all PVs = a lot), (3) cross-region replication. Levers: (a) tune backup schedule to RPO needs — most workloads don't need hourly backups. (b) tier retention by data class (PHI longer; ephemeral shorter). (c) cross-region replication only for genuinely DR-tier workloads, not all. (d) review GCS retention + storage class on snapshot data. *Common pattern: drop snapshot retention on dev/staging clusters from 30 days to 7; cross-region only for prod regulated workloads. Often 50%+ saving without compromising real DR posture.*

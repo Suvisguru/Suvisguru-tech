@@ -1,0 +1,50 @@
+# Flashcards — K-GKE G (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Cluster Autoscaler vs NAP vs Autopilot — when to use each?
+    back: |
+      **CA**: per-pool min/max scaling on Standard; predictable, you pick SKU. **NAP**: GKE creates node pools on demand from SKU catalog. **Autopilot**: Google manages all node operations; per-Pod billing; admission webhooks. Standard+CA for predictable shapes; Standard+NAP for mixed shapes; Autopilot for managed defaults + idle savings.
+
+  - id: 2
+    front: |
+      Four built-in Compute Classes?
+    back: |
+      **Balanced** (E2 / N2 default), **Performance** (N2D / C3 / C4 high-freq), **Scale-Out** (Tau T2D / T2A ARM, low per-vCPU cost), **Accelerator** (GPU / TPU). Custom Compute Class CRD lets you express priority lists + Spot fallback + CMEK.
+
+  - id: 3
+    front: |
+      What is HPA + GCP custom metrics adapter?
+    back: |
+      HPA scaling on Cloud Monitoring custom metrics — not just CPU/memory. Sources: Pub/Sub queue depth, Cloud LB request rate, BigQuery backlog. Always set maxReplicas — HPA without a cap = runaway cost.
+
+  - id: 4
+    front: |
+      Why is Spot fallback in Compute Class powerful?
+    back: |
+      Workload tries Spot first (huge discount); if Spot unavailable in the region, falls back to on-demand. You get the saving when Spot is available without your workload breaking when it isn't. Configure in the Compute Class spec.
+
+  - id: 5
+    front: |
+      GPU SKU classes — pick by use case?
+    back: |
+      **A3** = H100 Hopper (LLM training + high-end inference). **A4** = H200 / B200 (newer Hopper / Blackwell — higher memory bandwidth + capacity). **L4 / L40S** = cost-effective inference. **T4** = budget / legacy inference.
+
+  - id: 6
+    front: |
+      What's a TPU and what's the current-gen?
+    back: |
+      **TPU** = Google's custom AI accelerator chips (Tensor Processing Units). Current-gen training: **Trillium**. Inference at scale: **Ironwood**. Multi-host pods (TPU v5e+) require special node-pool topology — JobSet API + Kueue help schedule them.
+
+  - id: 7
+    front: |
+      What is GKE cost allocation + BigQuery export?
+    back: |
+      Project-level **BigQuery billing export** + GKE-specific **cost allocation** feature → per-row cost data joined with K8s metadata (cluster, namespace, workload). Foundation for chargeback dashboards in Looker Studio / Grafana.
+
+  - id: 8
+    front: |
+      How does Autopilot per-Pod billing work?
+    back: |
+      Bills per *Pod-second* based on requested CPU/memory/ephemeral storage. Pod with 100m/256Mi for 1 hour ≈ 0.1 vCPU-hour + 0.25 GiB-hour. Off-hours scale-to-zero = $0. GPU/TPU billed per accelerator-second when using Compute Class Accelerator.

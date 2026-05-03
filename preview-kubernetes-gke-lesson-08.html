@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-GKE G8 · Enterprise + AI/ML</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-GKE module journey">
+  <span class="concept-rail-title">K-GKE modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G1 GKE architecture &amp; modes</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G2 versioning &amp; channels</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G3 GKE networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G4 identity &amp; security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G5 GKE storage</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G6 scaling &amp; cost</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>G7 GKE observability</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>G8 Enterprise (Fleets) &amp; AI/ML</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G9 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>G10 capstone harvest</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-GKE · Module G8</span></a>
+    <span class="progress-pill">G8 · enterprise + AI/ML</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🌿 K-Garden plot: <strong>Research Greenhouse</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Garden map: G8">
+    <title>K-Garden map · G8</title>
+    <desc>Stylised Google-managed garden / orchard. Research Greenhouse highlighted.</desc>
+    <defs>
+      <linearGradient id="kg-soil" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8EFE0" stop-opacity="0.7"/><stop offset="100%" stop-color="#A8C896" stop-opacity="0.55"/></linearGradient>
+      <linearGradient id="kg-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.16"/><stop offset="100%" stop-color="#3F4A5E" stop-opacity="0.30"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kg-soil)" stroke="#7BA068" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · GARDEN · GCP REGION</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">front of garden — pavilion &amp; planting</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">deeper plots — operations &amp; harvest</text>
+    <g class="pin pin-anchor" id="kg-plot01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">G1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Visitors' Pavilion</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="kg-plot02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Almanac Hut</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">release channels</text></g>
+    <g class="pin" id="kg-plot03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Pathways &amp; Trellises</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">VPC + Gateway + LB</text></g>
+    <g class="pin" id="kg-plot04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Gatekeeper's Lodge</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">WIF + BinAuth + Posture</text></g>
+    <g class="pin" id="kg-plot05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Reservoir &amp; Compost</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">PD + Filestore + Hyperdisk</text></g>
+    <g class="pin" id="kg-plot06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Auto-Greenhouse</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">scaling + cost</text></g>
+    <g class="pin" id="kg-plot07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Watchtower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">GMP + Cloud Mon + Trace</text></g>
+    <g class="pin active" id="kg-plot08" transform="translate(380,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Research Greenhouse</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Fleets + AI/ML</text></g>
+    <g class="pin" id="kg-plot09" transform="translate(520,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Plant Doctor's Hut</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">GCP-specific RCA</text></g>
+    <g class="pin" id="kg-plot10" transform="translate(660,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">G10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Harvest Festival</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🌿 <strong>Research Greenhouse</strong> <span>· G8 of 10</span><span class="visually-hidden">Module G8, Research Greenhouse.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module G8 · the Research Greenhouse — fleets + AI/ML</span>
+    <h1>G8 · GKE Enterprise (Fleets) and AI/ML on GKE</h1>
+    <p class="hero-sub"><strong>GKE Enterprise (Fleets):</strong> fleet management across GCP / AWS / Azure / on-prem; <strong>Config Sync</strong> (GitOps); <strong>Policy Controller</strong>; <strong>Cloud Service Mesh</strong> across fleets; <strong>Connect Gateway</strong>; <strong>Multi-Cluster Ingress / Gateway (MCI / MCG)</strong>. <strong>GKE on AWS / Azure / VMware / bare metal</strong>. <strong>AI/ML on GKE:</strong> <strong>JobSet API</strong> for multi-Job orchestration; <strong>Kueue</strong> for batch queueing; <strong>NVIDIA GPU Operator</strong>; <strong>MIG</strong> slicing; <strong>TPU multi-host</strong>; <strong>Ray on GKE</strong>; <strong>GKE Inference Gateway</strong> with model-aware routing; <strong>vLLM / NVIDIA NIM / Triton</strong> on GKE.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GKE Enterprise (Fleets) + AI/ML on GKE — Config Sync, Policy Controller, CSM, Connect Gateway, MCI/MCG, GKE on AWS/Azure/VMware/bare metal, JobSet, Kueue, GPU Operator, MIG, TPU multi-host, Ray, Inference Gateway, vLLM/NIM/Triton.">
+  <rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6"/>
+  <text x="380" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E">Research Greenhouse — fleets + AI/ML</text>
+  <rect x="40" y="70" width="200" height="120" rx="10" fill="#3F4A5E" stroke="#FBF1D6"/>
+  <text x="140" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">fleets — multi-cluster + multi-cloud</text>
+  <text x="140" y="105" text-anchor="middle" font-size="9" fill="#FBF1D6">Config Sync (GitOps)</text>
+  <text x="140" y="118" text-anchor="middle" font-size="9" fill="#FBF1D6">Policy Controller</text>
+  <text x="140" y="131" text-anchor="middle" font-size="9" fill="#FBF1D6">Cloud Service Mesh fleet-wide</text>
+  <text x="140" y="145" text-anchor="middle" font-size="9" fill="#FBF1D6">Connect Gateway · MCI / MCG</text>
+  <text x="140" y="170" text-anchor="middle" font-size="9" font-style="italic" fill="#FBF1D6">GKE on AWS/Azure/VMware/BM</text>
+  <rect x="255" y="70" width="200" height="120" rx="10" fill="#5A9F7A" stroke="#3F4A5E"/>
+  <text x="355" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">batch + scheduling</text>
+  <text x="355" y="105" text-anchor="middle" font-size="9" fill="#FFFFFF">JobSet API</text>
+  <text x="355" y="118" text-anchor="middle" font-size="9" fill="#FFFFFF">Kueue (queueing)</text>
+  <text x="355" y="131" text-anchor="middle" font-size="9" fill="#FFFFFF">priority + preemption</text>
+  <text x="355" y="148" text-anchor="middle" font-size="9" fill="#FFFFFF">multi-host TPU pods</text>
+  <rect x="470" y="70" width="120" height="120" rx="10" fill="#A04832" stroke="#3F4A5E"/>
+  <text x="530" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">accelerators</text>
+  <text x="530" y="105" text-anchor="middle" font-size="9" fill="#FFFFFF">NVIDIA GPU Operator</text>
+  <text x="530" y="118" text-anchor="middle" font-size="9" fill="#FFFFFF">MIG slicing</text>
+  <text x="530" y="131" text-anchor="middle" font-size="9" fill="#FFFFFF">TPU Trillium / Ironwood</text>
+  <text x="530" y="148" text-anchor="middle" font-size="9" fill="#FFFFFF">Ray on GKE</text>
+  <rect x="605" y="70" width="115" height="120" rx="10" fill="#E8B547" stroke="#3F4A5E"/>
+  <text x="662" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#5A4F45">inference</text>
+  <text x="662" y="105" text-anchor="middle" font-size="9" fill="#5A4F45">GKE Inference Gateway</text>
+  <text x="662" y="118" text-anchor="middle" font-size="9" fill="#5A4F45">model-aware routing</text>
+  <text x="662" y="131" text-anchor="middle" font-size="9" fill="#5A4F45">vLLM</text>
+  <text x="662" y="145" text-anchor="middle" font-size="9" fill="#5A4F45">NVIDIA NIM</text>
+  <text x="662" y="158" text-anchor="middle" font-size="9" fill="#5A4F45">Triton</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. You're paged: <em>"Multi-cluster Ingress backend cluster <code>us-east1</code> degraded — 100% of fleet traffic now hitting <code>europe-west1</code>; latency 4× SLO."</em> You realise you have no Config Sync rule for the failover thresholds; the team last reconfigured MCI by hand six months ago and nobody documented it. <em>Five-cluster fleet, no GitOps, no playbook.</em> Today's lesson: GKE Enterprise (Fleets) for unified governance + AI/ML on GKE for the modern accelerator workload.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Fleets unify policy + GitOps + mesh + multi-cluster ingress across GCP and beyond. AI/ML on GKE = JobSet + Kueue for batch; GPU Operator + MIG + TPU multi-host for compute; Inference Gateway + vLLM/NIM/Triton for serving. Use both pillars for production AI platforms.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · GKE Enterprise (Fleets)</span>
+    <h2>GKE Enterprise — Fleets, Config Sync, Policy Controller, CSM</h2>
+    <p><strong>Fleet</strong> = a logical grouping of GKE clusters (and Anthos-registered non-GKE clusters) under one governance plane. Register clusters with <code>gcloud container fleet memberships register</code>. Fleet enables:</p>
+    <ul>
+      <li><strong>Config Sync</strong> = continuous GitOps reconciliation. <code>RootSync</code> + <code>RepoSync</code> CRDs reconcile manifests from a Git repo into clusters. Drift detection on; manual edits reverted. Three repo patterns: per-tenant repos / per-environment repos / per-cluster repos. Replaces self-installed Argo CD or Flux.</li>
+      <li><strong>Policy Controller</strong> = managed OPA Gatekeeper. Fleet-wide admission policies via Constraint templates; built-in baselines (Pod security standard, registry restriction, label requirements); custom Rego or CEL.</li>
+      <li><strong>Cloud Service Mesh (CSM)</strong> = managed Istio across fleet members. <em>mTLS between Pods across clusters</em>; cross-fleet traffic management; service-to-service auth via SPIFFE identity. The Istio control plane is Google-operated; sidecars in each member cluster.</li>
+    </ul>
+    <p><strong>Connect Gateway</strong> = run kubectl against any registered fleet cluster via the GCP control plane. No need to expose individual cluster apiserver IPs to humans; auth via GCP IAM; works for clusters behind NAT / on-prem / in other clouds.</p>
+    <p><strong>Multi Cluster Ingress (MCI) / Multi Cluster Gateway (MCG)</strong> (covered in G3) — single global anycast IP across fleet clusters; traffic to nearest healthy member; failover automatic.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · GKE on AWS / Azure / VMware / bare metal</span>
+    <h2>GKE on AWS / Azure / VMware / bare metal (Anthos Multi-Cloud + on-prem)</h2>
+    <p>GKE Enterprise extends GKE's management surface beyond GCP:</p>
+    <ul>
+      <li><strong>GKE on AWS</strong> — full GKE control plane running in the customer's AWS account. Same kubectl + Cloud Console + fleet experience. Workloads on EC2 instances; storage on EBS; networking on AWS VPC. <em>For multi-cloud teams who want one operational model.</em></li>
+      <li><strong>GKE on Azure</strong> — same as above for Azure. Workloads on Azure VMs.</li>
+      <li><strong>GKE on VMware</strong> — Anthos clusters on customer's vSphere on-prem. Standardised K8s on the existing virtualisation estate.</li>
+      <li><strong>GKE on bare metal</strong> — Anthos clusters directly on customer hardware (Intel / AMD x86 / ARM). For edge data centres + telco / industrial workloads.</li>
+    </ul>
+    <p><em>All four</em> register into the same Fleet as native GCP GKE clusters → unified Config Sync, Policy Controller, CSM, observability. <em>One operational story across the entire K8s estate.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · AI/ML — batch + accelerators</span>
+    <h2>AI/ML on GKE — JobSet, Kueue, GPU Operator, MIG, TPU multi-host, Ray</h2>
+    <p><strong>Batch + scheduling</strong>:
+    <ul>
+      <li><strong>JobSet API</strong> — orchestrate sets of K8s Jobs together (success, failure, dependency). For multi-host distributed training: launch N Jobs simultaneously; coordinate ranks; handle failure as a unit.</li>
+      <li><strong>Kueue</strong> — Kubernetes-native batch queueing. ClusterQueue + LocalQueue + Workload CRDs. Priority + preemption; quota borrowing across teams; preserves the K8s API. <em>The modern way to run batch on K8s.</em></li>
+      <li>Combine: Kueue queues Workloads; admitted Workloads create JobSets; JobSets launch GPU/TPU Pods.</li>
+    </ul>
+    <p><strong>NVIDIA GPU Operator</strong> — manages NVIDIA driver + container runtime + device plugin lifecycle on GPU node pools. Replaces the manual node-image driver-version juggling. Required for advanced features (MIG, NVLink, RDMA).</p>
+    <p><strong>MIG (Multi-Instance GPU)</strong> — slice a single H100 / H200 GPU into multiple smaller virtual GPUs (e.g., 7 × 10GB MIGs from one 80GB H100). Each MIG appears as <code>nvidia.com/mig-1g.10gb: 1</code> resource. Lets cost-effective inference share a high-end GPU across multiple Pods.</p>
+    <p><strong>TPU multi-host</strong> — TPU v5e+ pods span multiple node-host VMs sharing one logical TPU pod. Requires special node-pool topology (single VM = host; pod = multiple hosts) + workload integration via JobSet for coordinated launch. <em>Distributed training at TPU scale.</em></p>
+    <p><strong>Ray on GKE</strong> — KubeRay operator manages Ray clusters as RayCluster CRDs. Train and serve large models with Ray's distributed primitives (Tasks, Actors, Datasets, Train, Serve). KubeRay handles head + worker Pod orchestration on GKE.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">A platform team has 30 GKE clusters + 5 EKS clusters from an acquisition. They want one place to deploy a NetworkPolicy and have it land everywhere. What's the GCP-native answer?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Write a script that loops kubectl across contexts.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Enable GKE Enterprise; register all 35 clusters into a Fleet (EKS via Connect agent); use Config Sync to deploy the NetworkPolicy from one Git repo to all members.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Migrate all clusters to GKE first.</button></li>
+      </ul>
+      <p class="pause-check-feedback">Fleets + Config Sync = one governance plane across multi-cloud K8s. EKS / on-prem clusters register via the Connect agent and become Config Sync targets just like native GKE.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · AI/ML — inference (GKE Inference Gateway + vLLM/NIM/Triton)</span>
+    <h2>AI/ML inference — GKE Inference Gateway + vLLM / NVIDIA NIM / Triton</h2>
+    <p><strong>GKE Inference Gateway</strong> = an extension of the GKE Gateway API for AI inference. Model-aware routing: route requests by model name, prompt size, batching opportunity, prefix-cache hit. Supports KV-cache aware routing for transformer inference (route follow-up requests in the same conversation back to the same Pod with the warm KV cache). <em>Optimised cost-per-token for LLM serving.</em></p>
+    <p><strong>vLLM</strong> — high-throughput LLM serving with PagedAttention + continuous batching. The de-facto choice for GPU inference of open-weights models (Llama / Mistral / Qwen / etc.). Runs as a Pod with model loaded into GPU memory. <em>Combine with Inference Gateway for production-scale serving.</em></p>
+    <p><strong>NVIDIA NIM</strong> — NVIDIA-packaged inference microservice container. Pre-built for popular models with optimised kernels, TensorRT-LLM, Triton inside. Runs on GKE GPU node pools. NVIDIA-supported.</p>
+    <p><strong>Triton Inference Server</strong> — NVIDIA's general-purpose inference server. Multi-framework (TensorRT, ONNX, PyTorch, TensorFlow); multi-model; ensemble pipelines. Older-but-mature; NIM is the modern wrapper for LLMs.</p>
+    <p><strong>End-to-end inference platform pattern</strong>: Inference Gateway (model-aware routing) → vLLM Pods (GPU serving) on Compute Class Accelerator A4 H200 → Cloud Trace for end-to-end latency → SLO Monitoring with cost-per-token KPI joined from BQ. <em>Production AI inference platform on GKE.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-fleet GKE multi-cluster ops = scripts looping kubectl. Pre-Config-Sync GitOps = self-installed Argo CD per cluster. Pre-Inference-Gateway, LLM serving needed manual model→Pod routing or naive HTTP load-balancing (which broke KV-cache locality). Pre-Kueue, batch on K8s was DIY queueing. Multi-cloud K8s = three different operational stories. AI/ML on K8s was assembly required.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Modern GKE Enterprise: <strong>fleets</strong> unify policy + GitOps + mesh across GCP/AWS/Azure/on-prem. <strong>Config Sync + Policy Controller + CSM</strong> are managed. <strong>Connect Gateway</strong> + MCI/MCG handle multi-cluster operations. <strong>AI/ML platform pattern</strong>: JobSet + Kueue for batch; GPU Operator + MIG + TPU multi-host + Ray for compute; Inference Gateway + vLLM / NIM / Triton for serving. <em>Production AI platform on GKE in weeks, not quarters.</em></p></div>
+    </div>
+    <p class="ba-caption"><em>Fleets are the unifier; AI/ML on GKE is the use case GKE was designed for from the start.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this plot</h2>
+<p>The <strong>Research Greenhouse</strong> is K-Garden's most ambitious building. Two wings.</p>
+    <p>The <strong>Multi-Garden Wing</strong> (Fleets) connects this garden to dozens of others — same head-gardener manuals, same security guards, same seasonal calendar — even gardens hosted by other operators (AWS, Azure, on-prem). One Git repo (Config Sync) describes the standard practices; every garden in the network reconciles to it. The <strong>Network Concierge</strong> (Connect Gateway) lets a head gardener visit any garden via one badge. The <strong>Sister-Garden Front Gates</strong> (MCI/MCG) route visitors to the nearest healthy garden automatically.</p>
+    <p>The <strong>AI Lab Wing</strong> handles the high-tech crops. <em>JobSet</em> + <em>Kueue</em> coordinate large batch experiments across plots. <em>NVIDIA GPU Operator</em> manages the heavy machinery; <em>MIG</em> slices an H100 microscope into seven smaller microscopes for budget experiments. <em>TPU multi-host</em> coordinates Google-designed accelerator pods across multiple host VMs for distributed training. <em>Ray</em> handles parallel orchestration.</p>
+    <p>For <em>serving</em> trained models, the lab has the <strong>Inference Gateway</strong> — a model-aware concierge that routes requests by model name, prompt size, conversation history (KV-cache locality). The serving runtimes are <em>vLLM</em>, <em>NVIDIA NIM</em>, or <em>Triton</em> — each a specialty tool for inference at scale.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in GKE / GCP</th></tr></thead>
+        <tbody>
+          <tr><td>Multi-Garden Wing</td><td>GKE Enterprise (Fleets)</td></tr>
+          <tr><td>One Git repo for standard practices</td><td>Config Sync (RootSync + RepoSync)</td></tr>
+          <tr><td>House rules enforced at every gate</td><td>Policy Controller (managed Gatekeeper)</td></tr>
+          <tr><td>Encrypted notes between plants in any garden</td><td>Cloud Service Mesh fleet-wide</td></tr>
+          <tr><td>Network Concierge</td><td>Connect Gateway (kubectl across fleet)</td></tr>
+          <tr><td>Sister-Garden Front Gates</td><td>Multi-Cluster Ingress / Multi-Cluster Gateway</td></tr>
+          <tr><td>Other operators' gardens</td><td>GKE on AWS / Azure / VMware / bare metal</td></tr>
+          <tr><td>AI Lab Wing</td><td>AI/ML on GKE pillar</td></tr>
+          <tr><td>Coordinated batch experiments</td><td>JobSet API</td></tr>
+          <tr><td>Experiment queue</td><td>Kueue (ClusterQueue + LocalQueue + Workload)</td></tr>
+          <tr><td>Heavy-machinery manager</td><td>NVIDIA GPU Operator</td></tr>
+          <tr><td>H100 sliced into smaller microscopes</td><td>MIG (Multi-Instance GPU)</td></tr>
+          <tr><td>Coordinated TPU pod</td><td>TPU multi-host pods (TPU v5e+)</td></tr>
+          <tr><td>Parallel orchestration framework</td><td>Ray on GKE (KubeRay)</td></tr>
+          <tr><td>Model-aware concierge</td><td>GKE Inference Gateway (KV-cache aware routing)</td></tr>
+          <tr><td>Specialty inference rooms</td><td>vLLM / NVIDIA NIM / Triton on GKE</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A research lab's equipment is fixed; AI/ML on GKE is rapidly evolving (Inference Gateway is recent; TPU + GPU SKUs change). The metaphor under-captures version-velocity in this space.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>There's a special wing that connects the garden to other gardens worldwide so they all use the same rules. There's also an AI lab with super-fast computers that train and serve smart models. Special staff route requests to the right model.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>GKE Enterprise (Fleets) = fleet of clusters (GKE + GKE-on-AWS/Azure/VMware/bare-metal); Config Sync for GitOps; Policy Controller for admission; Cloud Service Mesh fleet-wide mTLS; Connect Gateway for kubectl-across-clusters; MCI/MCG for multi-cluster ingress. AI/ML on GKE: JobSet + Kueue for batch; GPU Operator + MIG + TPU multi-host + Ray for compute; Inference Gateway + vLLM/NIM/Triton for serving.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How GCP-shop teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">Bank — fleet of 50 clusters under Config Sync + Policy Controller</p><p>Bank registers 35 GKE + 10 GKE-on-AWS + 5 GKE-on-VMware clusters into a Fleet. Config Sync deploys uniform NetworkPolicies + PSA labels + RBAC bindings from one Git repo to all 50 clusters. Policy Controller blocks non-compliant Pods at admission everywhere. CSM provides cross-cluster mTLS. <em>One governance model across heterogeneous K8s.</em></p></div>
+      <div class="scenario"><p class="scenario-name">LLM inference platform — Inference Gateway + vLLM on A4 H200</p><p>Team serves Llama 3 70B inference. <strong>Inference Gateway</strong> routes by model name + KV-cache locality (chats stick to the same Pod for cache reuse). <strong>vLLM</strong> Pods on Compute Class Accelerator with A4 H200. SLO: p95 first-token-latency &lt; 500ms; cost-per-token tracked via BQ. <em>Throughput +60% vs naive routing thanks to KV-cache locality.</em></p></div>
+      <div class="scenario"><p class="scenario-name">ML training — Kueue + JobSet + TPU multi-host</p><p>ML team runs distributed training jobs on TPU. Kueue ClusterQueue defines team quotas + priority; submit a Workload CR; admitted Workload creates a JobSet; JobSet launches a TPU multi-host pod with 4 hosts × 4 chips per host. Failed host = JobSet treats it as failure of the entire training run; Kueue requeues with priority. <em>Production batch ML platform; quota + priority + preemption all built-in.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Ray on GKE for distributed feature engineering</p><p>Data team has a 50TB feature engineering job. Deploy <strong>RayCluster</strong> via KubeRay on GKE Standard with Compute Class Scale-Out (T2D ARM, low cost-per-vCPU). Ray Tasks fan out to ~500 workers; Ray Datasets read from BigQuery; results stream to GCS. <em>Job completes in 18 min vs 4hr on a single VM. Cluster destroyed after job; per-second billing.</em></p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Fleet propagates policy to all clusters; AI Inference Gateway routes intelligently</h2>
+    <p>One git push → all clusters reconcile; LLM request routed by KV-cache locality.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="90" width="110" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="95" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">platform team</text><text x="95" y="128" text-anchor="middle" font-size="9" fill="#6B6058">git push</text>
+        <rect x="180" y="90" width="130" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="245" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Fleet + Config Sync</text><text x="245" y="128" text-anchor="middle" font-size="9" fill="#6B6058">RootSync + RepoSync</text>
+        <rect x="340" y="30" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="395" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">GKE us-central1</text><text x="395" y="68" text-anchor="middle" font-size="9" fill="#6B6058">synced</text>
+        <rect x="340" y="90" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="395" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">GKE-on-AWS eu-west</text><text x="395" y="128" text-anchor="middle" font-size="9" fill="#6B6058">synced</text>
+        <rect x="340" y="150" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="395" y="172" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">GKE-on-VMware on-prem</text><text x="395" y="188" text-anchor="middle" font-size="9" fill="#6B6058">synced</text>
+        <rect x="480" y="80" width="130" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="545" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Inference Gateway</text><text x="545" y="118" text-anchor="middle" font-size="9" fill="#6B6058">KV-cache routing</text>
+        <rect x="630" y="80" width="100" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="680" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">vLLM A4 H200</text><text x="680" y="118" text-anchor="middle" font-size="9" fill="#6B6058">Llama 3 70B</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,120)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="propagate">▶ Fleet propagation</button>
+        <button class="anim-btn" type="button" data-mode="inference">▶ AI inference flow</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> Fleet propagation + AI inference flow.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Fleets are just a name for grouping clusters in the GCP console."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Fleets are an active control plane. Fleet membership enables fleet-scoped Config Sync, Policy Controller, CSM, Connect Gateway, MCI/MCG, fleet-default settings. <em>Capabilities, not just labels.</em> Without Fleet membership, those features don't apply.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Inference Gateway and regular Gateway API are the same."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Inference Gateway is an extension of Gateway API specifically for AI inference. Adds model-aware routing (route by model name), KV-cache locality (route follow-up requests in a conversation to the same Pod), prompt-size routing (small prompts to high-throughput Pods, large prompts to large-memory Pods). Regular Gateway API doesn't know about model semantics.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "vLLM, NIM, and Triton are interchangeable."</div><div class="misc-row misc-truth"><strong>Truth:</strong> <strong>vLLM</strong> = open-source LLM-specialised serving with PagedAttention + continuous batching; best for open-weights LLMs at scale. <strong>NIM</strong> = NVIDIA-packaged inference microservice; pre-built for popular models with TensorRT-LLM optimisations + Triton inside; NVIDIA-supported with NVIDIA enterprise license. <strong>Triton</strong> = NVIDIA general-purpose inference server (older-but-mature, multi-framework, not LLM-specific). Pick vLLM for community LLMs at scale; NIM for vendor-supported LLMs; Triton for general-purpose multi-framework inference (CV / classical ML).</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is a GKE Fleet?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A logical grouping of clusters (GKE + Anthos-registered non-GKE) under one governance plane. Enables Config Sync, Policy Controller, CSM, Connect Gateway, MCI/MCG, fleet-default settings. Register with <code>gcloud container fleet memberships register</code>.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does Config Sync do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Continuous GitOps reconciliation. RootSync + RepoSync CRDs reconcile manifests from Git into clusters. Drift detection on; manual edits reverted. Three repo patterns: per-tenant / per-environment / per-cluster.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is Connect Gateway?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Run kubectl against any registered fleet cluster via the GCP control plane. No need to expose individual cluster apiserver IPs to humans; auth via GCP IAM. Works for clusters behind NAT / on-prem / in other clouds.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">GKE on AWS / Azure / VMware / bare metal — what are these?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Anthos Multi-Cloud + on-prem variants of GKE. Full GKE control plane runs in customer's AWS / Azure / vSphere / bare-metal estate. Workloads on local infra. All register into the same Fleet for unified governance.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is Kueue?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Kubernetes-native batch queueing. ClusterQueue (cluster-wide capacity + priority) + LocalQueue (namespace-level) + Workload CRD. Quota borrowing across teams; priority + preemption. Replaces DIY batch schedulers.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is JobSet API?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Orchestrate sets of K8s Jobs together: success / failure / dependency relationships. For multi-host distributed training where N Jobs must launch simultaneously and fail/succeed as a unit (e.g., TPU multi-host pods, multi-node GPU training).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is MIG and when use it?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Multi-Instance GPU</strong> — slice a single H100/H200 into multiple smaller virtual GPUs (e.g., 7 × 10GB MIGs from one 80GB H100). Use when you have inference workloads that don't need the full GPU; share a high-end GPU across multiple Pods cost-effectively.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does GKE Inference Gateway add over regular Gateway?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Model-aware routing: route by model name; KV-cache locality (follow-up requests in a conversation go back to the same Pod with warm cache); prompt-size routing (small prompts → high-throughput Pods, large prompts → large-memory Pods). Optimises cost-per-token for LLM serving.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A platform team wants to roll out a single PSA Restricted label change across 25 GKE clusters in 3 regions + 5 GKE-on-AWS clusters. They have no Fleet today. What's the rollout plan?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) Enable GKE Enterprise on the project. (2) Register all 30 clusters into a Fleet (the GKE-on-AWS clusters via the Connect agent). (3) Create a Config Sync RootSync from a Git repo containing the namespace label change. (4) Apply RootSync to all fleet members (or a subset via labels / selectors). (5) Config Sync reconciles to every cluster within minutes. (6) Verify via Connect Gateway: <code>kubectl --context fleet/cluster-X get ns -L pod-security.kubernetes.io/enforce</code>. <em>Total: hours, not weeks; future changes are one git commit.</em></div></div>
+      <div class="quiz-card"><p class="quiz-prompt">An LLM team serves Llama 3 70B from 12 vLLM Pods on A4 H200. Latency is high; cost-per-token is 2× what they expect. They use a regular Gateway with round-robin load balancing. What's the obvious upgrade?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>GKE Inference Gateway with KV-cache locality routing.</strong> Round-robin sends each conversation's follow-up requests to a random Pod — KV cache is cold; vLLM has to recompute attention over the prompt prefix. Inference Gateway routes follow-up requests in the same conversation back to the same Pod with the warm KV cache, often reducing per-request compute by 50-80% on long conversations. Throughput goes up; cost-per-token drops. Plus model-aware routing — split traffic by prompt size (small to high-throughput Pods, large to large-memory Pods).</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The CTO walks in: "We have 5 clusters, no Fleet. Why would we pay for GKE Enterprise?" Defend the line item.</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how the platform engineer answered the CTO</span>"<strong>Fleet pays off when you have governance work that should be uniform across clusters.</strong> At 5 clusters: Config Sync removes per-cluster Argo CD operation. Policy Controller enforces admission policies fleet-wide instead of per-cluster Helm chart drift. Cloud Service Mesh handles cross-cluster mTLS without DIY mesh-of-meshes. Connect Gateway lets the on-call team kubectl any cluster from one CLI without per-cluster auth setup. MCI/MCG provides global anycast IP for active-active across regions. <em>The 5-cluster threshold is where the per-cluster ops cost crosses the Fleet license cost; below that, vanilla GKE is fine. Above that, Fleet is the operational unifier.</em> If we plan to grow past 10 clusters or add multi-cloud, enable Fleet now and front-load the muscle memory."</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Fleet</div><div class="gloss-def">Logical grouping of GKE + Anthos clusters under one governance plane. Enables Config Sync, Policy Controller, CSM, Connect Gateway, MCI/MCG.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Config Sync</div><div class="gloss-def">Continuous GitOps reconciliation. RootSync + RepoSync CRDs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Policy Controller</div><div class="gloss-def">Managed OPA Gatekeeper. Fleet-wide admission policies via Constraint templates / Rego / CEL.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Cloud Service Mesh (CSM)</div><div class="gloss-def">Managed Istio across fleet members. Cross-cluster mTLS + traffic management.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Connect Gateway</div><div class="gloss-def">kubectl any registered fleet cluster via the GCP control plane. Auth via GCP IAM.</div></div>
+      <div class="gloss-item"><div class="gloss-name">GKE on AWS / Azure / VMware / bare metal</div><div class="gloss-def">Anthos Multi-Cloud + on-prem GKE. Full GKE control plane in customer's estate; registers into Fleet.</div></div>
+      <div class="gloss-item"><div class="gloss-name">JobSet API</div><div class="gloss-def">K8s API for orchestrating sets of Jobs together: success / failure / dependency. For multi-host distributed training.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Kueue</div><div class="gloss-def">K8s-native batch queueing. ClusterQueue + LocalQueue + Workload CRD. Priority + preemption + quota borrowing.</div></div>
+      <div class="gloss-item"><div class="gloss-name">NVIDIA GPU Operator</div><div class="gloss-def">Manages NVIDIA driver + container runtime + device plugin lifecycle on GPU pools.</div></div>
+      <div class="gloss-item"><div class="gloss-name">MIG (Multi-Instance GPU)</div><div class="gloss-def">Slice an H100/H200 into multiple smaller virtual GPUs. Cost-effective inference sharing.</div></div>
+      <div class="gloss-item"><div class="gloss-name">TPU multi-host</div><div class="gloss-def">TPU v5e+ pods spanning multiple host VMs. Special node-pool topology + JobSet for coordinated launch.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Ray on GKE (KubeRay)</div><div class="gloss-def">KubeRay operator manages RayCluster CRDs. Ray Tasks / Actors / Datasets / Train / Serve on GKE.</div></div>
+      <div class="gloss-item"><div class="gloss-name">GKE Inference Gateway</div><div class="gloss-def">Gateway API extension for AI inference. Model-aware routing, KV-cache locality, prompt-size routing.</div></div>
+      <div class="gloss-item"><div class="gloss-name">vLLM</div><div class="gloss-def">High-throughput LLM serving with PagedAttention + continuous batching.</div></div>
+      <div class="gloss-item"><div class="gloss-name">NVIDIA NIM</div><div class="gloss-def">NVIDIA-packaged inference microservice. Pre-built for popular models; TensorRT-LLM + Triton inside.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Triton Inference Server</div><div class="gloss-def">NVIDIA general-purpose inference server. Multi-framework, multi-model, ensemble pipelines.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Fleets unify policy + GitOps + mesh + multi-cluster ingress across GCP and beyond. AI/ML on GKE = JobSet + Kueue for batch; GPU Operator + MIG + TPU multi-host for compute; Inference Gateway + vLLM/NIM/Triton for serving. Use both pillars for production AI platforms.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module G8 complete</span>
+    <p>Two pillars: GKE Enterprise (Fleets) for cross-cluster + multi-cloud governance; AI/ML on GKE for batch (JobSet/Kueue) + accelerators (GPU Operator/MIG/TPU/Ray) + serving (Inference Gateway + vLLM/NIM/Triton).</p>
+    <p class="recap-next"><strong>Next — G9: GKE Troubleshooting (GCP-Specific).</strong> IAM/RBAC mismatch, WIF token issues, Autopilot admission rejection, Node pool / MIG failures, IP exhaustion, NEG health-check failures, Ingress provisioning, firewall blocks, Cloud NAT/SNAT, DNS, storage attach, release channel / maintenance exclusion issues, gcpdiag, GKE Recommender, Logs Explorer.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-GKE · Module G8 of 10 · grounded in cloud.google.com/kubernetes-engine</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  try { (function() {
+    const SCENES = [{"mode_id": "propagate", "mode_label": "Mode: Config Sync \u2014 apply once, sync everywhere", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Platform team commits NetworkPolicy + Inference config to git.", "move_to": [95, 120], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Fleet + Config Sync reconciles to all members.", "move_to": [245, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Fan-out: native GKE us-central1...", "move_to": [395, 55], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> ...GKE-on-AWS eu-west...", "move_to": [395, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> ...GKE-on-VMware on-prem. All clusters reconcile.", "move_to": [395, 175], "duration_ms": 900, "pause_after_ms": 1800, "set_text": null, "set_attr": null}]}, {"mode_id": "inference", "mode_label": "Mode: GKE Inference Gateway routes to vLLM with KV-cache locality", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> User asks Llama 3 70B follow-up question.", "move_to": [95, 120], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Inference Gateway looks at conversation ID; routes to Pod with warm KV cache.", "move_to": [545, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> vLLM Pod on A4 H200 generates first token in &lt; 500ms.", "move_to": [680, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 120];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

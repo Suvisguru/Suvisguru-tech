@@ -1,0 +1,50 @@
+# Flashcards — K-GKE G (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Five GKE managed storage CSI drivers?
+    back: |
+      **Persistent Disk** (RWO block; pd-balanced default; Regional PD), **Hyperdisk + Storage Pools** (tunable IOPS/throughput + VolumeAttributesClass), **Filestore** (RWX NFS), **GCS FUSE** (object-as-FS), **Parallelstore** (HPC/AI parallel filesystem). Plus **Backup for GKE** for DR.
+
+  - id: 2
+    front: |
+      Why is WaitForFirstConsumer critical for multi-zone GKE?
+    back: |
+      Single-zone PDs can't cross-zone-attach. WaitForFirstConsumer delays disk provisioning until the Pod is scheduled, so the disk lands in the right zone. Without it, the scheduler may place the Pod in zone A but disk got provisioned in zone B = attach failure.
+
+  - id: 3
+    front: |
+      What's a Regional PD?
+    back: |
+      Persistent Disk synchronously replicated across two zones in a region. Cross-zone attach supported. Survives single-zone failures. ~2x cost + small write-latency overhead vs zonal PD.
+
+  - id: 4
+    front: |
+      What does VolumeAttributesClass do?
+    back: |
+      K8s GA feature — change a PV's performance attributes (IOPS, throughput) *online*, no remount. With Hyperdisk: tune IOPS up for a holiday burst, then back down — Pod doesn't restart.
+
+  - id: 5
+    front: |
+      When use GCS FUSE CSI?
+    back: |
+      Read-heavy sequential workloads on huge cheap data: ML training datasets (TBs at object-storage prices), image/asset libraries, append-only logs. Not for transactional DBs (eventual consistency on metadata + non-POSIX semantics).
+
+  - id: 6
+    front: |
+      When use Parallelstore CSI?
+    back: |
+      HPC + AI training where multiple clients read at GiB/s. Distributed training across many GPU nodes. HPC simulations. Backed by DDN EXAScaler. Pricier per GB; right answer when training-step time is data-loading-bound.
+
+  - id: 7
+    front: |
+      What is Backup for GKE?
+    back: |
+      Managed backup service: captures cluster-wide K8s manifests + PV snapshots; supports cross-region restoration. Schedule + retention policies via the Backup for GKE API. Wire in early; the DR primitive.
+
+  - id: 8
+    front: |
+      Storage Pools vs individual Hyperdisks?
+    back: |
+      **Storage Pools** = pool capacity + IOPS + throughput; carve PVCs out. Best when many low-utilisation PVCs share a pool — total cost reflects actual peak. **Individual Hyperdisks** = simpler for few large PVCs at sustained high utilisation.

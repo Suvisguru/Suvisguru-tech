@@ -1,0 +1,50 @@
+# Flashcards — K-GKE G (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Six GCP-specific GKE failure patterns?
+    back: |
+      (1) IAM/RBAC + WIF token issues, (2) Autopilot admission rejection + resource mutation, (3) node pool / MIG provisioning + IP exhaustion, (4) NEG health + Ingress + firewall + Cloud NAT/SNAT + DNS, (5) storage attach failures, (6) release-channel / maintenance-exclusion issues.
+
+  - id: 2
+    front: |
+      What does `gcpdiag` do?
+    back: |
+      Google's open-source GCP-aware diagnostic CLI. Run `gcpdiag lint --project=P --type=cluster` for ~100 GKE checks (IAM, networking, quota, version, security baseline, common misconfigs). Reports findings + recommended actions. The single most useful ad-hoc GKE diagnostic tool.
+
+  - id: 3
+    front: |
+      What is GKE Recommender?
+    back: |
+      Surfaces actionable recommendations on a cluster: upgrade channel, over-provisioned Pod requests, unused node pool capacity, security findings. Cloud Console → GKE → Recommendations. For ongoing optimisation, not incident triage.
+
+  - id: 4
+    front: |
+      What's the standard GKE triage playbook?
+    back: |
+      (1) Cloud Status Dashboard (rule out GCP-side). (2) Cloud Audit Logs + Activity (recent changes). (3) gcpdiag (comprehensive lint). (4) Logs Explorer with saved query (per-incident-type). (5) GKE Recommender (longer-term cleanup).
+
+  - id: 5
+    front: |
+      WIF token 401 — most common cause?
+    back: |
+      **Cluster's OIDC issuer URL changed** (cluster recreated; pinned issuer in WIF Pool federated credential is now stale). Diagnose: `gcloud container clusters describe ... --format='value(workloadIdentityConfig.workloadPool, identityServiceConfig)'`; compare against WIF Pool federated credential issuer.
+
+  - id: 6
+    front: |
+      Pod stuck Pending — "InsufficientPodCapacity" — what's likely?
+    back: |
+      Pod secondary range exhaustion. Cluster grew past planned-for max-nodes × max-pods-per-node. Cannot resize range in place — create new node pool with larger Pod CIDR; drain old pool. Pre-empt with gcpdiag.
+
+  - id: 7
+    front: |
+      Auto-upgrade fires during traffic peak — what config prevents this?
+    back: |
+      **Maintenance exclusion** for the date range, scope *no upgrades* (or *no minor* if patches still wanted). Maximum exclusion length depends on scope. Set both maintenance window (when upgrades may fire) AND exclusions (when they may not).
+
+  - id: 8
+    front: |
+      Why is checking Cloud Status the first triage step?
+    back: |
+      Most likely path to ruling out GCP-side incidents in 30 seconds. Saves hours of theorising on user-side root cause when the issue is Google's — "GKE control plane degraded in us-east1" stops the wild-goose chase immediately.

@@ -1,0 +1,50 @@
+# Flashcards — K-GKE G (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What is VPC-native (alias IP)?
+    back: |
+      GKE's default networking: Pods + Services get real VPC IPs via alias ranges on nodes. Three IP ranges needed: node primary subnet + Pod secondary range + Service secondary range. Routes-based is legacy.
+
+  - id: 2
+    front: |
+      Why is IP planning critical at cluster creation?
+    back: |
+      Pod secondary range cannot be resized in place. Underspecifying = stop scheduling Pods even with empty CPU. Plan: `(max-nodes × max-pods-per-node × 2 buffer)`. Migration off requires new node pool with larger range + drain + delete old.
+
+  - id: 3
+    front: |
+      What is GKE Dataplane V2?
+    back: |
+      Cilium-based eBPF dataplane. Default for new clusters. Replaces kube-proxy. Faster service routing + L4/L7 NetworkPolicy + FQDN NetworkPolicy + Hubble flow observability. No kube-proxy iptables sprawl.
+
+  - id: 4
+    front: |
+      GKE Gateway controller vs legacy Ingress?
+    back: |
+      **Gateway controller**: first-class Gateway API (HTTPRoute, TCPRoute, TLSRoute, GatewayClass), supports multi-cluster Gateway. **Legacy Ingress**: Ingress objects programming Cloud LB; still supported but Gateway is the modern path.
+
+  - id: 5
+    front: |
+      What is a NEG?
+    back: |
+      **Network Endpoint Group** = container-native LB primitive that holds Pod IPs (not node IPs). Required for modern Ingress / Gateway / Cloud Service Mesh. Faster failure detection, kube-proxy not in data path.
+
+  - id: 6
+    front: |
+      Multi Cluster Ingress (MCI) — what does it solve?
+    back: |
+      One global anycast IP serving Pods across multiple GKE clusters in a fleet (different regions). Traffic routed to nearest healthy cluster. Failover automatic. Foundation for multi-region active-active without per-region DNS gymnastics.
+
+  - id: 7
+    front: |
+      What two firewall ranges must be allowed for NEG health checks?
+    back: |
+      `35.191.0.0/16` and `130.211.0.0/22` — GFE health-check source ranges. Without these, LB marks all NEG-backed Pods unhealthy. Pin this firewall rule with a comment so refactors don't remove it.
+
+  - id: 8
+    front: |
+      What is Cloud Service Mesh?
+    back: |
+      Managed Istio for GKE. Google operates the control plane; sidecars on Pods give mTLS / traffic management / observability. Works fleet-wide via GKE Enterprise — cross-cluster mTLS without DIY mesh-of-meshes.

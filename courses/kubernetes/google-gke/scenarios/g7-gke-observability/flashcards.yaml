@@ -1,0 +1,50 @@
+# Flashcards — K-GKE G (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three signal pipes auto-enabled for GKE?
+    back: |
+      **Cloud Logging** (container stdout/stderr + kubelet + system + control-plane), **Cloud Monitoring** (K8s + GCE infra metrics + pre-built GKE dashboards), **Cloud Trace** (auto-collect from OpenTelemetry / Cloud Trace SDK).
+
+  - id: 2
+    front: |
+      What does GMP add over Cloud Monitoring?
+    back: |
+      **Managed Service for Prometheus**: scrapes app-emitted Prometheus-format metrics (prometheus_client, Micrometer, etc.); PromQL queries; ServiceMonitor / PodMonitor CRDs. Cloud Monitoring covers infra; GMP covers app. Use both.
+
+  - id: 3
+    front: |
+      What does Cloud Profiler do?
+    back: |
+      Continuous CPU + heap profiling in production with low overhead. Flame graphs in the Cloud console. Find the function burning 30% of your CPU you didn't know about.
+
+  - id: 4
+    front: |
+      Service Monitoring + SLOs + burn-rate alerts — the pattern?
+    back: |
+      Define SLO ("99.5% of requests < 300ms over 28d"). Service Monitoring tracks attainment + burn rate. Alert on *burn rate*: e.g., "burning > 14× sustainable for 1h" = page; "burning > 1.5× for 6h" = ticket. Replaces threshold-on-raw-metric noise.
+
+  - id: 5
+    front: |
+      What does Error Reporting do?
+    back: |
+      Auto-clusters similar exception stack traces from app logs into *error groups*. Tracks first-seen, last-seen, occurrence count. Replaces the manual log-grep-for-stack-traces workflow.
+
+  - id: 6
+    front: |
+      How do you enable apiserver / scheduler metrics + logs?
+    back: |
+      Cluster create / update with `--monitoring=SYSTEM,WORKLOAD,APISERVER,CONTROLLER_MANAGER,SCHEDULER` + `--logging=SYSTEM,WORKLOAD,API_SERVER,CONTROLLER_MANAGER,SCHEDULER`. Apiserver request rate / latency lands in Cloud Monitoring; audit logs in Cloud Logging.
+
+  - id: 7
+    front: |
+      Notification Channel patterns?
+    back: |
+      **Direct integrations**: PagerDuty, Slack, email, SMS. **Pub/Sub**: alert message goes to Pub/Sub topic → Cloud Functions / Workflows fans out + audits. Pub/Sub is the recommended pattern for fan-out + replayable alert audit trail.
+
+  - id: 8
+    front: |
+      Per-namespace cost — how does GKE expose it?
+    back: |
+      Enable BigQuery billing export at billing-account level + GKE cost allocation at cluster level. BQ rows include K8s metadata (cluster, namespace, workload). Build dashboards in Looker Studio / managed Grafana joining cost with namespace → tenant mapping.

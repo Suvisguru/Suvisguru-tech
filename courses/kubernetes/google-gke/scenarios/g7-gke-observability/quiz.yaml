@@ -1,0 +1,21 @@
+# Quiz — K-GKE G (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      The team uses Logs Explorer to debug Pod CrashLoopBackOff incidents. What's a faster workflow that uses managed Grafana?
+    answer: |
+      Build a 4-panel Grafana dashboard scoped to namespace + service: (1) Cloud Monitoring panel: container_restart_count + Pod CPU / memory; (2) GMP panel: app-emitted RED metrics (rate / errors / duration); (3) Cloud Logging panel via Cloud Logging data source: tail of container logs filtered to the failing Pod; (4) Cloud Trace panel: latency p50/p99 + recent error traces. Pin the dashboard. On-call clicks one URL with template variables; sees four panes scoped to the alert. Time-to-diagnosis drops from 8-12 min (Logs Explorer + tab-switching) to under 2 min.
+
+  - id: 2
+    prompt: |
+      The CFO sees the Cloud Logging bill: "Why is observability $50K/month for a $120K GKE bill?" The platform engineer investigates. What are the typical levers?
+    answer: |
+      Three usual suspects: (1) **verbose stdout in production** — single Deployment dumping debug-level JSON. Fix: log level + structured-log sampling. (2) **Default 30-day retention on every log bucket** — high-volume logs ingested + retained forever. Fix: per-bucket retention tuning; route low-value logs to a shorter-retention bucket. (3) **Apiserver verbose audit logs at full fidelity** when only audit-admin events needed for compliance. Fix: tune monitoring + logging config to include only the categories you actually use. Typical reduction: 40-70% with zero loss of operational signal.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Black Friday eve. You want one alert chain for: p99 latency, error rate, traffic anomaly. You have Cloud Monitoring, GMP, Cloud Trace. Wire it in 30 minutes.
+    answer: |
+      Single **Notification Channel**: Pub/Sub topic → Cloud Function → PagerDuty webhook + Slack webhook + audit log to BigQuery. Three alerting sources: (a) Service Monitoring SLO with burn-rate alert (latency target via Cloud Trace data) → Notification Channel; (b) GMP *Prometheus alert rule* on RED metrics (5xx rate > threshold for 5min) → same Channel; (c) Cloud Monitoring *anomaly detection* on traffic volume (configurable smart-detection) → same Channel. *One channel, three sources, no duplicate routing config.*

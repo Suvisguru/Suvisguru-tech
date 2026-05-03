@@ -1,0 +1,21 @@
+# Quiz — K-GKE G (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      kubectl returns `403 Forbidden` for a user. They authenticated cleanly via gcloud (no auth error). What's the diagnostic ladder?
+    answer: |
+      (1) Confirm auth: `gcloud auth list` + `kubectl auth whoami` (with a recent kubectl). (2) Check IAM: does the user have *Kubernetes Engine Cluster Viewer / Developer / Admin* at cluster or project scope? `gcloud projects get-iam-policy`. (3) Check K8s RBAC: any RoleBinding referencing the user / group? `kubectl get rolebindings,clusterrolebindings -A | grep USER`. (4) Check IAM Conditions: does the user's grant exclude their request context (network, time)? (5) Group propagation: if added to a group recently, can take 10-30 min to surface. (6) Specific resource: they have Reader at project but the resource is in a namespace they're not bound to.
+
+  - id: 2
+    prompt: |
+      A Pod can't fetch a secret from Secret Manager via Secret Manager CSI. Pod events: *"failed to get secret: not authorized."* Walk through diagnosis.
+    answer: |
+      (1) Identify the Pod's SA + the SA's annotation `iam.gke.io/gcp-service-account`. (2) Find the G-SA with that email; check its IAM role on the specific Secret Manager secret (Secret Manager Secret Accessor). (3) Verify Workload Identity Federation Pool federated credential matches the cluster's OIDC issuer + the SA subject. Common gotcha: cluster recreated → OIDC issuer changed; fed cred trust still points at old issuer. (4) Verify Secret Manager firewall (if VPC SC enabled). (5) Check Secret Manager CSI driver logs (`kubectl logs -n kube-system -l app=secrets-store-csi-driver`) for the precise auth error. (6) Run `gcpdiag lint --type=cluster` — often surfaces the WIF mismatch automatically.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Saturday, 03:00. Cluster auto-upgrade fired and is now stuck. PagerDuty pages on-call. They open kubectl — auth fails. What's the right move?
+    answer: |
+      **(1) Check Cloud Status Dashboard first** — is GKE degraded? IAM degraded? Cloud Logging degraded? If yes: wait, page Google, communicate GCP-side cause. **(2) If GCP-side healthy**, pivot to alternate access: break-glass IAM grant via PIM (just-in-time elevation), MFA on a phone, gcloud from a fresh VM with a service account. **(3) Once kubectl works**: `gcloud container operations list` for upgrade state, `kubectl get events --sort-by=.lastTimestamp`, Logs Explorer filtered to apiserver / scheduler / cluster-autoscaler logs. Most likely: PDB violation (G6/A9 — fix surge or PDB), or deprecated API blocking (gcpdiag would have caught this in pre-flight; today fix the API in workloads, resume).
