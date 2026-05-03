@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three observability signal types in AKS — what backs each?
+    back: |
+      **Metrics:** Container Insights (AKS-aware, on Log Analytics) + AMP (managed Prometheus). **Logs:** Log Analytics workspace + KQL. **Traces:** Application Insights or Azure Monitor managed OpenTelemetry.
+
+  - id: 2
+    front: |
+      What is AMG and what does it consume?
+    back: |
+      **Azure Managed Grafana** — managed Grafana service. Consumes AMP, App Insights, Log Analytics, Azure Monitor as native data sources. Enterprise tier integrates with Entra RBAC. Pre-built AKS dashboards in the gallery.
+
+  - id: 3
+    front: |
+      What is KQL?
+    back: |
+      **Kusto Query Language** — Azure's SQL-like pipe-based query language for Log Analytics. Standard tables for AKS: `ContainerLogV2`, `KubeEvents`, `KubeNodeInventory`, `KubePodInventory`, `InsightsMetrics`.
+
+  - id: 4
+    front: |
+      When pick App Insights vs managed OpenTelemetry?
+    back: |
+      **App Insights**: .NET / Microsoft-stack, want zero-config auto-instrumentation. **Managed OpenTelemetry**: polyglot / OSS-leaning, want vendor-neutral instrumentation. Same backend; different SDK + collector.
+
+  - id: 5
+    front: |
+      Control-plane diagnostic settings — what categories matter?
+    back: |
+      `kube-apiserver` (api requests), `kube-audit` (security forensics), `kube-audit-admin`, `kube-controller-manager`, `kube-scheduler`, `cluster-autoscaler`, `cloud-controller-manager`. Route to Log Analytics for KQL search; or to Event Hub for SIEM ingest.
+
+  - id: 6
+    front: |
+      What does Network Observability do?
+    back: |
+      Captures Pod-to-Pod flow data (Hubble eBPF on Cilium clusters). Visualises east-west traffic, NetworkPolicy drops, DNS lookups. Useful for "why is this connection refused?" at L4/L7.
+
+  - id: 7
+    front: |
+      Per-namespace cost — how surfaced?
+    back: |
+      **Azure Cost Management** with cost analysis at namespace-level granularity. Splits compute / storage / network / log ingest per namespace. Foundation of internal chargeback and tenant billing.
+
+  - id: 8
+    front: |
+      Three knobs to tune Log Analytics cost?
+    back: |
+      (1) Filter at the source — Container Insights config drops low-value namespaces and verbose logs. (2) Tier per table — Basic Logs for high-volume low-query, Archive for compliance retention. (3) Retention per table — short for noisy data, long for audit logs. DCRs route subsets cleanly.

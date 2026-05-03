@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      The team installed cert-manager + Argo CD + Linkerd + Workload Identity + Secrets Store CSI all via Helm a year ago. Half the chart upgrades have broken. What's the cleanup path?
+    answer: |
+      Inventory: which of these now exist as managed add-ons? **Workload Identity** + **Secrets Store CSI / Key Vault Provider** + **App Routing (cert-manager-equipped NGINX)** + **Flux v2** + **Istio service mesh add-on** all do. Migration order: start with the least-risky (Workload Identity → enable add-on, migrate annotations, drop Helm), then cert-manager (move to App Routing add-on), then GitOps (parallel-run Flux add-on alongside Argo CD until comfortable, then drop Argo). *Result: 5 self-installed Helm charts → 0; Microsoft owns the upgrade path.*
+
+  - id: 2
+    prompt: |
+      The platform team sponsors a service mesh rollout. Engineers ask: "What does the Istio add-on give us that vanilla Istio doesn't?" Answer.
+    answer: |
+      **Microsoft installs, upgrades, and supports the Istio control plane** — you don't handle Istio version-bumps, CVE patches, or operator-config drift across clusters. The data plane (sidecars) is still Istio. Trade-offs: Microsoft chooses the supported version line (one or two minors behind upstream); some Istio features (custom EnvoyFilter, beta APIs) may not be supported. The mesh-as-managed surface is the value; if you need bleeding-edge Istio features, self-install is the alternative.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      A bank has 50 AKS clusters across 4 regions. Compliance now requires every cluster to enforce a specific NetworkPolicy default-deny + a specific PSA Restricted label. The platform team has no Fleet Manager. How long does this rollout take, and what changes with Fleet Manager?
+    answer: |
+      **Without Fleet Manager:** per-cluster work — at minimum a script looping kubectl across 50 contexts, with per-cluster verification. Realistically 1-2 sprints with verification + rollback per cluster + handling per-cluster anomalies. **With Fleet Manager:** create a FleetWorkload resource with the NetworkPolicy + namespace label, apply once, fleet propagates to all 50 members; verify via Fleet status. Hours, not sprints. Plus future compliance changes are one-touch instead of fifty-touch.

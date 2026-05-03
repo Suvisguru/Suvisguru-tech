@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Seven AKS managed add-ons?
+    back: |
+      **KEDA** (event-driven Pod scaling), **Dapr** (distributed app runtime sidecar), **Istio service mesh**, **Flux v2 GitOps**, **Workload Identity**, **Key Vault Secrets Provider**, **Application Routing** (managed NGINX).
+
+  - id: 2
+    front: |
+      When pick Flux v2 add-on vs self-installed Argo CD?
+    back: |
+      **Flux add-on**: Microsoft installs/upgrades/supports; configure via Azure CLI / Bicep / FluxConfiguration CRD; ideal for Azure-aligned shops. **Argo CD**: more UI-rich; multi-tenant with project isolation; ideal where teams want the Argo UX. Both work; Flux is the path-of-least-resistance for AKS.
+
+  - id: 3
+    front: |
+      What does Dapr do?
+    back: |
+      Sidecar that exposes pluggable building blocks (state store, pub/sub, secrets, bindings, actors) as HTTP/gRPC to the app. App speaks Dapr API, Dapr talks to Cosmos / Service Bus / Key Vault / etc. Decouples app code from cloud-specific SDKs.
+
+  - id: 4
+    front: |
+      What does Azure Arc-enabled Kubernetes give you?
+    back: |
+      Brings any conformant K8s cluster under Azure's management plane: Policy, Defender, Monitor, Flux GitOps, WI, Key Vault CSI. Cluster is registered as an Azure resource via the `azure-arc` agent. Multi-cloud / on-prem governance unified.
+
+  - id: 5
+    front: |
+      AKS on Azure Local — what is it?
+    back: |
+      Full AKS running on customer-owned hyperconverged hardware certified by Microsoft (HPE / Dell / Lenovo with Azure Local OS). Microsoft operates the K8s control plane; you operate the data center. Same managed add-ons surface where supported.
+
+  - id: 6
+    front: |
+      When use AKS Edge Essentials?
+    back: |
+      Single-node (or very small) edge devices — retail, factory, ATM, kiosk. Lightweight K8s, manageable centrally via Arc. Hardware as small as a NUC.
+
+  - id: 7
+    front: |
+      When do you need Fleet Manager?
+    back: |
+      At ~10+ AKS clusters, especially with multi-region active-active, per-tenant clusters, sovereignty isolation, or staged rollout discipline. Provides workload propagation, cluster placement, coordinated upgrade waves. Below 10 clusters, manual ops + GitOps suffice.
+
+  - id: 8
+    front: |
+      Three on-prem K8s options under Azure?
+    back: |
+      **Arc-enabled K8s** (existing K8s + Azure governance). **AKS Hybrid (on Azure Local)** (Microsoft-operated AKS on certified hardware). **AKS Edge Essentials** (single-node / very small edge).

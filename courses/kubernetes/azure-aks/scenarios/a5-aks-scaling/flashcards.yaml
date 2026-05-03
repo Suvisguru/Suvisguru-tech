@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Cluster Autoscaler vs NAP — when to use which?
+    back: |
+      **CA** = per-pool min/max; predictable, simple, you pick the pool SKU. **NAP** = per-Pod provisioning across SKU catalog; cost-optimal mix; consolidation rebins idle. NAP for mixed workloads + cost focus; CA for fixed shapes + simplicity. NAP is default in AKS Automatic.
+
+  - id: 2
+    front: |
+      What does KEDA do that HPA can't?
+    back: |
+      Scale on **external events** (Service Bus queue depth, Event Hub backlog, Storage Queue, Cron, Prometheus query, 60+ scalers) and **scale to zero**. HPA needs ≥1 Pod to read CPU; KEDA can run a Deployment at 0 replicas when no events.
+
+  - id: 3
+    front: |
+      Why are Spot pools auto-tainted?
+    back: |
+      To prevent regular workloads from accidentally landing on evictable nodes. Workloads that tolerate the `kubernetes.azure.com/scalesetpriority=spot:NoSchedule` taint are explicitly opting in to potential eviction with 30 seconds notice.
+
+  - id: 4
+    front: |
+      ARM node pools — when worth it?
+    back: |
+      Cobalt 100 / Ampere Altra are ~25% cheaper than equivalent x86 D-series for compute-bound workloads. Worth it when your container images are built for ARM64 (multi-arch images via `buildx`) and your workload runs cleanly on ARM.
+
+  - id: 5
+    front: |
+      Confidential Computing pools — what problem do they solve?
+    back: |
+      In-use memory encryption with attestation. AMD SEV-SNP on DCasv5/ECasv5 SKUs encrypts the VM's memory so even Azure host operators can't inspect it. For PII/PCI/financial workloads where in-use confidentiality is contractually required.
+
+  - id: 6
+    front: |
+      Why does PDB matter for autoscaling?
+    back: |
+      When CA / NAP scales in or maintenance drains a node, it respects PodDisruptionBudgets. A PDB with `maxUnavailable: 0` + min replicas = drain blocked. A workload with no PDB = no protection during drains. Set realistic PDBs that allow drains without dropping availability.
+
+  - id: 7
+    front: |
+      VPA — when to use, when to avoid?
+    back: |
+      **Use:** workloads with poorly-tuned CPU/memory requests; long-running services where right-sizing pays off. **Avoid:** on the same metric as HPA — you'll get scaling-on-scaling oscillation. Run VPA in *recommend* mode, then manually update; or use VPA on workloads HPA doesn't touch.
+
+  - id: 8
+    front: |
+      Multi-zone scaling pattern?
+    back: |
+      Pool created with `--zones 1 2 3`; CA spreads node count across zones. Combine with Pod topology-spread constraints (`topologyKey: topology.kubernetes.io/zone`) to keep replicas balanced. Storage: ZRS or per-zone PV pinning + app-level replication.

@@ -602,6 +602,47 @@ These are job titles for whichever entity is being discussed, not new cast membe
 - Sub-labels under each floor (\"architecture\", \"Auto Mode\", \"VPC + LB + DNS\") give a one-word reminder of the AWS service surface.
 - Strip dot count: 11 (one per module). Anchor at E1 (the Lobby, where every visitor enters).
 
+### Unified analogical universe — Azure AKS (K-Campus)
+
+K-AKS (Azure AKS, Microsoft-managed K8s; prereq K-COM + Azure basics) uses its own universe: **K-Campus**. Where K-Town is the city you live in, K-Frontier is the homestead you build by hand, and K-Skyline is the AWS-managed tower you rent space in, K-Campus is the **Azure-managed campus complex** — the Facilities Director (Azure) operates the lights, HVAC, security, and grounds; the Faculty (you) lease wings of buildings to host their departments. The Registrar's Office (Entra ID) is central — every visitor checks in there. Each K-AKS module = one wing (or facility) of the campus.
+
+**Wing-to-module mapping**
+
+| Module | Wing | Topic |
+|---|---|---|
+| A1 | **Welcome Center** *(anchor)* | AKS architecture & shared responsibility |
+| A2 | **Registrar's Office** | Identity (Entra ID, Workload Identity, Azure RBAC) |
+| A3 | **Pathways & Quad** | Networking (Azure CNI, AGC, NetworkPolicy) |
+| A4 | **The Library** | Storage (Disks, Files, NetApp, Blob, Container Storage) |
+| A5 | **The Auditorium** | Scaling (Cluster Autoscaler, NAP, KEDA, specialty pools) |
+| A6 | **Campus Police** | Security (Defender, Policy, Image Cleaner, FIPS, Confidential) |
+| A7 | **Bell Tower** | Observability (Container Insights, AMP, AMG, ADOT) |
+| A8 | **Student Union** | Add-ons & platform (Dapr, Istio, Flux, Arc, Hybrid, Edge, Fleet) |
+| A9 | **Maintenance Yard** | Upgrades & operations (LTS, channels, surge, blue-green) |
+| A10 | **Health Clinic** | Troubleshooting (Azure-specific failure patterns) |
+| A11 | **Commencement Hall** | Capstone — defendable reference campus |
+
+The Welcome Center is the K-Campus anchor: every visitor arrives there; the wall map shows the whole campus floor plan (the shared-responsibility model); choices like AKS Standard vs AKS Automatic are explained at the door.
+
+**Cast (recurring)**
+
+K-Campus shares the K-COM cast where helpful. New K-Campus-specific roles (not named characters):
+
+- The **Faculty** — you (department heads leasing wings of buildings). Every K-AKS module is told from the Faculty's POV.
+- The **Facilities Director** — Azure platform itself, who runs the lights, HVAC, security cameras, and shuttle (control plane, encryption, region wiring) but never enters faculty offices.
+- The **Registrar** — Entra ID, who validates everyone (humans and Pods) before they enter any building. Sits at the centre of the campus by design.
+
+These are job titles for whichever entity is being discussed, not new cast members. The 3-character cap from K-COM still applies.
+
+**Implementation rules**
+
+- Every K-AKS module opens with `🏛️ K-Campus wing: **[Wing Name]**.` (the K-AKS equivalent of K-COM's `📍 Today's stop in K-Town:`, K-VAN's `🏕️ K-Frontier site:`, K-EKS's `🏙️ K-Skyline floor:`).
+- Every K-AKS module includes the K-Campus map graphic with the current wing highlighted.
+- Map viewBox: 800×400 (matches K-Frontier and K-Skyline — fewer modules than K-COM).
+- Map renders by `scripts/k_aks_lesson_generator.py:_render_kcampus_map()` from the same KCAMPUS_WINGS list.
+- Sub-labels under each wing (\"architecture\", \"Entra + Workload ID\", \"VNet + AGC + DNS\") give a one-word reminder of the Azure service surface.
+- Strip dot count: 11 (one per module). Anchor at A1 (the Welcome Center, where every visitor enters).
+
 ## What never changes
 
 - The packet/request motion track follows the visible cable/connection trajectory exactly. No exceptions.

@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      AKS version support window?
+    back: |
+      **N (current) + N-1 + N-2** = community support. **N-3** = platform support (security patches only, time-limited). Below N-3 = unsupported; force-upgrade or rebuild.
+
+  - id: 2
+    front: |
+      What is AKS LTS?
+    back: |
+      **Long-Term Support** — 2-year support for designated K8s minor versions on Premium tier. For workloads that cannot upgrade quarterly (regulated, long change-control, ISV-bundled).
+
+  - id: 3
+    front: |
+      Five auto-upgrade channels?
+    back: |
+      `none` (manual), `patch` (within current minor), `stable` (one minor behind latest — recommended prod), `rapid` (latest GA), `node-image` (node OS only, separate channel).
+
+  - id: 4
+    front: |
+      Three planned-maintenance window types?
+    back: |
+      `aksManagedAutoUpgradeSchedule` (K8s upgrades), `aksManagedNodeOSUpgradeSchedule` (node OS upgrades), `default` (legacy combined). Always set for prod.
+
+  - id: 5
+    front: |
+      What does max-surge % do?
+    back: |
+      During a node pool upgrade, surge % adds extra nodes so Pods can drain to fresh nodes before old ones cordon. Default 10%; for low-PDB-tolerance workloads bump to 33-50% for faster + safer drains.
+
+  - id: 6
+    front: |
+      When use blue-green node pool migration?
+    back: |
+      High-stakes upgrades where in-place drain risk is unacceptable. Build new node pool on target version next to old; drain workloads to new; delete old. Atomic rollback (drain back to old) is available until you delete the old pool.
+
+  - id: 7
+    front: |
+      What is kube-no-trouble (kubent)?
+    back: |
+      Pre-flight tool that scans the live cluster (and Helm releases) for deprecated K8s API usage. Run before every minor upgrade to catch `networking.k8s.io/v1beta1 Ingress`-style breakers.
+
+  - id: 8
+    front: |
+      Where is the AKS Release Tracker?
+    back: |
+      `releases.aks.azure.com` — public Microsoft tool showing which AKS minor versions are rolled out in which Azure regions. Plan cross-region upgrades using this.

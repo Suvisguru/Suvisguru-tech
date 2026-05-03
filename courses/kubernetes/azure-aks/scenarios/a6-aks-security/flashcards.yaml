@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three pillars of Defender for Containers?
+    back: |
+      **Image scanning** (continuous CVE scan in ACR), **Posture management** (CIS K8s + Azure baseline findings), **Runtime threat detection** (suspicious behaviour alerts via node agents). All visible in one Defender pane; alerts ship to Sentinel.
+
+  - id: 2
+    front: |
+      What is Azure Policy for AKS?
+    back: |
+      Microsoft's packaging of OPA Gatekeeper as an AKS add-on. Built-in initiatives include *Kubernetes pod security baseline / restricted standards*. Effect = Audit (log) or Deny (block). Supports custom ConstraintTemplates.
+
+  - id: 3
+    front: |
+      Three PSA levels?
+    back: |
+      **Privileged** (no restrictions — pre-existing workloads), **Baseline** (no known privilege escalation paths), **Restricted** (production default — non-root, no privileged escalation, drop all capabilities, seccomp RuntimeDefault). Apply via namespace label `pod-security.kubernetes.io/enforce: restricted`.
+
+  - id: 4
+    front: |
+      What does Image Cleaner for AKS do?
+    back: |
+      DaemonSet that scans node disks for unused or vulnerable images, removes them. Reduces lateral movement (attacker on a node can't use a stale vulnerable image to pivot). Configure scan interval + CVE severity threshold.
+
+  - id: 5
+    front: |
+      When are FIPS node pools required?
+    back: |
+      When the workload must use FIPS 140-2 validated cryptography — typically US federal contracts. Per-pool flag at creation. Workloads that don't need FIPS run on regular pools to avoid the FIPS performance overhead.
+
+  - id: 6
+    front: |
+      Confidential Containers on AKS — what hardware + runtime?
+    back: |
+      **Kata Containers** runtime (Pod runs in a utility VM, not the host kernel) + **AMD SEV-SNP** (memory encryption + attestation). DCasv5 / ECasv5 SKUs. Each Pod's memory encrypted at silicon level — invisible to Azure operators.
+
+  - id: 7
+    front: |
+      What is the AL2 → AL3 / Ubuntu 24 deadline?
+    back: |
+      **Azure Linux 2.0 reached end of support 2025-11-30; node images removed 2026-03-31.** Every AKS node currently on AL2 must migrate to **Azure Linux 3** or **Ubuntu 24** via new pools (OS SKU is immutable on existing pools).
+
+  - id: 8
+    front: |
+      Why use Azure Firewall for AKS egress?
+    back: |
+      FQDN-based allow-list of permitted destinations (Microsoft Graph, ACR, Key Vault, your APIs); everything else denied at L7. Catches data exfiltration at the network layer. Premium tier adds IDPS + TLS inspection. Pair with in-cluster NetworkPolicy.

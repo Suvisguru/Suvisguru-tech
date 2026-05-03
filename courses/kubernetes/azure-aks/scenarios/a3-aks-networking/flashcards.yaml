@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Five AKS CNI options? Default?
+    back: |
+      **Azure CNI** (real VNet IP per Pod), **Azure CNI Overlay** (default — Pod IPs on overlay), **Azure CNI Powered by Cilium** (eBPF dataplane), **BYO CNI**, **Kubenet** (deprecated).
+
+  - id: 2
+    front: |
+      Difference between AGIC and AGC?
+    back: |
+      **AGIC** = AKS controller programming Application Gateway v1 from Ingress objects (legacy). **AGC** = Application Gateway for Containers, purpose-built L7 LB programmed via Gateway API (HTTPRoute). AGC is the modern path.
+
+  - id: 3
+    front: |
+      Why use NAT Gateway over default outbound?
+    back: |
+      Default = LB-shared SNAT, ~64 ports/node, prone to `SNAT port allocation` exhaustion under burst. NAT Gateway = up to 64K ports per attached IP, scales far beyond, isolates cluster egress. Set `--outbound-type managedNATGateway`.
+
+  - id: 4
+    front: |
+      Three ways to lock down the AKS apiserver?
+    back: |
+      **Authorized IP ranges** (firewall the public endpoint), **private cluster** (Private Link + Private DNS), **API Server VNet Integration** (apiserver injected into a delegated subnet of your VNet — modern recommended).
+
+  - id: 5
+    front: |
+      NetworkPolicy options?
+    back: |
+      **Azure NetworkPolicy** (Azure-native), **Calico** (third-party, advanced features), **Cilium** (eBPF, L7-aware). Pick at cluster create — cannot change in place.
+
+  - id: 6
+    front: |
+      What does Azure CNI Overlay solve?
+    back: |
+      The IP-exhaustion problem. Pods get IPs from an overlay CIDR (not consumed from the VNet); node IPs stay in VNet. A /24 VNet supports a 10K-node cluster.
+
+  - id: 7
+    front: |
+      What's the Web Application Routing add-on?
+    back: |
+      Managed NGINX ingress controller + cert-manager + Azure DNS integration. Replaces deprecated HTTP Application Routing add-on. Useful for self-hosted ingress without operating Helm charts.
+
+  - id: 8
+    front: |
+      Pod subnet vs node subnet?
+    back: |
+      With Azure CNI you can put Pods in a separate subnet from nodes for finer-grained NSG / route-table control. With Overlay this isn't needed (Pod IPs come from overlay CIDR).

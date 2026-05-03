@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      The team has Container Insights enabled but the on-call uses kubectl to check Pod logs because "the portal is too slow." What's the workflow upgrade?
+    answer: |
+      Build a 4-panel KQL dashboard in AMG: (1) `KubeEvents` filtered to the namespace + last 15 min; (2) `ContainerLogV2` tail for the alerting Pod; (3) AMP RED metrics for the service; (4) App Insights trace for the failing request. Pin the dashboard in AMG; bookmark in browser. On-call clicks one URL, has all 4 panes scoped to the alert. Time-to-diagnosis drops from 8-12 min (multiple kubectl + portal switches) to under 2 min.
+
+  - id: 2
+    prompt: |
+      The CFO asks: "Why is observability spend $40K/month for a $90K cluster?" The platform engineer investigates. What's typically going on?
+    answer: |
+      Three usual suspects: (1) **verbose stdout logs** from a chatty service — single Deployment dumping debug-level JSON in production. Fix: log level + sample. (2) **Default retention 30+ days on every table** — high-volume tables like `ContainerLogV2` ingested forever. Fix: tier-down to Basic Logs or 7-day retention. (3) **Apiserver verbose audit logs at full fidelity** when only audit-admin events are needed for compliance. Fix: per-category category-filter in diagnostic settings. Typical reduction: 40-70% with zero loss of operational signal.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Black Friday eve. The team wants p99 latency, error rate, and traffic in one alert chain to one channel. They have AMP, Application Insights, and Log Analytics. How do they wire this in 30 minutes?
+    answer: |
+      Single **Action Group** in Azure Monitor as the notification target (PagerDuty webhook + Teams + email). Three alert sources: (a) AMP *Prometheus alert rule*: `histogram_quantile(0.99, ...) > 500ms` → Action Group; (b) App Insights *availability test* + *smart detection* on response time → same Action Group; (c) Log Analytics *scheduled query rule*: KQL counting 5xx in `ContainerLogV2` → same Action Group. *One channel, three sources, no duplicate routing config.*

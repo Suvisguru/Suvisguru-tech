@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      100 Pods stuck Pending. CA logs: `scale-up: max-count reached on user-pool`. The team's emergency fix is to bump max-count from 5 to 50. What's the longer-term issue?
+    answer: |
+      Bumping max-count works for the immediate firefight but masks the deeper problem: a *fixed pool size* doesn't adapt to traffic shape. The team should consider migrating that workload to **NAP (Node Auto Provisioning)** so Azure picks node SKUs and counts on demand from the broader catalog — no max-count to forget. Alternatively split bursty workloads into a separate pool with a much higher max + scale-down-delay tuned for their traffic pattern.
+
+  - id: 2
+    prompt: |
+      A team enables KEDA on a Service Bus queue scaler with target = 100 messages/Pod. Queue spikes to 50K messages. What does KEDA do and what could go wrong?
+    answer: |
+      KEDA computes desired replicas = 50000/100 = 500. Through HPA, it tries to scale the Deployment to 500. Things that can go wrong: (1) **Cluster Autoscaler / NAP can't provision 500 nodes' worth of Pods fast enough** (CA scale operations take minutes), so initial backlog drain is slow; (2) the Deployment lacks a `maxReplicas` cap → runaway scaling exhausts subnet IPs / quota; (3) downstream DB / Service Bus connection limits choke before Pods can drain the queue. Fixes: cap maxReplicas; pre-warm a baseline; use NAP for fast provisioning; adjust target down if downstream is the bottleneck.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees the cluster bill, asks: "Why aren't we 100% on Spot?" The platform engineer freezes. What does she say?
+    answer: |
+      "**Because not every workload tolerates 30 seconds of eviction notice.** Spot saves money only when the workload is fault-tolerant — checkpoint-resume, idempotent retries, queue-driven, or stateless replicas. Our stateful primaries, our user-facing low-latency APIs, and our control-plane workloads can't live on Spot — eviction = SLA breach + customer impact + replay cost greater than the saving. The right mix is Spot for batch / ML / queue workers (~30% of our spend), on-demand for stateful + low-latency (~70%). We're on it."

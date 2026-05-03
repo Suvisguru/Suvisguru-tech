@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does AKS manage and what do you manage?
+    back: |
+      **Azure manages** the control plane (apiserver, etcd, scheduler, controller-manager) across AZs. **You manage** the VNet, node pools, workloads, identity, and cost. The Node Resource Group (MC_*) lives in your subscription but is reconciled by Azure — read but don't edit.
+
+  - id: 2
+    front: |
+      What are the five AKS node-pool types?
+    back: |
+      **System** (mandatory, runs CoreDNS, etc.), **User** (your apps), **Spot** (cheap evictable), **Windows** (Server 2022 for .NET Framework), **GPU** (NC/ND SKUs with NVIDIA drivers preinstalled).
+
+  - id: 3
+    front: |
+      Difference between AKS Standard and AKS Automatic?
+    back: |
+      **Standard**: you turn on each add-on. **Automatic** (GA Apr 2025): preconfigures Managed Prometheus + Grafana + Container Insights + Workload Identity + Azure RBAC + NAP + KEDA + VPA + image cleaner + auto-upgrade + Cilium NetworkPolicy. Removes some knobs, adds opinionated defaults.
+
+  - id: 4
+    front: |
+      What's the Node Resource Group (MC_*)?
+    back: |
+      The auto-created Azure resource group that holds the node pool VMSS, cluster Load Balancer, NSGs, public IPs, etc. Named `MC_<rg>_<cluster>_<region>`. You can read it but Azure reconciles direct edits — change via AKS APIs instead.
+
+  - id: 5
+    front: |
+      Six provisioning tools for AKS?
+    back: |
+      Portal (demo only), Azure CLI (`az aks create`), **ARM/Bicep** (Azure-native IaC), **Terraform AzureRM** (most popular cross-platform), **Pulumi** (IaC in real languages), **Crossplane** (Kubernetes-native, useful for cluster-of-clusters).
+
+  - id: 6
+    front: |
+      What is Azure Linux 3 and why does it matter?
+    back: |
+      Microsoft's optimised Linux distro for AKS nodes (formerly CBL-Mariner). **Azure Linux 2 reached end of support 2025-11-30** and node images are removed 2026-03-31 — every AKS node currently on AL2 must migrate to **Azure Linux 3** or **Ubuntu 24**. Set the OS SKU at node-pool creation; can't be changed in place.
+
+  - id: 7
+    front: |
+      What's a managed identity vs a service principal?
+    back: |
+      Both authenticate AKS to other Azure services. **Managed identity** (system-assigned or user-assigned) is the modern path — Azure rotates the secret. **Service principal** is the legacy path — you manage the secret. New AKS clusters default to managed identity; service-principal clusters should be migrated.
+
+  - id: 8
+    front: |
+      What is the AKS Release Tracker?
+    back: |
+      A public Microsoft tool showing which AKS minor versions are rolling out to which Azure regions. Use it to plan upgrades — a region might be on the new minor while another lags by a week or two. URL: releases.aks.azure.com.

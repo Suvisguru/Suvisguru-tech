@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-AKS A10 · AKS Troubleshooting</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-AKS module journey">
+  <span class="concept-rail-title">K-AKS modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A1 AKS architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A2 Entra &amp; identity</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A3 AKS networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A4 storage (Disks / Files / Blob)</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A5 scaling (CA / KEDA / NAP)</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A6 AKS security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A7 observability</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A8 add-ons &amp; platform</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A9 upgrades &amp; ops</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>A10 troubleshooting</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A11 capstone campus</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-AKS · Module A10</span></a>
+    <span class="progress-pill">A10 · AKS troubleshooting</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏛️ K-Campus wing: <strong>Health Clinic</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Campus map: A10">
+    <title>K-Campus map · A10</title>
+    <desc>Stylised Azure-managed campus complex. Health Clinic highlighted.</desc>
+    <defs>
+      <linearGradient id="kc-grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8EFE0" stop-opacity="0.6"/><stop offset="100%" stop-color="#C8D8C0" stop-opacity="0.5"/></linearGradient>
+      <linearGradient id="kc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kc-grass)" stroke="#A8C4A0" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · CAMPUS · AZURE REGION</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="370" x2="780" y2="370" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.3"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">main quad &amp; gateway buildings</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">operations &amp; observation halls</text>
+    <text x="48" y="362" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">commencement hall</text>
+    <g class="pin pin-anchor" id="kc-wing01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">A1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Welcome Center</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="kc-wing02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Registrar's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Entra + Workload ID</text></g>
+    <g class="pin" id="kc-wing03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Pathways & Quad</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">VNet + AGC + DNS</text></g>
+    <g class="pin" id="kc-wing04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Library</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Disks + Files + Blob</text></g>
+    <g class="pin" id="kc-wing05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Auditorium</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">CA + KEDA + NAP</text></g>
+    <g class="pin" id="kc-wing06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Campus Police</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Defender + Policy</text></g>
+    <g class="pin" id="kc-wing07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bell Tower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Monitor + AMP + AMG</text></g>
+    <g class="pin" id="kc-wing08" transform="translate(380,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Student Union</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Dapr + Istio + Flux + Arc</text></g>
+    <g class="pin" id="kc-wing09" transform="translate(520,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Maintenance Yard</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">upgrades + LTS</text></g>
+    <g class="pin active" id="kc-wing10" transform="translate(660,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Health Clinic</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Azure-specific RCA</text></g>
+    <g class="pin" id="kc-wing11" transform="translate(380,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Commencement Hall</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🏛️ <strong>Health Clinic</strong> <span>· A10 of 11</span><span class="visually-hidden">Module A10, Health Clinic.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module A10 · the Health Clinic — Azure-specific triage</span>
+    <h1>A10 · AKS Troubleshooting (Azure-Specific)</h1>
+    <p class="hero-sub">Eight Azure-specific AKS failure patterns and how to diagnose them. <strong>Identity:</strong> Entra/kubelogin auth, Azure RBAC mismatch. <strong>Compute:</strong> VMSS / quota / SKU. <strong>Network:</strong> Azure CNI IP exhaustion, CoreDNS, SNAT, LB pending, private DNS. <strong>Storage:</strong> disk attach, Key Vault CSI, ACR pull, MI permission. <strong>Lifecycle:</strong> upgrade blocked, node-image failure. <strong>Diagnostic toolkit:</strong> <code>kubectl-aks</code> CLI extension, AKS Diagnostic Settings → Log Analytics + KQL, Azure Resource Health, Activity Log, Container Insights workbooks. <em>Always check Resource Health first.</em></p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AKS Azure-specific failure patterns + the diagnostic toolkit.">
+  <rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6"/>
+  <text x="380" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E">Health Clinic — Azure-specific failure triage</text>
+  <rect x="50" y="60" width="320" height="130" rx="10" fill="#A04832" stroke="#3F4A5E"/>
+  <text x="210" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">eight failure patterns</text>
+  <text x="210" y="98" text-anchor="middle" font-size="9" fill="#FFFFFF">1. Entra / kubelogin auth failure</text>
+  <text x="210" y="111" text-anchor="middle" font-size="9" fill="#FFFFFF">2. Azure RBAC vs K8s RBAC mismatch</text>
+  <text x="210" y="124" text-anchor="middle" font-size="9" fill="#FFFFFF">3. VMSS / quota / SKU not available</text>
+  <text x="210" y="137" text-anchor="middle" font-size="9" fill="#FFFFFF">4. Azure CNI IP exhaustion / CoreDNS</text>
+  <text x="210" y="150" text-anchor="middle" font-size="9" fill="#FFFFFF">5. SNAT exhaustion / LB pending</text>
+  <text x="210" y="163" text-anchor="middle" font-size="9" fill="#FFFFFF">6. Disk attach / Key Vault CSI fail</text>
+  <text x="210" y="176" text-anchor="middle" font-size="9" fill="#FFFFFF">7. ACR pull / MI permission fail</text>
+  <rect x="385" y="60" width="325" height="130" rx="10" fill="#3F4A5E" stroke="#FBF1D6"/>
+  <text x="547" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">diagnostic surfaces</text>
+  <text x="547" y="100" text-anchor="middle" font-size="9" fill="#FBF1D6">kubectl-aks (extension)</text>
+  <text x="547" y="115" text-anchor="middle" font-size="9" fill="#FBF1D6">AKS Diagnostic Settings → Log Analytics</text>
+  <text x="547" y="130" text-anchor="middle" font-size="9" fill="#FBF1D6">Azure Resource Health</text>
+  <text x="547" y="145" text-anchor="middle" font-size="9" fill="#FBF1D6">Activity Log + Defender alerts</text>
+  <text x="547" y="160" text-anchor="middle" font-size="9" fill="#FBF1D6">Container Insights workbooks</text>
+  <text x="547" y="175" text-anchor="middle" font-size="9" font-style="italic" fill="#FBF1D6">always check Resource Health first</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. Multiple alerts firing: nodes not joining, ACR pulls failing, Key Vault CSI mounts timing out. You start digging into kubectl logs — but kubelogin throws <em>"failed to refresh token"</em>. Now you can't even reach the cluster. <em>Is the apiserver down? Is Entra down? Is your token expired?</em> You don't know which layer to start at. Today's lesson: an ordered playbook for Azure-specific AKS failures + the diagnostic surfaces that surface root cause fast.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Eight Azure-specific patterns: Entra/RBAC, VMSS/quota, CNI IPs/CoreDNS, SNAT/LB, disk/KV CSI, ACR/MI, upgrade blocked, node-image. Always check Azure Resource Health first; then kubectl-aks; then KQL on AKS Diagnostic Settings logs.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · identity + compute patterns</span>
+    <h2>Identity + compute failure patterns</h2>
+    <p><strong>1. Entra / kubelogin failure</strong>: <em>"failed to refresh token"</em>, <em>"AADSTS50158"</em>, etc. Causes: stale browser session, Conditional Access blocking from current network, tenant trust missing, kubelogin version too old. Fixes: <code>kubelogin clean-cache</code>, re-run <code>az login</code>, check Conditional Access in Entra portal, upgrade kubelogin via az CLI.</p>
+    <p><strong>2. Azure RBAC vs K8s RBAC mismatch</strong>: kubectl returns <code>403 Forbidden</code> after auth succeeds. Possible causes: user has neither Azure RBAC role (e.g. <em>Azure Kubernetes Service RBAC Reader</em>) nor in-cluster RoleBinding; cluster has Azure RBAC for K8s enabled but user only has K8s RBAC binding (or vice versa); group membership took time to propagate. Fix: assign the right Azure role at cluster scope OR add a RoleBinding referencing the user's Entra OID.</p>
+    <p><strong>3. VMSS / quota / SKU not available</strong>: cluster create / scale-out fails with <em>"OperationNotAllowed: quota exceeded"</em> or <em>"SkuNotAvailable"</em>. Fix paths: request quota increase via Azure portal (Subscriptions → Usage + quotas — can take hours); switch SKU to one available in the region (use <code>az vm list-skus --location ... --output table</code>); switch zones; consider NAP for SKU flexibility.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · network patterns</span>
+    <h2>Network failure patterns</h2>
+    <p><strong>4. Azure CNI IP exhaustion / CoreDNS autoscaling</strong>: Pods stuck Pending with <em>"InsufficientFreeAddressesInSubnet"</em>, or DNS lookups intermittently fail. Causes: traditional Azure CNI burning IPs (migrate to Overlay); CoreDNS replicas insufficient (default = 2). Fixes: migrate to Azure CNI Overlay; tune CoreDNS HPA (autoscaler add-on or manual replica bump); shard DNS via NodeLocal DNSCache.</p>
+    <p><strong>5. SNAT exhaustion / LB pending</strong>: outbound calls fail with <em>"SNAT port allocation"</em>; or <code>Service: type=LoadBalancer</code> stays in <code>Pending</code>. Fixes: deploy NAT Gateway (covered in A3); investigate LB pending via <code>kubectl describe service</code> — often points to outbound IP quota, AGC reconcile delay, or NSG blocking AKS load-balancer health probes.</p>
+    <p><strong>Private DNS issues</strong>: private cluster + custom DNS resolver setup; cluster apiserver FQDN doesn't resolve from worker network. Verify Private DNS zone link to the worker VNet; check custom DNS forwarder if hub-spoke topology.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · storage + identity patterns</span>
+    <h2>Storage + identity failure patterns</h2>
+    <p><strong>6. Disk attach failure</strong>: PVC bound to a Premium SSD in <code>eastus-1</code>; Pod scheduled in <code>eastus-2</code>; attach fails with <em>"AttachVolume.Attach failed"</em>. Cause: missing <code>WaitForFirstConsumer</code>. Fix: see A4 — use the default StorageClass or migrate to ZRS.</p>
+    <p><strong>Key Vault CSI failure</strong>: <em>"failed to get secret from Key Vault"</em>. Causes: Workload Identity federated credential mismatch (cluster recreated → OIDC issuer changed); Key Vault access policy missing the MI; Key Vault firewall blocking the cluster's VNet; Secret Rotation poller misconfigured. Diagnose: check the Secrets Store CSI driver logs; verify federated credential and Key Vault access policy; check NSG / Key Vault firewall.</p>
+    <p><strong>7. ACR pull failure</strong>: <em>"ImagePullBackOff: 401 Unauthorized"</em>. Causes: cluster not attached to the registry (<code>az aks update --attach-acr</code> not run); kubelet identity missing AcrPull role; registry private endpoint not in cluster's VNet; image actually doesn't exist at that tag. Diagnose: <code>kubectl describe pod</code> for the exact ImagePullBackOff message; verify with <code>az aks check-acr</code>.</p>
+    <p><strong>Managed identity failures</strong>: Pod uses Workload Identity → Storage call returns 403. Cause: MI not assigned the right Azure role on the resource; or MI scope is wrong (resource-group vs subscription); or the federated credential subject is wrong. Diagnose: check the Pod's SA annotation, federated credential, and MI role assignment.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Pods stuck Pending across the cluster. Where do you look first to rule out Azure-side trouble?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">kubectl logs of every Pod.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Azure Resource Health for the cluster + node-pool VMSS — surfaces region-wide AKS, Compute, or VMSS incidents instantly.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Restart the apiserver.</button></li>
+      </ul>
+      <p class="pause-check-feedback">Resource Health saves hours of theorising. If Azure says the region's AKS service is degraded, you wait + page Microsoft, not chase Pod-level red herrings.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · lifecycle + diagnostic surfaces</span>
+    <h2>Upgrade blocked, node-image failure, and the diagnostic toolkit</h2>
+    <p><strong>8. Upgrade blocked</strong>: <em>"upgrade failed: PodDisruptionBudget violation"</em> or add-on compatibility check failed. Fixes: tune PDB / surge (covered in A9); upgrade or remove the offending self-installed add-on; check <code>Activity Log</code> for the precise error message.</p>
+    <p><strong>Node-image failure</strong>: pool stuck after node-image upgrade. Possible: workload uses an unsupported kernel feature on the new image; AL2 → AL3 migration left a stale image SKU; underlying VMSS scale operation failed. Investigate: <code>kubectl describe nodes</code>, AKS Diagnostic Settings <code>cluster-autoscaler</code> log, Activity Log on the VMSS.</p>
+    <p><strong>Diagnostic toolkit:</strong>
+    <ul>
+      <li><strong><code>kubectl-aks</code></strong> — Azure CLI extension that exposes AKS-specific diagnostics: live node BPF inspection, syscall traces, network captures, ifconfig — <em>without SSH-ing the node</em>.</li>
+      <li><strong>AKS Diagnostic Settings → Log Analytics</strong> — apiserver / audit / scheduler / cluster-autoscaler logs queryable via KQL.</li>
+      <li><strong>Azure Resource Health</strong> — <em>always check first</em> — surfaces Azure-side incidents affecting the cluster (e.g., regional storage degradation, Entra outage). Eliminates many "is it me or is it Azure?" theorising.</li>
+      <li><strong>Azure Activity Log</strong> — every Azure API call against the cluster + node resource group. Find who deleted the Public IP that broke ingress.</li>
+      <li><strong>Defender for Containers alerts</strong> — security incidents.</li>
+      <li><strong>Container Insights workbooks</strong> — pre-built node / Pod / container health views.</li>
+    </ul>
+    <p><strong>The standard playbook</strong>: (1) Resource Health → ruling out Azure-side; (2) Activity Log → recent changes by humans / automation; (3) AKS Diagnostic Settings logs → control-plane perspective; (4) <code>kubectl describe</code> + <code>kubectl-aks</code> → workload + node perspective; (5) Defender alerts → security angle. <em>Most outages resolve in steps 1-3 if the toolkit is wired in.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-AKS-Diagnostic-Settings era: troubleshooting AKS meant <em>guessing</em>. Apiserver logs invisible. No <code>kubectl-aks</code> — node-level inspection meant SSH (which AKS doesn't allow) or disruptive debug-Pod schemes. Resource Health was buried; engineers theorised "is it me or is it Azure?" for hours. ACR pull failures had three possible causes and no clear surface. Workload Identity errors were opaque — federated credential trust mismatches looked like generic 401s.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Modern AKS exposes the diagnostic surface: <strong><code>kubectl-aks</code></strong> for node-level inspection without SSH; <strong>AKS Diagnostic Settings</strong> route apiserver / audit / scheduler / autoscaler logs to Log Analytics for KQL search; <strong>Azure Resource Health</strong> is a one-click ruling-out for Azure-side trouble; <strong>Activity Log</strong> shows every Azure-API change; <strong>Defender alerts</strong> surface security incidents. Plus the canonical playbooks for the eight failure patterns are documented. <em>MTTR drops from hours to minutes for known patterns.</em></p></div>
+    </div>
+    <p class="ba-caption"><em>Triage discipline + the right diagnostic surfaces are the difference between a 15-minute incident and a 4-hour war room.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this wing</h2>
+<p>The <strong>Health Clinic</strong> on K-Campus is where you go when something's wrong. The triage nurse asks the same questions every time, in the same order.</p>
+    <p>First question: <em>"Is anyone else on campus reporting this?"</em> (Azure Resource Health.) If half the campus has the same complaint, it's probably the campus power grid (Azure-side incident), not your symptom. Wait + page the campus utility.</p>
+    <p>Second question: <em>"Did anything change recently?"</em> (Activity Log.) Someone deleted the campus shuttle stop in front of your building yesterday — that's why your students can't get to class.</p>
+    <p>Third question: <em>"What does the building manager log say?"</em> (AKS Diagnostic Settings → Log Analytics → KQL.) The manager's journal records every door entry; the syscall-level inspection (<code>kubectl-aks</code>) walks each room.</p>
+    <p>The Clinic has eight common diagnoses pinned on the wall (the eight Azure-specific failure patterns). Each diagnosis has a one-page treatment protocol: the cause, the test that confirms, the fix.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in AKS / Azure</th></tr></thead>
+        <tbody>
+          <tr><td>Triage nurse first question</td><td>Azure Resource Health — Azure-side incident?</td></tr>
+          <tr><td>"Did anything change recently?"</td><td>Azure Activity Log — recent Azure-API changes</td></tr>
+          <tr><td>Building manager journal</td><td>AKS Diagnostic Settings → Log Analytics + KQL</td></tr>
+          <tr><td>Walk into rooms without breaking down doors</td><td><code>kubectl-aks</code> — node-level inspection without SSH</td></tr>
+          <tr><td>Wall of common diagnoses</td><td>Eight Azure-specific failure patterns</td></tr>
+          <tr><td>"Wrong wing badge"</td><td>Azure RBAC vs K8s RBAC mismatch</td></tr>
+          <tr><td>"Sold-out shoe size"</td><td>VMSS quota / SKU unavailability</td></tr>
+          <tr><td>"Building street is closed"</td><td>SNAT exhaustion / LB pending</td></tr>
+          <tr><td>"Locker is in another zone"</td><td>Disk attach failure (cross-AZ)</td></tr>
+          <tr><td>"Vault key wouldn't turn"</td><td>Key Vault CSI failure</td></tr>
+          <tr><td>"Mailroom rejected the package"</td><td>ACR pull failure</td></tr>
+          <tr><td>Security ward alerts</td><td>Defender for Containers alerts</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A clinic patient describes symptoms; AKS clusters emit machine-readable signals you must instrument first. The metaphor underplays observability prerequisites — without diagnostic settings + Container Insights, you're blind.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>When something hurts, you go to the clinic. The nurse asks the same questions every time: is everyone else hurting? did anything change yesterday? what does your watch say? Then she looks at the wall — your problem is probably one of eight common ones, and each has a one-page treatment.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>AKS troubleshooting = identify pattern + run the right diagnostic. Eight Azure-specific patterns: Entra/kubelogin auth, Azure-vs-K8s RBAC mismatch, VMSS / quota / SKU, CNI IP exhaustion + CoreDNS, SNAT + LB pending + private DNS, disk attach + Key Vault CSI, ACR pull + MI permission, upgrade blocked + node-image. Toolkit: <code>kubectl-aks</code> (node inspection without SSH), AKS Diagnostic Settings + KQL (apiserver / audit / scheduler / autoscaler logs), Azure Resource Health (rule out Azure-side first), Activity Log (recent changes), Defender alerts. Standard playbook: Resource Health → Activity Log → Diagnostic Settings KQL → kubectl describe + kubectl-aks → Defender.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How Azure-shop teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">Region-wide ACR throttling — Resource Health saved hours</p><p>At 14:30 the SaaS's on-call sees ImagePullBackOff across 12 clusters. First instinct: bug, our images, our pipeline. Engineer checks Azure Resource Health: <em>ACR throttling event in eastus2</em>. <em>Confirms Azure-side; the team waits 18 minutes for Microsoft to mitigate; no code change needed.</em> Without Resource Health: 4 hours of debugging private images.</p></div>
+      <div class="scenario"><p class="scenario-name">Workload Identity 401 → cluster-recreated OIDC issuer mismatch</p><p>A Pod that worked yesterday returns 401 from Key Vault. Federated credential and access policy untouched. Engineer checks: cluster was recreated overnight (Activity Log). New cluster has new OIDC issuer URL; federated credential still trusts the old one. <em>Update fed cred subject; auth restored in 2 minutes.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Bursty SaaS — SNAT exhaustion at peak hour</p><p>Black Friday peak; outbound to Stripe API fails with <em>SNAT port allocation</em>. Cluster had default LB-shared SNAT. Emergency: provision NAT Gateway via UDR (since outbound type is immutable); fail over egress through it within 25 minutes. Postmortem: NAT Gateway part of cluster creation from now on.</p></div>
+      <div class="scenario"><p class="scenario-name">kubectl-aks node inspection diagnoses kernel issue</p><p>A node throws random Pod restarts; <code>kubectl describe</code> blames "runtime error." Engineer runs <code>kubectl-aks node-inspect-tcpdump</code> — captures network traffic; finds an unusual SYN flood from a misconfigured client. <em>No SSH, no debug Pod, root cause in 8 minutes.</em></p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Workload Identity 401 — diagnose with Resource Health → Activity Log → fix</h2>
+    <p>The standard AKS triage playbook applied to a WI 401.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="80" width="110" height="60" rx="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1.5"/><text x="95" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">Pod 401</text><text x="95" y="118" text-anchor="middle" font-size="9" fill="#6B6058">Key Vault denied</text>
+        <rect x="180" y="80" width="130" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="245" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Resource Health</text><text x="245" y="118" text-anchor="middle" font-size="9" fill="#6B6058">Azure-side OK</text>
+        <rect x="340" y="30" width="130" height="50" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Activity Log</text><text x="405" y="68" text-anchor="middle" font-size="9" fill="#6B6058">cluster recreated 2d ago</text>
+        <rect x="340" y="100" width="130" height="50" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">AKS Diagnostic Settings</text><text x="405" y="138" text-anchor="middle" font-size="9" fill="#6B6058">no apiserver errors</text>
+        <rect x="340" y="170" width="130" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">fix: update fed cred</text><text x="405" y="208" text-anchor="middle" font-size="9" fill="#6B6058">OIDC issuer URL</text>
+        <rect x="500" y="80" width="110" height="60" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="555" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">redeploy fed cred</text><text x="555" y="118" text-anchor="middle" font-size="9" fill="#6B6058">subject matches</text>
+        <rect x="640" y="80" width="100" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="690" y="102" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">Pod Running</text><text x="690" y="118" text-anchor="middle" font-size="9" fill="#6B6058">fixed</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,110)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="diag">▶ diagnose + fix</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> a 401 root-cause hunt.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "If kubectl works, the cluster is fine."</div><div class="misc-row misc-truth"><strong>Truth:</strong> kubectl is one signal — apiserver responds. Plenty can break around it: ACR pull, Key Vault CSI, SNAT, identity, networking. Modern AKS troubleshooting goes beyond kubectl: Resource Health, Activity Log, Diagnostic Settings + KQL, kubectl-aks for node-level signals.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "<code>kubectl exec</code> into a Pod is the right node-debugging tool."</div><div class="misc-row misc-truth"><strong>Truth:</strong> kubectl exec puts you inside a container, not on the node. AKS doesn't allow node SSH. Use <strong><code>kubectl-aks</code></strong> for node-level inspection — runs as a privileged Pod on the target node, exposes BPF inspection, ifconfig, syscall traces, packet captures. Built for AKS specifically; designed for triage.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Diagnostic Settings logs are nice-to-have."</div><div class="misc-row misc-truth"><strong>Truth:</strong> They're <em>foundational</em>. Without apiserver + audit logs in Log Analytics you can't answer "who did X?", "when did Y stop working?", "what changed?" — the most common questions in any incident. Wire diagnostic settings on every cluster from creation, not after the first outage.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Eight Azure-specific AKS failure patterns?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">(1) Entra/kubelogin auth, (2) Azure RBAC vs K8s RBAC mismatch, (3) VMSS / quota / SKU, (4) Azure CNI IP exhaustion + CoreDNS, (5) SNAT exhaustion + LB pending + private DNS, (6) disk attach + Key Vault CSI, (7) ACR pull + MI permission, (8) upgrade blocked + node-image failure.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does <code>kubectl-aks</code> do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Azure CLI extension that runs node-level diagnostics on AKS nodes <em>without SSH</em> — BPF inspection, syscall traces, packet captures, ifconfig, network probes. Replaces the SSH-into-the-node workflow that AKS doesn't allow.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does AKS Diagnostic Settings expose?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Apiserver, audit, audit-admin, kube-controller-manager, kube-scheduler, cluster-autoscaler, cloud-controller-manager log categories. Route to Log Analytics (KQL search), Event Hub (SIEM), or Storage (long-term archive).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When do you check Azure Resource Health?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>First</strong>, on every incident. Tells you whether Azure itself is degraded for your cluster, region, or service. Saves hours of theorising on user-side root cause when the issue is Azure-side.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Common cause of Workload Identity 401?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Federated credential mismatch — wrong OIDC issuer (e.g. cluster recreated; new issuer URL), wrong subject (typo in SA name), missing role assignment on the MI for the target resource.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">ACR pull diagnostic command?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>az aks check-acr --name &lt;cluster&gt; --resource-group &lt;rg&gt; --acr &lt;registry&gt;.azurecr.io</code> — runs a self-test from the cluster against the registry; surfaces RBAC, networking, and DNS issues end-to-end.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why does CoreDNS need autoscaling on big AKS clusters?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Default 2 CoreDNS replicas. Large clusters = millions of DNS queries/sec; replicas saturate. Symptoms: intermittent DNS lookup failures, increased Pod start latency. Fix: tune the CoreDNS autoscaler add-on or NodeLocal DNSCache.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's the standard AKS triage playbook?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">(1) Azure Resource Health (rule out Azure-side). (2) Activity Log (recent changes by humans/automation). (3) AKS Diagnostic Settings logs via KQL (control-plane perspective). (4) kubectl describe + kubectl-aks (workload + node). (5) Defender alerts (security).</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">kubectl returns <code>403 Forbidden</code> for a user. They authenticated cleanly via kubelogin (no auth error). What's the diagnostic ladder?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) Confirm authentication actually worked: <code>kubectl auth whoami</code> — should show their Entra OID. (2) Check Azure RBAC if cluster has Azure RBAC for K8s enabled: do they have one of <em>Azure Kubernetes Service RBAC Reader/Writer/Admin/Cluster Admin</em> at cluster or namespace scope? (3) Check K8s RBAC: any RoleBinding referencing the user's OID or group? (4) Group propagation: if added to a group recently, can take 1-15 min to surface. (5) The specific resource being accessed — e.g., they have Reader cluster-wide but the resource is in a namespace they're not bound to.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A Pod can't mount a Key Vault secret via Secrets Store CSI. The error in the Pod events is <em>"failed to get secret from Key Vault: not authorized."</em> Walk through diagnosis.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) Identify the Pod's SA + the SA's annotation <code>azure.workload.identity/client-id</code>. (2) Find the Entra app or MI with that client-id; check its <strong>federated credential</strong> — does subject match <code>{cluster-OIDC}/serviceaccount/{ns}/{sa}</code>? Common gotcha: cluster recreated → OIDC issuer changed; federated credential still points at old issuer. (3) Verify Key Vault <strong>access policy</strong> (or RBAC if KV is on RBAC mode) grants the MI <em>Get Secret</em> on the specific secret. (4) Verify Key Vault <strong>firewall</strong> allows the cluster's VNet (or that Private Endpoint is wired). (5) Inspect Secrets Store CSI driver logs (<code>kubectl logs -n kube-system -l app=secrets-store-csi-driver</code>) for the precise auth error.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">Saturday, 03:00. Cluster upgrade auto-fired and is now stuck. PagerDuty pages on-call. They open kubectl — kubelogin throws an error. What's the right move?</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how the on-call worked through it</span><strong>(1) Check Azure Resource Health first</strong> — is Entra ID degraded? AKS service degraded in this region? If yes: wait, page Microsoft, communicate Azure-side cause. <strong>(2) If Azure-side is healthy</strong>, pivot to alternate access: the break-glass Entra group (PIM-elevated for 30 min), MFA on a phone, kubelogin from a fresh laptop. <strong>(3) Once kubectl works</strong>: <code>az aks show</code> for upgrade state, <code>kubectl get events --sort-by=.lastTimestamp</code>, KQL on AKS Diagnostic Settings <code>kube-controller-manager</code> log to find the precise stall. Most likely: PDB violation (covered in A9 — fix surge or PDB), or add-on compatibility check failed (the upgrade pauses; fix the add-on, resume).</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Azure Resource Health</div><div class="gloss-def">Per-resource Azure incident view. Tells you whether Azure itself is degraded for your cluster / region / service.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Azure Activity Log</div><div class="gloss-def">Audit log of every Azure API call against your subscription. Used to find recent changes by humans / automation.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AKS Diagnostic Settings</div><div class="gloss-def">Configuration that ships AKS control-plane logs (apiserver, audit, scheduler, autoscaler, etc.) to Log Analytics / Event Hub / Storage.</div></div>
+      <div class="gloss-item"><div class="gloss-name">kubectl-aks</div><div class="gloss-def">Azure CLI / kubectl extension for AKS-specific node-level diagnostics without SSH (BPF, syscalls, packet captures).</div></div>
+      <div class="gloss-item"><div class="gloss-name">az aks check-acr</div><div class="gloss-def">Self-test command that verifies the cluster can authenticate + pull from a specific ACR end-to-end.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SNAT exhaustion</div><div class="gloss-def">Egress failure when shared LB SNAT ports run out. Fixed by NAT Gateway.</div></div>
+      <div class="gloss-item"><div class="gloss-name">LB pending</div><div class="gloss-def">A Service: type=LoadBalancer stays in <code>Pending</code>. Causes: outbound IP quota, AGC reconcile delay, NSG blocking health probes.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ImagePullBackOff</div><div class="gloss-def">Pod stuck because the kubelet can't pull the image. Causes: ACR not attached, registry firewall, MI permission, image tag missing.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Pod Security Admission violation</div><div class="gloss-def">Pod rejected at admission because PSA enforce level is restricted and the Pod requests forbidden options (root, hostPath, etc.).</div></div>
+      <div class="gloss-item"><div class="gloss-name">VMSS quota</div><div class="gloss-def">Azure subscription limit on VM cores / SKU per region. Hit during cluster create / scale-out. Increase via portal.</div></div>
+      <div class="gloss-item"><div class="gloss-name">CoreDNS autoscaling</div><div class="gloss-def">DaemonSet/Deployment that scales CoreDNS replicas. Default 2; large clusters need autoscaler or NodeLocal DNSCache.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Defender for Containers alerts</div><div class="gloss-def">Security incident notifications from Defender. Often the first surface for Pod-level threats (suspicious shell, miner, lateral movement).</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Eight Azure-specific patterns: Entra/RBAC, VMSS/quota, CNI IPs/CoreDNS, SNAT/LB, disk/KV CSI, ACR/MI, upgrade blocked, node-image. Always check Azure Resource Health first; then kubectl-aks; then KQL on AKS Diagnostic Settings logs.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module A10 complete</span>
+    <p>Eight Azure-specific patterns + the diagnostic toolkit (Resource Health → Activity Log → Diagnostic Settings KQL → kubectl describe + kubectl-aks → Defender). MTTR shrinks when triage discipline + telemetry are wired.</p>
+    <p class="recap-next"><strong>Next — A11: Capstone.</strong> Build a private AKS Automatic with Cilium dataplane + Workload Identity + AGC (Gateway API) + Defender for Containers + Managed Prometheus/Grafana + Flux v2 GitOps + LTS upgrade & DR runbooks.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-AKS · Module A10 of 11 · grounded in learn.microsoft.com/azure/aks</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  try { (function() {
+    const SCENES = [{"mode_id": "diag", "mode_label": "Mode: WI 401 \u2192 fed cred OIDC mismatch \u2192 fix", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Pod returns 401 from Key Vault.", "move_to": [95, 110], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Check Azure Resource Health first \u2014 Azure side healthy.", "move_to": [245, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Activity Log shows: cluster recreated 2 days ago by IaC pipeline.", "move_to": [405, 55], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> AKS Diagnostic Settings show no apiserver errors.", "move_to": [405, 125], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> Diagnosis: cluster's OIDC issuer URL changed; fed cred still trusts the old URL.", "move_to": [405, 195], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 6.</strong> Update federated credential issuer to the new cluster's OIDC URL.", "move_to": [555, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 7.</strong> Pod's next call succeeds. Postmortem updates the IaC re-create runbook.", "move_to": [690, 110], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 110];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

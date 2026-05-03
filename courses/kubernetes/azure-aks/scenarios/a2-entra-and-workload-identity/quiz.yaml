@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A new AKS cluster was created two days ago. A Pod that previously worked (Workload Identity → Key Vault) now returns 401 Unauthorized. The Pod's ServiceAccount, the federated credential subject, and the Key Vault access policy all look identical to the production cluster. What's the likely cause?
+    answer: |
+      **The cluster's OIDC issuer URL changed.** Each AKS cluster has a unique OIDC issuer. The federated credential's `issuer` field still points at the *old* cluster's OIDC URL — so tokens issued by the new cluster fail trust validation at Entra. Fix: update the federated credential's issuer to the new cluster's URL (find via `az aks show ... --query oidcIssuerProfile.issuerUrl`).
+
+  - id: 2
+    prompt: |
+      The platform team enables Azure RBAC for K8s on a cluster that already has a dozen K8s RoleBindings managed by Helm. What happens to those RoleBindings?
+    answer: |
+      They keep working. Azure RBAC for K8s is *additive* — apiserver consults Azure RBAC *and* in-cluster RBAC; permission grants from either side apply. Existing RoleBindings continue to authorize. Migration plan: move bindings into Azure roles over time so all auth is one source of truth, but the cutover doesn't have to be atomic.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      An on-call engineer is locked out — Conditional Access requires Intune-compliant devices and her laptop is in for repair. Production AKS cluster has `--disable-local-accounts`. How does she get in to fix the outage?
+    answer: |
+      **Break-glass Entra group.** Production clusters with disabled local accounts always have a designated Entra security group (e.g. *aks-prod-breakglass*) bound to *Azure Kubernetes Service RBAC Cluster Admin*. Membership is empty in steady state and monitored in Sentinel. The on-call engineer (or their manager) requests just-in-time membership via PIM — gets cluster-admin for 30 minutes, MFA on a phone (no Intune device required), fixes the outage, membership auto-expires, SOC reviews the audit trail.

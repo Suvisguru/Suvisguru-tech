@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-AKS A8 · Add-ons and Platform Features</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-AKS module journey">
+  <span class="concept-rail-title">K-AKS modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A1 AKS architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A2 Entra &amp; identity</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A3 AKS networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A4 storage (Disks / Files / Blob)</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A5 scaling (CA / KEDA / NAP)</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A6 AKS security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A7 observability</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>A8 add-ons &amp; platform</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A9 upgrades &amp; ops</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A10 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A11 capstone campus</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-AKS · Module A8</span></a>
+    <span class="progress-pill">A8 · AKS add-ons &amp; platform</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏛️ K-Campus wing: <strong>Student Union</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Campus map: A8">
+    <title>K-Campus map · A8</title>
+    <desc>Stylised Azure-managed campus complex. Student Union highlighted.</desc>
+    <defs>
+      <linearGradient id="kc-grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8EFE0" stop-opacity="0.6"/><stop offset="100%" stop-color="#C8D8C0" stop-opacity="0.5"/></linearGradient>
+      <linearGradient id="kc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kc-grass)" stroke="#A8C4A0" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · CAMPUS · AZURE REGION</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="370" x2="780" y2="370" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.3"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">main quad &amp; gateway buildings</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">operations &amp; observation halls</text>
+    <text x="48" y="362" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">commencement hall</text>
+    <g class="pin pin-anchor" id="kc-wing01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">A1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Welcome Center</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="kc-wing02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Registrar's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Entra + Workload ID</text></g>
+    <g class="pin" id="kc-wing03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Pathways & Quad</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">VNet + AGC + DNS</text></g>
+    <g class="pin" id="kc-wing04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Library</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Disks + Files + Blob</text></g>
+    <g class="pin" id="kc-wing05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Auditorium</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">CA + KEDA + NAP</text></g>
+    <g class="pin" id="kc-wing06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Campus Police</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Defender + Policy</text></g>
+    <g class="pin" id="kc-wing07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bell Tower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Monitor + AMP + AMG</text></g>
+    <g class="pin active" id="kc-wing08" transform="translate(380,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Student Union</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Dapr + Istio + Flux + Arc</text></g>
+    <g class="pin" id="kc-wing09" transform="translate(520,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Maintenance Yard</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">upgrades + LTS</text></g>
+    <g class="pin" id="kc-wing10" transform="translate(660,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Health Clinic</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Azure-specific RCA</text></g>
+    <g class="pin" id="kc-wing11" transform="translate(380,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Commencement Hall</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🏛️ <strong>Student Union</strong> <span>· A8 of 11</span><span class="visually-hidden">Module A8, Student Union.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module A8 · the Student Union — managed add-ons and the broader platform</span>
+    <h1>A8 · AKS Add-ons and Platform Features</h1>
+    <p class="hero-sub"><strong>Managed add-ons</strong>: KEDA, Dapr, Istio-based service mesh, Flux v2 GitOps, Workload Identity, Key Vault Secrets Provider, App Routing (managed NGINX). <strong>Multi-cluster + edge</strong>: <strong>Azure Arc-enabled Kubernetes</strong> (on-prem / multi-cloud K8s under Azure governance), <strong>AKS Hybrid</strong> (AKS on Azure Local / Stack HCI), <strong>AKS Edge Essentials</strong> (single-node edge). <strong>Fleet Manager</strong> for managing 100+ AKS clusters as one fleet.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AKS managed add-ons and the broader platform — Dapr, Istio, Flux, Workload Identity, App Routing, Arc, Hybrid, Edge, Fleet.">
+  <rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6"/>
+  <text x="380" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E">Student Union — managed add-ons + multi-cluster</text>
+  <rect x="50" y="60" width="240" height="130" rx="10" fill="#5A9F7A" stroke="#3F4A5E"/>
+  <text x="170" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">managed add-ons</text>
+  <text x="170" y="100" text-anchor="middle" font-size="9" fill="#FFFFFF">KEDA · Dapr · Istio mesh</text>
+  <text x="170" y="115" text-anchor="middle" font-size="9" fill="#FFFFFF">Flux v2 GitOps</text>
+  <text x="170" y="130" text-anchor="middle" font-size="9" fill="#FFFFFF">Workload Identity (WI)</text>
+  <text x="170" y="145" text-anchor="middle" font-size="9" fill="#FFFFFF">Key Vault Secrets Provider</text>
+  <text x="170" y="160" text-anchor="middle" font-size="9" fill="#FFFFFF">App Routing (NGINX)</text>
+  <rect x="305" y="60" width="200" height="130" rx="10" fill="#3F4A5E" stroke="#FBF1D6"/>
+  <text x="405" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">multi-cluster + edge</text>
+  <text x="405" y="100" text-anchor="middle" font-size="9" fill="#FBF1D6">Azure Arc-enabled K8s</text>
+  <text x="405" y="113" text-anchor="middle" font-size="8" font-style="italic" fill="#FBF1D6">on-prem / multi-cloud</text>
+  <text x="405" y="132" text-anchor="middle" font-size="9" fill="#FBF1D6">AKS Hybrid</text>
+  <text x="405" y="145" text-anchor="middle" font-size="8" font-style="italic" fill="#FBF1D6">Azure Local / Stack HCI</text>
+  <text x="405" y="160" text-anchor="middle" font-size="9" fill="#FBF1D6">AKS Edge Essentials</text>
+  <text x="405" y="173" text-anchor="middle" font-size="8" font-style="italic" fill="#FBF1D6">single-node / edge</text>
+  <rect x="520" y="60" width="190" height="130" rx="10" fill="#A04832" stroke="#3F4A5E"/>
+  <text x="615" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">fleet management</text>
+  <text x="615" y="100" text-anchor="middle" font-size="9" fill="#FFFFFF">Fleet Manager</text>
+  <text x="615" y="113" text-anchor="middle" font-size="8" font-style="italic" fill="#FFFFFF">multi-cluster ops</text>
+  <text x="615" y="132" text-anchor="middle" font-size="9" fill="#FFFFFF">cluster placement</text>
+  <text x="615" y="145" text-anchor="middle" font-size="9" fill="#FFFFFF">policy + upgrade waves</text>
+  <text x="615" y="160" text-anchor="middle" font-size="9" fill="#FFFFFF">workload propagation</text>
+  <text x="615" y="180" text-anchor="middle" font-size="8" font-style="italic" fill="#FFFFFF">100+ clusters? you need this</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. <em>"GitOps reconcile loop is failing across 47 clusters"</em> — the Flux v2 add-on configuration drifted because someone hand-edited the HelmRelease in one cluster two weeks ago. You're kubectl-ing into clusters one at a time. <em>You realise you have no Fleet Manager.</em> Today's lesson: the managed add-ons that turn AKS from one cluster into a fleet, and the platform features that take K8s beyond Azure data centers (Arc, Hybrid, Edge).</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Use AKS managed add-ons (KEDA / Dapr / Istio / Flux / WI / KV provider / App Routing) instead of self-installed Helm charts. Arc-enable on-prem clusters; AKS Hybrid for Azure Local; Edge Essentials for single-node. Fleet Manager when you have many clusters.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · managed add-ons</span>
+    <h2>Managed add-ons — pre-built, supported, lifecycle-managed</h2>
+    <p>AKS ships these as <strong>managed add-ons</strong> — Microsoft installs, upgrades, and supports them. Compared to bring-your-own Helm charts: faster onboarding, no Helm-rot, security patches automatic, fewer version-skew incidents.</p>
+    <ul>
+      <li><strong>KEDA</strong> (covered in A5) — event-driven Pod scaling.</li>
+      <li><strong>Dapr</strong> — distributed application runtime: pluggable building blocks (state stores, pub/sub, secrets, bindings) via sidecar. Polyglot apps speak HTTP/gRPC to the Dapr sidecar instead of cloud SDKs. <em>Cleaner cloud-portability story.</em></li>
+      <li><strong>Istio-based service mesh add-on</strong> — Microsoft-managed Istio control plane. Sidecars on Pods (mTLS, traffic management, retries, observability). Released as the Microsoft-supported alternative to self-installed Istio / Linkerd. Be intentional: a service mesh is a real operational commitment.</li>
+      <li><strong>Flux v2 GitOps add-on</strong> — continuous reconciliation from a Git repo. <code>FluxConfiguration</code> CRD wraps a GitRepository + Kustomization / HelmRelease. Replaces in-cluster Argo CD installs with managed Flux at the AKS Resource Provider level.</li>
+      <li><strong>Workload Identity</strong> (covered in A2) — federated credentials for Pod auth.</li>
+      <li><strong>Azure Key Vault Secrets Provider</strong> (covered in A4) — Secrets Store CSI driver + Azure Key Vault provider, packaged as a managed add-on.</li>
+      <li><strong>Application Routing add-on</strong> (covered in A3) — managed NGINX ingress + cert-manager + Azure DNS.</li>
+    </ul>
+    <p><strong>Decision:</strong> if a managed add-on covers your need, <em>use it</em>. The cost of self-installed Helm vs managed add-on is steep over time — broken upgrades, missing security patches, cluster-specific tribal knowledge.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · Azure Arc-enabled Kubernetes</span>
+    <h2>Azure Arc-enabled Kubernetes — non-AKS clusters under Azure governance</h2>
+    <p><strong>Azure Arc-enabled Kubernetes</strong> = bring any conformant K8s cluster (on-prem, AWS EKS, GCP GKE, hand-rolled kubeadm, OpenShift, etc.) under Azure's management plane. Install the <code>azure-arc</code> agent in the cluster; the cluster appears as an Azure resource; you can apply Azure Policy, Defender, GitOps (Flux), Monitor (Container Insights), Workload Identity, Key Vault CSI — same surface as AKS.</p>
+    <ul>
+      <li><strong>Use cases:</strong> brownfield K8s clusters from acquisitions; multi-cloud K8s ops standardised on Azure tooling; on-prem clusters that need cloud-native security/observability without migrating workloads to AKS.</li>
+      <li><strong>Trade-off:</strong> the cluster's control plane is still operated by you (or whoever runs the source cluster) — Arc gives you Azure-side management; it doesn't make a non-AKS cluster managed.</li>
+      <li><strong>Connectivity</strong>: requires outbound HTTPS from the cluster to the Azure Arc Resource Bridge endpoints. Air-gapped clusters need disconnected Arc (preview).</li>
+    </ul>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · AKS Hybrid + Edge Essentials</span>
+    <h2>AKS Hybrid + AKS Edge Essentials</h2>
+    <p><strong>AKS on Azure Local (formerly Azure Stack HCI / AKS hybrid)</strong> — full AKS control plane running on customer-owned hyperconverged infrastructure (HPE, Dell, Lenovo certified hardware running Azure Local OS). Same kubectl surface, same managed add-ons (where supported), same Azure governance via Arc. <em>For regulated workloads / data residency / data sovereignty.</em></p>
+    <p><strong>AKS Edge Essentials</strong> — lightweight single-node (or small-cluster) AKS for Windows / Linux IoT edge devices. Designed for retail, factory floors, ATMs, kiosks. Manageable from Azure via Arc; runs on hardware as small as a NUC. <em>For workloads that must execute physically near the data source.</em></p>
+    <p><strong>Picking among on-prem options:</strong>
+    <ul>
+      <li>Existing on-prem K8s, want Azure governance? → <strong>Arc-enabled K8s</strong>.</li>
+      <li>Building net-new on-prem and want Microsoft to operate the K8s + provide certified hardware? → <strong>AKS on Azure Local</strong>.</li>
+      <li>Edge / single-node / sub-second locality? → <strong>AKS Edge Essentials</strong>.</li>
+    </ul></p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">The team is debating between installing Argo CD via Helm vs enabling the Flux v2 add-on. Why pick the managed add-on?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Argo CD is unsupported on AKS.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">The managed Flux add-on is installed, upgraded, and supported by Microsoft as a Resource Provider — no Helm-rot, security patches automatic, configured via Azure CLI / Bicep / Portal as <code>FluxConfiguration</code> CRDs.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Flux is faster than Argo CD.</button></li>
+      </ul>
+      <p class="pause-check-feedback">It's the operational story: managed Flux is part of the AKS Resource Provider; you don't operate the GitOps controller. Argo CD self-install works but you own its lifecycle.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · Fleet Manager</span>
+    <h2>Azure Kubernetes Fleet Manager — many-cluster operations</h2>
+    <p><strong>Fleet Manager</strong> turns N AKS clusters into a single managed fleet. The Fleet itself is an Azure resource — you join member AKS clusters; Fleet provides:</p>
+    <ul>
+      <li><strong>Workload propagation</strong> — apply a K8s manifest (Deployment, ConfigMap, etc.) to all member clusters with one apply (or to a subset based on labels / selectors). <em>One source of truth for fleet-wide infra.</em></li>
+      <li><strong>Cluster placement</strong> — schedule a workload to specific clusters by label / region / capacity heuristics.</li>
+      <li><strong>Update orchestration</strong> — coordinated cluster upgrade waves (e.g. dev first, prod second; one region at a time). Pause / resume / skip per cluster.</li>
+      <li><strong>Multi-cluster L4 load balancing</strong> via Service Fabric Mesh-style features (preview / GA per region).</li>
+    </ul>
+    <p><strong>When you need Fleet Manager:</strong> ~10+ AKS clusters, especially if any of (multi-region active-active, per-tenant cluster strategy, regulated/sovereignty isolation, or staged rollout discipline). <em>Below 10 clusters, manual ops + GitOps usually suffice.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-managed-add-on AKS = Helm-everywhere. Engineers installed cert-manager, KEDA, Workload Identity, Secrets Store CSI, NGINX ingress, Dapr, Linkerd, Argo CD, and Prometheus Operator each as a Helm chart per cluster. Upgrades were per-chart per-cluster; chart break × cluster count = ops fire-quarter. Multi-cloud K8s had no unified governance — separate dashboards per provider; separate audit pipes; separate cost views. Multi-cluster ops required scripts looping over <code>kubectl --context</code>.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Modern AKS ships <strong>managed add-ons</strong> (KEDA, Dapr, Istio, Flux v2, WI, Key Vault provider, App Routing) — installed by the AKS Resource Provider, upgraded with the cluster, supported by Microsoft. <strong>Azure Arc</strong> brings non-AKS clusters under Azure governance. <strong>AKS Hybrid + Edge Essentials</strong> let AKS run on customer hardware. <strong>Fleet Manager</strong> turns 100 clusters into one fleet for workload propagation, placement, and coordinated upgrades.</p></div>
+    </div>
+    <p class="ba-caption"><em>The era of "every team operates a Helm-chart farm" is over. Managed add-ons + Arc + Fleet shift the operational burden from per-cluster engineers to the AKS Resource Provider.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this wing</h2>
+<p>The <strong>Student Union</strong> is the building where shared services are stocked: copying machine, vending, post office, conference rooms. Faculty don't run their own copy machines.</p>
+    <p>The <strong>Counter Window</strong> stocks managed add-ons. KEDA is the queue-watcher. Dapr is the universal adapter (any app speaks the Union's standard interface, the Union talks to whatever cloud DB or pub/sub exists outside). Istio is the in-house security and traffic engineer who walks every package between offices, signing it (mTLS), measuring delays (telemetry), and rerouting around closed corridors. Flux v2 is the daily reconciler — checks Git every minute and ensures every shelf in every wing matches the recipe in the book.</p>
+    <p>The <strong>Inter-campus Mailroom</strong> (Azure Arc) reaches off-campus. Other campuses (on-prem K8s, EKS, GKE) sign up to share Azure governance — same Defender, same Policy, same Flux GitOps — without moving their buildings. <strong>AKS Hybrid</strong> is when Microsoft sends a turnkey campus building to your private estate. <strong>Edge Essentials</strong> is the satellite kiosk you set up at a single corner store.</p>
+    <p>The <strong>Provost's Office</strong> (Fleet Manager) sits above all campuses — applies one curriculum to many campuses, schedules upgrade waves region by region, propagates one rule everywhere with one click.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in AKS / Azure</th></tr></thead>
+        <tbody>
+          <tr><td>Counter Window — shared services</td><td>Managed add-ons surface</td></tr>
+          <tr><td>Universal adapter</td><td>Dapr — pluggable building blocks via sidecar</td></tr>
+          <tr><td>In-house traffic engineer</td><td>Istio-based service mesh add-on</td></tr>
+          <tr><td>Daily reconciler</td><td>Flux v2 GitOps add-on</td></tr>
+          <tr><td>Queue-watcher</td><td>KEDA</td></tr>
+          <tr><td>Sealed-envelope worker permits</td><td>Workload Identity</td></tr>
+          <tr><td>Vault key-fetch desk</td><td>Key Vault Secrets Provider (Secrets Store CSI)</td></tr>
+          <tr><td>In-house mailroom (NGINX)</td><td>Application Routing add-on</td></tr>
+          <tr><td>Off-campus inter-campus mailroom</td><td>Azure Arc-enabled Kubernetes</td></tr>
+          <tr><td>Microsoft-built turnkey campus</td><td>AKS on Azure Local (Hybrid)</td></tr>
+          <tr><td>Single-corner satellite kiosk</td><td>AKS Edge Essentials</td></tr>
+          <tr><td>Provost's Office</td><td>Azure Kubernetes Fleet Manager</td></tr>
+          <tr><td>Coordinated curriculum updates</td><td>Fleet update orchestration / upgrade waves</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A Provost can't actually micromanage every classroom; Fleet Manager can't hide K8s's eventual consistency or per-cluster RBAC nuances — workloads do still need per-cluster reconciliation.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>The Student Union has all the shared stuff. You don't run your own copy machine — you use the Union's. Same with the campus services: Microsoft runs the queue-watcher, the security guards, the daily Git syncer. You just turn them on.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p><strong>Managed add-ons</strong> = AKS-installed-and-supported KEDA / Dapr / Istio mesh / Flux v2 GitOps / Workload Identity / Key Vault provider / App Routing. <strong>Arc-enabled K8s</strong> brings non-AKS clusters under Azure governance (Policy / Defender / Monitor / Flux). <strong>AKS Hybrid (Azure Local)</strong> = Microsoft-operated AKS on certified customer hardware. <strong>AKS Edge Essentials</strong> = single-node edge AKS. <strong>Fleet Manager</strong> = workload propagation, placement, coordinated upgrades for 10+ AKS clusters.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How Azure-shop teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">SaaS — Dapr unifies polyglot stack</p><p>A SaaS has services in Go, Python, Node, and .NET. Each team had picked its own state-store/pub-sub library. Dapr standardises: every service uses Dapr building blocks (state, pub/sub, secrets); Dapr sidecar talks to Cosmos DB, Service Bus, Key Vault. <em>One platform team owns infra integrations; product teams ship features faster.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Brownfield M&A — Arc-enable acquired company's on-prem K8s</p><p>A bank acquires a fintech with ten on-prem K8s clusters running OpenShift. Migration to AKS would take a year. Short-term: Arc-enable each cluster (one az command per cluster). Result: Defender for Containers + Azure Policy + Container Insights + Flux v2 GitOps + Workload Identity working on the legacy clusters in two weeks. <em>Compliance posture aligned without workload migration.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Retail edge — AKS Edge Essentials at 800 stores</p><p>A grocery chain runs inventory + POS workloads at each store. Per-store hardware: NUC running AKS Edge Essentials, single-node, Arc-connected for management. Workloads: local inventory cache, in-store ML for restock prediction. <em>800 single-node clusters managed centrally; deploys via Arc-enabled Flux.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Multi-region SaaS — 100 clusters under Fleet Manager</p><p>A SaaS runs 100 AKS clusters (5 regions × 20 tenants each). Fleet Manager joins all 100 as members. Common workloads (cluster autoscaler config, NetworkPolicy, ingress controller) deployed once via workload propagation. Upgrade orchestration cycles dev clusters first, prod next, by region wave. <em>One platform engineer manages the fleet; tenants don't see the choreography.</em></p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Fleet Manager propagates one policy to 50 clusters</h2>
+    <p>One git push; one Fleet apply; 50 clusters reconcile.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="90" width="110" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="95" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">platform team</text><text x="95" y="128" text-anchor="middle" font-size="9" fill="#6B6058">git push</text>
+        <rect x="180" y="90" width="130" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="245" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Fleet Manager</text><text x="245" y="128" text-anchor="middle" font-size="9" fill="#6B6058">FleetWorkload CR</text>
+        <rect x="340" y="30" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="395" y="52" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">AKS east-us</text><text x="395" y="68" text-anchor="middle" font-size="9" fill="#6B6058">synced</text>
+        <rect x="340" y="90" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="395" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">AKS west-eu</text><text x="395" y="128" text-anchor="middle" font-size="9" fill="#6B6058">synced</text>
+        <rect x="340" y="150" width="110" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="395" y="172" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">AKS asia-se</text><text x="395" y="188" text-anchor="middle" font-size="9" fill="#6B6058">synced</text>
+        <rect x="480" y="90" width="110" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="535" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">all 50 clusters</text><text x="535" y="128" text-anchor="middle" font-size="9" fill="#6B6058">policy applied</text>
+        <rect x="620" y="90" width="110" height="60" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="675" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">compliance</text><text x="675" y="128" text-anchor="middle" font-size="9" fill="#6B6058">verified</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,120)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="propagate">▶ propagate to 50 clusters</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> Fleet workload propagation.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Managed add-on means I lose all configuration control."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Managed add-ons are <em>opinionated</em> but not opaque. You configure them via standard CRDs (FluxConfiguration, ScaledObject, etc.) and Azure-side resources. What you give up is <em>installing/upgrading/patching the controller itself</em> — not the workload-level configuration.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Arc-enabled K8s is the same as AKS — I can run it the same way."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Arc gives you Azure-side <em>management surface</em> (Policy, Defender, Monitor, Flux). The K8s control plane is still whatever it was — kubeadm, OpenShift, EKS, GKE. You're still on the hook for upgrades, scaling, patching of that control plane. AKS Hybrid (AKS on Azure Local) is the path where Microsoft operates the K8s control plane on your hardware.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Service mesh is always worth it."</div><div class="misc-row misc-truth"><strong>Truth:</strong> A service mesh is a real operational commitment — sidecar resource overhead, mesh-config drift, version-bump testing across hundreds of services. Worth it when you genuinely need mTLS-everywhere + L7 traffic management + cross-team observability. For a 5-service project, an mTLS mesh is probably yak-shaving. The Istio add-on lowers the bar but doesn't eliminate it.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Seven AKS managed add-ons?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>KEDA</strong> (event-driven Pod scaling), <strong>Dapr</strong> (distributed app runtime sidecar), <strong>Istio service mesh</strong>, <strong>Flux v2 GitOps</strong>, <strong>Workload Identity</strong>, <strong>Key Vault Secrets Provider</strong>, <strong>Application Routing</strong> (managed NGINX).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When pick Flux v2 add-on vs self-installed Argo CD?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Flux add-on</strong>: Microsoft installs/upgrades/supports; configure via Azure CLI / Bicep / FluxConfiguration CRD; ideal for Azure-aligned shops. <strong>Argo CD</strong>: more UI-rich; multi-tenant with project isolation; ideal where teams want the Argo UX. Both work; Flux is the path-of-least-resistance for AKS.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does Dapr do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Sidecar that exposes pluggable building blocks (state store, pub/sub, secrets, bindings, actors) as HTTP/gRPC to the app. App speaks Dapr API, Dapr talks to Cosmos / Service Bus / Key Vault / etc. Decouples app code from cloud-specific SDKs.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does Azure Arc-enabled Kubernetes give you?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Brings any conformant K8s cluster under Azure's management plane: Policy, Defender, Monitor, Flux GitOps, WI, Key Vault CSI. Cluster is registered as an Azure resource via the <code>azure-arc</code> agent. Multi-cloud / on-prem governance unified.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">AKS on Azure Local — what is it?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Full AKS running on customer-owned hyperconverged hardware certified by Microsoft (HPE / Dell / Lenovo with Azure Local OS). Microsoft operates the K8s control plane; you operate the data center. Same managed add-ons surface where supported.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When use AKS Edge Essentials?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Single-node (or very small) edge devices — retail, factory, ATM, kiosk. Lightweight K8s, manageable centrally via Arc. Hardware as small as a NUC.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When do you need Fleet Manager?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">At ~10+ AKS clusters, especially with multi-region active-active, per-tenant clusters, sovereignty isolation, or staged rollout discipline. Provides workload propagation, cluster placement, coordinated upgrade waves. Below 10 clusters, manual ops + GitOps suffice.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three on-prem K8s options under Azure?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Arc-enabled K8s</strong> (existing K8s + Azure governance). <strong>AKS Hybrid (on Azure Local)</strong> (Microsoft-operated AKS on certified hardware). <strong>AKS Edge Essentials</strong> (single-node / very small edge).</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">The team installed cert-manager + Argo CD + Linkerd + Workload Identity + Secrets Store CSI all via Helm a year ago. Half the chart upgrades have broken. What's the cleanup path?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>Inventory: which of these now exist as managed add-ons? <strong>Workload Identity</strong> + <strong>Secrets Store CSI / Key Vault Provider</strong> + <strong>App Routing (cert-manager-equipped NGINX)</strong> + <strong>Flux v2</strong> + <strong>Istio service mesh add-on</strong> all do. Migration order: start with the least-risky (Workload Identity → enable add-on, migrate annotations, drop Helm), then cert-manager (move to App Routing add-on), then GitOps (parallel-run Flux add-on alongside Argo CD until comfortable, then drop Argo). <em>Result: 5 self-installed Helm charts → 0; Microsoft owns the upgrade path.</em></div></div>
+      <div class="quiz-card"><p class="quiz-prompt">The platform team sponsors a service mesh rollout. Engineers ask: "What does the Istio add-on give us that vanilla Istio doesn't?" Answer.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Microsoft installs, upgrades, and supports the Istio control plane</strong> — you don't handle Istio version-bumps, CVE patches, or operator-config drift across clusters. The data plane (sidecars) is still Istio. Trade-offs: Microsoft chooses the supported version line (one or two minors behind upstream); some Istio features (custom EnvoyFilter, beta APIs) may not be supported. The mesh-as-managed surface is the value; if you need bleeding-edge Istio features, self-install is the alternative.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">A bank has 50 AKS clusters across 4 regions. Compliance now requires every cluster to enforce a specific NetworkPolicy default-deny + a specific PSA Restricted label. The platform team has no Fleet Manager. How long does this rollout take, and what changes with Fleet Manager?</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how long the compliance rollout took</span><strong>Without Fleet Manager:</strong> per-cluster work — at minimum a script looping kubectl across 50 contexts, with per-cluster verification. Realistically 1-2 sprints with verification + rollback per cluster + handling per-cluster anomalies. <strong>With Fleet Manager:</strong> create a FleetWorkload resource with the NetworkPolicy + namespace label, apply once, fleet propagates to all 50 members; verify via Fleet status. Hours, not sprints. Plus future compliance changes are one-touch instead of fifty-touch.</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Managed add-on</div><div class="gloss-def">AKS-installed, AKS-upgraded, Microsoft-supported K8s component. Configured via Azure CLI / Bicep / Portal.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Dapr</div><div class="gloss-def">Distributed application runtime — sidecar exposes pluggable building blocks (state, pub/sub, secrets) as HTTP/gRPC.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Istio service mesh add-on</div><div class="gloss-def">Microsoft-managed Istio control plane on AKS. Sidecars provide mTLS, traffic management, observability.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Flux v2 GitOps add-on</div><div class="gloss-def">Continuous reconciliation from Git. FluxConfiguration CRD wraps GitRepository + Kustomization / HelmRelease.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Application Routing add-on</div><div class="gloss-def">Managed NGINX ingress + cert-manager + Azure DNS. Replaces deprecated HTTP Application Routing.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Azure Arc-enabled Kubernetes</div><div class="gloss-def">Brings any conformant K8s cluster under Azure governance (Policy, Defender, Monitor, Flux). Cluster registered as Azure resource via azure-arc agent.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AKS on Azure Local</div><div class="gloss-def">Full AKS running on customer-owned certified hyperconverged hardware. Microsoft operates the K8s control plane.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Azure Local</div><div class="gloss-def">Microsoft's hyperconverged infrastructure OS (formerly Azure Stack HCI). Hardware certified by HPE / Dell / Lenovo.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AKS Edge Essentials</div><div class="gloss-def">Lightweight single-node AKS for edge / IoT devices. Manageable via Arc.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Azure Kubernetes Fleet Manager</div><div class="gloss-def">Multi-cluster orchestrator. Workload propagation, cluster placement, coordinated upgrade waves.</div></div>
+      <div class="gloss-item"><div class="gloss-name">FleetWorkload</div><div class="gloss-def">Fleet Manager CRD that defines a workload to propagate across member clusters.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Update orchestration (Fleet)</div><div class="gloss-def">Coordinated cluster upgrade waves with pause / resume / skip per cluster.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Use AKS managed add-ons (KEDA / Dapr / Istio / Flux / WI / KV provider / App Routing) instead of self-installed Helm charts. Arc-enable on-prem clusters; AKS Hybrid for Azure Local; Edge Essentials for single-node. Fleet Manager when you have many clusters.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module A8 complete</span>
+    <p>Managed add-ons replace Helm sprawl; Arc, Hybrid, and Edge Essentials extend AKS beyond Azure data centres; Fleet Manager handles many-cluster ops.</p>
+    <p class="recap-next"><strong>Next — A9: AKS Upgrades and Operations.</strong> AKS version support (N-2 + LTS); platform support N-3; AKS Release Tracker; auto-upgrade channels; node image upgrades; planned maintenance windows; surge upgrades; blue-green node pool migration; API deprecations; certificate rotation.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-AKS · Module A8 of 11 · grounded in learn.microsoft.com/azure/aks</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  try { (function() {
+    const SCENES = [{"mode_id": "propagate", "mode_label": "Mode: Fleet Manager \u2014 apply once, sync everywhere", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Platform team commits NetworkPolicy to git.", "move_to": [95, 120], "duration_ms": 400, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Fleet Manager creates FleetWorkload referencing the policy.", "move_to": [245, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Fan-out: east-us...", "move_to": [395, 55], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> ...west-eu...", "move_to": [395, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 5.</strong> ...asia-se. All members reconcile.", "move_to": [395, 175], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 6.</strong> 50 clusters now enforce the same policy. Compliance report green.", "move_to": [675, 120], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 120];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

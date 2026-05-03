@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      The team enables PSA Restricted on the prod namespace. Half the deployments fail to start. What went wrong, and what's the recovery path?
+    answer: |
+      Restricted bans: running as root, allowPrivilegeEscalation, dropping all capabilities, hostPath mounts, hostNetwork, etc. Existing workloads written without these constraints fail at admission. **Recovery**: temporarily move to `pod-security.kubernetes.io/enforce: privileged` (or `baseline`) to restore service; concurrently set `pod-security.kubernetes.io/audit: restricted` + `warn: restricted` to surface every violation; fix workloads one at a time (drop runAsRoot, drop hostPath, declare seccompProfile, etc.); flip back to enforce: restricted when all pass.
+
+  - id: 2
+    prompt: |
+      You enabled Defender continuous re-scan. Three days later, an image deployed last month is suddenly flagged as having a critical CVE. The Pod is still running. What does Image Cleaner do, and what should the team do?
+    answer: |
+      **Image Cleaner** (if enabled with appropriate severity threshold) detects the now-vulnerable image on node disks and removes it. The *running Pod is not killed* — Image Cleaner doesn't evict; it just stops the image from being available for new Pod starts. Team action: identify the upstream image fix (vendor patch, base image rebuild), bump the image tag, redeploy. Until then, the running Pod is exposed — Defender alert + admission policy preventing new deploys of the bad tag is the bridge.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      It's February 2026. An on-call engineer is paged: *"All AKS nodes in the cluster failed to start — node image not found."* What happened, and what's the immediate fix?
+    answer: |
+      **Azure Linux 2 node images were removed on 2026-03-31** — wait, the date matches. The team didn't migrate. Nodes that need to scale or replace are now stuck because AL2 image is gone. **Immediate fix**: create a new node pool with `--os-sku AzureLinux` (which now resolves to AL3) or `--os-sku Ubuntu` (24); drain workloads from the dead AL2 pool to the new pool; delete the AL2 pool. Long-term fix: same migration but planned, with PDB safety + a dry-run, not at 3 AM. The takeaway: deprecation deadlines are real outage events.

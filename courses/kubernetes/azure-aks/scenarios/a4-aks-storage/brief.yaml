@@ -1,0 +1,63 @@
+# Intake brief — A4, K-AKS
+# Topic: A4 · AKS Storage (Disks, Files, NetApp, Blob, Container Storage)
+# Module A4 · AKS Storage
+
+lesson:
+  title: 'A4 · AKS Storage (Disks, Files, NetApp, Blob, Container Storage)'
+  slug: 'a4-aks-storage'
+  domain: 'kubernetes'
+  course_slug: 'azure-aks'
+  position: 04
+  granularity: 'module'
+  brief_drafted_on: '2026-05-03'
+  central_metaphor: 'K-Campus · The Library — The **Library** is K-Campus''s storage building. Five wings hold different kinds of books, each suited to a different purpose.
+    **Wing A — Personal lockers** (Azure Disks): one student per locker, f'
+  module: 'Module A4 · AKS Storage'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'Azure basics: Entra ID, VNet, VMSS, LB, Disks/Files, Monitor, Key Vault.'
+    - 'K-AKS modules 1-3 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain azure Disks CSI — the RWO default.'
+  - 'Learner can explain azure Files CSI + Azure NetApp Files.'
+  - 'Learner can explain blob CSI (BlobFuse2) + Secrets Store CSI.'
+
+sections:
+  - 'Azure Disks CSI — the RWO default'
+  - 'Azure Files CSI + Azure NetApp Files'
+  - 'Blob CSI (BlobFuse2) + Secrets Store CSI'
+  - 'Snapshots, expansion, ZRS, topology-aware scheduling'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A Postgres workload runs as a 3-replica StatefulSet.'
+    - 'An ML team needs read-only access to 200 TB of image datasets across hundreds of training Pods.'
+    - 'A SaaS has 12 microservices that all need to write to a shared rolling-log directory consumed by Filebeat.'
+    - 'A bank rotates DB credentials every 24 hours via Key Vault''s rotation policy.'
+
+section_6_animated_svg:
+  modes_count: 1-3
+  description: 'See preview-kubernetes-aks-lesson-04.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-aks-lesson-04.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Default to Azure Disks CSI (Premium SSD v2) for RWO with WaitForFirstConsumer; Azure Files for RWX; ANF for low-latency DBs; Blob for cheap object access. Use VolumeAttributesClass to resize/retier without remount; Secrets Store CSI for Key Vault.**'
+
+fact_check_anchors:
+  - 'https://learn.microsoft.com/azure/aks/'
+  - 'https://learn.microsoft.com/azure/aks/best-practices'
+  - 'https://kubernetes.io/docs/'

@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Two AKS identity surfaces — name them.
+    back: |
+      **Surface 1 — human → cluster**: Entra ID auth + Azure RBAC for K8s (or in-cluster RBAC) auth. **Surface 2 — Pod → Azure service**: Workload Identity (federated credential, OIDC, projected SA token) → Entra → Azure access token.
+
+  - id: 2
+    front: |
+      What does kubelogin do?
+    back: |
+      kubectl exec credential plugin that handles the Entra ID auth flow: opens a browser (or device code), authenticates the user against Entra, fires Conditional Access policies (MFA / device / location), returns an access token to kubectl. apiserver validates the token and authorises via Azure RBAC for K8s or in-cluster RBAC.
+
+  - id: 3
+    front: |
+      Workload Identity in five steps?
+    back: |
+      1) Enable cluster OIDC issuer. 2) Create Entra app or user-assigned MI; add federated credential trusting `{OIDC}/serviceaccount/{ns}/{sa}`. 3) Annotate SA with the client-id. 4) Label Pod with `azure.workload.identity/use=true`. 5) Pod uses Azure SDK; webhook injects env vars + projected SA token; SDK exchanges token via Entra → Azure access token.
+
+  - id: 4
+    front: |
+      What replaces deprecated aad-pod-identity?
+    back: |
+      **Workload Identity** — no DaemonSet, no IMDS interception, no NMI. Uses admission webhook + projected SA tokens + OIDC federated credentials. aad-pod-identity went deprecated 2024; cannot be installed on new clusters.
+
+  - id: 5
+    front: |
+      Azure RBAC for K8s vs Kubernetes RBAC?
+    back: |
+      Both authorize. **K8s RBAC** = in-cluster Role/RoleBinding objects, evaluated by kube-apiserver. **Azure RBAC for K8s** = Entra-side Azure roles (Azure Kubernetes Service RBAC Reader/Writer/Admin/Cluster Admin) assigned at cluster or namespace scope. Modern AKS prefers Azure RBAC for K8s for Entra-integrated clusters.
+
+  - id: 6
+    front: |
+      ACR pull integration — what does `--attach-acr` do?
+    back: |
+      Grants the cluster's **kubelet identity** (a separate user-assigned MI) the **AcrPull** role on the specified ACR. Pods can then pull `registry.azurecr.io/img:tag` without any imagePullSecret.
+
+  - id: 7
+    front: |
+      What does `--disable-local-accounts` do and why use it?
+    back: |
+      Removes the cluster-admin local account. `az aks get-credentials --admin` stops working. Forces all auth through Entra ID — Conditional Access, MFA, device checks all apply. Production clusters should use this; emergencies use a designated break-glass Entra group.
+
+  - id: 8
+    front: |
+      Secrets Store CSI + Key Vault — what gets mounted and how?
+    back: |
+      A `SecretProviderClass` declares which Key Vault secrets/keys/certs to fetch. The Secrets Store CSI driver (with the Azure Key Vault provider) authenticates to Key Vault via Workload Identity and mounts them as files in the Pod. Optional: sync to a K8s Secret. Auto-rotation polls Key Vault on a schedule and updates the volume.

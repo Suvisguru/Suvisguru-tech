@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A new cluster has 50 nodes, each with 30 Pods. The VNet subnet is /24 (256 IPs). The cluster won't schedule new Pods — "no available IP". What CNI is being used and what's the fix?
+    answer: |
+      **Traditional Azure CNI** — Pods consume real VNet IPs (50 × 30 = 1500 needed; subnet has 256, exhausted). Fix: migrate to **Azure CNI Overlay**. Pods will get IPs from a separate overlay CIDR; node IPs stay in the /24. Migration is in-place via `az aks update --network-plugin azure --network-plugin-mode overlay --pod-cidr 10.244.0.0/16` (verify subnet is empty of Pods first; review the migration doc).
+
+  - id: 2
+    prompt: |
+      The team wants Pod-to-Pod traffic to be denied by default, with explicit allow rules per service. The cluster is running Azure CNI Overlay. Walk through how to enable that.
+    answer: |
+      Step 1: confirm a NetworkPolicy plugin is enabled at cluster create (Azure / Calico / Cilium — can't change in place; if absent, this means a new cluster with the plugin). Step 2: deploy a default-deny `NetworkPolicy` per namespace: `podSelector: {}, policyTypes: [Ingress, Egress]` with empty allow lists. Step 3: per service, add NetworkPolicies with explicit ingress allow lists from labelled clients. Step 4: monitor Cilium Hubble (or Azure Network Observability) for blocked traffic — surfaces broken expectations.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      During a Black Friday flash sale a SaaS goes down at 10:23 PM. Pod logs show `SNAT port allocation` errors. The on-call hits `az aks update --outbound-type managedNATGateway`. What happens next?
+    answer: |
+      The command fails with: *"Cannot change outbound type from 'loadBalancer' to 'managedNATGateway' on an existing cluster — outbound type is immutable after creation."* The on-call now has to (a) provision a NAT Gateway in the node pool subnet manually, or (b) use User-Defined Routing to route 0.0.0.0/0 through the NAT Gateway (then update outbound type to `userDefinedRouting`, which *is* changeable). Lesson: make NAT Gateway part of cluster creation — never the emergency fix.

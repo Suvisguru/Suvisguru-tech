@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-AKS A11 · Capstone — Reference Stack</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-AKS module journey">
+  <span class="concept-rail-title">K-AKS modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A1 AKS architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A2 Entra &amp; identity</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A3 AKS networking</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A4 storage (Disks / Files / Blob)</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A5 scaling (CA / KEDA / NAP)</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A6 AKS security</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A7 observability</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A8 add-ons &amp; platform</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A9 upgrades &amp; ops</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>A10 troubleshooting</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>A11 capstone campus</span><span class="concept-rail-here">← here</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-AKS · Module A11</span></a>
+    <span class="progress-pill">A11 · capstone campus</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏛️ K-Campus wing: <strong>Commencement Hall</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Campus map: A11">
+    <title>K-Campus map · A11</title>
+    <desc>Stylised Azure-managed campus complex. Commencement Hall highlighted.</desc>
+    <defs>
+      <linearGradient id="kc-grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8EFE0" stop-opacity="0.6"/><stop offset="100%" stop-color="#C8D8C0" stop-opacity="0.5"/></linearGradient>
+      <linearGradient id="kc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kc-grass)" stroke="#A8C4A0" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · CAMPUS · AZURE REGION</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="370" x2="780" y2="370" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.3"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">main quad &amp; gateway buildings</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">operations &amp; observation halls</text>
+    <text x="48" y="362" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">commencement hall</text>
+    <g class="pin pin-anchor" id="kc-wing01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">A1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Welcome Center</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="kc-wing02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Registrar's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Entra + Workload ID</text></g>
+    <g class="pin" id="kc-wing03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Pathways & Quad</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">VNet + AGC + DNS</text></g>
+    <g class="pin" id="kc-wing04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Library</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Disks + Files + Blob</text></g>
+    <g class="pin" id="kc-wing05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Auditorium</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">CA + KEDA + NAP</text></g>
+    <g class="pin" id="kc-wing06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Campus Police</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Defender + Policy</text></g>
+    <g class="pin" id="kc-wing07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bell Tower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Monitor + AMP + AMG</text></g>
+    <g class="pin" id="kc-wing08" transform="translate(380,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Student Union</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Dapr + Istio + Flux + Arc</text></g>
+    <g class="pin" id="kc-wing09" transform="translate(520,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Maintenance Yard</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">upgrades + LTS</text></g>
+    <g class="pin" id="kc-wing10" transform="translate(660,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Health Clinic</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Azure-specific RCA</text></g>
+    <g class="pin active" id="kc-wing11" transform="translate(380,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Commencement Hall</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+  </ol>
+  <p class="ktown-strip-label">🏛️ <strong>Commencement Hall</strong> <span>· A11 of 11</span><span class="visually-hidden">Module A11, Commencement Hall.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module A11 · Commencement Hall — tie everything together</span>
+    <h1>A11 · Capstone — Private AKS Automatic Reference Campus with Everything</h1>
+    <p class="hero-sub"><strong>The K-AKS reference stack.</strong> Private AKS Automatic + API VNet Integration + Azure CNI Powered by Cilium + Node Auto Provisioning + Workload Identity + AGC (Gateway API) + Disks + Files + Key Vault CSI + Container Insights + AMP + AMG + Defender for Containers + Azure Policy (Gatekeeper-Restricted) + Flux v2 GitOps + Velero / Backup for AKS + LTS on Premium tier + blue-green upgrade + DR runbooks. <em>Build it; defend it; drill it.</em></p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="K-AKS capstone — private AKS Automatic + the full reference stack.">
+  <rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6"/>
+  <text x="380" y="44" text-anchor="middle" font-size="14" font-weight="700" fill="#3F4A5E">Commencement Hall — the K-AKS reference stack</text>
+  <rect x="50" y="60" width="180" height="130" rx="10" fill="#3F4A5E" stroke="#FBF1D6"/>
+  <text x="140" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Phase A — base</text>
+  <text x="140" y="100" text-anchor="middle" font-size="9" fill="#FBF1D6">Private AKS Automatic</text>
+  <text x="140" y="115" text-anchor="middle" font-size="9" fill="#FBF1D6">API VNet Integration</text>
+  <text x="140" y="130" text-anchor="middle" font-size="9" fill="#FBF1D6">Azure CNI + Cilium</text>
+  <text x="140" y="145" text-anchor="middle" font-size="9" fill="#FBF1D6">NAP for nodes</text>
+  <text x="140" y="160" text-anchor="middle" font-size="9" fill="#FBF1D6">Premium tier (LTS)</text>
+  <rect x="245" y="60" width="180" height="130" rx="10" fill="#5A9F7A" stroke="#3F4A5E"/>
+  <text x="335" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Phase B — platform</text>
+  <text x="335" y="100" text-anchor="middle" font-size="9" fill="#FFFFFF">Workload Identity</text>
+  <text x="335" y="115" text-anchor="middle" font-size="9" fill="#FFFFFF">AGC (Gateway API)</text>
+  <text x="335" y="130" text-anchor="middle" font-size="9" fill="#FFFFFF">Disks + Files + KV CSI</text>
+  <text x="335" y="145" text-anchor="middle" font-size="9" fill="#FFFFFF">Container Insights</text>
+  <text x="335" y="160" text-anchor="middle" font-size="9" fill="#FFFFFF">AMP + AMG</text>
+  <rect x="440" y="60" width="180" height="130" rx="10" fill="#A04832" stroke="#3F4A5E"/>
+  <text x="530" y="80" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Phase C — ops &amp; DR</text>
+  <text x="530" y="100" text-anchor="middle" font-size="9" fill="#FFFFFF">Defender for Containers</text>
+  <text x="530" y="115" text-anchor="middle" font-size="9" fill="#FFFFFF">Azure Policy (Gatekeeper)</text>
+  <text x="530" y="130" text-anchor="middle" font-size="9" fill="#FFFFFF">Flux v2 GitOps</text>
+  <text x="530" y="145" text-anchor="middle" font-size="9" fill="#FFFFFF">Velero / Backup for AKS</text>
+  <text x="530" y="160" text-anchor="middle" font-size="9" fill="#FFFFFF">LTS + blue-green runbook</text>
+  <rect x="635" y="60" width="75" height="130" rx="10" fill="#E8B547" stroke="#3F4A5E"/>
+  <text x="673" y="80" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">Phase D</text>
+  <text x="673" y="100" text-anchor="middle" font-size="9" fill="#5A4F45">defence</text>
+  <text x="673" y="115" text-anchor="middle" font-size="9" fill="#5A4F45">peer review</text>
+  <text x="673" y="135" text-anchor="middle" font-size="9" fill="#5A4F45">live drill</text>
+  <text x="673" y="150" text-anchor="middle" font-size="9" fill="#5A4F45">recovery</text>
+  <text x="673" y="170" text-anchor="middle" font-size="8" font-style="italic" fill="#5A4F45">K-AKS-complete</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. Six months from today. The cluster you're about to design will be running 80% of revenue — payments, identity, ML, sessions. Will it survive a region-failure drill? Will the LTS migration in 18 months be uneventful? Will the next pen-test report come back clean? Will tenant-A's noisy job kill tenant-B's SLA? <em>Today's lesson: assemble all 10 prior modules into a single defendable design.</em></p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Build the four-phase stack: Phase A (private AKS Automatic + Cilium + NAP + LTS), Phase B (WI + AGC + storage + observability), Phase C (Defender + Policy + Flux + Velero + blue-green runbook), Phase D (peer review + live DR drill). Defend it.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · Phase A — base cluster</span>
+    <h2>Phase A — private AKS Automatic on Premium tier</h2>
+    <p><strong>Goal:</strong> a defendable base cluster with no public attack surface, modern networking, and an upgrade path measured in years.</p>
+    <ol>
+      <li><strong>AKS Automatic</strong> on <strong>Premium tier</strong> — preconfigures Container Insights, AMP, AMG, Workload Identity, Azure RBAC for K8s, NAP, KEDA, VPA, image cleaner, auto-upgrade, Cilium NetworkPolicy. Premium tier enables LTS subscription.</li>
+      <li><strong>Private cluster</strong> via <strong>API Server VNet Integration</strong> — apiserver is in your hub VNet; no public endpoint. Authorized IP ranges as belt-and-braces if the org policy demands.</li>
+      <li><strong>Azure CNI Powered by Cilium</strong> in Overlay mode — Pods on overlay CIDR; nodes in VNet; eBPF dataplane; L4 + L7 NetworkPolicy + Hubble flow visibility.</li>
+      <li><strong>Node Auto Provisioning (NAP)</strong> for compute — Azure picks SKU + zones; auto-consolidation; one less ops burden.</li>
+      <li><strong>NAT Gateway</strong> for outbound — no LB-shared SNAT; predictable scaling; multi-IP for SNAT capacity.</li>
+      <li><strong>Multi-AZ</strong> — pool zones {1,2,3}; Pod topology-spread constraints for even distribution.</li>
+    </ol>
+    <p><em>Phase A success criterion:</em> cluster created via Bicep / Terraform; <code>kubectl</code> works only via Entra-integrated kubeconfig; no public IPs in MC_*.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · Phase B — platform layer</span>
+    <h2>Phase B — identity, ingress, storage, observability</h2>
+    <p><strong>Identity</strong>: <strong>Workload Identity</strong> wired per workload (no long-lived secrets). User-assigned MIs scoped narrowly per service. <strong>Azure RBAC for K8s</strong> with <em>local accounts disabled</em>. Break-glass Entra group with PIM. Conditional Access requiring MFA + compliant device.</p>
+    <p><strong>Ingress</strong>: <strong>Application Gateway for Containers (AGC)</strong> in private mode + Gateway API. HTTPRoutes managed by service teams; default-deny ingress NetworkPolicy.</p>
+    <p><strong>Storage</strong>: Premium SSD v2 default StorageClass with <code>WaitForFirstConsumer</code>; Azure Files CSI for RWX shared logs / assets; <strong>Secrets Store CSI</strong> with Azure Key Vault provider, WI-authenticated, rotation-poller enabled.</p>
+    <p><strong>Observability</strong>: <strong>Container Insights</strong> (AKS-aware metrics+logs into Log Analytics) + <strong>AMP</strong> (managed Prometheus, scrape per service) + <strong>AMG</strong> (managed Grafana, RED dashboards per service joining AMP + Container Insights + App Insights). Apiserver + audit + audit-admin diagnostic settings → Log Analytics. Action Group → PagerDuty.</p>
+    <p><em>Phase B success criterion:</em> a sample app deploys via kubectl; pulls a Key Vault secret via WI; serves traffic through AGC; appears in AMG with RED panels and an alert rule.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · Phase C — security, GitOps, DR, upgrade</span>
+    <h2>Phase C — Defender, Policy, GitOps, Velero, LTS runbook</h2>
+    <p><strong>Security</strong>: <strong>Microsoft Defender for Containers</strong> (image scan + posture + runtime). <strong>Azure Policy for AKS</strong> with the <em>restricted</em> baseline. <strong>PSA Restricted</strong> per namespace. <strong>Image Cleaner</strong> on critical-severity threshold. <strong>Azure Firewall</strong> egress with FQDN allow-list. Cosign / Notation signing on critical images; admission verifier blocks unsigned.</p>
+    <p><strong>GitOps</strong>: <strong>Flux v2 add-on</strong>. Three repos: <em>cluster-config</em> (Flux's own seed), <em>platform</em> (Container Insights config, AGC, MI/role assignments), <em>workloads</em> (per-tenant or per-team apps). Drift detection on; manual interventions reverted by reconcile loop.</p>
+    <p><strong>DR</strong>: <strong>Velero</strong> (or Azure Backup for AKS) — daily cluster-wide backup to a geo-redundant Storage Account. RTO target 60 min for full cluster restore; RPO 24 hours. <em>Tested quarterly</em> via blue-green cluster restore drill.</p>
+    <p><strong>Upgrade runbook</strong>: <strong>LTS</strong> on the chosen minor (e.g. v1.30 LTS) for 2-year stability. Pre-flight with <strong>kubent</strong> + <strong>Pluto</strong> against git + cluster. Maintenance window Sundays 02-06 UTC. <strong>Blue-green node pool migration</strong> for high-stakes upgrades. Cluster blue-green held in reserve for major LTS-to-LTS jumps.</p>
+    <p><em>Phase C success criterion:</em> three pull requests can change cluster behaviour; one pen-test exercise passes Defender + admission policies; one DR drill restores within RTO.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">In your reference stack, why is API Server VNet Integration preferred over private cluster + Private Link?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Private Link is deprecated.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">API Server VNet Integration injects the apiserver into a delegated subnet of your VNet — no Private Link / Private DNS hub-spoke complexity, direct VNet routing, simpler network topology.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Both are identical.</button></li>
+      </ul>
+      <p class="pause-check-feedback">VNet Integration is the modern, simpler topology for new private clusters; existing Private-Link clusters keep working but VNet Integration is recommended going forward.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · Phase D — defend it, drill it</span>
+    <h2>Phase D — defend, drill, deliver</h2>
+    <p>You don't finish K-AKS by handing in a Bicep file. You finish by <strong>defending it</strong> in front of a peer panel and surviving a <strong>live drill</strong>.</p>
+    <p><strong>Architecture defence</strong> (60 minutes, with senior platform reviewer):</p>
+    <ol>
+      <li>Walk the network diagram — VNet, subnets, NSG, AGC, NAT Gateway, Private Endpoint to ACR + Key Vault.</li>
+      <li>Walk the identity diagram — Entra app + MI per workload + federated credentials, break-glass Entra group + PIM.</li>
+      <li>Walk the storage diagram — StorageClass defaults, ZRS for stateful, snapshot policy.</li>
+      <li>Walk the observability diagram — three pipes into AMG, alert routing, on-call playbook.</li>
+      <li>Walk the upgrade runbook — LTS rationale, pre-flight, surge, blue-green fallback.</li>
+      <li>Walk the DR runbook — Velero schedule, restore steps, RTO/RPO targets, drill cadence.</li>
+    </ol>
+    <p><strong>Live drill</strong> (90 minutes):</p>
+    <ul>
+      <li>The reviewer kills a node. NAP replaces; workloads re-schedule; AMG dashboards stay green.</li>
+      <li>The reviewer revokes a Workload Identity MI role. Pod throws 401; KQL on AKS audit logs locates the change in Activity Log; fix and re-run within 15 min.</li>
+      <li>The reviewer applies a high-severity Defender finding. You walk the response: Defender alert → triage → remediation → admission policy hardening.</li>
+      <li>The reviewer initiates a DR scenario: restore last night's Velero backup into a sibling cluster; verify workloads come up; document deltas.</li>
+    </ul>
+    <p><em>K-AKS-complete</em>: Bicep + per-cluster Markdown architecture doc + DR runbook + live-drill recording. <em>You can hand this to a successor and they can run it.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-K-AKS-curriculum operators built AKS clusters one feature at a time, learning each surface only when it failed. Six months in: a half-Modern, half-Legacy cluster with mixed identity (some service principal, some MI, some WI), bring-your-own observability stack, no Defender, an Ingress controller installed by Helm, no GitOps, no DR drill, no upgrade plan, no LTS. <em>Tribal knowledge in three engineers' heads.</em></p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>The K-AKS reference stack is <strong>defendable</strong>: every choice is justified, every alternative considered, every failure mode mapped to a runbook. <em>Private AKS Automatic + Cilium + NAP + LTS</em> for base; <em>WI + AGC + storage + observability</em> for platform; <em>Defender + Policy + Flux + Velero + blue-green</em> for ops; <em>defence + drill</em> for confidence. A new operator can read the architecture doc, run the runbook, and operate the cluster.</p></div>
+    </div>
+    <p class="ba-caption"><em>You can't cargo-cult a reference stack from the internet — you have to walk every choice yourself. K-AKS Capstone is that walk, defended.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this wing</h2>
+<p>The <strong>Commencement Hall</strong> is where students graduate from K-Campus. Today you're the candidate. Four phases of the ceremony:</p>
+    <p><strong>Phase A — your dorm building</strong> (base cluster). You designed and built it: doors that lock the right way, plumbing that drains the right way, a back exit (NAT Gateway) sized for finals week. Foundation: solid.</p>
+    <p><strong>Phase B — your services</strong> (platform). You hired the registrar (Workload Identity), hired the front-desk concierge (AGC), built the library wing (storage), installed the bell tower (observability). Operations: humming.</p>
+    <p><strong>Phase C — your governance</strong> (security + GitOps + DR + upgrade). Campus Police on every shift, the daily Git reconciler running, the disaster-relief plan rehearsed, the long-term lease (LTS) signed. Resilience: rehearsed.</p>
+    <p><strong>Phase D — your defence</strong> (peer review + live drill). The senior dean walks your campus, asks questions, fires alarms — you respond from the runbooks. <em>If you survive an unannounced drill, you graduate.</em></p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in AKS / Azure</th></tr></thead>
+        <tbody>
+          <tr><td>Phase A — dorm building</td><td>Private AKS Automatic + Cilium + NAP</td></tr>
+          <tr><td>Back exit sized for finals</td><td>NAT Gateway for outbound</td></tr>
+          <tr><td>Apiserver in your own basement</td><td>API Server VNet Integration</td></tr>
+          <tr><td>Phase B — services</td><td>WI + AGC + Storage + AMP/AMG/Container Insights</td></tr>
+          <tr><td>Concierge with preloaded manifest</td><td>AGC + Gateway API</td></tr>
+          <tr><td>Bell tower with three bells</td><td>Three signal pipes (metrics + logs + traces) → AMG</td></tr>
+          <tr><td>Phase C — governance</td><td>Defender + Policy + Flux + Velero + LTS</td></tr>
+          <tr><td>Daily Git reconciler</td><td>Flux v2 add-on (App-of-Apps style)</td></tr>
+          <tr><td>Disaster-relief plan</td><td>Velero / Backup for AKS + DR runbook</td></tr>
+          <tr><td>Long-term lease</td><td>LTS on Premium tier</td></tr>
+          <tr><td>Phase D — defence</td><td>Architecture review + live drill</td></tr>
+          <tr><td>Survive the dean's alarms</td><td>Recover from chaos events using runbooks</td></tr>
+          <tr><td>Graduation certificate</td><td>K-AKS-complete: Bicep + arch doc + DR runbook + drill recording</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A real campus graduation is a one-time ceremony; the K-AKS capstone's value is that the artifacts (Bicep, runbooks, drill scripts) are reusable next time around — and the next operator can graduate themselves.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>To graduate from K-Campus you build a small dorm, hire your services, set up your governance, then the dean walks through and tries to break things. You fix them on the spot. If you can do all four, you're done.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>The K-AKS reference stack: Phase A (private AKS Automatic + Cilium + NAP + Premium tier with LTS). Phase B (Workload Identity + AGC + Disks/Files + Key Vault CSI + Container Insights + AMP + AMG). Phase C (Defender for Containers + Azure Policy Restricted + Flux v2 GitOps + Velero/Backup for AKS + blue-green upgrade runbook). Phase D (architecture defence + live chaos drill: node kill, MI revoke, Defender finding, DR restore). Deliverables: Bicep + arch doc + DR runbook + drill recording.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How Azure-shop teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">SaaS — full reference stack as the new platform-team standard</p><p>A SaaS platform team adopts K-AKS reference stack as the standard for all new prod clusters. Bicep modules version-pinned in a shared repo. Per-tenant cluster shapes only diverge on size + region. Defence + drill required before any new cluster goes prod. <em>Onboarding new clusters: 4 hours including drill, vs 6 weeks ad-hoc previously.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Bank — regulated workload on the LTS variant</p><p>A bank's payments cluster: full K-AKS stack but pinned to v1.27 LTS for 9-month compliance change-control. AGC in private mode; Confidential Containers pool for one PII subsystem; Azure Firewall Premium with TLS inspection on egress. Quarterly DR drill includes a hypothetical Azure-region-failure scenario; cluster restored into paired region in 53 minutes. <em>Audit clean.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Dev experience — Flux + GitHub Actions = instant new namespace</p><p>A dev team spins up a new app: PR to <em>workloads/</em> repo with new Kustomization → Flux reconciles → AGC HTTPRoute provisioned → AMG dashboard auto-generated from Helm chart annotations → on-call rota updated via Action Group. <em>From PR merged to live: 8 minutes; no platform-team ticket.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Live drill — cluster failure recovered inside RTO</p><p>During the quarterly drill, the reviewer manually deletes the AGC resource. Within 90 seconds: Defender alert, AMG availability red, Flux reconcile detects drift, recreates AGC, HTTPRoutes re-attach, traffic resumes. Total outage: 4 minutes; runbook auto-pinged on-call but did not require human action. <em>The drill validates that GitOps + Flux is the recovery primitive, not just a deployment tool.</em></p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>The K-AKS capstone — A → B → C → D</h2>
+    <p>Four phases; each gates the next.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="90" width="130" height="50" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="105" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Phase A — base</text><text x="105" y="128" text-anchor="middle" font-size="9" fill="#6B6058">private + Cilium + NAP</text>
+        <rect x="200" y="90" width="130" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="265" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Phase B — platform</text><text x="265" y="128" text-anchor="middle" font-size="9" fill="#6B6058">WI + AGC + obs</text>
+        <rect x="360" y="90" width="130" height="50" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="425" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Phase C — ops</text><text x="425" y="128" text-anchor="middle" font-size="9" fill="#6B6058">Defender + Flux + DR</text>
+        <rect x="520" y="90" width="110" height="50" rx="6" fill="#E8B547" stroke="#3F4A5E" stroke-width="1.5"/><text x="575" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#5A4F45">Phase D — defence</text><text x="575" y="128" text-anchor="middle" font-size="9" fill="#6B6058">review + drill</text>
+        <rect x="660" y="90" width="80" height="50" rx="6" fill="#E0EFE6" stroke="#3D7857" stroke-width="1.5"/><text x="700" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#3D7857">K-AKS-complete</text><text x="700" y="128" text-anchor="middle" font-size="9" fill="#6B6058">graduate</text>
+        <g id="anim-pkg" opacity="0" transform="translate(95,115)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="walk">▶ end-to-end walk</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> the K-AKS capstone walk.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "AKS Automatic gives me everything; I don't need to design."</div><div class="misc-row misc-truth"><strong>Truth:</strong> AKS Automatic gives you a coherent default. It does <em>not</em> design your VNet, your identity model, your DR strategy, your egress posture, or your governance. The capstone exists because you still own those decisions — Automatic frees you to focus on them.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "I can copy the reference stack from the internet and skip the defence."</div><div class="misc-row misc-truth"><strong>Truth:</strong> The defence + drill aren't bureaucracy — they're where you discover that the copied stack doesn't match your VNet, your tenant model, your compliance, or your team's on-call topology. <em>The cluster you can defend is the only cluster you should run.</em></div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "DR drills are over-engineering for a startup."</div><div class="misc-row misc-truth"><strong>Truth:</strong> A startup can lose its company to a single 3 AM data event. The drill cost (one engineer half a day per quarter) is a fraction of one outage. Even a basic Velero restore of a non-prod cluster, executed once, surfaces the assumptions that would cost a week during a real incident.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Four phases of the K-AKS capstone?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Phase A</strong> base (private AKS Automatic + Cilium + NAP + Premium/LTS). <strong>Phase B</strong> platform (WI + AGC + storage + AMP/AMG/Container Insights). <strong>Phase C</strong> ops (Defender + Policy + Flux + Velero + blue-green). <strong>Phase D</strong> defence + live drill.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does "defendable" mean for the reference stack?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Every choice can be justified by trade-offs the operator can articulate: why private cluster, why Cilium, why NAP, why LTS, why blue-green for upgrades, why Velero for DR. A peer reviewer can ask "why X?" for each component and get a coherent answer.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Three repos in the GitOps layout?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>cluster-config</strong> (Flux's own seed), <strong>platform</strong> (Container Insights config, AGC, MI / role assignments), <strong>workloads</strong> (per-tenant or per-team apps). Each has its own RBAC + reviewer set.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Four chaos events in the live drill?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">(1) Kill a node — NAP replaces. (2) Revoke a Workload Identity MI role — Pod 401, audit logs surface, fix. (3) Apply a Defender finding — triage + remediation. (4) DR restore — Velero into sibling cluster within RTO.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why include LTS in the reference stack?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">2-year version stability on Premium tier. Avoids quarterly minor jumps for regulated / long-change-control workloads. Costs more ($0.60/cluster-hour vs $0.10 Standard) but predictable upgrade cadence + 24-month support window.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What makes the upgrade runbook safe?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Pre-flight (kubent + Pluto) + planned maintenance window + tunable max-surge + PDB-tested workloads + blue-green node pool fallback for high-stakes + cluster blue-green held in reserve for major LTS-to-LTS jumps.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does "K-AKS-complete" mean as a deliverable?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Bicep code + per-cluster architecture Markdown + DR runbook + live-drill recording. A successor operator can read the docs, run the runbooks, and operate the cluster without you.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why is the egress allow-list (Azure Firewall) part of the capstone?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Catches data exfiltration at the network layer. A compromised Pod with WI-bound MI to Storage can still try to exfil to an arbitrary FQDN; Azure Firewall denies anything not on the allow-list. Defence in depth — Workload Identity scope + NetworkPolicy + Azure Firewall + Defender runtime detection.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">The peer reviewer asks: "Why did you pick AKS Automatic + private cluster instead of AKS Standard with manual add-ons?" Walk the answer.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>(1) Default depth:</strong> AKS Automatic preconfigures Container Insights + AMP + AMG + WI + Azure RBAC for K8s + NAP + KEDA + VPA + image cleaner + auto-upgrade + Cilium NetworkPolicy in one cluster create — <em>two months of manual platform-team work avoided</em>. <strong>(2) Coherent opinions:</strong> Automatic's defaults are tested together; each component's version line is supported by Microsoft as a unit. <strong>(3) Less drift:</strong> ten managed add-ons vs ten Helm charts = ten fewer upgrade-rot risks. <strong>(4) Trade-off acknowledged:</strong> Automatic removes some knobs (no Kubenet, no service-principal cluster identity); we accept these — they're things we wouldn't pick anyway. <strong>Private cluster (via API VNet Integration):</strong> no public attack surface; pen-test reports thank us. The capstone is intentionally opinionated; the alternatives (Standard + DIY) are valid for teams who genuinely need different choices.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">During the live drill the reviewer revokes the Workload Identity MI role for Storage. Pod 401s. Walk the response under 10 minutes.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) AMG availability dashboard fires red within seconds (Pod returns 5xx). (2) On-call gets PagerDuty via Action Group. (3) Open the cluster's AMG; confirm the failing service via RED dashboard. (4) Open AKS Diagnostic Settings → KQL on <code>KubeAuditAdmin</code> + <code>AzureActivity</code> in the past 30 min — find the role assignment removal event with timestamp + initiator. (5) Re-create the role assignment via az CLI (<code>az role assignment create --assignee {mi-id} --role 'Storage Blob Data Contributor' --scope ...</code>). (6) Pod's next SDK call succeeds (token refreshed by Workload Identity automatically); availability green. (7) Postmortem note: this kind of reverted manual change should have been blocked by Azure Policy / RBAC tightening — file improvement.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The CTO walks in: "Why are we paying Premium tier + LTS — that's like $1K/cluster/month extra. Convince me." Final defence.</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how the platform engineer defended the LTS line item</span>"<strong>Premium gets us LTS — 2-year version stability for the regulated payments cluster.</strong> Without LTS we're upgrading a regulated workload every 12 weeks; each upgrade burns 4-8 engineer-days of pre-flight + maintenance + verification (~$10K-20K of engineering time per cluster per cycle). LTS gives us 24 months between minor jumps. Net: Premium tier costs ~$8K/cluster/year extra; saves $40K-80K/cluster/year of upgrade engineering. Plus financially-backed SLA, and access to Microsoft Support for production incidents at the Premium response tier. For our payments cluster, that's the right trade-off. For our dev clusters, we run Standard tier with rapid auto-upgrade — different math."</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">K-AKS reference stack</div><div class="gloss-def">The opinionated production AKS topology the K-AKS capstone defends: private AKS Automatic + Cilium + NAP + WI + AGC + Defender + Flux + Velero + LTS.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Phase A / B / C / D</div><div class="gloss-def">Capstone build phases: Base / Platform / Ops / Defence-and-drill.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Defendable</div><div class="gloss-def">Every architectural choice can be justified by trade-offs the operator can articulate to a peer reviewer.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Live drill</div><div class="gloss-def">Reviewer-led chaos exercise: node kill, MI revoke, Defender finding, DR restore. Validates the runbooks.</div></div>
+      <div class="gloss-item"><div class="gloss-name">K-AKS-complete</div><div class="gloss-def">Capstone deliverable: Bicep + per-cluster architecture doc + DR runbook + drill recording. A successor can operate from these alone.</div></div>
+      <div class="gloss-item"><div class="gloss-name">App-of-Apps GitOps layout</div><div class="gloss-def">Three Flux repos (cluster-config, platform, workloads) reconciled hierarchically. Cluster bootstrap via cluster-config seed.</div></div>
+      <div class="gloss-item"><div class="gloss-name">DR drill cadence</div><div class="gloss-def">Quarterly exercise restoring a Velero backup into a sibling cluster within the RTO target. Updates the runbook with deltas.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Architecture Markdown doc</div><div class="gloss-def">Per-cluster human-readable description of every choice + the alternative considered + the rationale. Lives in the cluster-config repo.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Velero / Backup for AKS</div><div class="gloss-def">Backup primitive for cluster state + persistent volumes. Geo-redundant Storage Account target. Tested via DR drill.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Premium tier financial SLA</div><div class="gloss-def">Microsoft's contractual SLA for AKS apiserver availability on Premium tier. Required for many enterprise contracts.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Egress allow-list</div><div class="gloss-def">Azure Firewall FQDN-restricted egress. Catches data exfiltration; complements Workload Identity scoping + NetworkPolicy.</div></div>
+      <div class="gloss-item"><div class="gloss-name">On-call playbook</div><div class="gloss-def">Per-symptom runbook linking AMG dashboards, KQL queries, az CLI commands, escalation contacts. Lives next to the architecture doc.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Build the four-phase stack: Phase A (private AKS Automatic + Cilium + NAP + LTS), Phase B (WI + AGC + storage + observability), Phase C (Defender + Policy + Flux + Velero + blue-green runbook), Phase D (peer review + live DR drill). Defend it.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module A11 complete</span>
+    <p>K-AKS Capstone built. Phase A (base) → Phase B (platform) → Phase C (ops) → Phase D (defended + drilled). The reference stack is your starting template for any new prod AKS cluster — adapt; don't reinvent.</p>
+    <p class="recap-next"><strong>K-AKS curriculum complete.</strong> You can architect, identity-secure, network, store, scale, harden, observe, extend, upgrade, troubleshoot, and defend a production AKS cluster end-to-end. Next paths: K-COM (deepen K8s itself) · K-VAN (operate K8s yourself, off-cloud) · K-EKS (the AWS counterpart) · or build internal training rolling K-AKS into your org's onboarding.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-AKS · Module A11 of 11 · grounded in learn.microsoft.com/azure/aks</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  try { (function() {
+    const SCENES = [{"mode_id": "walk", "mode_label": "Mode: A \u2192 B \u2192 C \u2192 D \u2192 K-AKS-complete", "initial_set_text": null, "phases": [{"readout": "<strong>Phase A.</strong> Private AKS Automatic + Cilium dataplane + NAP + Premium tier with LTS.", "move_to": [105, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Phase B.</strong> Workload Identity + AGC (Gateway API) + storage + Container Insights + AMP + AMG.", "move_to": [265, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Phase C.</strong> Defender for Containers + Azure Policy + Flux v2 GitOps + Velero + blue-green upgrade.", "move_to": [425, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Phase D.</strong> Architecture defended; live drill: node kill + MI revoke + Defender finding + DR restore.", "move_to": [575, 115], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>K-AKS-complete.</strong> Bicep + arch doc + DR runbook + drill recording. Graduate.", "move_to": [700, 115], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [95, 115];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-AKS A1 · AKS Architecture</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-AKS module journey">
+  <span class="concept-rail-title">K-AKS modules</span>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>A1 AKS architecture</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A2 Entra &amp; identity</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A3 AKS networking</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A4 storage (Disks / Files / Blob)</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A5 scaling (CA / KEDA / NAP)</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A6 AKS security</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A7 observability</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A8 add-ons &amp; platform</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A9 upgrades &amp; ops</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A10 troubleshooting</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>A11 capstone campus</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-AKS · Module A1</span></a>
+    <span class="progress-pill">A1 · AKS architecture</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏛️ K-Campus wing: <strong>Welcome Center</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Campus map: A1">
+    <title>K-Campus map · A1</title>
+    <desc>Stylised Azure-managed campus complex. Welcome Center highlighted.</desc>
+    <defs>
+      <linearGradient id="kc-grass" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8EFE0" stop-opacity="0.6"/><stop offset="100%" stop-color="#C8D8C0" stop-opacity="0.5"/></linearGradient>
+      <linearGradient id="kc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7AB3CC" stop-opacity="0.18"/><stop offset="100%" stop-color="#4A8FA8" stop-opacity="0.32"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kc-grass)" stroke="#A8C4A0" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · CAMPUS · AZURE REGION</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="370" x2="780" y2="370" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.3"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">main quad &amp; gateway buildings</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">operations &amp; observation halls</text>
+    <text x="48" y="362" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">commencement hall</text>
+    <g class="pin pin-anchor active" id="kc-wing01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">A1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Welcome Center</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">architecture</text></g>
+    <g class="pin" id="kc-wing02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Registrar's Office</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Entra + Workload ID</text></g>
+    <g class="pin" id="kc-wing03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Pathways & Quad</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">VNet + AGC + DNS</text></g>
+    <g class="pin" id="kc-wing04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Library</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Disks + Files + Blob</text></g>
+    <g class="pin" id="kc-wing05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">The Auditorium</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">CA + KEDA + NAP</text></g>
+    <g class="pin" id="kc-wing06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Campus Police</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Defender + Policy</text></g>
+    <g class="pin" id="kc-wing07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Bell Tower</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Monitor + AMP + AMG</text></g>
+    <g class="pin" id="kc-wing08" transform="translate(380,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Student Union</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Dapr + Istio + Flux + Arc</text></g>
+    <g class="pin" id="kc-wing09" transform="translate(520,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A9</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Maintenance Yard</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">upgrades + LTS</text></g>
+    <g class="pin" id="kc-wing10" transform="translate(660,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A10</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Health Clinic</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Azure-specific RCA</text></g>
+    <g class="pin" id="kc-wing11" transform="translate(380,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">A11</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Commencement Hall</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🏛️ <strong>Welcome Center</strong> <span>· A1 of 11</span><span class="visually-hidden">Module A1, Welcome Center.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module A1 · the Azure-managed control plane + your node pools</span>
+    <h1>A1 · AKS Architecture and Shared Responsibility</h1>
+    <p class="hero-sub">AKS = Azure runs the control plane (apiserver, etcd, scheduler, controller-manager) across availability zones, free, auto-patched. <strong>You</strong> still own VNet + node pools + workloads + identity + cost. Two flavours: <strong>AKS Standard</strong> (BYO add-ons) vs <strong>AKS Automatic</strong> (preconfigures Managed Prometheus, Managed Grafana, Container Insights, Workload Identity, KEDA, Azure RBAC).</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AKS architecture: Azure-managed control plane, customer-managed node pools, AKS Standard vs AKS Automatic.">
+  <defs>
+    <linearGradient id="azuregrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7AB3CC"/><stop offset="100%" stop-color="#4A8FA8"/></linearGradient>
+  </defs>
+  <rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6" stroke-width="1"/>
+  <text x="380" y="48" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="14" font-weight="700" fill="#3F4A5E">Welcome Center · K-Campus map on the wall</text>
+  <rect x="50" y="70" width="200" height="110" rx="10" fill="url(#azuregrad)" stroke="#3F4A5E" stroke-width="1"/>
+  <text x="150" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#FBF7F0">Azure-managed</text>
+  <text x="150" y="112" text-anchor="middle" font-size="10" fill="#FBF7F0">control plane (free)</text>
+  <text x="150" y="130" text-anchor="middle" font-size="10" fill="#FBF7F0">apiserver · etcd · scheduler</text>
+  <text x="150" y="148" text-anchor="middle" font-size="10" fill="#FBF7F0">controller-manager</text>
+  <text x="150" y="170" text-anchor="middle" font-size="9" font-style="italic" fill="#FBF7F0">multi-AZ · auto-patched</text>
+  <rect x="290" y="70" width="430" height="110" rx="10" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1"/>
+  <text x="505" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#FFFFFF">Customer-managed</text>
+  <text x="505" y="112" text-anchor="middle" font-size="10" fill="#FFFFFF">VNet · node pools · workloads · IAM · cost</text>
+  <rect x="305" y="125" width="95" height="40" rx="5" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="352" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#3F4A5E">System NP</text>
+  <text x="352" y="158" text-anchor="middle" font-size="8" fill="#3F4A5E">CoreDNS, etc.</text>
+  <rect x="408" y="125" width="95" height="40" rx="5" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="455" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#3F4A5E">User NP</text>
+  <text x="455" y="158" text-anchor="middle" font-size="8" fill="#3F4A5E">your apps</text>
+  <rect x="511" y="125" width="95" height="40" rx="5" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="558" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#3F4A5E">Spot NP</text>
+  <text x="558" y="158" text-anchor="middle" font-size="8" fill="#3F4A5E">cheap</text>
+  <rect x="614" y="125" width="95" height="40" rx="5" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="661" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#3F4A5E">GPU/Win NP</text>
+  <text x="661" y="158" text-anchor="middle" font-size="8" fill="#3F4A5E">specialty</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. PagerDuty: <em>"AKS cluster control plane unhealthy."</em> You SSH around for the apiserver — it doesn't exist, AKS hides it. You can't see etcd. You start typing <code>az aks ...</code> and realise you don't know whether the System node pool can be deleted, where the kubelet logs live, or what the heck a Node Resource Group is. <em>You inherited the cluster two days ago.</em> Today's lesson: the AKS map.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>AKS = Azure-managed control plane (free, multi-AZ) + customer-managed node pools (System / User / Spot / Win / GPU). Choose AKS Automatic for preconfigured observability and identity; AKS Standard for full control. Provision via Portal, az CLI, ARM/Bicep, Terraform, Pulumi, or Crossplane.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · what AKS is and isn't</span>
+    <h2>AKS is the Azure-managed K8s control plane</h2>
+    <p><strong>AKS is a managed Kubernetes service.</strong> Azure operates the control plane (apiserver, etcd, scheduler, controller-manager) across availability zones. The control plane is <strong>free</strong> on the Free tier (no SLA), or paid on the Standard / Premium tiers (financially-backed SLA + LTS access). You SSH no etcd; you patch no apiserver. Azure does both.</p>
+    <p><strong>What AKS does <em>not</em> manage:</strong> your VNet, your node pools (the VMs that actually run Pods), your workloads, your IAM, your costs, your add-ons (unless you're on AKS Automatic), your DR. The mental rule: <em>everything below the apiserver is Azure's; everything above is yours.</em></p>
+    <p><strong>What runs in your subscription:</strong> the <em>node resource group</em> (auto-created, named <code>MC_&lt;rg&gt;_&lt;cluster&gt;_&lt;region&gt;</code>) — contains the node pool VMSS, the cluster Load Balancer, and any add-on resources. <em>You can read it but should not edit it directly</em> — Azure reconciles changes back.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · five node-pool types</span>
+    <h2>Five node-pool types and when to use each</h2>
+    <p>An AKS cluster has at least one <strong>node pool</strong> = a VMSS (Virtual Machine Scale Set) of identical VMs. Five types:</p>
+    <ul>
+      <li><strong>System node pool</strong> (mandatory; minimum 1) — runs CoreDNS, metrics-server, AKS overlay agents, Konnectivity. Linux only. Taint: <code>CriticalAddonsOnly=true:NoSchedule</code> by convention so user workloads don't crowd it. <em>Don't run app workloads here — instability cascades.</em></li>
+      <li><strong>User node pool</strong> — your application workloads. Add as many as you need.</li>
+      <li><strong>Spot node pool</strong> — discounted (up to 90% off) Spot VMs that Azure can evict with 30-second warning. Auto-tainted <code>kubernetes.azure.com/scalesetpriority=spot:NoSchedule</code> — workloads must explicitly tolerate.</li>
+      <li><strong>Windows node pool</strong> — Windows Server 2022 nodes for .NET Framework workloads. Mixed Linux/Windows clusters are normal. Cannot run on the System pool — must add a separate Windows pool.</li>
+      <li><strong>GPU node pool</strong> — Standard_NC* / ND* SKUs with NVIDIA drivers + the <code>nvidia.com/gpu</code> device plugin. AKS GPU image (<code>UbuntuGPU</code>) ships drivers preinstalled.</li>
+    </ul>
+    <p><strong>Pool-level config:</strong> VM size, count (min/max for autoscaling), zones, taints, labels, OS SKU (Ubuntu 22.04 / Azure Linux 3 / Windows Server 2022), max-pods-per-node, OS disk type (Managed / Ephemeral), node image upgrade channel.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · AKS Standard vs AKS Automatic</span>
+    <h2>AKS Standard vs AKS Automatic</h2>
+    <p><strong>AKS Standard</strong> is the historical default: you create a cluster; you turn on add-ons one by one (Container Insights, Managed Prometheus, Workload Identity, Azure RBAC, etc.); you pick node pool sizes; you tune everything yourself. Highest flexibility, most setup.</p>
+    <p><strong>AKS Automatic</strong> (GA April 2025) preconfigures the production-ready stack: <strong>Managed Prometheus + Managed Grafana + Container Insights</strong> (observability), <strong>Workload Identity + Azure RBAC for K8s + local accounts disabled</strong> (identity), <strong>NAP (Node Auto Provisioning)</strong> instead of manual node pools, <strong>KEDA + VPA</strong> for autoscaling, <strong>image cleaner + auto-upgrade</strong> for ops, <strong>NetworkPolicy via Cilium</strong> by default. <em>You declare workloads; Azure picks node sizes, scales, patches, and observes.</em></p>
+    <p><strong>Pick Automatic if:</strong> standard production AKS, and you're happy delegating size/scaling decisions. <strong>Pick Standard if:</strong> you need fine-grained control (custom CNI, Windows-only clusters, FIPS compliance, custom node images, specific add-on combinations Automatic doesn't support).</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Which is true about the System node pool?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">It can be safely used for application workloads if labelled.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">It runs cluster-critical add-ons (CoreDNS, etc.) and is conventionally tainted CriticalAddonsOnly so user workloads don't crowd it.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">It is optional and many production clusters skip it.</button></li>
+      </ul>
+      <p class="pause-check-feedback">The System pool is mandatory and reserved for cluster-critical components. Run user workloads in a separate User pool to keep the System pool stable.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · provisioning paths</span>
+    <h2>Six ways to provision an AKS cluster</h2>
+    <p>Pick one tool and stick with it across the lifecycle. Mixing tools = drift. The six common paths:</p>
+    <ul>
+      <li><strong>Azure Portal</strong> — for a one-off learning cluster or a quick demo. Not for production (no source of truth).</li>
+      <li><strong>Azure CLI (<code>az aks create</code>)</strong> — interactive scripting, ad-hoc clusters. Good for runbooks. The Portal generates equivalent CLI commands.</li>
+      <li><strong>ARM / Bicep</strong> — Azure-native IaC. Bicep is the modern syntax (compiled to ARM JSON). Tight Azure integration; deploys via <code>az deployment group create</code>.</li>
+      <li><strong>Terraform AzureRM provider</strong> — the most popular cross-platform IaC for AKS. Strong community, mature modules. State management is your responsibility (use Azure Storage backend with state locking).</li>
+      <li><strong>Pulumi</strong> — IaC in real programming languages (TypeScript, Python, Go, C#). Same Azure resources as Terraform; more expressive for complex logic.</li>
+      <li><strong>Crossplane</strong> — Kubernetes-native IaC (Azure resources as Custom Resources reconciled by a control-plane cluster). Useful when AKS provisions other AKS clusters via GitOps.</li>
+    </ul>
+    <p><strong>Production rule:</strong> AKS clusters live in Git via Bicep / Terraform / Pulumi / Crossplane. Portal + CLI for exploration only.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>"K8s in Azure" used to mean <strong>aks-engine</strong> (deprecated) or hand-rolled VMSS + kubeadm. Operators wrote ARM templates that provisioned VMs, ran cloud-init scripts to install kubelet/kubeadm, bootstrapped the control plane on three VMs, configured etcd Raft, secured certs by hand, and were responsible for every patch. <strong>Six weeks to a working cluster; one ops engineer per cluster, full-time.</strong></p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>AKS gives you a control plane in 5-10 minutes via <code>az aks create</code> or one Bicep file. Azure runs apiserver + etcd + scheduler + controller-manager across AZs, free. <strong>AKS Automatic</strong> goes further: it preconfigures Managed Prometheus + Grafana + Container Insights + Workload Identity + Azure RBAC + NAP + KEDA in the same call. <strong>Six minutes to a production-shaped cluster; one ops engineer manages dozens.</strong> The remaining work is what you uniquely care about: VNet design, identity model, workloads, cost.</p></div>
+    </div>
+    <p class="ba-caption"><em>The six-weeks-of-cluster-plumbing era is over. The trade-off: you must learn AKS's opinions (node resource group, AKS Automatic defaults, version policy) instead of K8s's opinions.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this wing</h2>
+<p>K-Campus is the Azure-managed campus complex. The <strong>Welcome Center</strong> is where you arrive: there's a wall map, a glass case showing the campus floor plan, and a Facilities Director who explains the rules. Azure (the Facilities Director) operates the lights, the HVAC, the alarm system, and the campus shuttle — you (the Faculty) lease wings of buildings to host your departments. The map shows which buildings Azure runs and which buildings <em>you</em> run.</p>
+    <p>The Welcome Center wall has two big panels. <strong>Left panel: Azure runs this</strong> — the central plant, the campus DNS, the security cameras, the elevators. You don't see them; you can't edit them; they just work. <strong>Right panel: You run this</strong> — your department offices (workloads), the staff you hire (identity), the storerooms (storage), the budget. <em>Everything visible from the floor plan is one of those two columns.</em> No surprise pre-existing buildings. No "shared" buildings.</p>
+    <p>Some Faculty pick <strong>AKS Standard</strong> — they want to choose every paint colour and every desk arrangement themselves. Other Faculty pick <strong>AKS Automatic</strong> — they want Azure to set up the projector, the whiteboard, the lighting, and the fire alarm with sensible defaults so they can teach class on day one.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in AKS / Azure</th></tr></thead>
+        <tbody>
+          <tr><td>Welcome Center floor plan</td><td>AKS shared-responsibility model</td></tr>
+          <tr><td>Facilities Director (Azure)</td><td>Azure-managed control plane</td></tr>
+          <tr><td>Left panel — Azure runs this</td><td>kube-apiserver, etcd, scheduler, controller-manager</td></tr>
+          <tr><td>Right panel — you run this</td><td>VNet, node pools, workloads, IAM, costs</td></tr>
+          <tr><td>Wings of the campus</td><td>Node pools — System, User, Spot, Windows, GPU</td></tr>
+          <tr><td>The mandatory front desk</td><td>System node pool (CoreDNS, metrics-server)</td></tr>
+          <tr><td>Pre-furnished classroom</td><td>AKS Automatic</td></tr>
+          <tr><td>Empty classroom you furnish</td><td>AKS Standard</td></tr>
+          <tr><td>Building keys + ID badge</td><td>Cluster identity (managed identity)</td></tr>
+          <tr><td>Service-room next door</td><td>Node Resource Group (MC_*)</td></tr>
+          <tr><td>Architectural blueprint repo</td><td>Bicep / Terraform / Pulumi / Crossplane</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>The campus has fixed walls; an AKS cluster has elastic node pools that grow and shrink during the day. The Welcome Center map is a snapshot; reality is a movie.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Azure runs a giant brain at the campus that decides where your work happens. You bring the workers (your apps). Azure picks the rooms; the brain tells the workers which room to go to. You pay for the rooms, not the brain.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p>AKS is Azure operating the K8s control plane (apiserver, etcd, scheduler, controller-manager) across availability zones for free, while you operate the node pools (VMSS of VMs) where your Pods actually run. There are five node-pool flavours (System / User / Spot / Windows / GPU). You can take the no-decisions path with <strong>AKS Automatic</strong> (preconfigures Managed Prometheus, Grafana, Container Insights, Workload Identity, NAP, KEDA) or the full-control path with <strong>AKS Standard</strong>. Provision via Portal, Azure CLI, Bicep, Terraform, Pulumi, or Crossplane.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How Azure-shop teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">Mid-size SaaS, first AKS cluster — picks AKS Automatic</p><p>A 50-engineer SaaS migrating from VMs to K8s. They have no platform team and don't want one. They pick <strong>AKS Automatic</strong>. In one <code>az aks create</code> command they get: Managed Prometheus + Grafana, Container Insights, Workload Identity, Azure RBAC, NAP for compute, KEDA + VPA, image cleaner, auto-upgrade. <em>Day-1 production-shaped cluster with no Helm charts to install.</em> Trade-off: less knob-twiddling. Worth it for them.</p></div>
+      <div class="scenario"><p class="scenario-name">Bank, regulatory cluster — picks AKS Standard</p><p>A bank running PCI workloads. They need: a custom NSG ruleset, BYO Cilium with strict NetworkPolicies, FIPS-validated node images, locked-down ACR, no preview features, audit logs to a specific Log Analytics workspace. <em>AKS Automatic doesn't yet support all those constraints together</em>. They pick <strong>AKS Standard</strong> and configure each add-on manually via Bicep. Higher setup cost; required for compliance.</p></div>
+      <div class="scenario"><p class="scenario-name">ML team, GPU spike workloads</p><p>A 200-engineer ML team runs hyperparameter sweeps. Three node pools: <strong>System</strong> (D-series, 3 nodes), <strong>User</strong> (D-series autoscale 5-50 for inference), <strong>GPU Spot</strong> (NC-series A100, autoscale 0-100). The Spot pool runs sweeps; gets evicted; sweeps checkpoint and resume on the next eviction-tolerant node. <em>Cost: 70% lower than always-on GPU; same throughput.</em></p></div>
+      <div class="scenario"><p class="scenario-name">Multi-tenant SaaS, Crossplane provisions per-tenant clusters</p><p>A SaaS where each enterprise tenant gets their own AKS cluster. Provisioning by hand isn't viable at 200 tenants. They run a single <strong>management AKS cluster</strong> with <strong>Crossplane + Azure provider</strong>. New tenant arrives → operator commits a Tenant CR to git → Argo CD syncs → Crossplane reconciles a new AKS cluster + identity + ACR + Key Vault for that tenant. <em>Cluster provisioning becomes a git PR.</em></p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>AKS shared responsibility — Standard vs Automatic</h2>
+    <p>Two AKS shapes; one shared-responsibility split.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="70" width="150" height="90" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="115" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Azure-managed</text><text x="115" y="108" text-anchor="middle" font-size="9" fill="#6B6058">control plane (free)</text>
+        <rect x="220" y="35" width="150" height="50" rx="6" fill="#5A9F7A" stroke="#3F4A5E" stroke-width="1.5"/><text x="295" y="57" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">AKS Standard</text><text x="295" y="73" text-anchor="middle" font-size="9" fill="#6B6058">BYO add-ons</text>
+        <rect x="220" y="95" width="150" height="50" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="295" y="117" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">AKS Automatic</text><text x="295" y="133" text-anchor="middle" font-size="9" fill="#6B6058">preconfigured</text>
+        <rect x="420" y="70" width="290" height="90" rx="6" fill="#FBF1D6" stroke="#8B5A00" stroke-width="1.5"/><text x="565" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#8B5A00">customer-managed data plane</text><text x="565" y="108" text-anchor="middle" font-size="9" fill="#6B6058">VNet · node pools · workloads · IAM</text>
+        <rect x="440" y="110" width="80" height="40" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/><text x="480" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#3F4A5E">System NP</text><text x="480" y="148" text-anchor="middle" font-size="9" fill="#6B6058">CoreDNS</text>
+        <rect x="530" y="110" width="80" height="40" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/><text x="570" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#3F4A5E">User NP</text><text x="570" y="148" text-anchor="middle" font-size="9" fill="#6B6058">your apps</text>
+        <rect x="620" y="110" width="80" height="40" rx="6" fill="#FFFFFF" stroke="#3F4A5E" stroke-width="1.5"/><text x="660" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#3F4A5E">Spot NP</text><text x="660" y="148" text-anchor="middle" font-size="9" fill="#6B6058">cheap</text>
+        <g id="anim-pkg" opacity="0" transform="translate(115,115)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="standard">▶ AKS Standard path</button>
+        <button class="anim-btn" type="button" data-mode="automatic">▶ AKS Automatic path</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> two AKS shapes side by side.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "The control plane is free, so AKS is free."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Free Tier control plane (no SLA) is free. <strong>Standard Tier</strong> (production SLA) is $0.10/cluster/hour ≈ $73/month. <strong>Premium Tier</strong> (LTS support) is $0.60/cluster/hour. Plus you pay for every node VM, every Managed Disk, every Load Balancer, every public IP, every Log Analytics ingest GB. Control-plane fee is a small fraction; data-plane is the bill.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "I should run my workloads on the System node pool to save money."</div><div class="misc-row misc-truth"><strong>Truth:</strong> The System pool is conventionally tainted <code>CriticalAddonsOnly=true:NoSchedule</code>. Bypassing the taint means CoreDNS, metrics-server, and Konnectivity compete for CPU with your apps — and a noisy app will starve cluster-critical components. A user pool of the same VM SKU is the same cost.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "AKS Automatic is just AKS Standard with autoscaling enabled."</div><div class="misc-row misc-truth"><strong>Truth:</strong> AKS Automatic preconfigures a coherent <em>production stack</em>: Managed Prometheus + Grafana + Container Insights observability, Workload Identity + Azure RBAC + local-accounts-disabled identity, NAP for node provisioning, KEDA + VPA for scaling, image cleaner, auto-upgrade, NetworkPolicy via Cilium. It also <em>removes</em> some knobs (you can't change the network plugin to Kubenet, can't turn off Workload Identity). Not a flag; a different cluster shape.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does AKS manage and what do you manage?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Azure manages</strong> the control plane (apiserver, etcd, scheduler, controller-manager) across AZs. <strong>You manage</strong> the VNet, node pools, workloads, identity, and cost. The Node Resource Group (MC_*) lives in your subscription but is reconciled by Azure — read but don't edit.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What are the five AKS node-pool types?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>System</strong> (mandatory, runs CoreDNS, etc.), <strong>User</strong> (your apps), <strong>Spot</strong> (cheap evictable), <strong>Windows</strong> (Server 2022 for .NET Framework), <strong>GPU</strong> (NC/ND SKUs with NVIDIA drivers preinstalled).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Difference between AKS Standard and AKS Automatic?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Standard</strong>: you turn on each add-on. <strong>Automatic</strong> (GA Apr 2025): preconfigures Managed Prometheus + Grafana + Container Insights + Workload Identity + Azure RBAC + NAP + KEDA + VPA + image cleaner + auto-upgrade + Cilium NetworkPolicy. Removes some knobs, adds opinionated defaults.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's the Node Resource Group (MC_*)?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">The auto-created Azure resource group that holds the node pool VMSS, cluster Load Balancer, NSGs, public IPs, etc. Named <code>MC_&lt;rg&gt;_&lt;cluster&gt;_&lt;region&gt;</code>. You can read it but Azure reconciles direct edits — change via AKS APIs instead.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Six provisioning tools for AKS?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Portal (demo only), Azure CLI (<code>az aks create</code>), <strong>ARM/Bicep</strong> (Azure-native IaC), <strong>Terraform AzureRM</strong> (most popular cross-platform), <strong>Pulumi</strong> (IaC in real languages), <strong>Crossplane</strong> (Kubernetes-native, useful for cluster-of-clusters).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is Azure Linux 3 and why does it matter?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Microsoft's optimised Linux distro for AKS nodes (formerly CBL-Mariner). <strong>Azure Linux 2 reached end of support 2025-11-30</strong> and node images are removed 2026-03-31 — every AKS node currently on AL2 must migrate to <strong>Azure Linux 3</strong> or <strong>Ubuntu 24</strong>. Set the OS SKU at node-pool creation; can't be changed in place.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What's a managed identity vs a service principal?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Both authenticate AKS to other Azure services. <strong>Managed identity</strong> (system-assigned or user-assigned) is the modern path — Azure rotates the secret. <strong>Service principal</strong> is the legacy path — you manage the secret. New AKS clusters default to managed identity; service-principal clusters should be migrated.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What is the AKS Release Tracker?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">A public Microsoft tool showing which AKS minor versions are rolling out to which Azure regions. Use it to plan upgrades — a region might be on the new minor while another lags by a week or two. URL: releases.aks.azure.com.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">You ran <code>az aks create</code> and the cluster is ready. You inspect resource groups in your subscription and see two new ones: the one you specified and one called <code>MC_myrg_mycluster_eastus</code>. What is in MC_*, and what should you do with it?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The MC_* group is the <strong>Node Resource Group</strong> — Azure auto-created it to hold cluster infrastructure: the node pool VMSS, the cluster Load Balancer, NSGs, public IPs, managed disks, etc. <strong>Read it freely</strong> (great for debugging). <strong>Don't edit it directly</strong> — Azure reconciles changes back. To change anything in MC_*, use the AKS API surface (e.g. <code>az aks nodepool update</code>, <code>az aks update --load-balancer-...</code>).</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A teammate proposes deploying a new monitoring DaemonSet to the System node pool to "save costs and avoid a separate pool." What's the risk?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>The System pool is conventionally tainted <code>CriticalAddonsOnly=true:NoSchedule</code>. To land your DaemonSet there, your teammate would either remove that taint (now the System pool runs CoreDNS + metrics-server + Konnectivity + your DaemonSet competing for the same CPU/memory) or add a toleration. Either way: a noisy DaemonSet evicts CoreDNS, your DNS service degrades, every other Pod's resolution starts failing, and you have a cluster-wide outage. <strong>Add a User pool of the same SKU instead</strong> — same cost, isolation preserved.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The CTO walks in: "Auto Mode for EKS is just preview; we should wait for Azure to do the same." You've been running AKS Automatic for two months. How do you respond?</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">the response that earned a follow-up demo invite</span><strong>AKS Automatic went GA in April 2025</strong>, several months before EKS Auto Mode. It preconfigures Managed Prometheus + Grafana + Container Insights + Workload Identity + Azure RBAC + NAP + KEDA + VPA + image cleaner + auto-upgrade + Cilium NetworkPolicy in one <code>az aks create</code>. You've been on it for two months with zero ops work for those features. Show the CTO the cluster + the Grafana dashboard + the Workload Identity demo. <em>The wait is over.</em></div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">AKS</div><div class="gloss-def">Azure Kubernetes Service — Microsoft's managed K8s service.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Node Resource Group (MC_*)</div><div class="gloss-def">Auto-created Azure resource group holding node pool VMSS, cluster LB, NSGs, public IPs. Reconciled by Azure; don't edit directly.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Node pool</div><div class="gloss-def">A VMSS of identical VMs that run Pods. Five types: System, User, Spot, Windows, GPU.</div></div>
+      <div class="gloss-item"><div class="gloss-name">System node pool</div><div class="gloss-def">Mandatory pool that runs cluster-critical components (CoreDNS, metrics-server, Konnectivity). Conventionally tainted CriticalAddonsOnly=true:NoSchedule.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AKS Standard</div><div class="gloss-def">Default AKS shape — you turn on add-ons one by one. Highest flexibility, most setup.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AKS Automatic</div><div class="gloss-def">GA Apr 2025 — preconfigures Managed Prometheus, Grafana, Container Insights, Workload Identity, Azure RBAC, NAP, KEDA, VPA, image cleaner, auto-upgrade, Cilium NetworkPolicy.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AKS Free / Standard / Premium tier</div><div class="gloss-def">Pricing tiers for the AKS control plane. Free = no SLA. Standard = SLA at $0.10/hr. Premium = LTS access at $0.60/hr.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Managed identity</div><div class="gloss-def">Azure-managed credential bound to an Azure resource (e.g. AKS cluster). Rotates automatically. System-assigned (lifecycle = parent) or user-assigned (independent lifecycle).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Service principal</div><div class="gloss-def">Legacy AKS identity model — you manage the secret. Replaced by managed identities.</div></div>
+      <div class="gloss-item"><div class="gloss-name">VMSS</div><div class="gloss-def">Virtual Machine Scale Set — Azure's auto-scaling VM group. Each AKS node pool is backed by one VMSS.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Bicep</div><div class="gloss-def">Microsoft's modern Azure IaC DSL. Compiles to ARM JSON. Tighter syntax than ARM.</div></div>
+      <div class="gloss-item"><div class="gloss-name">AKS Release Tracker</div><div class="gloss-def">Microsoft's public tool showing which AKS minor versions are available in which regions, so you can time upgrades.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>AKS = Azure-managed control plane (free, multi-AZ) + customer-managed node pools (System / User / Spot / Win / GPU). Choose AKS Automatic for preconfigured observability and identity; AKS Standard for full control. Provision via Portal, az CLI, ARM/Bicep, Terraform, Pulumi, or Crossplane.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module A1 complete</span>
+    <p>You can now point at the AKS shared-responsibility split, name the five node-pool types, choose between AKS Standard and AKS Automatic, and pick a provisioning tool. The Welcome Center map is internalised.</p>
+    <p class="recap-next"><strong>Next — A2: Azure Identity and Access.</strong> Microsoft Entra ID, Workload Identity (replaces Pod Identity), Azure RBAC for K8s, kubelogin, ACR + Key Vault integration, Conditional Access for kubectl.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-AKS · Module A1 of 11 · grounded in learn.microsoft.com/azure/aks</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  try { (function() {
+    const SCENES = [{"mode_id": "standard", "mode_label": "Mode: AKS Standard \u2014 full control, manual add-ons", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Azure runs the control plane (free, multi-AZ).", "move_to": [295, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Standard: you add Container Insights, Workload Identity, etc. one by one.", "move_to": null, "duration_ms": 400, "pause_after_ms": 900, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Five node-pool types in your subscription: System / User / Spot / Win / GPU.", "move_to": [565, 130], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Highest flexibility, longest setup. Pick this if you need the knobs.", "move_to": null, "duration_ms": 400, "pause_after_ms": 2000, "set_text": null, "set_attr": null}]}, {"mode_id": "automatic", "mode_label": "Mode: AKS Automatic \u2014 preconfigured production stack", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> Azure runs the control plane.", "move_to": [295, 60], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Automatic: AMP + Grafana + Container Insights + WI + Azure RBAC + NAP + KEDA + Cilium auto-on.", "move_to": [295, 120], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Day-1 production stack; node sizing/scaling delegated to Azure.", "move_to": [565, 130], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [115, 115];
+    const animModeLabel = document.getElementById('anim-mode-label');
+    const animReadout = document.getElementById('anim-readout');
+    const animPkg = document.getElementById('anim-pkg');
+    const modeBtns = document.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = document.getElementById(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = document.getElementById(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

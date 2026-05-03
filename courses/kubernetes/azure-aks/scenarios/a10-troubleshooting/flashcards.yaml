@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Eight Azure-specific AKS failure patterns?
+    back: |
+      (1) Entra/kubelogin auth, (2) Azure RBAC vs K8s RBAC mismatch, (3) VMSS / quota / SKU, (4) Azure CNI IP exhaustion + CoreDNS, (5) SNAT exhaustion + LB pending + private DNS, (6) disk attach + Key Vault CSI, (7) ACR pull + MI permission, (8) upgrade blocked + node-image failure.
+
+  - id: 2
+    front: |
+      What does `kubectl-aks` do?
+    back: |
+      Azure CLI extension that runs node-level diagnostics on AKS nodes *without SSH* — BPF inspection, syscall traces, packet captures, ifconfig, network probes. Replaces the SSH-into-the-node workflow that AKS doesn't allow.
+
+  - id: 3
+    front: |
+      What does AKS Diagnostic Settings expose?
+    back: |
+      Apiserver, audit, audit-admin, kube-controller-manager, kube-scheduler, cluster-autoscaler, cloud-controller-manager log categories. Route to Log Analytics (KQL search), Event Hub (SIEM), or Storage (long-term archive).
+
+  - id: 4
+    front: |
+      When do you check Azure Resource Health?
+    back: |
+      **First**, on every incident. Tells you whether Azure itself is degraded for your cluster, region, or service. Saves hours of theorising on user-side root cause when the issue is Azure-side.
+
+  - id: 5
+    front: |
+      Common cause of Workload Identity 401?
+    back: |
+      Federated credential mismatch — wrong OIDC issuer (e.g. cluster recreated; new issuer URL), wrong subject (typo in SA name), missing role assignment on the MI for the target resource.
+
+  - id: 6
+    front: |
+      ACR pull diagnostic command?
+    back: |
+      `az aks check-acr --name <cluster> --resource-group <rg> --acr <registry>.azurecr.io` — runs a self-test from the cluster against the registry; surfaces RBAC, networking, and DNS issues end-to-end.
+
+  - id: 7
+    front: |
+      Why does CoreDNS need autoscaling on big AKS clusters?
+    back: |
+      Default 2 CoreDNS replicas. Large clusters = millions of DNS queries/sec; replicas saturate. Symptoms: intermittent DNS lookup failures, increased Pod start latency. Fix: tune the CoreDNS autoscaler add-on or NodeLocal DNSCache.
+
+  - id: 8
+    front: |
+      What's the standard AKS triage playbook?
+    back: |
+      (1) Azure Resource Health (rule out Azure-side). (2) Activity Log (recent changes by humans/automation). (3) AKS Diagnostic Settings logs via KQL (control-plane perspective). (4) kubectl describe + kubectl-aks (workload + node). (5) Defender alerts (security).

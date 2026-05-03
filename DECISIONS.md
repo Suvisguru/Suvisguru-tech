@@ -968,3 +968,47 @@ The parallel generator stack (rather than refactoring k_van into a shared multi-
 **Alternatives considered:** Add K-EKS modules to the K-COM curriculum as L45+. Rejected — K-EKS is a separate course with a separate AWS-prereq audience; K-COM ends at L44. Reuse the K-Frontier homestead atlas with renamed sites for E1-E11. Rejected — the homestead metaphor literally is "build it yourself," which contradicts the EKS shared-responsibility frame; would confuse beginners. Refactor the three K-generators into one parameterised generator. Deferred — three is not yet enough churn pressure to justify the refactor risk; revisit if a fourth K-course is added. Combine audits. Rejected — same reasons as the K-VAN entry; confirmed by adding a third course.
 
 **Revisit when:** A fourth managed-cloud K-course (K-GKE for GKE, K-AKS for AKS) is added. At that point: three parallel generators is the trip-wire to refactor into a shared multi-course generator with per-course atlas/rail data injected. Each new course still gets its own analogical universe + audit, but the rendering core would unify.
+
+## 2026-05-03 — K-AKS course + K-Campus analogical universe (the trip-wire decision)
+
+**Context:** Founder asked for a fourth Kubernetes course: Azure AKS (K-AKS) — the Microsoft-managed-K8s deep dive: architecture (incl. AKS Standard vs AKS Automatic), Entra + Workload Identity, Azure CNI variants + AGC, Disks/Files/NetApp/Blob, Cluster Autoscaler / NAP / KEDA, Defender + Policy + Image Cleaner + FIPS + Confidential Containers, Container Insights + AMP + AMG + ADOT, Dapr + Istio + Flux + Arc + Hybrid + Edge + Fleet, LTS + blue-green upgrades, Azure-specific troubleshooting, capstone. 11 modules: A1-A11. Prereq: K-COM + Azure basics (Entra ID, VNet, VMSS, LB, Disks/Files, Monitor, Key Vault). Important version-policy nuance: AKS supports N + N-1 + N-2 community + N-3 platform + LTS for designated versions; <em>Azure Linux 2 reached EOL 2025-11-30 and node images are removed 2026-03-31</em> — the AL2 → AL3 / Ubuntu 24 migration is taught explicitly in A6.
+
+This is the explicit \"Revisit when\" trigger from the K-EKS entry above (\"A fourth managed-cloud K-course\"). Decision time on the trip-wire.
+
+**Decision:** Continue the parallel-generator pattern for K-AKS (mirrors K-EKS); <em>defer</em> the refactor into a shared multi-course generator. Reasoning below.
+
+**Sub-decision A — K-Campus universe.** Eleven wings mapped one-to-one with A1-A11:
+
+| Module | Wing | Topic |
+|---|---|---|
+| A1 | Welcome Center *(anchor)* | Architecture & shared responsibility |
+| A2 | Registrar's Office | Entra ID + Workload Identity |
+| A3 | Pathways & Quad | VNet + AGC + NetworkPolicy |
+| A4 | The Library | Disks / Files / NetApp / Blob |
+| A5 | The Auditorium | Cluster Autoscaler / NAP / KEDA / specialty pools |
+| A6 | Campus Police | Defender / Policy / Image Cleaner / FIPS / Confidential |
+| A7 | Bell Tower | Container Insights / AMP / AMG / ADOT |
+| A8 | Student Union | Dapr / Istio / Flux / Arc / Hybrid / Edge / Fleet |
+| A9 | Maintenance Yard | Upgrades, LTS, channels, blue-green |
+| A10 | Health Clinic | Azure-specific troubleshooting |
+| A11 | Commencement Hall | Capstone — defendable reference campus |
+
+The Welcome Center is the K-Campus anchor: every visitor arrives there; the wall map shows the whole campus floor plan (the shared-responsibility model); choices like AKS Standard vs AKS Automatic are explained at the door. The Registrar's Office (Entra ID) sits at the centre by design — Azure identity is unusually central to AKS compared to other clouds.
+
+**Sub-decision B — Parallel generator stack (NOT the unified refactor).** `scripts/k_aks_lesson_generator.py` mirrors `k_eks_lesson_generator.py`: emits K-Campus atlas + K-AKS concept rail + A-numbered footers + \"Module A{N} of 11\" labels. Reuses BASE_CSS, SCRIPT_BLOCK, dataclasses, _render_animation from `k8s_lesson_generator.py`. Lesson specs in `scripts/lessons_kaks/lessonNN.py`; animations in `scripts/lessons_kaks/animations.py`. Build helpers `scripts/build_scenario_folders_kaks.py` and `scripts/build_combined_course_kaks.py` mirror their K-EKS siblings.
+
+**Sub-decision C — File naming.** Per the existing pattern: K-AKS uses `preview-kubernetes-aks-lesson-NN.html`. Course folder slug: `azure-aks` (kebab-case lowercase per convention; the user-facing name is \"Azure AKS\"). Combined-course HTML: `preview-kubernetes-aks-course-all.html`.
+
+**Sub-decision D — Audit per course.** `scripts/audit_lessons_kaks.py` — mechanical + content checks for K-AKS. `k_aks_lesson_generator.py` auto-runs the K-AKS audit after every generation pass per the standing rule. Four separate audits now (K-COM, K-VAN, K-EKS, K-AKS) because the expected counts and id prefixes differ (K-COM: 24 K-Town pins / 45 strip dots / `kt-pin*`; K-VAN: 11 K-Frontier sites / 11 strip dots / `kf-site*`; K-EKS: 11 K-Skyline floors / 11 strip dots / `ks-floor*`; K-AKS: 11 K-Campus wings / 11 strip dots / `kc-wing*`).
+
+**Reasoning:**
+
+K-Campus as the fourth universe (rather than reusing any prior) is justified because: (1) the metaphor changes a fourth time — K-COM is \"living in the city\" (consuming K8s primitives), K-VAN is \"building your own town\" (operating K8s yourself), K-EKS is \"renting a floor in an AWS-owned tower\" (managed AWS), K-AKS is \"leasing wings of an Azure-managed campus where the Registrar checks every visitor.\" The Registrar/Entra-as-central-identity framing is the differentiator that makes AKS its own visual and analogical space — Azure identity is unusually woven through every workload pattern. (2) The four universes are now visually distinct (city street grid / homestead / tower silhouette / campus quad) so a learner at any module instantly knows which course they\'re in.
+
+The decision to **continue parallel generators** rather than refactor into a unified multi-course generator is justified because: (1) Three K-courses + one new = four; the refactor cost grows linearly but the parallel-generator cost (mirroring an existing K-EKS generator → ~480 lines of structural Python) also stays linear and the structural duplication is shallow (each generator is ~480 lines, ~95% of which is rendering glue around the shared dataclasses/CSS/script). (2) The refactor risk is non-trivial: the four generators differ in atlas data, rail data, footer label format, district-label emoji, and per-course prose tweaks. A shared generator would need a careful per-course config-injection design that probably matures over its second + third refactor — high churn now is the wrong moment. (3) The audits *also* differ structurally (id prefixes, expected counts) and would need similar parameterisation. (4) The audit-runs-after-generation rule is wired in cleanly today; refactoring would temporarily break that wiring during the migration.
+
+**Trip-wire revisited:** The K-EKS entry said the refactor was the trip-wire at the fourth K-course. Reviewing now with the actual code in front of me, I\'m choosing to defer one more time on grounds (1)-(4) above. **Updated trip-wire**: refactor when the *fifth* K-course is added (K-GKE for GKE, K-EDGE for edge K8s, etc.) — at that point the structural duplication is large enough that even a careful refactor pays off, and we have four reference implementations to validate the abstraction against.
+
+**Alternatives considered:** Add K-AKS modules to the K-COM curriculum as L45+. Rejected — K-AKS is a separate course with a separate Azure-prereq audience. Reuse the K-Skyline tower atlas with renamed floors for A1-A11. Rejected — the tower metaphor implies AWS-style \"rent floors in a building\"; Azure\'s campus framing better captures the central role of Entra ID (Registrar) in AKS. Refactor immediately into a shared multi-course generator. Deferred — see reasoning above.
+
+**Revisit when:** Adding a *fifth* K-course (K-GKE / K-EDGE / K-OS-shift / etc.). At that point refactor is justified — four parallel generators is enough to abstract from confidently. Until then, each new K-course gets its own parallel stack mirroring the most-recent prior course.

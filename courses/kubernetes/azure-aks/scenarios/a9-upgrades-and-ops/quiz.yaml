@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      The team's upgrade is stuck — node draining for 90 minutes. `kubectl describe` on the affected node shows: *Cannot evict Pod 'critical-svc-0' as it would violate the Pod's disruption budget.* What's the immediate remediation and what's the structural fix?
+    answer: |
+      **Immediate**: temporarily increase replicas of `critical-svc` from 3 to 4 (so PDB `maxUnavailable: 0` still allows 1 to drain when there are 4); drain proceeds; restore to 3 after upgrade. **Structural**: rewrite the PDB to `maxUnavailable: 1` (or `minAvailable: 2` with 3 replicas). PDB `maxUnavailable: 0` + zero surge slack = always-deadlock during upgrade. Coordinate with the service owner to make this their default.
+
+  - id: 2
+    prompt: |
+      A regulated cluster is on AKS v1.27 LTS. Two years pass. Now what?
+    answer: |
+      LTS support for v1.27 ends. Three options: (1) Move to the next LTS version (e.g. v1.30 LTS) via in-place stepwise upgrades — multiple minor jumps each with pre-flight + maintenance window. (2) Move to current N-2 (community support) and resume quarterly cadence. (3) Rebuild the cluster blue-green on the target version (clean slate). The decision is policy-driven; the LTS-to-LTS jump is the typical path for regulated workloads.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      It's upgrade Saturday. The team set `stable` auto-upgrade + planned maintenance window. At 02:14 the upgrade starts; at 02:23 it pauses with *"add-on compatibility check failed: cert-manager v1.10 incompatible with target K8s minor."* The team self-installed cert-manager via Helm a year ago. What now?
+    answer: |
+      **The upgrade auto-pauses** rather than breaking — the add-on compatibility check is part of the cluster upgrade preflight. The team has two paths: (1) Upgrade cert-manager Helm chart to a version compatible with the target K8s minor; rerun upgrade. (2) Migrate to the **App Routing add-on** which bundles a managed cert-manager — no more chart-rot. The longer-term lesson: every self-installed add-on is a future upgrade hazard. Move to managed add-ons where they exist (App Routing, KEDA, Flux v2, Workload Identity, Key Vault provider, Istio mesh).

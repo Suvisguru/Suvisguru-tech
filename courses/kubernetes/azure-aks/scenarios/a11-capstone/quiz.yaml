@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      The peer reviewer asks: "Why did you pick AKS Automatic + private cluster instead of AKS Standard with manual add-ons?" Walk the answer.
+    answer: |
+      **(1) Default depth:** AKS Automatic preconfigures Container Insights + AMP + AMG + WI + Azure RBAC for K8s + NAP + KEDA + VPA + image cleaner + auto-upgrade + Cilium NetworkPolicy in one cluster create — *two months of manual platform-team work avoided*. **(2) Coherent opinions:** Automatic's defaults are tested together; each component's version line is supported by Microsoft as a unit. **(3) Less drift:** ten managed add-ons vs ten Helm charts = ten fewer upgrade-rot risks. **(4) Trade-off acknowledged:** Automatic removes some knobs (no Kubenet, no service-principal cluster identity); we accept these — they're things we wouldn't pick anyway. **Private cluster (via API VNet Integration):** no public attack surface; pen-test reports thank us. The capstone is intentionally opinionated; the alternatives (Standard + DIY) are valid for teams who genuinely need different choices.
+
+  - id: 2
+    prompt: |
+      During the live drill the reviewer revokes the Workload Identity MI role for Storage. Pod 401s. Walk the response under 10 minutes.
+    answer: |
+      (1) AMG availability dashboard fires red within seconds (Pod returns 5xx). (2) On-call gets PagerDuty via Action Group. (3) Open the cluster's AMG; confirm the failing service via RED dashboard. (4) Open AKS Diagnostic Settings → KQL on `KubeAuditAdmin` + `AzureActivity` in the past 30 min — find the role assignment removal event with timestamp + initiator. (5) Re-create the role assignment via az CLI (`az role assignment create --assignee {mi-id} --role 'Storage Blob Data Contributor' --scope ...`). (6) Pod's next SDK call succeeds (token refreshed by Workload Identity automatically); availability green. (7) Postmortem note: this kind of reverted manual change should have been blocked by Azure Policy / RBAC tightening — file improvement.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO walks in: "Why are we paying Premium tier + LTS — that's like $1K/cluster/month extra. Convince me." Final defence.
+    answer: |
+      "**Premium gets us LTS — 2-year version stability for the regulated payments cluster.** Without LTS we're upgrading a regulated workload every 12 weeks; each upgrade burns 4-8 engineer-days of pre-flight + maintenance + verification (~$10K-20K of engineering time per cluster per cycle). LTS gives us 24 months between minor jumps. Net: Premium tier costs ~$8K/cluster/year extra; saves $40K-80K/cluster/year of upgrade engineering. Plus financially-backed SLA, and access to Microsoft Support for production incidents at the Premium response tier. For our payments cluster, that's the right trade-off. For our dev clusters, we run Standard tier with rapid auto-upgrade — different math."

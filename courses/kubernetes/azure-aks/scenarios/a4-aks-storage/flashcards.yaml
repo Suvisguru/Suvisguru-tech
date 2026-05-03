@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Five AKS managed CSI drivers?
+    back: |
+      **Azure Disks** (RWO block), **Azure Files** (RWX SMB/NFS), **Azure NetApp Files** (low-latency DBs / SAP HANA), **Azure Blob** (BlobFuse2 for object-as-FS), **Azure Container Storage** (local NVMe + unified plane). Plus **Secrets Store CSI** (Key Vault).
+
+  - id: 2
+    front: |
+      Why is `WaitForFirstConsumer` critical for multi-AZ AKS?
+    back: |
+      Single-zone disks can't cross-AZ-attach. WaitForFirstConsumer delays disk provisioning until the Pod is scheduled, then provisions the disk in that Pod's zone. Without it, the scheduler may place the Pod in zone A but the disk got provisioned in zone B = attach failure.
+
+  - id: 3
+    front: |
+      What does VolumeAttributesClass do?
+    back: |
+      K8s-native (GA) way to change a PV's performance attributes (IOPS, throughput) on a running workload — no remount. Useful for Premium SSD v2 / Ultra Disk where you tune IOPS independently. Reference a VAC from the PVC.
+
+  - id: 4
+    front: |
+      When should you use ZRS-backed disks?
+    back: |
+      When you need *cross-zone disk attach* for stateful workloads without app-level replication — single-region multi-AZ resilience. Trade-off: slightly higher latency than LRS. Available for Standard SSD and Premium SSD.
+
+  - id: 5
+    front: |
+      How does Secrets Store CSI consume Key Vault?
+    back: |
+      A `SecretProviderClass` declares which Key Vault secrets/keys/certs to fetch. The driver authenticates via **Workload Identity**, pulls them from Key Vault, mounts them as files in the Pod. Optional sync to K8s Secret. Auto-rotation poller refreshes the volume.
+
+  - id: 6
+    front: |
+      When should you use Azure NetApp Files?
+    back: |
+      Sub-millisecond latency, high IOPS workloads — SAP HANA, large transactional DBs (Oracle / Postgres / SQL Server with extreme requirements). Higher base cost than Files; different performance class.
+
+  - id: 7
+    front: |
+      Azure Container Storage — what problem does it solve?
+    back: |
+      Unified data plane — exposes *local NVMe ephemeral disks* on nodes as Persistent Volumes alongside Disks and ANF. For workloads with app-layer replication (Cassandra, Elasticsearch, Kafka) where local NVMe IOPS matters and you tolerate node-loss replication.
+
+  - id: 8
+    front: |
+      Two Azure Files protocols and when to pick each?
+    back: |
+      **SMB** — works on Linux + Windows; default. **NFS v4.1** — Linux only; Premium tier required; better POSIX semantics; pick when apps need POSIX file locking or fork()-style behaviours.

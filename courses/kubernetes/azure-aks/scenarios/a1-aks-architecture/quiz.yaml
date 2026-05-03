@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      You ran `az aks create` and the cluster is ready. You inspect resource groups in your subscription and see two new ones: the one you specified and one called `MC_myrg_mycluster_eastus`. What is in MC_*, and what should you do with it?
+    answer: |
+      The MC_* group is the **Node Resource Group** — Azure auto-created it to hold cluster infrastructure: the node pool VMSS, the cluster Load Balancer, NSGs, public IPs, managed disks, etc. **Read it freely** (great for debugging). **Don't edit it directly** — Azure reconciles changes back. To change anything in MC_*, use the AKS API surface (e.g. `az aks nodepool update`, `az aks update --load-balancer-...`).
+
+  - id: 2
+    prompt: |
+      A teammate proposes deploying a new monitoring DaemonSet to the System node pool to "save costs and avoid a separate pool." What's the risk?
+    answer: |
+      The System pool is conventionally tainted `CriticalAddonsOnly=true:NoSchedule`. To land your DaemonSet there, your teammate would either remove that taint (now the System pool runs CoreDNS + metrics-server + Konnectivity + your DaemonSet competing for the same CPU/memory) or add a toleration. Either way: a noisy DaemonSet evicts CoreDNS, your DNS service degrades, every other Pod's resolution starts failing, and you have a cluster-wide outage. **Add a User pool of the same SKU instead** — same cost, isolation preserved.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CTO walks in: "Auto Mode for EKS is just preview; we should wait for Azure to do the same." You've been running AKS Automatic for two months. How do you respond?
+    answer: |
+      **AKS Automatic went GA in April 2025**, several months before EKS Auto Mode. It preconfigures Managed Prometheus + Grafana + Container Insights + Workload Identity + Azure RBAC + NAP + KEDA + VPA + image cleaner + auto-upgrade + Cilium NetworkPolicy in one `az aks create`. You've been on it for two months with zero ops work for those features. Show the CTO the cluster + the Grafana dashboard + the Workload Identity demo. *The wait is over.*

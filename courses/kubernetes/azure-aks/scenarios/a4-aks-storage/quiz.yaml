@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team migrates a stateful workload to a multi-zone AKS cluster. They wrote a custom StorageClass without specifying `volumeBindingMode`. Pods now intermittently fail to start. What's happening?
+    answer: |
+      Default volumeBindingMode is `Immediate` — disks are provisioned as soon as the PVC is created, in whichever zone the storage controller picks. The kube-scheduler then schedules the Pod independently — and may place it in a different zone. Cross-zone attach is unsupported for single-zone disks. Fix: edit the StorageClass to `volumeBindingMode: WaitForFirstConsumer`; new PVCs will provision in the correct zone. (Existing mis-zoned PVCs need recreating in the right zone or migration to ZRS.)
+
+  - id: 2
+    prompt: |
+      A Postgres Premium SSD v2 is provisioned at 3000 IOPS / 125 MiB/s. Holiday traffic 10×; the team needs 16K IOPS. What's the safe path that doesn't require Pod restart?
+    answer: |
+      Create a **VolumeAttributesClass** with the new IOPS / throughput targets. Reference it from the PVC: `spec.volumeAttributesClassName: postgres-high-iops`. The Azure CSI driver applies the new attributes to the underlying Premium SSD v2 online — no detach, no remount, no Pod restart. Postgres continues serving traffic; new IOPS available within seconds.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The team mounts secrets via env vars from a K8s Secret. Key Vault rotates the DB password nightly. What's the gap, and how does Secrets Store CSI close it?
+    answer: |
+      K8s Secrets backed by env vars are evaluated at Pod start — they don't reflect post-start changes to the underlying Secret. So if Key Vault rotates the password and the team's controller updates the K8s Secret, the running Pod still has the old password as an env var until restart. **Secrets Store CSI driver** mounts the secret as a file in the Pod's filesystem, with the Azure Key Vault provider auto-rotation poller refreshing the file from Key Vault on a schedule. The app watches the file (e.g. via `fsnotify`) and reloads its DB pool with the new password — no Pod restart.

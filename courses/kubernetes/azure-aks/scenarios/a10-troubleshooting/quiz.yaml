@@ -1,0 +1,21 @@
+# Quiz — K-AKS A (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      kubectl returns `403 Forbidden` for a user. They authenticated cleanly via kubelogin (no auth error). What's the diagnostic ladder?
+    answer: |
+      (1) Confirm authentication actually worked: `kubectl auth whoami` — should show their Entra OID. (2) Check Azure RBAC if cluster has Azure RBAC for K8s enabled: do they have one of *Azure Kubernetes Service RBAC Reader/Writer/Admin/Cluster Admin* at cluster or namespace scope? (3) Check K8s RBAC: any RoleBinding referencing the user's OID or group? (4) Group propagation: if added to a group recently, can take 1-15 min to surface. (5) The specific resource being accessed — e.g., they have Reader cluster-wide but the resource is in a namespace they're not bound to.
+
+  - id: 2
+    prompt: |
+      A Pod can't mount a Key Vault secret via Secrets Store CSI. The error in the Pod events is *"failed to get secret from Key Vault: not authorized."* Walk through diagnosis.
+    answer: |
+      (1) Identify the Pod's SA + the SA's annotation `azure.workload.identity/client-id`. (2) Find the Entra app or MI with that client-id; check its **federated credential** — does subject match `{cluster-OIDC}/serviceaccount/{ns}/{sa}`? Common gotcha: cluster recreated → OIDC issuer changed; federated credential still points at old issuer. (3) Verify Key Vault **access policy** (or RBAC if KV is on RBAC mode) grants the MI *Get Secret* on the specific secret. (4) Verify Key Vault **firewall** allows the cluster's VNet (or that Private Endpoint is wired). (5) Inspect Secrets Store CSI driver logs (`kubectl logs -n kube-system -l app=secrets-store-csi-driver`) for the precise auth error.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Saturday, 03:00. Cluster upgrade auto-fired and is now stuck. PagerDuty pages on-call. They open kubectl — kubelogin throws an error. What's the right move?
+    answer: |
+      **(1) Check Azure Resource Health first** — is Entra ID degraded? AKS service degraded in this region? If yes: wait, page Microsoft, communicate Azure-side cause. **(2) If Azure-side is healthy**, pivot to alternate access: the break-glass Entra group (PIM-elevated for 30 min), MFA on a phone, kubelogin from a fresh laptop. **(3) Once kubectl works**: `az aks show` for upgrade state, `kubectl get events --sort-by=.lastTimestamp`, KQL on AKS Diagnostic Settings `kube-controller-manager` log to find the precise stall. Most likely: PDB violation (covered in A9 — fix surge or PDB), or add-on compatibility check failed (the upgrade pauses; fix the add-on, resume).

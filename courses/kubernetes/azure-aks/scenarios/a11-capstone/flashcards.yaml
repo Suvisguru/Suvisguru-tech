@@ -1,0 +1,50 @@
+# Flashcards — K-AKS A (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Four phases of the K-AKS capstone?
+    back: |
+      **Phase A** base (private AKS Automatic + Cilium + NAP + Premium/LTS). **Phase B** platform (WI + AGC + storage + AMP/AMG/Container Insights). **Phase C** ops (Defender + Policy + Flux + Velero + blue-green). **Phase D** defence + live drill.
+
+  - id: 2
+    front: |
+      What does "defendable" mean for the reference stack?
+    back: |
+      Every choice can be justified by trade-offs the operator can articulate: why private cluster, why Cilium, why NAP, why LTS, why blue-green for upgrades, why Velero for DR. A peer reviewer can ask "why X?" for each component and get a coherent answer.
+
+  - id: 3
+    front: |
+      Three repos in the GitOps layout?
+    back: |
+      **cluster-config** (Flux's own seed), **platform** (Container Insights config, AGC, MI / role assignments), **workloads** (per-tenant or per-team apps). Each has its own RBAC + reviewer set.
+
+  - id: 4
+    front: |
+      Four chaos events in the live drill?
+    back: |
+      (1) Kill a node — NAP replaces. (2) Revoke a Workload Identity MI role — Pod 401, audit logs surface, fix. (3) Apply a Defender finding — triage + remediation. (4) DR restore — Velero into sibling cluster within RTO.
+
+  - id: 5
+    front: |
+      Why include LTS in the reference stack?
+    back: |
+      2-year version stability on Premium tier. Avoids quarterly minor jumps for regulated / long-change-control workloads. Costs more ($0.60/cluster-hour vs $0.10 Standard) but predictable upgrade cadence + 24-month support window.
+
+  - id: 6
+    front: |
+      What makes the upgrade runbook safe?
+    back: |
+      Pre-flight (kubent + Pluto) + planned maintenance window + tunable max-surge + PDB-tested workloads + blue-green node pool fallback for high-stakes + cluster blue-green held in reserve for major LTS-to-LTS jumps.
+
+  - id: 7
+    front: |
+      What does "K-AKS-complete" mean as a deliverable?
+    back: |
+      Bicep code + per-cluster architecture Markdown + DR runbook + live-drill recording. A successor operator can read the docs, run the runbooks, and operate the cluster without you.
+
+  - id: 8
+    front: |
+      Why is the egress allow-list (Azure Firewall) part of the capstone?
+    back: |
+      Catches data exfiltration at the network layer. A compromised Pod with WI-bound MI to Storage can still try to exfil to an arbitrary FQDN; Azure Firewall denies anything not on the allow-list. Defence in depth — Workload Identity scope + NetworkPolicy + Azure Firewall + Defender runtime detection.
