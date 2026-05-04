@@ -182,4 +182,43 @@ LESSON = LessonSpec(
     ],
     recap_lead="Gateway API: three roles, three CRDs, typed config. ReferenceGrant for cross-namespace; BackendTLSPolicy for re-encrypt; HTTPRouteFilters for rewrites. Migration from Ingress is per-route + gradual.",
     recap_next='<strong>Next — N3: Multi-cluster networking.</strong> Submariner, Skupper, Cilium ClusterMesh, Istio multi-cluster — pick by trust + perf needs; cross-cloud + on-prem patterns.',
+    architecture_svg='''<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gateway API hierarchy: GatewayClass → Gateway → HTTPRoute → backend Service.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">GATEWAY API · 3 ROLES · 3 CRDS · TYPED CONFIG</text>
+  <rect x="20" y="50" width="170" height="65" rx="6" fill="#3F4A5E"/>
+  <text x="105" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">GatewayClass</text>
+  <text x="105" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">cluster-scoped · infra</text>
+  <text x="105" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">Envoy Gateway / Istio /</text>
+  <text x="105" y="112" text-anchor="middle" font-size="8" fill="#FBE8DC">Cilium / NGINX</text>
+  <line x1="190" y1="82" x2="220" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aN2)"/>
+  <defs><marker id="aN2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="220" y="50" width="170" height="65" rx="6" fill="#5A6B81"/>
+  <text x="305" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Gateway</text>
+  <text x="305" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">listeners · cert · hostnames</text>
+  <text x="305" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">platform team owns</text>
+  <text x="305" y="112" text-anchor="middle" font-size="8" fill="#FBE8DC">allowedRoutes</text>
+  <line x1="390" y1="82" x2="420" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aN2)"/>
+  <rect x="420" y="50" width="170" height="65" rx="6" fill="#5DCAA5"/>
+  <text x="505" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">HTTPRoute / GRPCRoute</text>
+  <text x="505" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">match + filter + backendRefs</text>
+  <text x="505" y="100" text-anchor="middle" font-size="8" fill="#1F2433">app team owns</text>
+  <text x="505" y="112" text-anchor="middle" font-size="8" fill="#1F2433">parentRefs → Gateway</text>
+  <line x1="590" y1="82" x2="620" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aN2)"/>
+  <rect x="620" y="50" width="120" height="65" rx="6" fill="#FF9900"/>
+  <text x="680" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Service / Pod</text>
+  <text x="680" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">backend</text>
+  <text x="680" y="100" text-anchor="middle" font-size="8" fill="#1F2433">+ BackendTLSPolicy</text>
+  <text x="680" y="112" text-anchor="middle" font-size="8" fill="#1F2433">re-encrypt</text>
+  <rect x="20" y="130" width="350" height="55" rx="6" fill="#A04832"/>
+  <text x="195" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">ReferenceGrant</text>
+  <text x="195" y="166" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">cross-namespace consent (in backend ns)</text>
+  <text x="195" y="178" text-anchor="middle" font-size="8" fill="#FBE8DC">prevents route hijacking</text>
+  <rect x="380" y="130" width="360" height="55" rx="6" fill="#5E4A8E"/>
+  <text x="560" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">HTTPRouteFilter (typed)</text>
+  <text x="560" y="166" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">RequestHeader · Redirect · URLRewrite · Mirror</text>
+  <text x="560" y="178" text-anchor="middle" font-size="8" fill="#FBE8DC">replaces Ingress annotation soup</text>
+  <rect x="20" y="195" width="720" height="30" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">Multi-cluster Gateway: Cilium ClusterMesh / Istio multi-cluster / GKE Multi-cluster Gateway · ingress2gateway CLI for migration</text>
+</svg>''',
+    architecture_caption='Three-role hierarchy: GatewayClass (controller, infra) → Gateway (listeners + cert, platform team) → HTTPRoute (match + filter + backend, app team). ReferenceGrant for cross-namespace; BackendTLSPolicy for re-encrypt; typed HTTPRouteFilters replace Ingress annotation soup.',
 )
