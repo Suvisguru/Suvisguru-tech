@@ -227,4 +227,28 @@ LESSON = LessonSpec(
     ],
     recap_lead='K-OCP Capstone built. Phase A (base) → Phase B (platform) → Phase C (apps + Virt + DR) → Phase D (RHACM + defended + drilled). The reference foundry is your starting template for any new prod OCP deployment.',
     recap_next='<strong>K-OCP curriculum complete.</strong> You can architect, install, network, secure, manage Operators, build + ship workloads, store, operate, run VMs + AI + edge, federate multi-cluster, observe, troubleshoot, and defend a production OCP deployment end-to-end. Next paths: K-COM (deepen K8s itself) · K-VAN (operate K8s yourself, off-cloud) · K-EKS / K-AKS / K-GKE (managed-cloud counterparts) · or build internal training rolling K-OCP into your org\'s onboarding.',
+    architecture_svg='''<svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="K-OCP capstone reference architecture: full OCP stack with platform + apps + multi-cluster + observability.">
+  <rect x="10" y="10" width="740" height="260" rx="12" fill="#FBF7F0" stroke="#A04832"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">K-OCP CAPSTONE · REFERENCE FOUNDRY</text>
+  <rect x="20" y="50" width="350" height="70" rx="6" fill="#3F4A5E"/>
+  <text x="195" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Phase A · base cluster</text>
+  <text x="195" y="86" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">IPI install · regional · 3+5 nodes · OVN-K · etcd backup · OAuth · Routes</text>
+  <text x="195" y="102" text-anchor="middle" font-size="9" fill="#FBE8DC">CVO + ~30 ClusterOperators healthy</text>
+  <rect x="380" y="50" width="360" height="70" rx="6" fill="#5A9F7A"/>
+  <text x="560" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Phase B · platform layer</text>
+  <text x="560" y="86" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">ODF storage · Pipelines · GitOps · Service Mesh · Logging · Monitoring · Tempo</text>
+  <text x="560" y="102" text-anchor="middle" font-size="9" fill="#FBE8DC">+ RHACS for runtime security</text>
+  <rect x="20" y="130" width="350" height="70" rx="6" fill="#A04832"/>
+  <text x="195" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Phase C · workloads</text>
+  <text x="195" y="166" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">apps via S2I + GitOps · KubeVirt VMs · OpenShift AI inference</text>
+  <text x="195" y="182" text-anchor="middle" font-size="9" fill="#FBE8DC">OADP backup · DR drill</text>
+  <rect x="380" y="130" width="360" height="70" rx="6" fill="#5E4A8E"/>
+  <text x="560" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Phase D · multi-cluster + defended</text>
+  <text x="560" y="166" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">RHACM hub + ManagedClusters · Policy · Submariner · ApplicationSets</text>
+  <text x="560" y="182" text-anchor="middle" font-size="9" fill="#FBE8DC">Compliance Operator + must-gather runbook</text>
+  <rect x="20" y="210" width="720" height="50" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="230" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">OCP CONSOLE + RHACM + Grafana + AlertManager + RHACS dashboards</text>
+  <text x="380" y="246" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">EUS lifecycle · disconnected updates via mirror registry · oc-mirror · Insights telemetry</text>
+</svg>''',
+    architecture_caption='Four phases woven into one defendable OCP foundry: base cluster + platform layer + workloads + multi-cluster + defended. Every K-OCP module slots in. The Reference Foundry is your starting template for any new prod OCP deployment.',
 )

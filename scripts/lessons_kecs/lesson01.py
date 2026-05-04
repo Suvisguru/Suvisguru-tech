@@ -216,4 +216,31 @@ LESSON = LessonSpec(
     ],
     recap_lead="ECS is AWS\'s native container orchestrator. Four shapes (Cluster / Service / Task / Task Definition) × four launch types (EC2 / Fargate / External / Managed Instances) × three deployment controllers. Pick by operational appetite + workload shape — App Runner for single-HTTPS-service, Lambda for short event-driven, ECS for orchestration without K8s, EKS for K8s portability.",
     recap_next='<strong>Next — C2: Task Definitions and Containers.</strong> The JSON shape — family + revision, network mode, CPU + memory, ephemeralStorage, runtimePlatform; container definitions (image + ports + env + secrets + dependsOn + healthCheck + logConfiguration + ulimits + linuxParameters); volumes (bind / Docker / EFS / FSx); sidecars + task-level shared volumes; task IAM role vs execution role.',
+    architecture_svg='''<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ECS architecture: control plane + service scheduler + task placement + ECS agent on capacity (EC2 / Fargate / External).">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#3878B5"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">ECS · CONTROL PLANE + AGENT ON CAPACITY</text>
+  <rect x="20" y="50" width="720" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="380" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">AWS-managed ECS control plane (regional)</text>
+  <text x="380" y="86" text-anchor="middle" font-size="9" fill="#FBF1D6" font-style="italic">service scheduler · deployment controller · task placement engine · API endpoint</text>
+  <text x="380" y="100" text-anchor="middle" font-size="9" fill="#FBE8DC">holds Cluster + Service + Task Definition + Task state</text>
+  <rect x="20" y="125" width="170" height="60" rx="6" fill="#FF9900"/>
+  <text x="105" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">EC2 launch</text>
+  <text x="105" y="161" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">your ASG + ECS agent</text>
+  <text x="105" y="173" text-anchor="middle" font-size="8" fill="#1F2433">cheapest steady-state</text>
+  <rect x="200" y="125" width="170" height="60" rx="6" fill="#5DCAA5"/>
+  <text x="285" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Fargate launch</text>
+  <text x="285" y="161" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">AWS-managed microVM</text>
+  <text x="285" y="173" text-anchor="middle" font-size="8" fill="#1F2433">per-Task billing</text>
+  <rect x="380" y="125" width="170" height="60" rx="6" fill="#A04832"/>
+  <text x="465" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">External (ECS Anywhere)</text>
+  <text x="465" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">SSM + ECS agent on-prem</text>
+  <text x="465" y="173" text-anchor="middle" font-size="8" fill="#FBE8DC">your hardware</text>
+  <rect x="560" y="125" width="180" height="60" rx="6" fill="#5E4A8E"/>
+  <text x="650" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">ECS Managed Instances</text>
+  <text x="650" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">AWS-managed EC2 lifecycle</text>
+  <text x="650" y="173" text-anchor="middle" font-size="8" fill="#FBE8DC">middle ground</text>
+  <rect x="20" y="195" width="720" height="30" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">Service holds N Tasks · Task Definition is the immutable JSON manifest · ECS agent reports state to control plane</text>
+</svg>''',
+    architecture_caption='AWS-managed regional control plane (service scheduler + deployment controller + task placement) talks to ECS agent on each host. Four launch types (EC2 / Fargate / External / Managed Instances) provide capacity; same control plane orchestrates all of them.',
 )

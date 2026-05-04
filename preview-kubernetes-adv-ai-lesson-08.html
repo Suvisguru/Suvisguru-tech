@@ -329,7 +329,56 @@
     </div>
   </section>
 
-
+  <section class="arch-block">
+    <span class="arch-tag">📐 Architecture diagram</span>
+    <h2>How it actually wires together</h2>
+    <div class="arch-svg">
+<svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="K-ADV-AI capstone: GPU pool + DRA + Kueue + Volcano + KServe + vLLM + AI Gateway + RDMA + JuiceFS + OCI artifacts + chargeback.">
+  <rect x="10" y="10" width="740" height="260" rx="12" fill="#FBF7F0" stroke="#1F2433"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">K-ADV-AI CAPSTONE · PRODUCTION AI INFERENCE PLATFORM</text>
+  <rect x="20" y="50" width="200" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="120" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">GPU pool + DRA + MIG</text>
+  <text x="120" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">H100 / A100 / L40 + GPU Operator</text>
+  <text x="120" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">7×1g.10gb per H100 inference</text>
+  <line x1="220" y1="80" x2="250" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aI8)"/>
+  <defs><marker id="aI8" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="250" y="50" width="200" height="60" rx="6" fill="#5DCAA5"/>
+  <text x="350" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Kueue + Volcano</text>
+  <text x="350" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">batch admission + gang</text>
+  <text x="350" y="100" text-anchor="middle" font-size="8" fill="#1F2433">MultiKueue federation</text>
+  <line x1="450" y1="80" x2="480" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aI8)"/>
+  <rect x="480" y="50" width="200" height="60" rx="6" fill="#FF9900"/>
+  <text x="580" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">KServe + vLLM</text>
+  <text x="580" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">InferenceService + autoscale</text>
+  <text x="580" y="100" text-anchor="middle" font-size="8" fill="#1F2433">PagedAttention + cont. batching</text>
+  <line x1="680" y1="80" x2="700" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aI8)"/>
+  <rect x="700" y="50" width="40" height="60" rx="6" fill="#A04832"/>
+  <text x="720" y="78" text-anchor="middle" font-size="9" font-weight="700" fill="#FBF1D6">AI Gw</text>
+  <text x="720" y="92" text-anchor="middle" font-size="7" fill="#FBE8DC">Envoy</text>
+  <rect x="20" y="125" width="180" height="60" rx="6" fill="#5A6B81"/>
+  <text x="110" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">RDMA / EFA</text>
+  <text x="110" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">low-latency interconnect</text>
+  <text x="110" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">collective ops 10× faster</text>
+  <rect x="220" y="125" width="180" height="60" rx="6" fill="#5E4A8E"/>
+  <text x="310" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">JuiceFS + OCI artifacts</text>
+  <text x="310" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">distributed model cache</text>
+  <text x="310" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">+ Cosign-signed models</text>
+  <rect x="420" y="125" width="180" height="60" rx="6" fill="#FAC775"/>
+  <text x="510" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">multi-tenant Quota + MIG isolation</text>
+  <text x="510" y="161" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">per-team gold/silver/bronze</text>
+  <text x="510" y="174" text-anchor="middle" font-size="8" fill="#5A4F45">+ AI Gateway token budget</text>
+  <rect x="620" y="125" width="120" height="60" rx="6" fill="#1F8A60"/>
+  <text x="680" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Spot fleet</text>
+  <text x="680" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">fault-tolerant batch</text>
+  <text x="680" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">60-90% discount</text>
+  <rect x="20" y="200" width="720" height="60" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="220" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">DCGM + Prometheus + per-Service KServe metrics + OpenTelemetry tracing</text>
+  <text x="380" y="236" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">Kubecost per-tenant chargeback · idle reclaim · runbooks for GPU OOM / KV-cache / Spot cascade · quarterly game days</text>
+  <text x="380" y="252" text-anchor="middle" font-size="9" fill="#5A4F45">Backstage + Crossplane self-service onboarding for ML teams</text>
+</svg>
+    </div>
+<p class="arch-caption">Production AI inference: GPU pool with DRA + MIG sharing → Kueue/Volcano admit + gang-schedule → KServe wraps vLLM/Triton/NIM → AI Gateway L7. RDMA fabric + JuiceFS cache + OCI-signed models. Multi-tenant Quota + Spot fleet + Kubecost chargeback + DCGM observability + game-day runbooks.</p>
+  </section>
 
   <div class="nightmare">
     <div class="nightmare-box">

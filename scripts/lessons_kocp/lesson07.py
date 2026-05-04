@@ -170,4 +170,40 @@ LESSON = LessonSpec(
     ],
     recap_lead='Five storage paths for OCP: ODF (multi-node SDS), Local + LVM Operators (SNO/edge), per-cloud CSI (cloud-native), RWX via CephFS / Azure Files / NFS / EFS, OADP for DR. Plan registry + monitoring storage at install.',
     recap_next='<strong>Next — O8: OpenShift Operations.</strong> ClusterVersion + update channels + EUS + CVO + cluster operators; MachineConfigPools, MachineSets, MachineHealthChecks; node maintenance; etcd backup; must-gather; Insights telemetry; disconnected updates; mirror registry; upgrade risk assessment.',
+    architecture_svg='''<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OCP storage stack: ODF, Local/LVM, cloud CSI, RWX (CephFS/EFS), OADP backup.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#5A6B81"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">OCP STORAGE · 5 PATHS + CSI BASELINE</text>
+  <rect x="20" y="55" width="220" height="55" rx="6" fill="#3F4A5E"/>
+  <text x="130" y="75" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Pod requests PVC</text>
+  <text x="130" y="91" text-anchor="middle" font-size="9" fill="#FBF1D6" font-style="italic">storageClassName: X</text>
+  <text x="130" y="103" text-anchor="middle" font-size="8" fill="#FBE8DC">access mode: RWO / RWX</text>
+  <line x1="240" y1="83" x2="270" y2="83" stroke="#5A4F45" stroke-width="2" marker-end="url(#a7)"/>
+  <defs><marker id="a7" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="270" y="55" width="220" height="55" rx="6" fill="#A04832"/>
+  <text x="380" y="75" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">StorageClass + CSI driver</text>
+  <text x="380" y="91" text-anchor="middle" font-size="9" fill="#FBF1D6" font-style="italic">provisioner per backend</text>
+  <line x1="490" y1="83" x2="520" y2="83" stroke="#5A4F45" stroke-width="2" marker-end="url(#a7)"/>
+  <rect x="520" y="55" width="220" height="55" rx="6" fill="#5A9F7A"/>
+  <text x="630" y="75" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">PV + storage backend</text>
+  <text x="630" y="91" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">EBS / Disk / PD / NetApp / Ceph</text>
+  <rect x="20" y="125" width="135" height="50" rx="6" fill="#5A6B81"/>
+  <text x="87" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">ODF</text>
+  <text x="87" y="160" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">multi-node SDS</text>
+  <rect x="165" y="125" width="135" height="50" rx="6" fill="#FAC775"/>
+  <text x="232" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">Local + LVM</text>
+  <text x="232" y="160" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">SNO + edge</text>
+  <rect x="310" y="125" width="135" height="50" rx="6" fill="#3878B5"/>
+  <text x="377" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">cloud CSI</text>
+  <text x="377" y="160" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">EBS / Disks / PD</text>
+  <rect x="455" y="125" width="135" height="50" rx="6" fill="#5E4A8E"/>
+  <text x="522" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">RWX volumes</text>
+  <text x="522" y="160" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">CephFS / EFS / NFS</text>
+  <rect x="600" y="125" width="140" height="50" rx="6" fill="#1F8A60"/>
+  <text x="670" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">OADP</text>
+  <text x="670" y="160" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">backup / restore</text>
+  <rect x="20" y="185" width="720" height="40" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="205" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">VolumeSnapshot · CSI snapshots · resize · clone · expand · regional / zonal awareness</text>
+  <text x="380" y="219" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">Plan registry + monitoring storage at install (Image Registry, Prometheus require persistent backends)</text>
+</svg>''',
+    architecture_caption='Pod requests PVC referencing a StorageClass; CSI driver provisions PV from the backend (cloud disk / Ceph / NetApp / NFS / Local). Five paths cover the stack: ODF for multi-node SDS, Local/LVM for SNO, cloud CSI for cloud-native, CephFS/EFS for RWX, OADP for backup.',
 )

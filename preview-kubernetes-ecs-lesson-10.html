@@ -370,7 +370,56 @@
     </div>
   </section>
 
-
+  <section class="arch-block">
+    <span class="arch-tag">📐 Architecture diagram</span>
+    <h2>How it actually wires together</h2>
+    <div class="arch-svg">
+<svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="K-ECS capstone reference: ALB blue/green, two ECS Services on Fargate, Service Connect, EFS, Secrets, observability.">
+  <rect x="10" y="10" width="740" height="260" rx="12" fill="#FBF7F0" stroke="#3878B5"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">K-ECS CAPSTONE · MULTI-SERVICE FARGATE REFERENCE</text>
+  <rect x="20" y="50" width="160" height="70" rx="6" fill="#FF9900"/>
+  <text x="100" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">ALB</text>
+  <text x="100" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">blue + green TGs</text>
+  <text x="100" y="100" text-anchor="middle" font-size="8" fill="#1F2433">CodeDeploy + alarms</text>
+  <line x1="180" y1="85" x2="210" y2="85" stroke="#5A4F45" stroke-width="2" marker-end="url(#a10)"/>
+  <defs><marker id="a10" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="210" y="50" width="200" height="70" rx="6" fill="#3878B5"/>
+  <text x="310" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Service A · api</text>
+  <text x="310" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Fargate · 6 Tasks · awsvpc</text>
+  <text x="310" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">target tracking RPS</text>
+  <line x1="410" y1="85" x2="440" y2="85" stroke="#5A4F45" stroke-width="2" marker-end="url(#a10)"/>
+  <rect x="440" y="50" width="200" height="70" rx="6" fill="#5DCAA5"/>
+  <text x="540" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Service Connect</text>
+  <text x="540" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">east-west L7 mesh</text>
+  <text x="540" y="100" text-anchor="middle" font-size="8" fill="#1F2433">retries + metrics</text>
+  <line x1="640" y1="85" x2="670" y2="85" stroke="#5A4F45" stroke-width="2" marker-end="url(#a10)"/>
+  <rect x="670" y="50" width="70" height="70" rx="6" fill="#3F4A5E"/>
+  <text x="705" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Service B</text>
+  <text x="705" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">worker</text>
+  <text x="705" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">SQS · Spot</text>
+  <rect x="20" y="135" width="180" height="60" rx="6" fill="#A04832"/>
+  <text x="110" y="155" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Secrets + KMS</text>
+  <text x="110" y="171" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">execution role fetches</text>
+  <text x="110" y="184" text-anchor="middle" font-size="8" fill="#FBE8DC">customer KMS keys</text>
+  <rect x="220" y="135" width="180" height="60" rx="6" fill="#5E4A8E"/>
+  <text x="310" y="155" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">EFS access points</text>
+  <text x="310" y="171" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">/uploads · /archive</text>
+  <text x="310" y="184" text-anchor="middle" font-size="8" fill="#FBE8DC">RWX cross-AZ</text>
+  <rect x="420" y="135" width="180" height="60" rx="6" fill="#5A6B81"/>
+  <text x="510" y="155" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">FireLens + Container Insights</text>
+  <text x="510" y="171" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">CW + S3 archive</text>
+  <text x="510" y="184" text-anchor="middle" font-size="8" fill="#FBE8DC">+ ADOT / X-Ray</text>
+  <rect x="620" y="135" width="120" height="60" rx="6" fill="#FAC775"/>
+  <text x="680" y="155" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">Auto Scaling</text>
+  <text x="680" y="171" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">target tracking</text>
+  <text x="680" y="184" text-anchor="middle" font-size="8" fill="#5A4F45">RPS + queue depth</text>
+  <rect x="20" y="210" width="720" height="50" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="230" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">Three-role IAM separation: CI/CD · execution role · task role</text>
+  <text x="380" y="246" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">Capacity Provider strategy: Fargate base + Fargate Spot weighted · circuit breaker on every Service · runbook + game days quarterly</text>
+</svg>
+    </div>
+<p class="arch-caption">Two Fargate Services (api + worker) behind ALB with blue/green via CodeDeploy. Service Connect mesh for east-west. EFS shared state, Secrets + KMS, Container Insights + FireLens + ADOT/X-Ray. Auto Scaling on RPS / queue depth. Three-role IAM. Spot blend on the worker. The reference K-Harbor.</p>
+  </section>
 
   <div class="nightmare">
     <div class="nightmare-box">

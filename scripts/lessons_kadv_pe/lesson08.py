@@ -99,4 +99,40 @@ LESSON = LessonSpec(
     ],
     recap_lead="Equipped IDP: Backstage + Crossplane + Argo CD + OPA + Score / OAM + OpenCost + SLOs + tenant onboarding + operational rhythm. Self-service end-to-end; day-1 governance; new tenant in &lt; 1 day; new service in &lt; 30 min.",
     recap_next='<strong>K-ADV-PE complete.</strong> 8 modules. From IDP foundations (P1) to capstone (P8). Next K-ADV course: <em>K-ADV-AI</em> (K-Observatory) or per founder direction.',
+    architecture_svg='''<svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="K-ADV-PE capstone IDP: Backstage + Crossplane + Argo CD + OPA + Score/OAM + OpenCost + SLOs woven into self-service IDP.">
+  <rect x="10" y="10" width="740" height="260" rx="12" fill="#FBF7F0" stroke="#7F5A2A"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">K-ADV-PE CAPSTONE · SELF-SERVICE INTERNAL DEVELOPER PLATFORM</text>
+  <rect x="20" y="50" width="220" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="130" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Backstage (storefront)</text>
+  <text x="130" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Catalog + TechDocs + Scaffolder</text>
+  <text x="130" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">+ 100 plugins (Argo CD / K8s / PD)</text>
+  <line x1="240" y1="80" x2="270" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aP8)"/>
+  <defs><marker id="aP8" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="270" y="50" width="220" height="60" rx="6" fill="#5DCAA5"/>
+  <text x="380" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Crossplane v2 (platform API)</text>
+  <text x="380" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">XRDs · Compositions · Functions</text>
+  <text x="380" y="100" text-anchor="middle" font-size="8" fill="#1F2433">XPostgres · XBucket · XTenantNS</text>
+  <line x1="490" y1="80" x2="520" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aP8)"/>
+  <rect x="520" y="50" width="220" height="60" rx="6" fill="#FF9900"/>
+  <text x="630" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Argo CD ApplicationSets</text>
+  <text x="630" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">fleet GitOps</text>
+  <text x="630" y="100" text-anchor="middle" font-size="8" fill="#1F2433">+ ProgressiveSync</text>
+  <rect x="20" y="125" width="220" height="55" rx="6" fill="#A04832"/>
+  <text x="130" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">OPA + Kyverno guardrails</text>
+  <text x="130" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">PR-time + admission + sync</text>
+  <text x="130" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">PolicyReport unified</text>
+  <rect x="270" y="125" width="220" height="55" rx="6" fill="#5A6B81"/>
+  <text x="380" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Score / OAM workload abstraction</text>
+  <text x="380" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">developer-facing spec</text>
+  <text x="380" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">portable to any target</text>
+  <rect x="520" y="125" width="220" height="55" rx="6" fill="#1F8A60"/>
+  <text x="630" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">OpenCost + Kubecost</text>
+  <text x="630" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">per-tenant chargeback</text>
+  <text x="630" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">budget alerts</text>
+  <rect x="20" y="195" width="720" height="65" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">Tenant onboarding pipeline · Platform SLOs published · Game days quarterly</text>
+  <text x="380" y="231" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">form → Crossplane Claim → GitOps PR → Argo CD reconciles → namespace ready &lt; 5 min</text>
+  <text x="380" y="247" text-anchor="middle" font-size="9" fill="#5A4F45">Day-1 governance baked in (RBAC + NetPol + Quota + cost label) · Developer NPS measured</text>
+</svg>''',
+    architecture_caption='Equipped IDP: Backstage storefront + Crossplane platform API + Argo CD fleet GitOps + OPA/Kyverno guardrails + Score/OAM workload abstraction + OpenCost chargeback. Tenant onboarding templated; day-1 governance day-0; platform SLOs published; game days quarterly.',
 )

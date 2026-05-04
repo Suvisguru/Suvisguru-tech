@@ -320,7 +320,55 @@
     </div>
   </section>
 
-
+  <section class="arch-block">
+    <span class="arch-tag">📐 Architecture diagram</span>
+    <h2>How it actually wires together</h2>
+    <div class="arch-svg">
+<svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="K-ADV-DR capstone: total-loss rebuild from 5 outside sources (Git + Velero + OCI + Vault + DNS) within RTO.">
+  <rect x="10" y="10" width="740" height="260" rx="12" fill="#FBF7F0" stroke="#1A6FA8"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">K-ADV-DR CAPSTONE · TOTAL-LOSS REBUILD FROM 5 OUTSIDE SOURCES</text>
+  <rect x="20" y="50" width="120" height="65" rx="6" fill="#3F4A5E"/>
+  <text x="80" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Git source</text>
+  <text x="80" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">cluster IaC</text>
+  <text x="80" y="98" text-anchor="middle" font-size="8" fill="#FBE8DC">+ Argo CD apps</text>
+  <text x="80" y="110" text-anchor="middle" font-size="8" fill="#FBE8DC">+ ApplicationSets</text>
+  <rect x="150" y="50" width="120" height="65" rx="6" fill="#5DCAA5"/>
+  <text x="210" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Velero + DB</text>
+  <text x="210" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">PVCs + Secrets</text>
+  <text x="210" y="98" text-anchor="middle" font-size="8" fill="#1F2433">DB cross-region</text>
+  <text x="210" y="110" text-anchor="middle" font-size="8" fill="#1F2433">snapshots</text>
+  <rect x="280" y="50" width="120" height="65" rx="6" fill="#FF9900"/>
+  <text x="340" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">OCI registry</text>
+  <text x="340" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">images + sigs</text>
+  <text x="340" y="98" text-anchor="middle" font-size="8" fill="#1F2433">+ SBOM + VEX</text>
+  <text x="340" y="110" text-anchor="middle" font-size="8" fill="#1F2433">+ models</text>
+  <rect x="410" y="50" width="120" height="65" rx="6" fill="#A04832"/>
+  <text x="470" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Vault + KMS</text>
+  <text x="470" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">HA snapshot</text>
+  <text x="470" y="98" text-anchor="middle" font-size="8" fill="#FBE8DC">+ KMS replicas</text>
+  <text x="470" y="110" text-anchor="middle" font-size="8" fill="#FBE8DC">cross-region</text>
+  <rect x="540" y="50" width="120" height="65" rx="6" fill="#5A6B81"/>
+  <text x="600" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">DNS</text>
+  <text x="600" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Route 53</text>
+  <text x="600" y="98" text-anchor="middle" font-size="8" fill="#FBE8DC">health-check</text>
+  <text x="600" y="110" text-anchor="middle" font-size="8" fill="#FBE8DC">automatic failover</text>
+  <rect x="670" y="50" width="70" height="65" rx="6" fill="#FAC775"/>
+  <text x="705" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">runbook</text>
+  <text x="705" y="86" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">numbered</text>
+  <text x="705" y="98" text-anchor="middle" font-size="8" fill="#5A4F45">tested</text>
+  <text x="705" y="110" text-anchor="middle" font-size="8" fill="#5A4F45">drilled</text>
+  <rect x="20" y="135" width="720" height="55" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="155" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">REBUILD ORDER (within RTO)</text>
+  <text x="380" y="171" text-anchor="middle" font-size="9" fill="#5A4F45">1. cluster IaC (Terraform / Crossplane) → 2. Argo CD install → 3. CRDs (sync-wave −2) → 4. operators (−1) → 5. apps</text>
+  <text x="380" y="184" text-anchor="middle" font-size="9" fill="#5A4F45">6. Vault snapshot restore → 7. Velero PVCs/Secrets → 8. DB cross-region promote → 9. validate SLOs → 10. DNS swap</text>
+  <rect x="20" y="200" width="720" height="60" rx="6" fill="#5DCAA5"/>
+  <text x="380" y="220" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2433">DRILL CADENCE</text>
+  <text x="380" y="236" text-anchor="middle" font-size="9" fill="#1F2433" font-style="italic">Quarterly full drill · Monthly per-namespace · Semi-annual tabletop · Per-incident postmortem</text>
+  <text x="380" y="252" text-anchor="middle" font-size="9" fill="#1F2433">Roles: Drill Master · On-call · Observer · Tenant rep · per-phase timing measured</text>
+</svg>
+    </div>
+<p class="arch-caption">Five outside sources (Git + Velero + OCI + Vault + DNS) survive cluster loss. 10-step rebuild runbook ordered (cluster IaC → Argo CD → CRDs → operators → apps → Vault → Velero → DB promote → validate → DNS swap) within RTO. Quarterly drills measure + improve.</p>
+  </section>
 
   <div class="nightmare">
     <div class="nightmare-box">

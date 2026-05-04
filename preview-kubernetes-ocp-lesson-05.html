@@ -379,7 +379,47 @@
     </div>
   </section>
 
-
+  <section class="arch-block">
+    <span class="arch-tag">📐 Architecture diagram</span>
+    <h2>How it actually wires together</h2>
+    <div class="arch-svg">
+<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OLM operator install pipeline: CatalogSource → Subscription → InstallPlan → CSV → Deployment.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#A04832"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">OLM PIPELINE · OPERATOR INSTALL FLOW</text>
+  <rect x="20" y="60" width="130" height="60" rx="6" fill="#5A6B81"/>
+  <text x="85" y="80" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">CatalogSource</text>
+  <text x="85" y="96" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">redhat-operators</text>
+  <text x="85" y="108" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">community-operators</text>
+  <line x1="150" y1="90" x2="180" y2="90" stroke="#5A4F45" stroke-width="2" marker-end="url(#a5)"/>
+  <defs><marker id="a5" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="180" y="60" width="130" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="245" y="80" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Subscription</text>
+  <text x="245" y="96" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">channel + approval</text>
+  <text x="245" y="108" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">stable / fast / candidate</text>
+  <line x1="310" y1="90" x2="340" y2="90" stroke="#5A4F45" stroke-width="2" marker-end="url(#a5)"/>
+  <rect x="340" y="60" width="130" height="60" rx="6" fill="#A04832"/>
+  <text x="405" y="80" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">InstallPlan</text>
+  <text x="405" y="96" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">resolved deps</text>
+  <text x="405" y="108" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">manual or auto approve</text>
+  <line x1="470" y1="90" x2="500" y2="90" stroke="#5A4F45" stroke-width="2" marker-end="url(#a5)"/>
+  <rect x="500" y="60" width="130" height="60" rx="6" fill="#5A9F7A"/>
+  <text x="565" y="80" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">CSV</text>
+  <text x="565" y="96" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">ClusterServiceVersion</text>
+  <text x="565" y="108" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">operator manifest</text>
+  <line x1="630" y1="90" x2="660" y2="90" stroke="#5A4F45" stroke-width="2" marker-end="url(#a5)"/>
+  <rect x="660" y="60" width="80" height="60" rx="6" fill="#FAC775"/>
+  <text x="700" y="80" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">Pods</text>
+  <text x="700" y="96" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">operator</text>
+  <text x="700" y="108" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">running</text>
+  <rect x="20" y="140" width="720" height="80" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="160" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">OperatorGroup defines scope: AllNamespaces (cluster-wide) or Namespaced (single ns)</text>
+  <text x="380" y="178" text-anchor="middle" font-size="9" fill="#5A4F45">OperatorHub UI = browse 200+ Red Hat / certified / community operators · oc CLI = scriptable</text>
+  <text x="380" y="194" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">Catalog images live in OCI registry; disconnected installs use mirrored catalogs (oc-mirror)</text>
+  <text x="380" y="212" text-anchor="middle" font-size="9" fill="#5A4F45">Channels promote: alpha → beta → stable; fast vs stable for prod risk tolerance</text>
+</svg>
+    </div>
+<p class="arch-caption">OLM pipeline: CatalogSource exposes operator bundles → Subscription declares channel + approval mode → InstallPlan resolves dependencies + applies → CSV is the operator manifest → operator Pods run. OperatorGroup defines tenant scope (cluster vs namespace).</p>
+  </section>
 
   <div class="nightmare">
     <div class="nightmare-box">

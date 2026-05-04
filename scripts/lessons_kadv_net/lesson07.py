@@ -183,4 +183,45 @@ LESSON = LessonSpec(
     ],
     recap_lead="Multi-cloud network = bridges per peer + ANP fleet-wide + Hubble everywhere + private hybrid + Gateway API + global LB + runbooks tested via game days. Architecture is the assembly; operational rhythm is the discipline.",
     recap_next='<strong>K-ADV-NET complete.</strong> 7 modules. From CNI internals (N1) to multi-cloud capstone (N7). Next K-ADV course: <em>K-ADV-PE</em> (Platform Engineering — K-Workshop) or per founder direction.',
+    architecture_svg='''<svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="K-ADV-NET capstone: 5 clusters across AWS + Azure + GCP + on-prem with bridges per peer pattern + global LB + ANP + Hubble.">
+  <rect x="10" y="10" width="740" height="260" rx="12" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">K-ADV-NET CAPSTONE · MULTI-CLOUD MULTI-CLUSTER NETWORK</text>
+  <rect x="20" y="50" width="130" height="60" rx="6" fill="#3878B5"/>
+  <text x="85" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">EKS us-east</text>
+  <text x="85" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Cilium + Hubble</text>
+  <rect x="160" y="50" width="130" height="60" rx="6" fill="#5E4A8E"/>
+  <text x="225" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">AKS eastus</text>
+  <text x="225" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Azure CNI + Cilium</text>
+  <rect x="300" y="50" width="130" height="60" rx="6" fill="#5DCAA5"/>
+  <text x="365" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">GKE europe</text>
+  <text x="365" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">Dataplane V2</text>
+  <rect x="440" y="50" width="130" height="60" rx="6" fill="#A04832"/>
+  <text x="505" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">OCP on-prem</text>
+  <text x="505" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">OVN-K</text>
+  <rect x="580" y="50" width="160" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="660" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Global LB + DNS</text>
+  <text x="660" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Route 53 / Traffic Mgr / GCP LB</text>
+  <text x="660" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">cross-region failover</text>
+  <rect x="20" y="125" width="220" height="55" rx="6" fill="#FAC775"/>
+  <text x="130" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">Cilium ClusterMesh</text>
+  <text x="130" y="161" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">same-CNI peers (cloud)</text>
+  <text x="130" y="174" text-anchor="middle" font-size="8" fill="#5A4F45">eBPF-native</text>
+  <rect x="250" y="125" width="160" height="55" rx="6" fill="#5DCAA5"/>
+  <text x="330" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Submariner</text>
+  <text x="330" y="161" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">cloud ↔ on-prem</text>
+  <text x="330" y="174" text-anchor="middle" font-size="8" fill="#1F2433">L4 IPsec</text>
+  <rect x="420" y="125" width="160" height="55" rx="6" fill="#FF9900"/>
+  <text x="500" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Skupper</text>
+  <text x="500" y="161" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">partner integration</text>
+  <text x="500" y="174" text-anchor="middle" font-size="8" fill="#1F2433">L7 VAN</text>
+  <rect x="590" y="125" width="150" height="55" rx="6" fill="#5A6B81"/>
+  <text x="665" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Gateway API</text>
+  <text x="665" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">per-cluster ingress</text>
+  <text x="665" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">+ private + DX/ER/CI</text>
+  <rect x="20" y="195" width="720" height="65" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">AdminNetworkPolicy fleet-wide (GitOps via ApplicationSets) · per-team NetPol within</text>
+  <text x="380" y="231" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">Hubble Relay + Pixie + Tetragon multi-cluster · kube-burner CI gates · per-bridge runbooks</text>
+  <text x="380" y="247" text-anchor="middle" font-size="9" fill="#5A4F45">Region failover quarterly · cross-cloud semi-annually · target P95 RTO &lt; 90 sec</text>
+</svg>''',
+    architecture_caption='Multi-cloud network: 5 clusters across AWS + Azure + GCP + on-prem; bridges per peer pattern (ClusterMesh same-CNI / Submariner heterogeneous / Skupper partner). Gateway API + global LB for region failover. AdminNetworkPolicy fleet-wide. Hubble + Pixie + Tetragon. Game-day-tested runbooks.',
 )

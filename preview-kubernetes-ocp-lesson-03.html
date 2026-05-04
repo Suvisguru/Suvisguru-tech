@@ -373,7 +373,45 @@
     </div>
   </section>
 
-
+  <section class="arch-block">
+    <span class="arch-tag">📐 Architecture diagram</span>
+    <h2>How it actually wires together</h2>
+    <div class="arch-svg">
+<svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OCP networking: OVN-K control plane, Routes/Ingress/Gateway ingress, NetworkPolicy/EgressIP, Multus secondary, MetalLB, NetObserv.">
+  <rect x="10" y="10" width="740" height="240" rx="12" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">OCP NETWORKING · OVN-KUBERNETES + INGRESS + POLICY</text>
+  <rect x="30" y="50" width="220" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="140" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Internet client</text>
+  <text x="140" y="86" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">https://app.example.com</text>
+  <line x1="250" y1="80" x2="280" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#arr)"/>
+  <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="280" y="50" width="220" height="60" rx="6" fill="#A04832"/>
+  <text x="390" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Routes / Ingress / Gateway</text>
+  <text x="390" y="86" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">edge / passthrough / re-encrypt</text>
+  <line x1="500" y1="80" x2="530" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#arr)"/>
+  <rect x="530" y="50" width="200" height="60" rx="6" fill="#5A9F7A"/>
+  <text x="630" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#FFFFFF">Pod (workload)</text>
+  <text x="630" y="86" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">app container</text>
+  <rect x="30" y="125" width="700" height="60" rx="6" fill="#FBE8DC" stroke="#3F4A5E"/>
+  <text x="380" y="145" text-anchor="middle" font-size="11" font-weight="700" fill="#3F4A5E">OVN-Kubernetes (default CNI)</text>
+  <text x="380" y="161" text-anchor="middle" font-size="9" fill="#5A4F45">primary network · NetworkPolicy + EgressIP + Egress firewall enforcement · IPv4 + IPv6 dual-stack</text>
+  <text x="380" y="175" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">replaced OpenShift SDN (deprecated since 4.14)</text>
+  <rect x="30" y="195" width="170" height="50" rx="6" fill="#5E4A8E"/>
+  <text x="115" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Multus</text>
+  <text x="115" y="230" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">secondary networks</text>
+  <rect x="210" y="195" width="170" height="50" rx="6" fill="#5A6B81"/>
+  <text x="295" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">MetalLB</text>
+  <text x="295" y="230" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">bare-metal LoadBalancer</text>
+  <rect x="390" y="195" width="170" height="50" rx="6" fill="#FAC775"/>
+  <text x="475" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">NetObserv</text>
+  <text x="475" y="230" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">flow visibility (eBPF)</text>
+  <rect x="570" y="195" width="160" height="50" rx="6" fill="#1F8A60"/>
+  <text x="650" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Submariner</text>
+  <text x="650" y="230" text-anchor="middle" font-size="9" fill="#FBE8DC" font-style="italic">multi-cluster</text>
+</svg>
+    </div>
+<p class="arch-caption">OVN-K is the default CNI (replaced OpenShift SDN); Routes/Ingress/Gateway terminate inbound TLS; NetworkPolicy + EgressIP enforce east-west; Multus adds secondary networks; MetalLB serves bare-metal LBs; NetObserv gives eBPF flow logs; Submariner bridges clusters.</p>
+  </section>
 
   <div class="nightmare">
     <div class="nightmare-box">

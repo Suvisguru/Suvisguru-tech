@@ -356,7 +356,57 @@
     </div>
   </section>
 
-
+  <section class="arch-block">
+    <span class="arch-tag">📐 Architecture diagram</span>
+    <h2>How it actually wires together</h2>
+    <div class="arch-svg">
+<svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="K-ADV-SEC capstone: 4 concentric defence layers (perimeter, identity, tenant, vault) + audit + IR.">
+  <rect x="10" y="10" width="740" height="260" rx="12" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">K-ADV-SEC CAPSTONE · DEFENDABLE REGULATED PLATFORM</text>
+  <rect x="20" y="50" width="170" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="105" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Perimeter</text>
+  <text x="105" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">WAF + Ingress / Gateway</text>
+  <text x="105" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">DDoS · rate limit</text>
+  <line x1="190" y1="80" x2="220" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aS8)"/>
+  <defs><marker id="aS8" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="220" y="50" width="170" height="60" rx="6" fill="#5A6B81"/>
+  <text x="305" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Identity</text>
+  <text x="305" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">OIDC + mTLS + RBAC</text>
+  <text x="305" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">SPIFFE workload identity</text>
+  <line x1="390" y1="80" x2="420" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aS8)"/>
+  <rect x="420" y="50" width="170" height="60" rx="6" fill="#5DCAA5"/>
+  <text x="505" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Tenant zone</text>
+  <text x="505" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">NS + NetPol + PSA + Quota</text>
+  <text x="505" y="100" text-anchor="middle" font-size="8" fill="#1F2433">vCluster for hard tenancy</text>
+  <line x1="590" y1="80" x2="620" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aS8)"/>
+  <rect x="620" y="50" width="120" height="60" rx="6" fill="#A04832"/>
+  <text x="680" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Vault</text>
+  <text x="680" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Secrets + KMS</text>
+  <text x="680" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">+ audit log</text>
+  <rect x="20" y="125" width="170" height="55" rx="6" fill="#FF9900"/>
+  <text x="105" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">PSA Restricted</text>
+  <text x="105" y="161" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">+ Falco / Tetragon</text>
+  <text x="105" y="173" text-anchor="middle" font-size="8" fill="#1F2433">runtime detection</text>
+  <rect x="200" y="125" width="170" height="55" rx="6" fill="#5E4A8E"/>
+  <text x="285" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Admission policy</text>
+  <text x="285" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Kyverno + Gatekeeper</text>
+  <text x="285" y="173" text-anchor="middle" font-size="8" fill="#FBE8DC">+ ValidatingAdmissionPolicy</text>
+  <rect x="380" y="125" width="170" height="55" rx="6" fill="#FAC775"/>
+  <text x="465" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">Signed images</text>
+  <text x="465" y="161" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">Cosign + SBOM + SLSA</text>
+  <text x="465" y="173" text-anchor="middle" font-size="8" fill="#5A4F45">+ VEX</text>
+  <rect x="560" y="125" width="180" height="55" rx="6" fill="#1F8A60"/>
+  <text x="650" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Mesh-mTLS</text>
+  <text x="650" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Istio / Linkerd / Cilium SM</text>
+  <text x="650" y="173" text-anchor="middle" font-size="8" fill="#FBE8DC">east-west encryption</text>
+  <rect x="20" y="195" width="720" height="65" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">audit.k8s.io → SIEM (Splunk / Loki / Sentinel) · compliance-as-code dashboards</text>
+  <text x="380" y="231" text-anchor="middle" font-size="9" fill="#5A4F45" font-style="italic">PCI / HIPAA / SOC2 / FedRAMP / NIST 800-190 controls mapped to queries · break-glass JIT IAM</text>
+  <text x="380" y="247" text-anchor="middle" font-size="9" fill="#5A4F45">IR runbooks (NIST 800-61) tested via quarterly game days · MTTD &lt; 5 min · MTTC &lt; 30 min</text>
+</svg>
+    </div>
+<p class="arch-caption">Defendable Citadel: 4 concentric layers (perimeter / identity / tenant / vault) + 4 cross-cutting controls (PSA + admission + signed images + mesh-mTLS) + audit→SIEM→compliance-as-code + IR runbooks. The architecture is the easy part; the operational rhythm (game days quarterly) is the discipline.</p>
+  </section>
 
   <div class="nightmare">
     <div class="nightmare-box">

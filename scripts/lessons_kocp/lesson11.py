@@ -171,4 +171,33 @@ LESSON = LessonSpec(
     ],
     recap_lead='Built-in Cluster Monitoring + UWM for metrics; Logging Operator (Loki + Vector) for logs; Distributed Tracing Operator (Tempo + OTel) for traces; NetObserv for network flows; COO for unified config.',
     recap_next='<strong>Next — O12: OpenShift Troubleshooting.</strong> oc adm must-gather; oc adm inspect; ClusterOperator degraded; CVO blocked; MCP degraded; Node NotReady; SCC denial; Route + cert issues; internal registry failure; Build failure; Operator CSV failed; CatalogSource failure; OLM Subscription issues; OVN-K + DNS; OAuth failures; etcd backup/restore; disconnected pull failures.',
+    architecture_svg='''<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OCP observability: Cluster Monitoring + UWM (Prometheus), Logging (Loki + Vector), Tracing (Tempo + OTel), NetObserv, COO unified.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">OCP OBSERVABILITY · METRICS · LOGS · TRACES · NETFLOWS</text>
+  <rect x="20" y="55" width="170" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="105" y="75" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Pod / app</text>
+  <text x="105" y="91" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">stdout · /metrics · OTel</text>
+  <line x1="190" y1="85" x2="220" y2="85" stroke="#5A4F45" stroke-width="2" marker-end="url(#a11)"/>
+  <defs><marker id="a11" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="220" y="55" width="170" height="60" rx="6" fill="#5A9F7A"/>
+  <text x="305" y="75" text-anchor="middle" font-size="10" font-weight="700" fill="#FFFFFF">Cluster Monitoring</text>
+  <text x="305" y="91" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Prometheus + Alertmanager</text>
+  <text x="305" y="103" text-anchor="middle" font-size="8" fill="#FBE8DC">+ UWM for user workloads</text>
+  <rect x="400" y="55" width="170" height="60" rx="6" fill="#A04832"/>
+  <text x="485" y="75" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Logging Operator</text>
+  <text x="485" y="91" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Loki backend</text>
+  <text x="485" y="103" text-anchor="middle" font-size="8" fill="#FBE8DC">Vector forwarder</text>
+  <rect x="580" y="55" width="160" height="60" rx="6" fill="#5E4A8E"/>
+  <text x="660" y="75" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Distributed Tracing</text>
+  <text x="660" y="91" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Tempo + OpenTelemetry</text>
+  <rect x="20" y="130" width="350" height="55" rx="6" fill="#FAC775"/>
+  <text x="195" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">NetObserv (eBPF flow logs)</text>
+  <text x="195" y="166" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">per-flow source/dest/verdict + L7 metadata · stored in Loki</text>
+  <rect x="380" y="130" width="360" height="55" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="560" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">Cluster Observability Operator (COO)</text>
+  <text x="560" y="166" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">unified config across Prometheus + Tempo + Loki · multi-tenant Projects</text>
+  <rect x="20" y="195" width="720" height="30" rx="6" fill="#5A6B81"/>
+  <text x="380" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">OCP web console (admin + dev perspectives) + Grafana + alerts → Slack / PagerDuty / SIEM</text>
+</svg>''',
+    architecture_caption='Three signal types (metrics / logs / traces) + network flows + unified config. Cluster Monitoring (Prometheus) handles platform metrics; UWM extends to user workloads. Logging Operator (Loki) + Distributed Tracing (Tempo) + NetObserv (eBPF) round out the stack. COO is the unified-config layer.',
 )
