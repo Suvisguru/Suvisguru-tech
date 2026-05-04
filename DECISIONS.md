@@ -1224,3 +1224,32 @@ All unique vs prior 7 courses. Prefixes use the `course-suffix-style` pattern (3
 **Alternatives considered:** Single K-ADV universe with 5 sub-districts — rejected; the universes pull in opposite directions (citadel = closed, highway = flowing, workshop = building, observatory = observing, lifeboat = recovering); collapsing them would weaken each. Skip the universe convention for K-ADV — rejected; the layman-first scaffolding (Nightmare opener + stamp + analogy + Translation Legend) requires a metaphor; without one, advanced lessons become walls of jargon. Bundle SEC + NET + PE into one course — rejected; each is genuinely 40-80 hours of distinct content; bundling would be 200+ hours and impossible to navigate.
 
 **Revisit when:** A sixth K-ADV-* course is added (K-ADV-COST? K-ADV-EDGE?). At that point the metaphor pool may need rules to prevent invention-creep. For now, five role-shaped universes match the five role-shaped tracks.
+
+## 2026-05-04 — Architecture diagram becomes a mandatory scaffolding element where required
+
+**Context:** Founder reviewed the 137 lessons across 12 courses and observed that many advanced topics need a clean technical architecture diagram in addition to the hero metaphor + Section 6 animation. The hero carries the analogy; the animation carries the dynamic flow; neither is the *literal* component map a learner needs to internalise (control plane, networking topology, storage chain, multi-cluster fabric, cloud-service surface). Without a dedicated architecture-diagram slot, advanced lessons rely on the metaphor doing too much work.
+
+**Decision:** Architecture diagram becomes the **8th mandatory layman-first scaffolding element**, gated by topic. Renders as a dedicated section between the hero and the Nightmare opener; CSS class `.arch-block`; eyebrow `📐 Architecture diagram`; H2 `How it actually wires together`. Stored in the new `LessonSpec.architecture_svg` field (+ optional `architecture_caption`).
+
+**Sub-decision A — when mandatory.** Documented in STYLE.md "Architecture diagram (mandatory where required)":
+- Multi-component systems (control plane parts, multi-pod systems, operators with CRDs).
+- Networking topology (CNI / mesh / Gateway API / multi-cluster bridges / ingress + egress paths).
+- Storage layout (PV / PVC / CSI / StorageClass chains; EFS / Disks / Filestore architectures; backup paths).
+- Multi-cluster fabric (ClusterMesh / Submariner / Skupper / Istio multi-cluster).
+- Cloud-service surface (EKS control plane, AKS Entra integration, GKE modes, OCP CVO + ClusterOperators).
+- Capstones (always — by definition the integration story).
+- Any lesson whose Nightmare opener implies a system shape the learner must reason about.
+
+**Sub-decision B — when optional.** Purely conceptual / single-concept / ELI5-shaped lessons (e.g., "what is a Pod?", "what is a label?"). Hero illustration alone may carry the visual load.
+
+**Sub-decision C — voice + spec.** Architecture diagram uses *canonical K8s vocabulary* (apiserver, kubelet, kube-scheduler, etcd, controller-manager, Pod, Deployment, Service, etc.). Distinct from the metaphor hero (which is the wrapper). 5-10 components max per diagram; brief labels; color encoding per STYLE.md "Color encoding" rule (teal for traffic, amber for storage I/O, slate for control-plane abstractions, etc.).
+
+**Sub-decision D — backwards compatibility.** Empty `architecture_svg` field renders nothing. Existing 137 lessons remain valid; sweep adds diagrams to flagged lessons course-by-course. No retroactive audit failure.
+
+**Sub-decision E — going-forward enforcement.** New lessons must include `architecture_svg` if topic falls under "when mandatory" above. Founder-review during quality gating catches omissions; future audit extension may add a heuristic check ("topic mentions networking → expect architecture_svg present").
+
+**Reasoning:** The hero metaphor + Section 6 animation between them carry analogy + dynamics, but a learner reasoning about \"where does an admission webhook sit?\" or \"what does the EKS control plane look like?\" needs a static, labelled diagram of the actual components. Adding architecture as a dedicated section (rather than overloading the hero) preserves the metaphor's narrative role while giving the technical truth its own slot. The 8th element keeps the seven-section content structure intact (architecture is between hero + Nightmare, not part of Section 1-7).
+
+**Alternatives considered:** Overload the hero illustration with both metaphor + architecture — rejected; conflates two purposes; loses the metaphor's accessibility. Add architecture inside Section 1 — rejected; Section 1 is "Concept" prose, not visual. Make architecture optional / advisory — rejected; without "mandatory where required" framing, it becomes inconsistent across courses. Auto-generate architecture from spec data — rejected; architecture diagrams need lesson-specific design + labelling that template alone can't produce.
+
+**Revisit when:** A future course needs a diagram type the current `architecture_svg` field can't carry (e.g., interactive 3D, multi-frame). Then we extend with `architecture_diagrams` list or similar. Until then, single-SVG slot covers all cases.

@@ -44,6 +44,8 @@ Produce sections incrementally. After each major section, summarize what you pro
 
 Apply the **layman-first scaffolding** to every lesson preview: Nightmare opener at the top, one-sentence stamp at top and bottom, two mid-lesson pause-and-checks, Translation Legend in the analogy section, Common Misconceptions panel before the quiz, "analogy stops here" callout where the analogy has a known cliff, "skip if new" tags on advanced paragraphs, persistent left-rail concept map. These are not optional. See STYLE.md for the component spec of each, and QUALITY.md for the bar each must meet.
 
+Apply the **architecture diagram** rule (added 2026-05-04): every lesson covering a multi-component system, control plane, networking topology, storage layout, multi-cluster fabric, or any cloud-service surface MUST include a clean technical architecture diagram via `LessonSpec.architecture_svg`. The diagram is rendered between the hero and the Nightmare opener as its own section ("📐 Architecture diagram · How it actually wires together"). See STYLE.md "Architecture diagram (mandatory where required)" for the spec + decision rule. Lessons that are purely conceptual / single-concept / ELI5-shaped may omit it; the founder reviews omissions during quality gating.
+
 Apply the **unified analogical universe** convention for the domain. For Kubernetes that is K-Town — see STYLE.md "Unified analogical universe — Kubernetes (K-Town)" for the cast (Mayor Katie, Podrick, the Thermostat) and the district-to-lesson mappings. Each lesson opens with a district line and includes the K-Town map graphic with the current district highlighted.
 
 ## Quality gating
@@ -102,6 +104,7 @@ You do not retain memory across sessions. Continuity comes from the files. Three
 - Do not invent a new analogy when the lesson's domain has a unified-universe district mapping for the topic. Use the assigned district.
 - Do not introduce a new recurring character without a DECISIONS.md entry. The cast is canonical.
 - Do not skip the layman-first scaffolding (Nightmare, stamp, pause-and-checks, Translation Legend, Misconceptions). Each is a hard gate.
+- Do not skip the architecture diagram on a lesson that needs one (multi-component system, control plane, networking, storage, multi-cluster, cloud-service surface). The architecture-diagram requirement was added 2026-05-04 alongside the existing scaffolding gates.
 - Do not produce a lesson without an approved brief.
 - Do not skip the static diagram before the animation.
 - Do not skip the QUALITY.md drafting protocol. Generate multiple drafts; self-critique; pick a winner with reasoning.

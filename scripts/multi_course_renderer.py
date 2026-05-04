@@ -289,6 +289,24 @@ def render_lesson(spec: LessonSpec, config: CourseConfig) -> str:
             sections_html.append(_render_pause_check(spec.pause_check_after_section[i]))
     sections_block = "\n\n".join(sections_html)
 
+    # Architecture diagram block — between hero and Nightmare opener; mandatory for
+    # multi-component-system lessons; optional otherwise.
+    if spec.architecture_svg:
+        arch_caption = (
+            f'<p class="arch-caption">{spec.architecture_caption}</p>'
+            if spec.architecture_caption else ""
+        )
+        arch_block = f"""  <section class="arch-block">
+    <span class="arch-tag">\U0001F4D0 Architecture diagram</span>
+    <h2>How it actually wires together</h2>
+    <div class="arch-svg">
+{spec.architecture_svg}
+    </div>
+{arch_caption}
+  </section>"""
+    else:
+        arch_block = ""
+
     ba_block = f"""  <section class="s">
     <span class="s-eyebrow">Section 2 · Before &amp; After</span>
     <h2>What changes when you adopt this</h2>
@@ -458,6 +476,8 @@ def render_lesson(spec: LessonSpec, config: CourseConfig) -> str:
 {spec.hero_illu_svg}
     </div>
   </section>
+
+{arch_block}
 
   <div class="nightmare">
     <div class="nightmare-box">

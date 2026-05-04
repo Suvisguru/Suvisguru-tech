@@ -184,6 +184,13 @@ BASE_CSS = """
   .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
   .hero-illu{margin:0 auto 16px;max-width:680px}
   .hero-illu svg{display:block;width:100%;height:auto}
+  .arch-block{margin:48px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:32px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){.arch-block{padding:20px}}
+  .arch-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--accent-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  .arch-block h2{font-size:24px;margin:6px 0 18px;line-height:1.3;letter-spacing:-0.5px}
+  .arch-svg{margin:0 auto;max-width:760px}
+  .arch-svg svg{display:block;width:100%;height:auto}
+  .arch-caption{margin:14px auto 0;max-width:680px;color:var(--ink-soft);font-size:14px;line-height:1.55;font-style:italic;text-align:center}
   section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
   @media (max-width:600px){section.s{padding:24px}}
   .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
@@ -567,6 +574,11 @@ class LessonSpec:
     recap_next: str
     extra_css: str = ""
     animation: Optional['Animation'] = None
+    # Optional technical architecture diagram (raw SVG). Mandatory for any lesson covering
+    # multi-component systems (control plane, networking, storage, multi-cluster, etc.).
+    # Rendered as a dedicated section between the hero and the Nightmare opener.
+    architecture_svg: str = ""
+    architecture_caption: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -895,6 +907,24 @@ def render_lesson(spec: LessonSpec) -> str:
             sections_html.append(_render_pause_check(spec.pause_check_after_section[i]))
     sections_block = "\n\n".join(sections_html)
 
+    # Architecture diagram block — rendered between hero and Nightmare opener.
+    # Mandatory for any lesson covering multi-component systems; optional otherwise.
+    if spec.architecture_svg:
+        arch_caption = (
+            f'<p class="arch-caption">{spec.architecture_caption}</p>'
+            if spec.architecture_caption else ""
+        )
+        arch_block = f"""  <section class="arch-block">
+    <span class="arch-tag">\U0001F4D0 Architecture diagram</span>
+    <h2>How it actually wires together</h2>
+    <div class="arch-svg">
+{spec.architecture_svg}
+    </div>
+{arch_caption}
+  </section>"""
+    else:
+        arch_block = ""
+
     # before / after
     ba_block = f"""  <section class="s">
     <span class="s-eyebrow">Section 2 · Before &amp; After</span>
@@ -1067,6 +1097,8 @@ def render_lesson(spec: LessonSpec) -> str:
 {spec.hero_illu_svg}
     </div>
   </section>
+
+{arch_block}
 
   <div class="nightmare">
     <div class="nightmare-box">

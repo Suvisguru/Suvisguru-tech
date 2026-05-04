@@ -329,6 +329,32 @@ Variant of the existing quiz reveal pattern. One CYOA question per lesson; the o
 - Reveal can be longer than other quiz answers — this is the *memorable* one.
 - The technical lesson must be inferable from the reveal alone. No separate "and the lesson is…" tag.
 
+#### Architecture diagram (mandatory where required)
+
+A clean technical architecture diagram showing the actual K8s components, cloud services, or system primitives in their relationships. **This is the literal mapping**, not the metaphor — distinct from the hero illustration (which carries the analogy) and the Section 6 animation (which shows the dynamic flow).
+
+**Placement:** rendered as its own section between the hero and the Nightmare opener. CSS class `.arch-block`; eyebrow tag `📐 Architecture diagram`; H2 `How it actually wires together`.
+
+**When mandatory** — any lesson covering:
+- Multi-component systems (control plane parts, multi-pod systems, operators with their CRDs).
+- Networking topology (CNI, Service mesh, Gateway API, multi-cluster bridges, ingress/egress paths).
+- Storage layout (PV/PVC/CSI driver/storage class chains, EFS/Disks/Filestore architecture, backup paths).
+- Multi-cluster fabric (ClusterMesh / Submariner / Skupper / Istio multi-cluster topologies).
+- Cloud-service surface (EKS control plane, AKS Entra integration, GKE Autopilot vs Standard, OCP CVO + ClusterOperators).
+- Capstone lessons (always include — by definition the integration story).
+- Any lesson whose Nightmare opener implies a system shape the learner must reason about.
+
+**When optional** — lessons that are purely conceptual / single-concept / ELI5-shaped (e.g., "what is a Pod?", "what is a label?"). The hero illustration alone may carry the visual load.
+
+**Spec:**
+- Raw inline `<svg>` (typically 760×220-260 viewBox) using simple labelled shapes — boxes for components, arrows for relationships, color encoding per STYLE.md "Color encoding" rule.
+- 5-10 components max; if more, factor into multiple lessons.
+- Component labels in 11px sans-serif (matches the SVG label rule); brief sub-labels in 9px italic.
+- Optional caption (`architecture_caption` field) — italic, max 1-2 sentences, anchors the diagram to the lesson's main idea.
+- Lives in the `architecture_svg` field of `LessonSpec`. Empty = no architecture section rendered (graceful for lessons that genuinely don't need one).
+
+**Voice match:** the diagram uses canonical K8s vocabulary (apiserver, kubelet, kube-scheduler, etcd, controller-manager, Pod, Deployment, Service, etc.). The metaphor is the wrapper; the architecture is the canonical truth.
+
 ### Hover-to-define for technical terms
 
 Every technical term that a first-time learner could trip on gets a dotted-underline + tooltip on its **first prominent appearance** in the prose. Subsequent appearances are bare text — a learner sees the underline once, learns the meaning, reads bare text after.
@@ -875,6 +901,7 @@ K-Lifeboat is the emergency-drill universe — lifeboats, ship rebuild kits, mir
 - The analogy in section 3 is referenced consistently in ELI5 and ELI10.
 - Every lesson ships with flashcards and a quiz.
 - Every lesson ships with the layman-first scaffolding (Nightmare, stamp, district line, pause-and-checks, Translation Legend, Misconceptions, concept rail).
+- Every lesson covering a multi-component system / networking topology / storage layout / multi-cluster fabric / cloud-service surface / capstone ships with an **architecture diagram** (mandatory where required; see "Architecture diagram (mandatory where required)" above).
 - Every Kubernetes lesson lives inside K-Town and uses its assigned district.
 - K-ECS is the lone non-Kubernetes K-* course — it lives in K-Harbor and uses ECS vocabulary, not K8s vocabulary.
 - K-ADV-* courses overlay role-specific metaphors (citadel / highway / workshop / observatory / lifeboat) on top of K8s primitives — the metaphor is the wrapper, the K8s vocabulary is canonical.
