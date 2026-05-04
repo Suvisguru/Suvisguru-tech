@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-SEC S (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does ESO do?
+    back: |
+      Watches SecretStore + ExternalSecret CRs; polls external vault; creates/updates K8s Secrets in cluster. Per-namespace SecretStore + IRSA / Workload Identity = tenant-scoped sync.
+
+  - id: 2
+    front: |
+      Are K8s Secrets encrypted at rest by default?
+    back: |
+      **No.** Base64-encoded only. Enable encryption-at-rest via `--encryption-provider-config` on apiserver pointing to KMS. Without it, etcd holds plain values.
+
+  - id: 3
+    front: |
+      What does SPIFFE provide?
+    back: |
+      Workload identity standard. SPIFFE IDs (URIs like `spiffe://cluster/ns/X/sa/Y`) + short-lived X.509-SVID or JWT-SVID per workload. SPIRE is the reference implementation.
+
+  - id: 4
+    front: |
+      Sidecar vs ambient mode in service mesh?
+    back: |
+      **Sidecar**: Envoy proxy per Pod (~50 MiB memory each); per-Pod policy. **Ambient** (Istio / Linkerd new model): per-node ztunnel + per-namespace waypoint proxy; lower per-Pod overhead; same mTLS guarantees.
+
+  - id: 5
+    front: |
+      cert-manager — what does it do?
+    back: |
+      Automates X.509 cert issuance + rotation. Issuers (ACME / Vault / Venafi / CA / self-signed); Certificate + CertificateRequest CRDs; `renewBefore` auto-rotates.
+
+  - id: 6
+    front: |
+      Workload identity (IRSA / Workload Identity / Pod Identity) — what does it replace?
+    back: |
+      Long-lived AWS / GCP / Azure access keys baked into images / env vars. Replaced by federation: K8s SA token traded at cloud IAM for short-lived creds scoped per Pod.
+
+  - id: 7
+    front: |
+      Why per-namespace SecretStore in ESO?
+    back: |
+      Tenant isolation. A compromised namespace can't request other namespaces' vault paths. Each SecretStore uses a workload identity scoped to one namespace + one vault path / role.
+
+  - id: 8
+    front: |
+      When is auto-mTLS via mesh insufficient?
+    back: |
+      When (a) workloads need cross-cluster mTLS (need cross-cluster mesh or SPIFFE federation); (b) workloads include non-K8s components (DBs, VM workloads — need explicit SPIRE agents); (c) regulated environments require key escrow or HSM-backed CA.

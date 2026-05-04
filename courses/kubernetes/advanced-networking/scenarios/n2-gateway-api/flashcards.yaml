@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-NET N (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three core Gateway API CRDs?
+    back: |
+      **GatewayClass** (controller infrastructure; cluster-scoped). **Gateway** (listener bank with cert + hostname + allowed routes; namespaced). **HTTPRoute** (and other Route kinds; match + filter + backend; namespaced).
+
+  - id: 2
+    front: |
+      What does ReferenceGrant do?
+    back: |
+      In the backend's namespace, explicitly grants source namespaces permission to reference the backend. Without it, cross-namespace HTTPRoute → Service fails to attach.
+
+  - id: 3
+    front: |
+      HTTPRouteFilter types?
+    back: |
+      **RequestHeaderModifier**, **ResponseHeaderModifier**, **RequestRedirect**, **URLRewrite**, **RequestMirror**, **ExtensionRef** (controller-specific). Typed; schema-validated; portable.
+
+  - id: 4
+    front: |
+      What is BackendTLSPolicy?
+    back: |
+      Tells Gateway to re-encrypt traffic to backend with HTTPS + caBundle ref. Default Gateway → backend is plain HTTP; BackendTLSPolicy makes it end-to-end encrypted.
+
+  - id: 5
+    front: |
+      Three Route kinds beyond HTTPRoute?
+    back: |
+      **GRPCRoute** (gRPC), **TCPRoute** (raw TCP — not all controllers), **TLSRoute** (TLS passthrough), **UDPRoute** (UDP). Different controllers support different sets.
+
+  - id: 6
+    front: |
+      Why role separation matters?
+    back: |
+      Infra owns Gateway (cert, hostname, TLS); app teams own HTTPRoutes (their routes). Infra changes don't need app-team coordination; app-team route changes don't require infra approval. Pattern scales to many teams.
+
+  - id: 7
+    front: |
+      ingress2gateway — what does it do?
+    back: |
+      CLI tool converting Ingress manifests to Gateway API equivalents per controller. Output: Gateway + HTTPRoute YAMLs. Not perfect; requires review for annotation-specific behavior.
+
+  - id: 8
+    front: |
+      When pick Envoy Gateway vs Istio Gateway?
+    back: |
+      **Envoy Gateway**: pure Gateway API; minimal moving parts; recommended if you only need Gateway API. **Istio Gateway**: full mesh integration; pick if you're using Istio mesh anyway. Same Envoy data plane in both.

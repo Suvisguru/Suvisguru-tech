@@ -1,0 +1,21 @@
+# Quiz — K-ADV-AI I (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Walk Kueue + Volcano setup for a multi-tenant ML cluster.
+    answer: |
+      (1) **Install Kueue** Helm + Volcano Helm. (2) **ResourceFlavor** per accelerator type (H100, A100). (3) **ClusterQueue per team** with quota + cohort "ml-cohort" for cohort lending. (4) **LocalQueue** in each tenant namespace. (5) **PyTorchJob** / **RayJob** annotation: `kueue.x-k8s.io/queue-name: ...`. (6) **Volcano**: PodGroup auto-created from Job; gang-schedules. (7) **Validate**: Kueue dashboards show admission queue depth + cohort utilization.
+
+  - id: 2
+    prompt: |
+      MultiKueue across 3 clusters — design federation.
+    answer: |
+      (1) **Pick control-plane cluster**: small dedicated cluster running MultiKueue Admission webhook. (2) **Worker clusters**: each runs Kueue + ClusterQueue + ResourceFlavor matching the federation's capacity. (3) **MultiKueue config**: control plane registers worker cluster connections (kubeconfig + auth). (4) **Tenant submits Workload** to control plane; MultiKueue routes to worker. (5) **Spot fallback**: configure cohort priorities so on-demand cluster gets first dibs; spot cluster receives overflow.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees Volcano cost (yet-another-controller). Defend.
+    answer: |
+      "**Without gang scheduling, distributed training jobs deadlock — wasted GPU-hours.** Three reasons Volcano stays: (1) **Half-started jobs are catastrophic at GPU scale**: 14/16 H100s allocated but training stuck = 14 H100s burning $$ doing nothing. (2) **Operator overhead is small**: Volcano is one Helm chart + a few CRDs; runs alongside kube-scheduler. (3) **Standardisation**: alternative is bespoke per-Job retry logic; Volcano is the upstream answer. **Cost**: trivial. **Saved**: hours of GPU-time per partial-start incident."

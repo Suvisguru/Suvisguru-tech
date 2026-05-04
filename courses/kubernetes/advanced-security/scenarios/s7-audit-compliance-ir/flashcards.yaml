@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-SEC S (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three audit.k8s.io levels?
+    back: |
+      **Metadata** (who/what/when), **Request** (+ request body), **RequestResponse** (+ response body — never for Secrets!). Configure per resource via audit policy file.
+
+  - id: 2
+    front: |
+      Audit retention per major regime?
+    back: |
+      **PCI**: 12 months (with last 3 immediately accessible). **HIPAA**: 6 years. **SOC2**: 1 year. Tier: SIEM hot 90 days + S3 archive + Glacier.
+
+  - id: 3
+    front: |
+      What is compliance-as-code?
+    back: |
+      Each compliance control mapped to a SIEM query + expected-result rule. CI runs nightly; failures alert. Replaces annual audit-prep with continuous evidence.
+
+  - id: 4
+    front: |
+      Break-glass IAM — what does it replace?
+    back: |
+      Standing cluster-admin bindings. Replaced by JIT elevation: short-lived credential, approval workflow, alarmed every use. Audit + compliance evidence is automatic.
+
+  - id: 5
+    front: |
+      Four IR runbook phases (NIST 800-61)?
+    back: |
+      **Containment** (stop spread), **Eradication** (remove root cause), **Recovery** (restore clean), **Postmortem** (timeline + gaps + remediation actions).
+
+  - id: 6
+    front: |
+      What does a game day measure?
+    back: |
+      **Time-to-detect** (alarm fires from compromise event) + **time-to-contain** (compromise blocked from spreading). Both measurable + improvable; per-runbook targets.
+
+  - id: 7
+    front: |
+      Why never log Secret values in audit?
+    back: |
+      RequestResponse level + Secret reads = secret values land in SIEM logs. Anyone with SIEM read can extract. Use Request level for Secrets (captures access without value); never RequestResponse.
+
+  - id: 8
+    front: |
+      What's a synthetic-audit canary?
+    back: |
+      A scheduled event (e.g., a no-op annotation update) that should appear in audit + SIEM every minute. Absence > 10 minutes = audit pipeline broken; alarm before silent drop becomes invisible.

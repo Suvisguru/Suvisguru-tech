@@ -1,0 +1,21 @@
+# Quiz — K-ADV-SEC S (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A new compliance review asks you to evidence "PCI 7.1 — least-privilege access management." What's the audit-driven answer?
+    answer: |
+      (1) **Map the control**: 7.1.x covers role-based access. K8s implementation = RBAC + audit. (2) **Evidence query**: SIEM rule "every RoleBinding / ClusterRoleBinding change in past 90 days" + "every cluster-admin binding currently active". Expected output: changes are PR-approved; cluster-admin only via JIT (zero standing). (3) **Show audit2rbac runs**: quarterly narrowing reports + diffs (evidence of continuous review). (4) **Per-tenant RBAC**: query showing each tenant's SAs are scoped only to their namespace. (5) **Document the mapping**: compliance-as-code repo with this control → query + expected result. (6) **Auditor walkthrough**: run the queries live; show the runbook for handling exceptions.
+
+  - id: 2
+    prompt: |
+      A Falco alert fires + audit shows a RoleBinding to cluster-admin was just created from CI. Walk IR steps in the runbook.
+    answer: |
+      **Containment (within 5 min):** (1) Revert the RoleBinding via GitOps PR or direct `kubectl delete` if emergency. (2) Cordon the node where the CI pipeline ran. (3) Suspend the CI runner identity. **Eradication (within 30 min):** (4) Identify which CI pipeline created the binding — was it intentional? Approved? If not, the CI runner credential is compromised; revoke it. (5) Audit log: did the SA do anything else? List all actions. (6) Rotate any secrets the SA may have accessed during the window. **Recovery (within 4 hours):** (7) Verify cluster state matches GitOps source-of-truth. (8) Restore CI from clean image with new credential. (9) Run smoke tests. **Postmortem (within 1 week):** (10) Timeline of detection → containment. (11) How did the bad RoleBinding pass review? Add admission rule blocking CI from creating cluster-admin Bindings. (12) Add a SIEM rule to alert on every cluster-admin Binding creation regardless of source.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO asks why we run game days when nothing has gone wrong. Defend.
+    answer: |
+      "**The cost of an untested runbook is paid during the next real incident.** Three reasons game days stay quarterly: (1) **Runbook decay is invisible** until tested. APIs change (Falco rule syntax updates; kubectl flags deprecated); tooling versions move; team membership turns over. The runbook that worked last quarter may not work this quarter. (2) **Time-to-contain is the metric we sell to the board**: "P95 time-to-contain < 30 minutes". Without exercise, we can't honestly claim that number. Game days produce the evidence. (3) **Real incidents at 3 AM are not the time to discover gaps**. Game days at 2 PM with the team coffee'd-up is. The cost of a quarterly day (1 dev-day × 6 engineers = ~3k$) is 1/100th of one missed-detection incident. **Game days are how we know we're ready, not theatre.**"

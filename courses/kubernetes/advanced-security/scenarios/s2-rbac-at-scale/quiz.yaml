@@ -1,0 +1,21 @@
+# Quiz — K-ADV-SEC S (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A new operator pattern requires a Pod to `create` SubjectAccessReviews + `list` Roles. What's the safest binding?
+    answer: |
+      (1) Create a **per-workload ServiceAccount** in the operator's namespace. (2) Create a **narrow ClusterRole**: `rules: [{apiGroups: [authorization.k8s.io], resources: [subjectaccessreviews], verbs: [create]}, {apiGroups: [rbac.authorization.k8s.io], resources: [roles], verbs: [list]}]`. (3) **ClusterRoleBinding** ties the SA to that ClusterRole (cluster-scoped because the operator may inspect across namespaces). (4) Optional: scope tighter via `resourceNames` if the operator only inspects specific Roles. (5) Disable auto-mount on default SA in the namespace; explicitly reference the new SA in the operator Pod.
+
+  - id: 2
+    prompt: |
+      Audit shows the CI runner SA has `cluster-admin`. Walk through the audit2rbac narrowing process.
+    answer: |
+      (1) **Capture audit period**: ensure audit policy logs every CI-runner-SA action with Request body level for at least 90 days (or representative window covering all CI workflows). (2) **Run audit2rbac**: `audit2rbac --filter (users: ci:runner)` against the audit log → emits a tightly-scoped Role + RoleBinding YAML. (3) **Review**: human reads the generated rules; flags anything that looks too narrow (CI may rotate paths). (4) **Stage**: apply generated bindings in dev cluster; observe one full release cycle. (5) **Promote**: replace cluster-admin binding in prod with the narrowed version. (6) **Continuous monitoring**: Falco / audit alerts on AccessDenied for that SA → adjust narrow binding if legitimate verb is missing.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership says "merge all per-team RBAC into one global 'developer' role for simplicity." Defend per-team RBAC.
+    answer: |
+      "**One global developer role is the audit anti-pattern that gets cited every time.** Three reasons per-team RBAC stays: (1) **Blast radius**: if alice (team A) is compromised, the breach should not give the attacker access to team B's namespace. Per-team binding contains it. Global role removes the boundary. (2) **Compliance**: PCI / HIPAA / SOC2 expect role separation tied to data scope. "Every developer can edit every namespace" fails on first audit. (3) **Operational hygiene**: per-team role + RoleBinding scoped to team's namespace means new team onboarding follows a template — no special-case bindings. **The simplicity win is illusory**: per-team is more bindings but each is the same shape; it's 10 lines of YAML per team via Crossplane / OPA / GitOps. **The cost is paid once at platform-build time; the safety dividend is paid every audit cycle and every incident.**"

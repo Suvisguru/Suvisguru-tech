@@ -1,0 +1,21 @@
+# Quiz — K-ADV-DR D (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Walk a quarterly total-loss drill end-to-end.
+    answer: |
+      (1) **Schedule**: announce drill 1 week ahead; on-call rotation aware; tenant comms paused for drill cluster. (2) **Trigger**: Drill Master destroys non-prod cluster (Terraform destroy or AWS console). (3) **On-call follows runbook**: provision new cluster (~10 min); install Argo CD (~2 min); GitOps sync waves (~10 min); Vault snapshot restore (~5 min); Velero restore (~5 min); DB cross-region promote (~5 min); validate SLOs (~5 min); DNS swap (~2 min). (4) **Observer records**: per-phase timing; deviations from runbook; tenant-rep verification. (5) **Postmortem**: total RTO measured; gaps identified; runbook + tooling improvements queued. (6) **Report**: leadership update with RTO trend.
+
+  - id: 2
+    prompt: |
+      Real cluster lost. On-call follows runbook. Cluster rebuilt at 28 min; tenant complains about app X data missing. Diagnose.
+    answer: |
+      (1) **App X data not in Velero backup?** Audit backup scope: was the namespace included? Was the PVC backed up? (2) **External managed-service?** If app X depends on RDS / S3 / external SaaS, those have own DR. Status of that service? (3) **Restore order issue?** App X restored before its dependency was up; data inaccessible. (4) **Schema migration drift?** Backup is older than app expects. (5) **Mitigation**: communicate impact; queued data restore from offline backup if applicable; postmortem covers backup scope review.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership says: "why quarterly drills? we have backups." Defend.
+    answer: |
+      "**Quarterly drills are how we know our backups + runbook + team are ready.** Three reasons non-optional: (1) **Drift**: code + config + tooling change every week. Without drill, drift accumulates invisibly. Real loss reveals it; drill finds it on a calm day. (2) **Team readiness**: drill team practices roles; on-call rotation tests muscle memory; tenant rep verifies UX. Without exercise, real loss = first attempt at coordinated rebuild. (3) **Compliance**: SOC2 / HIPAA / FedRAMP all require tested DR. Without drill report, audits fail. **Cost**: ~1 dev-day per quarter per DR engineer + non-prod cluster. **Saved**: bounded RTO during real loss; preserved SLA; preserved customer trust."

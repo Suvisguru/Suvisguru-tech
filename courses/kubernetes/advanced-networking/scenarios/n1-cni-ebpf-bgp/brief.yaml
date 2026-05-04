@@ -1,0 +1,61 @@
+# Intake brief — N1, K-ADV-NET
+# Topic: N1 · CNI Internals, eBPF, BGP at Scale
+# Module N1 · CNI + eBPF + BGP
+
+lesson:
+  title: 'N1 · CNI Internals, eBPF, BGP at Scale'
+  slug: 'n1-cni-ebpf-bgp'
+  domain: 'kubernetes'
+  course_slug: 'advanced-networking'
+  position: 01
+  granularity: 'module'
+  brief_drafted_on: '2026-05-04'
+  central_metaphor: 'K-Highway · Highway HQ — K-Highway is the cluster''s interstate. Every Pod is a vehicle entering the highway. The **on-ramp** (veth pair) connects the Pod''s driveway to the host''s lane. The **highway controller** (CNI plugin) '
+  module: 'Module N1 · CNI + eBPF + BGP'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'At least one distribution course (K-EKS / K-AKS / K-GKE / K-OCP / K-VAN).'
+    - 'K-ADV-NET modules 1-0 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain what CNI does, who provides it.'
+  - 'Learner can explain kernel-attached programs replace iptables.'
+  - 'Learner can explain native Pod-CIDR routing across the fabric.'
+
+sections:
+  - 'What CNI does, who provides it'
+  - 'Kernel-attached programs replace iptables'
+  - 'Native Pod-CIDR routing across the fabric'
+  - 'IP address management + density limits'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A 200-engineer SaaS migrated from kube-proxy iptables to Cilium kube-proxy-replacement (eBPF).'
+    - 'A bare-metal cluster ran VXLAN encap; MTU reduced; CPU on encap rose 8% per node.'
+    - 'A team ran AWS VPC CNI; m5.'
+    - 'A team adopted a new CNI without updating Pod MTU.'
+
+section_6_animated_svg:
+  modes_count: 1
+  description: 'See preview-kubernetes-adv-net-lesson-01.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-adv-net-lesson-01.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**CNI = Pod''s network. eBPF = in-kernel programmable datapath; replaces iptables for modern CNIs. BGP = native routing across the fabric; eliminates encap tax. Pick CNI by features (NetPol, mesh integration, eBPF maturity) + scale.**'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/kubernetes-networking'
+  - 'https://kubernetes.io/docs/'

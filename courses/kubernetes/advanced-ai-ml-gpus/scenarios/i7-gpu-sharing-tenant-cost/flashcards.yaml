@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-AI I (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Four GPU sharing strategies?
+    back: |
+      **MIG** (hardware partition; isolation), **time-slicing** (software shared; oversubscription), **DRA** (structured multi-vendor), **MPS** (multi-process concurrent on one GPU).
+
+  - id: 2
+    front: |
+      When MIG over time-slicing?
+    back: |
+      Tenant security; production isolation; predictable QoS. Time-slicing for dev / experimental / cooperative workloads.
+
+  - id: 3
+    front: |
+      Spot GPU — what makes a workload fit?
+    back: |
+      Fault-tolerance — checkpointing + retry; not low-latency-critical inference. Training + batch + queue consumers.
+
+  - id: 4
+    front: |
+      Idle reclaim — what does it do?
+    back: |
+      DCGM detects no GPU process for N min; eviction policy reclaims to general pool; reduces idle waste.
+
+  - id: 5
+    front: |
+      ARM-based GPU options?
+    back: |
+      **NVIDIA Grace Hopper / GH200** — ARM CPU + Hopper GPU; cheaper / lower power for compatible workloads.
+
+  - id: 6
+    front: |
+      Multi-tenant GPU isolation primitives?
+    back: |
+      Namespace + Quota + MIG instance + node taint per tenant + AI Gateway token budget. Layered defence.
+
+  - id: 7
+    front: |
+      GPU Quota — where set?
+    back: |
+      Per-namespace ResourceQuota with `requests.nvidia.com/gpu` + Kueue ClusterQueue + per-tier defaults.
+
+  - id: 8
+    front: |
+      Right-sizing GPU — how to identify?
+    back: |
+      DCGM utilization metrics per Pod; sustained < 30% util = right-size candidate (MIG smaller instance / cheaper GPU model).

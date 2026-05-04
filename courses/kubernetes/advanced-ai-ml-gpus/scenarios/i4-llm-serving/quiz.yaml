@@ -1,0 +1,21 @@
+# Quiz — K-ADV-AI I (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Deploy Llama 3 70B inference fleet for high-throughput. Walk steps.
+    answer: |
+      (1) **Pick vLLM**: open-source default; high throughput; PagedAttention + continuous batching. (2) **Quantize model**: AWQ for ~50% memory reduction with minimal accuracy loss. (3) **Tensor parallel**: 70B across 4×H100 (each ~25GB after AWQ). (4) **KServe ServingRuntime**: wrap vLLM as InferenceService. (5) **Autoscale**: HPA on request count or KServe queue-based. (6) **Observability**: Prometheus per-server (TTFT, TPOT, throughput, KV-cache util). (7) **Canary**: KServe traffic split for new model versions.
+
+  - id: 2
+    prompt: |
+      Multi-model fleet: 3 LLMs + 5 CV models + 2 classifiers. Pick server.
+    answer: |
+      **NVIDIA Triton**: one server handles all frameworks (TF / PyTorch / ONNX / TensorRT-LLM for LLMs) + concurrent model execution + dynamic batching + model ensembles. Single server simplifies ops; per-framework optimisation via TensorRT-LLM for LLMs. Alternative: Triton for non-LLM + vLLM for LLMs (separate fleets); both work; Triton-only is simpler.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees NVIDIA NIM cost: "build it ourselves with vLLM." Defend / refute.
+    answer: |
+      "**It's a make-vs-buy on perf-tuning + support.** NIM = pre-optimised + commercial support; vLLM = self-tune + community. Three considerations: (1) **Engineering cost**: vLLM tuning (quantization, batching, parallel) is 1-2 engineer-weeks per model. NIM ships pre-optimised. (2) **Support**: NVIDIA NIM has commercial SLA; vLLM = community. For prod-critical, NIM's SLA matters. (3) **Flexibility**: vLLM open-source = customisable; NIM closed. **Right answer per team**: small team without GPU experts → NIM. Mature ML platform team → vLLM. Hybrid: NIM for stable models; vLLM for cutting-edge."

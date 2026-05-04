@@ -1,0 +1,21 @@
+# Quiz — K-ADV-DR D (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Design DR for a 3-tier (gold / silver / bronze) SaaS.
+    answer: |
+      (1) **Tier-1 gold** (payment / auth): active-active across us-east-1 + us-west-2; cross-region Aurora Global; Route 53 global LB. RPO 5min / RTO 5min. (2) **Tier-2 silver** (core API): warm-standby in DR region; minimal capacity (1 of each Service); scale on disaster via Argo CD ApplicationSet + autoscale. RPO 1h (Velero hourly cross-region) / RTO 30min. (3) **Tier-3 bronze** (internal tools): active-passive; DR cluster destroyed when primary healthy; rebuild from IaC + GitOps + Velero on disaster. RPO 24h / RTO 4h. (4) **Quarterly drill** per tier; published RPO/RTO.
+
+  - id: 2
+    prompt: |
+      A team's drill measured 5h RTO (target 30min). Walk improvement.
+    answer: |
+      (1) **Profile each phase**. (2) **If cluster IaC slow**: pre-warm DR cluster (warm-standby) — eliminates cluster-IaC time. (3) **If Velero restore slow**: parallel restore + smaller backup units; CSI snapshots over Restic. (4) **If GitOps sync slow**: pre-sync ApplicationSets in warm cluster; on disaster, just refresh data. (5) **If DNS slow**: lower TTL on DNS records; pre-stage failover automation. (6) **Re-drill**: verify each fix; iterate.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees cross-region DR cost premium. Defend per-tier model.
+    answer: |
+      "**DR cost is proportional to RPO/RTO commitment.** Three reasons per-tier wins: (1) **Tier-1 active-active**: 2× cost; required for tier-1 (payment / auth) where outage = customer churn. (2) **Tier-2 warm-standby**: ~30% cost premium; fits tier-2 important. (3) **Tier-3 active-passive**: ~5% premium (just backups); fits tier-3 internal. **Without tiering**: either over-engineer everything (3× cost) or under-engineer everything (catastrophe risk). **Tiered DR matches investment to risk**."

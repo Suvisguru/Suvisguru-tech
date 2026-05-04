@@ -1,0 +1,21 @@
+# Quiz — K-ADV-DR D (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Design backup for a 50-namespace EKS cluster.
+    answer: |
+      (1) **Velero** install via Helm. (2) **BackupStorageLocation**: S3 bucket per environment + KMS-encrypted. (3) **VolumeSnapshotLocation**: AWS EBS CSI driver. (4) **Schedule**: nightly full backup + hourly per-namespace + on-demand pre-deploy. (5) **Retention**: 7-day daily + 4-week weekly + 12-month monthly. (6) **Restore-test quarterly**: pick 1 namespace; restore to dev cluster; validate. (7) **Documented RPO + RTO**: per-tier (gold = 1h RPO / 4h RTO; bronze = 24h).
+
+  - id: 2
+    prompt: |
+      A team's prod cluster died at 2 AM. Walk recovery.
+    answer: |
+      (1) **Read runbook**: total-cluster-loss procedure. (2) **Provision new cluster** via Terraform / Crossplane (5-15 min). (3) **Restore etcd** if self-managed (or skip on EKS — control plane is managed). (4) **Velero restore**: per-namespace; high-priority first. (5) **Restore PVCs**: CSI snapshots; mount; verify data. (6) **Restore secrets**: ESO re-syncs from external Vault. (7) **DNS swap**: Route 53 record updates point to new cluster Load Balancer. (8) **Validate**: SLO metrics return; tenants notified. (9) **Postmortem**: timeline + gaps + roadmap.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees Kasten K10 cost ($30k/yr). Defend or refute.
+    answer: |
+      "**Make-vs-buy on backup tooling.** Velero is free + open-source; K10 is commercial. K10 wins when: (1) regulated cluster needs HIPAA / PCI compliance reports out-of-the-box; (2) commercial support SLA matters; (3) team lacks DR engineering time. Velero wins when: (1) team can self-build dashboards + drills; (2) cost-sensitive; (3) workloads simpler. **Right answer per team**: small / cost-sensitive → Velero. Regulated / commercial-support-needed → K10 or CloudCasa."

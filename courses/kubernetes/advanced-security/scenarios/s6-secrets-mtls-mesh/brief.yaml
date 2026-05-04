@@ -1,0 +1,61 @@
+# Intake brief — S6, K-ADV-SEC
+# Topic: S6 · Secrets + mTLS + Service Mesh Security
+# Module S6 · Secrets + mTLS + Mesh
+
+lesson:
+  title: 'S6 · Secrets + mTLS + Service Mesh Security'
+  slug: 's6-secrets-mtls-mesh'
+  domain: 'kubernetes'
+  course_slug: 'advanced-security'
+  position: 06
+  granularity: 'module'
+  brief_drafted_on: '2026-05-04'
+  central_metaphor: 'K-Citadel · Armored Vault — The deepest stronghold in the citadel is the **Armored Vault**. Originally, secrets were copied by hand to every workshop in the citadel — when a key changed, every workshop had to be visited individu'
+  module: 'Module S6 · Secrets + mTLS + Mesh'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'At least one distribution course (K-EKS / K-AKS / K-GKE / K-OCP / K-VAN).'
+    - 'K-ADV-SEC modules 1-5 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain vault / Secrets Manager / Key Vault as source of truth.'
+  - 'Learner can explain istio / Linkerd / Cilium — sidecar vs ambient.'
+  - 'Learner can explain workload identity standard.'
+
+sections:
+  - 'Vault / Secrets Manager / Key Vault as source of truth'
+  - 'Istio / Linkerd / Cilium — sidecar vs ambient'
+  - 'workload identity standard'
+  - 'No static credentials in images, env, or git'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A 50-engineer SaaS deploys: HashiCorp Vault as cluster-external secret store; ESO with per-namespace SecretStore + IRSA; Linkerd auto-mTLS cluster-wide.'
+    - 'A team audits 200 namespaces; finds 80 K8s Secrets created manually + ~12 with credentials in git (oops).'
+    - 'A 1000-Pod cluster previously ran sidecar Istio with ~50 MiB memory overhead per Pod.'
+    - 'An ESO-backed cluster lost vault connectivity for 90 minutes.'
+
+section_6_animated_svg:
+  modes_count: 1
+  description: 'See preview-kubernetes-adv-sec-lesson-06.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-adv-sec-lesson-06.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Secrets in external vault, synced via ESO, KMS-encrypted at rest. mTLS via mesh + SPIFFE/SPIRE workload identity. cert-manager + automated rotation. No long-lived static credentials anywhere.**'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/kubernetes-security'
+  - 'https://kubernetes.io/docs/'

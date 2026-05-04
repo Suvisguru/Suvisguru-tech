@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-AI I (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does AI Gateway add over generic Gateway API?
+    back: |
+      Token-aware rate limit + cost budget + safety filters (PII / jailbreak) + model routing + semantic cache + multi-provider failover. LLM-aware L7.
+
+  - id: 2
+    front: |
+      Envoy AI Gateway primary CRD?
+    back: |
+      **AIGatewayRoute** — declares model routing + token rate limit + cost budget per backend. Backends are OpenAI-API-compatible (vLLM / TGI / actual OpenAI).
+
+  - id: 3
+    front: |
+      Kong AI Gateway differentiator?
+    back: |
+      Multi-provider transformations (translate between OpenAI / Anthropic / local LLM request shapes); semantic caching; Kong plugin ecosystem.
+
+  - id: 4
+    front: |
+      Portkey what is it?
+    back: |
+      Commercial managed unified LLM access layer; 200+ models; observability + cache + load balancing + failover. Trade self-host for hosted.
+
+  - id: 5
+    front: |
+      Token budget enforcement — where stored?
+    back: |
+      Redis or KV for fast counters; per-tenant key; rate-limit reset windows. Common pattern.
+
+  - id: 6
+    front: |
+      Safety filters — examples?
+    back: |
+      **Llama Guard** (Meta), **Azure Content Safety**, **NVIDIA NeMo Guardrails**, custom regex / classifier. Both input + output filtering.
+
+  - id: 7
+    front: |
+      Semantic cache vs exact cache?
+    back: |
+      **Exact**: hash of prompt; only identical hits. **Semantic**: embedding distance; near-identical prompts hit cache. Higher hit rate; tune similarity threshold.
+
+  - id: 8
+    front: |
+      Multi-provider failover criteria?
+    back: |
+      Provider degraded (latency / errors above threshold); failover to second provider. Within model class for similar UX.

@@ -1,0 +1,21 @@
+# Quiz — K-ADV-SEC S (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Walk a brand-new engineer through the Defendable Citadel in 5 minutes. What's the orientation?
+    answer: |
+      "Three things to see: (1) **The compliance dashboard wall**: every PCI / SOC2 / HIPAA control mapped to a query + last-result timestamp. We don't prepare for audits — we run them continuously. (2) **The policy stack**: every Pod walks Auth → RBAC → Kyverno → Gatekeeper → CEL → PSA → Falco. Six gates. Each is in Git; each is tested in CI; each runs in the cluster. (3) **The IR runbook shelf**: 12 binders, each tested last quarter, each with measured time-to-contain. Pick any one + we'll walk it. **And then the operational rhythm**: detection-as-code in Git; PRs reviewed; quarterly game days; break-glass alarmed in Slack #soc; compliance-as-code nightly. **The work isn't the architecture; the work is keeping it disciplined.**"
+
+  - id: 2
+    prompt: |
+      A startup says: "we're too small for this — we'll add it when we hit 50 engineers." Defend day-1 adoption.
+    answer: |
+      "**The marginal cost of building K-ADV-SEC layers from day-1 is days of work; the cost of retrofitting at 50 engineers is months.** Three reasons: (1) **Migration tax**: every existing workload has to be re-deployed when you add Kyverno verifyImages, mesh-mTLS, audit pipelines. At 50 engineers + 200 services, the migration is its own project. At day-1 + 5 services, the migration is a Tuesday. (2) **Habits compound**: engineers who started with no admission policy build YAMLs that won't pass it; engineers who started with admission policy build correct YAMLs from day-1. Tech debt is the cost of un-learning. (3) **One audit failure undoes years**: a regulated customer asks for SOC2 evidence and you have nothing. The cost of that is a customer lost, possibly lawsuit, possibly the business. **The right answer: ship the layers as a Service Catalog template + a couple of opinionated GitHub Actions on day-1; engineers consume the template; the team grows into the discipline rather than retrofitting it.**"
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      An incoming auditor says: "show me you're ready for SOC2 Type II." Walk the demo.
+    answer: |
+      "**Step 1 — compliance dashboard wall**: every CC + AC + AU control mapped to a SIEM query; CC6.1 (logical access) → "every RoleBinding change in past 90 days, PR-reviewed"; CC7.2 (anomaly detection) → "Falco + audit alerts → IR runbook count"; AU-2 (auditable events) → audit.k8s.io retention timeline. **Step 2 — live query**: pick any 3 controls; run the query; show the result + the link to the source-of-truth (Git PR for RBAC change, Slack thread for IR alarm). **Step 3 — game-day register**: last 4 quarters with date + scenario + time-to-detect + time-to-contain. **Step 4 — break-glass log**: every JIT cluster-admin grant in past quarter with reason + ticket link. **Step 5 — exception register**: any control with a documented exception (e.g., legacy workload exempted from PSA Restricted) with sunset date. **Step 6 — sample one engineer**: live walkthrough of their PR review process. **Audit closed in 6 hours** instead of 6 weeks. Auditor signs off."

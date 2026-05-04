@@ -1,0 +1,61 @@
+# Intake brief — I3, K-ADV-AI
+# Topic: I3 · Ray + Kubeflow + KServe + JobSet
+# Module I3 · Ray + Kubeflow + KServe
+
+lesson:
+  title: 'I3 · Ray + Kubeflow + KServe + JobSet'
+  slug: 'i3-ray-kubeflow-kserve'
+  domain: 'kubernetes'
+  course_slug: 'advanced-ai-ml-gpus'
+  position: 03
+  granularity: 'module'
+  brief_drafted_on: '2026-05-04'
+  central_metaphor: 'K-Observatory · Research Hall — Research Hall has four equipment kits. **KubeRay**: distributed-computation rig — many CPUs / GPUs cooperating on one task. **Kubeflow**: framework-specific tooling — PyTorch / TF / MPI training opera'
+  module: 'Module I3 · Ray + Kubeflow + KServe'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'At least one distribution course (K-EKS / K-AKS / K-GKE / K-OCP / K-VAN).'
+    - 'K-ADV-AI modules 1-2 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain ray on K8s — distributed compute primitive.'
+  - 'Learner can explain training operators + Pipelines + Notebooks + HPO.'
+  - 'Learner can explain inference with InferenceService + autoscaling + canary.'
+
+sections:
+  - 'Ray on K8s — distributed compute primitive'
+  - 'Training operators + Pipelines + Notebooks + HPO'
+  - 'Inference with InferenceService + autoscaling + canary'
+  - 'multi-pod jobs primitive'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Ray Train scaled across 32 H100s via KubeRay.'
+    - 'Daily DAG: data prep → PyTorchJob train → Katib HPO → eval → Model Registry → KServe deploy.'
+    - 'New model version deployed as KServe revision; 10% canary; observability shows latency + accuracy; auto-promote at 24h SLO pass.'
+    - 'Pre-Kubeflow team manually rolled inference; canary scripts buggy; latency spike rolled out to 100% before noticed.'
+
+section_6_animated_svg:
+  modes_count: 1
+  description: 'See preview-kubernetes-adv-ai-lesson-03.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-adv-ai-lesson-03.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**KubeRay = distributed compute. Kubeflow = training + pipelines + HPO. KServe = inference. JobSet = multi-pod jobs. Pick by ML phase; integrate via Kueue / Volcano for batch admission + gang.**'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/kubernetes-ai-ml'
+  - 'https://kubernetes.io/docs/'

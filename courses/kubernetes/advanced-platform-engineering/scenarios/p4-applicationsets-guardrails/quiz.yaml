@@ -1,0 +1,21 @@
+# Quiz — K-ADV-PE P (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Design fleet GitOps: 30 clusters across 3 tiers (dev / staging / prod), 20 platform apps. How does ApplicationSet structure look?
+    answer: |
+      (1) One **Matrix generator**: clusters × git directories. (2) **Cluster generator** with `matchLabels: {tier: dev}` + similar for staging + prod. (3) **Git generator** reads `apps/<tier>/` directories listing 20 platform apps. (4) **Template** uses cluster.labels for per-cluster values; per-tier app set differs (some apps prod-only). (5) **ProgressiveSync**: dev wave → staging wave → prod wave with health gates between. (6) **Three policy gates**: PR-time conftest in CI; admission Kyverno; PreSync hook. *Net*: 30 clusters × ~15 apps = ~450 Apps generated, all from ~20 lines of ApplicationSet.
+
+  - id: 2
+    prompt: |
+      A tenant PR adds a new app; PR-time gate passes; admission rejects in dev. Why might that happen?
+    answer: |
+      Admission policies updated since CI ran or different rules in different environments. Common: dev cluster has tighter PSA Restricted than CI mock; or new Kyverno policy added between CI run + admission. Fix: (1) sync CI policy bundle with cluster's policy state; (2) treat admission rejection as the source of truth + retro the PR-time gate. (3) For consistency: cluster's Kyverno policies bundled in CI conftest container.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership says: "why ProgressiveSync? Argo CD sync is fine." Defend.
+    answer: |
+      "**Big-bang sync to 30 clusters means a bad release breaks 30 clusters simultaneously.** ProgressiveSync waves: dev → staging → prod with health gates. Bad releases catch in dev; ~5 min per wave overhead; fleet-wide outage probability drops to near-zero. **Cost**: 15-30 min slower fleet rollouts; the next prevented incident pays for years."

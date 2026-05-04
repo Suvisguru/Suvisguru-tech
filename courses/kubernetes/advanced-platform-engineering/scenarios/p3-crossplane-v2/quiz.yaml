@@ -1,0 +1,21 @@
+# Quiz — K-ADV-PE P (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Build XPostgresInstance for AWS + Azure with backup + monitoring + IAM. Walk steps.
+    answer: |
+      (1) Define **XRD XPostgresInstance** with schema (size, engine version, backup retention, monitoring level). (2) Write **Composition for AWS**: function-kcl pipeline that renders RDSInstance + DBSubnetGroup + IAMRole + KMS Key + AWS Backup BackupVault. (3) Write **Composition for Azure**: similar pipeline rendering Azure Database for PostgreSQL + Backup + Monitor + KMS. (4) **ProviderConfig** for each (IRSA / Workload Identity). (5) **Tenant Claim**: `apiVersion: db.example.com/v1; kind: PostgresInstance; spec: {size: 50Gi, engine: 15.x, providerSelector: {matchLabels: {cloud: aws}}}`. (6) **Bundle**: ConfigurationPackage shipped to all clusters.
+
+  - id: 2
+    prompt: |
+      Drift auto-correction surprised a team that manually edited an RDS instance. Walk the runbook.
+    answer: |
+      (1) **Detect**: Crossplane events show "reconciliation revert" on the resource. (2) **Communicate**: alarm to team Slack; manual edits are not the change path. (3) **Path**: change the spec via Claim or Composition; Crossplane will reconcile. (4) **Education**: cluster runbook says "Crossplane is source of truth; manual changes will revert." (5) **Optional**: enable Crossplane's drift-tolerance flag for resources where manual changes are intentional.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership says: "Terraform works. Don't add Crossplane." Defend.
+    answer: |
+      "**Crossplane + Terraform aren't either-or — they coexist.** Three reasons we adopt Crossplane: (1) **Continuous reconciliation**: drift auto-corrected; not deferred until next terraform apply. (2) **Tenant self-service**: tenants kubectl apply Claims; no Terraform expertise required; XRD is the API. (3) **Composition reuse**: ConfigurationPackages share platform shape across clusters / BUs. Terraform modules don't share like this. **Where Terraform stays**: cluster + VPC bootstrap (one-shot setup). **Where Crossplane wins**: tenant-facing runtime resources. **Net**: Crossplane gives leverage Terraform can't; both have a place."

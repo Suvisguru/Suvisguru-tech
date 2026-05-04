@@ -1,0 +1,61 @@
+# Intake brief — S3, K-ADV-SEC
+# Topic: S3 · Admission Policy Architecture
+# Module S3 · Admission Policy
+
+lesson:
+  title: 'S3 · Admission Policy Architecture'
+  slug: 's3-admission-policy'
+  domain: 'kubernetes'
+  course_slug: 'advanced-security'
+  position: 03
+  granularity: 'module'
+  brief_drafted_on: '2026-05-04'
+  central_metaphor: 'K-Citadel · Checkpoint Gates — The Checkpoint Gates are three desks at the second wall. The first desk (**mutating**) hands every visitor a standard-issue helmet + name tag (defaults + labels) before they pass through. The second d'
+  module: 'Module S3 · Admission Policy'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'At least one distribution course (K-EKS / K-AKS / K-GKE / K-OCP / K-VAN).'
+    - 'K-ADV-SEC modules 1-2 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain audit → warn → enforce — never ship enforce on day one.'
+  - 'Learner can explain k8s-native YAML rules; mutating / validating / generating.'
+  - 'Learner can explain constraintTemplate + Constraint; formal logic in Rego.'
+
+sections:
+  - 'audit → warn → enforce — never ship enforce on day one'
+  - 'K8s-native YAML rules; mutating / validating / generating'
+  - 'ConstraintTemplate + Constraint; formal logic in Rego'
+  - 'Inline policy without a webhook + unified reporting'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A platform team ships a Kyverno mutate rule: every Pod with no `resources.'
+    - 'A regulated cluster requires "a Service''s selector may only target Pods in a namespace listed in the Service''s allowed-targets annotation.'
+    - 'A 1000-rps internal cluster API needs every PUT to validate one field.'
+    - 'A team enabled "every Pod requires team label" enforce immediately.'
+
+section_6_animated_svg:
+  modes_count: 1
+  description: 'See preview-kubernetes-adv-sec-lesson-03.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-adv-sec-lesson-03.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Hybrid: Kyverno for K8s-native YAML rules; Gatekeeper for OPA/Rego complex logic; ValidatingAdmissionPolicy + CEL inline for hot-path validation. Always roll out policies audit → warn → enforce. PolicyReport unifies feeds.**'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/kubernetes-security'
+  - 'https://kubernetes.io/docs/'

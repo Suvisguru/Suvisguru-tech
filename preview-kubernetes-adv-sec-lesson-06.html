@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-ADV-SEC S6 · Secrets + mTLS + Mesh</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-ADV-SEC module journey">
+  <span class="concept-rail-title">K-ADV-SEC modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>S1 threat-modeling + zero-trust</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>S2 RBAC at scale</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>S3 admission policy architecture</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>S4 PSA + runtime detection</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>S5 image signing + SBOM</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>S6 secrets + mTLS + mesh</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>S7 audit + compliance + IR</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>S8 capstone citadel</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-ADV-SEC · Module S6</span></a>
+    <span class="progress-pill">S6 · secrets + mTLS + mesh</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🏰 K-Citadel bastion: <strong>Armored Vault</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Citadel map: S6">
+    <title>K-Citadel map · S6</title>
+    <desc>Stylised fortified citadel for Kubernetes security. Armored Vault highlighted.</desc>
+    <defs>
+      <linearGradient id="kc-stone" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#EAE2D2" stop-opacity="0.6"/><stop offset="100%" stop-color="#C8B89A" stop-opacity="0.55"/></linearGradient>
+      <linearGradient id="kc-banner" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8E2A2A" stop-opacity="0.18"/><stop offset="100%" stop-color="#3F4A5E" stop-opacity="0.30"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#kc-stone)" stroke="#5A4A36" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · CITADEL · SECURITY ARCHITECT</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">outer perimeter — modeling, identity, gates, runtime</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">inner stronghold — vault, audit, war room</text>
+    <g class="pin pin-anchor" id="ksec-bastion01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">S1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Threat Map Room</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">zero-trust</text></g>
+    <g class="pin" id="ksec-bastion02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">S2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Authorization Desk</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">RBAC</text></g>
+    <g class="pin" id="ksec-bastion03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">S3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Checkpoint Gates</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">admission</text></g>
+    <g class="pin" id="ksec-bastion04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">S4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Mandatory-Helmet Zones</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">PSA + runtime</text></g>
+    <g class="pin" id="ksec-bastion05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">S5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Seal Workshop</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">signing + SBOM</text></g>
+    <g class="pin active" id="ksec-bastion06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">S6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Armored Vault</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">secrets + mTLS</text></g>
+    <g class="pin" id="ksec-bastion07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">S7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Audit + War Room</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">compliance + IR</text></g>
+    <g class="pin" id="ksec-bastion08" transform="translate(380,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">S8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Defendable Citadel</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🏰 <strong>Armored Vault</strong> <span>· S6 of 8</span><span class="visually-hidden">Module S6, Armored Vault.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module S6 · the Armored Vault — secrets at rest, identity in flight</span>
+    <h1>S6 · Secrets at Scale + mTLS + Service Mesh Security</h1>
+    <p class="hero-sub">Two coupled disciplines. <strong>Secrets at scale</strong>: store in an external vault (HashiCorp Vault / AWS Secrets Manager / Azure Key Vault); sync to cluster via External Secrets Operator (ESO); KMS-encrypt the K8s Secret at rest; rotate automatically. <strong>mTLS via service mesh</strong>: Istio / Linkerd / Cilium Mesh inject sidecars (or run as ambient mode); every Pod-to-Pod call is signed + encrypted using SPIFFE/SPIRE-issued workload identity; cert-manager + automated rotation back the cluster's PKI. The two together close the secret-leak + lateral-movement attack surfaces.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Secrets + mTLS — External Secrets, Vault, mesh, SPIFFE.">
+  <rect x="20" y="20" width="720" height="160" rx="16" fill="#FBF7F0" stroke="#C8C2B6" stroke-width="1"/>
+  <text x="380" y="44" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="14" font-weight="700" fill="#3F4A5E">Armored Vault · K-Citadel — secrets at rest, identity in flight</text>
+  <rect x="40" y="70" width="160" height="100" rx="10" fill="#3F4A5E" stroke="#1F2433"/>
+  <text x="120" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#FBF1D6">External vault</text>
+  <text x="120" y="108" text-anchor="middle" font-size="9" fill="#FBF1D6">HashiCorp Vault</text>
+  <text x="120" y="124" text-anchor="middle" font-size="9" fill="#FBF1D6">/ AWS Secrets / Azure KV</text>
+  <rect x="220" y="70" width="160" height="100" rx="10" fill="#5A6B81" stroke="#1F2433"/>
+  <text x="300" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#FBF1D6">External Secrets Op</text>
+  <text x="300" y="108" text-anchor="middle" font-size="9" fill="#FBF1D6">syncs vault → K8s Secret</text>
+  <text x="300" y="124" text-anchor="middle" font-size="9" fill="#FBF1D6">+ KMS-encrypted at rest</text>
+  <rect x="400" y="70" width="160" height="100" rx="10" fill="#5DCAA5" stroke="#1F2433"/>
+  <text x="480" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2433">Service mesh</text>
+  <text x="480" y="108" text-anchor="middle" font-size="9" fill="#1F2433">Istio / Linkerd</text>
+  <text x="480" y="124" text-anchor="middle" font-size="9" fill="#1F2433">automatic mTLS</text>
+  <rect x="580" y="70" width="140" height="100" rx="10" fill="#FF9900" stroke="#1F2433"/>
+  <text x="650" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2433">SPIFFE / SPIRE</text>
+  <text x="650" y="108" text-anchor="middle" font-size="9" fill="#1F2433">workload identity</text>
+  <text x="650" y="124" text-anchor="middle" font-size="9" fill="#1F2433">+ cert-manager</text>
+</svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. A repo audit found a database password committed in a Helm values.yaml from 2023. The password is still active. The team rotates it; <em>but they realise the same password was rotated by hand into 14 deployments — none of them have a runbook</em>. Today's lesson: design secrets as flowing artifacts (vault → ESO → K8s Secret → Pod) so rotation is one operation, not 14.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Secrets in external vault, synced via ESO, KMS-encrypted at rest. mTLS via mesh + SPIFFE/SPIRE workload identity. cert-manager + automated rotation. No long-lived static credentials anywhere.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · external vault + ESO sync</span>
+    <h2>Vault / Secrets Manager / Key Vault as source of truth</h2>
+    <p>Pick one external vault. <strong>HashiCorp Vault</strong> for cloud-agnostic / hybrid; <strong>AWS Secrets Manager</strong> for AWS-only; <strong>Azure Key Vault</strong> / <strong>GCP Secret Manager</strong> similar. The vault holds the source-of-truth secrets + handles rotation (Lambda-style or built-in for DBs).</p>
+    <p><strong>External Secrets Operator (ESO)</strong>: K8s controller that watches a <code>SecretStore</code> CR (vault auth config) + <code>ExternalSecret</code> CR (which secrets to sync where). ESO polls vault; creates/updates K8s Secrets; KMS-encrypts at rest via <code>--encryption-provider-config</code>.</p>
+    <p>Pattern: per-namespace SecretStore using IRSA / Workload Identity / Pod Identity (no shared cluster-wide vault token). ESO's ServiceAccount in each namespace federates to the vault role for that namespace only — tenant isolation.</p>
+    <p>Rotation: vault rotates → ESO detects on next poll → updates K8s Secret → Pods restart on Secret change (via reloader or in-app SDK). End-to-end rotation is a vault-API call.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Why use ESO with per-namespace SecretStore + IRSA / Workload Identity instead of one cluster-wide ESO?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Performance.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Tenant isolation — each namespace gets only its own vault role / scope.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">ESO requires it.</button></li>
+      </ul>
+      <p class="pause-check-feedback">Per-namespace SecretStore + namespace-scoped vault role = tenant isolation at the secrets layer. A compromised namespace can't fetch another namespace's secrets via ESO.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · mesh-mTLS</span>
+    <h2>Istio / Linkerd / Cilium — sidecar vs ambient</h2>
+    <p><strong>Service mesh</strong> wraps every Pod-to-Pod call in mTLS automatically. Three popular meshes:</p>
+    <ul>
+      <li><strong>Istio</strong>: most features (traffic mgmt + policy + telemetry); sidecar mode (Envoy per Pod) or <em>ambient mode</em> (per-node ztunnel + per-namespace waypoint proxy — lower overhead).</li>
+      <li><strong>Linkerd</strong>: simpler + faster than Istio; Rust micro-proxy; SPIFFE-based identity; ambient-style architecture.</li>
+      <li><strong>Cilium Service Mesh</strong>: eBPF-based; integrates with Cilium NetworkPolicy + Hubble observability.</li>
+    </ul>
+    <p>All three: every workload gets a SPIFFE ID; mTLS certs are issued per workload; certs auto-rotate hourly; mesh enforces "only signed traffic accepted" per workload. Lateral movement after compromise is blocked at the mesh.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · SPIFFE / SPIRE + cert-manager</span>
+    <h2>workload identity standard</h2>
+    <p><strong>SPIFFE</strong> (Secure Production Identity Framework For Everyone) is the standard for workload identity. SPIFFE IDs look like <code>spiffe://cluster.local/ns/api/sa/orders</code>. <strong>SPIRE</strong> is the reference implementation: agents on each node issue short-lived X.509-SVIDs (or JWT-SVIDs) to workloads based on attestation rules.</p>
+    <p>Mesh integration: Istio + Linkerd both issue SPIFFE-format certs to Pods. The mesh's control plane calls SPIRE (or its own CA) to issue per-Pod certs.</p>
+    <p><strong>cert-manager</strong>: K8s CRD-based PKI for Ingress / API server / generic certs. Issuer types: ACME (Let's Encrypt), Vault, Venafi, custom CA, self-signed. CertificateRequest + Certificate CRDs auto-rotate via <code>renewBefore</code>. Pair with mesh for end-to-end PKI hygiene.</p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · zero-secrets pattern + audit</span>
+    <h2>No static credentials in images, env, or git</h2>
+    <p>The mature pattern is <strong>zero static credentials</strong> in container images, environment variables (committed to git), or Helm values. Sources of secrets:</p>
+    <ul>
+      <li><strong>Workload identity</strong> (IRSA / Workload Identity / Pod Identity): cloud auth via federation — Pod's SA token traded for cloud creds at runtime.</li>
+      <li><strong>External Secrets via ESO</strong>: app secrets (DB passwords, API keys) fetched from vault.</li>
+      <li><strong>SPIFFE workload identity</strong>: workload-to-workload mTLS identity.</li>
+      <li><strong>cert-manager</strong>: in-cluster certs (Ingress, internal services).</li>
+    </ul>
+    <p><strong>Audit</strong>: scan images for hardcoded secrets (gitleaks, trufflehog); scan repos pre-commit (pre-commit hooks + git secrets); SIEM alert on Kubernetes Secret reads (audit.k8s.io). Quarterly review: any namespace with a Secret not managed by ESO or cert-manager → flag + remediate.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">What does SPIFFE provide?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">A Kubernetes Secret type.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Workload identity standard (URI-style IDs + short-lived X.509/JWT).</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">A network plugin.</button></li>
+      </ul>
+      <p class="pause-check-feedback">SPIFFE = Secure Production Identity Framework. SVIDs (X.509 or JWT) issued per workload via SPIRE; meshes use SPIFFE-format certs for mTLS.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-vault clusters had secrets in env vars committed to git, ConfigMaps, or hand-rotated K8s Secrets. Rotation was manual + per-deployment — "rotate password 14 times" failure mode. Pod-to-Pod calls were unencrypted in the cluster network. Lateral movement after compromise was free.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Modern: secrets in external vault, synced via ESO, KMS-encrypted at rest. Pod-to-Pod over mesh-mTLS with SPIFFE workload identity. cert-manager + automated rotation. Workload identity (IRSA / Workload Identity / Pod Identity) for cloud auth. <em>Zero static credentials anywhere in source.</em></p></div>
+    </div>
+    <p class="ba-caption"><em>Secrets flow; identity is short-lived; mTLS is automatic. Manual rotation is an anti-pattern.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this bastion</h2>
+<p>The deepest stronghold in the citadel is the <strong>Armored Vault</strong>. Originally, secrets were copied by hand to every workshop in the citadel — when a key changed, every workshop had to be visited individually. Things broke when copies drifted; rotation was a multi-day job.</p>
+    <p>The modern vault has three improvements. (1) A single <strong>master vault</strong> holds the source-of-truth (Vault / Secrets Manager / Key Vault). (2) <strong>Bonded couriers</strong> (External Secrets Operator) deliver secrets to each workshop on demand — automatically updated when the master changes. (3) Every courier presents their <strong>workshop-specific permit</strong> (per-namespace SecretStore + workload identity) — couriers can't cross-deliver.</p>
+    <p>For workshop-to-workshop conversation, every worker now wears a <strong>numbered identity badge</strong> (SPIFFE ID) issued by the citadel's identity bureau (SPIRE), and every conversation is sealed in a tamper-evident envelope (mTLS). The mail-carrier (mesh sidecar) seals + checks every envelope automatically.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes security</th></tr></thead>
+        <tbody>
+          <tr><td>Master vault</td><td>External vault (HashiCorp / AWS Secrets / Azure KV / GCP SM)</td></tr>
+          <tr><td>Bonded couriers</td><td>External Secrets Operator (ESO)</td></tr>
+          <tr><td>Workshop-specific permit</td><td>Per-namespace SecretStore + IRSA / Workload Identity</td></tr>
+          <tr><td>Sealed K8s storage chest</td><td>K8s Secret with KMS encryption-at-rest</td></tr>
+          <tr><td>Numbered identity badge</td><td>SPIFFE workload ID</td></tr>
+          <tr><td>Identity bureau</td><td>SPIRE (or mesh CA issuing SPIFFE certs)</td></tr>
+          <tr><td>Tamper-evident envelopes</td><td>mTLS via service mesh (Istio / Linkerd / Cilium)</td></tr>
+          <tr><td>Mail-carrier with sealing kit</td><td>mesh sidecar (Envoy / Linkerd-proxy / ambient ztunnel)</td></tr>
+          <tr><td>Citadel-wide PKI</td><td>cert-manager (Ingress / API / generic certs)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A real vault holds physical objects; K8s Secrets are policy + bytes. KMS-encryption-at-rest is a config switch (encryption provider config) — easy to forget; verify with <code>etcdctl get</code> output.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>The castle has one giant vault holding all the keys. Couriers bring keys to each workshop on schedule; couriers don't share routes. Every worker wears a numbered badge issued by the security office. Every message between workers is sealed in a tamper-proof envelope by the mail-carrier. No keys are left lying around.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p><strong>External vault</strong> holds source-of-truth secrets. <strong>External Secrets Operator (ESO)</strong> syncs vault → K8s Secret per namespace; per-namespace SecretStore with workload identity. <strong>KMS encryption-at-rest</strong> via apiserver config. <strong>Service mesh</strong> (Istio / Linkerd / Cilium) injects sidecars or ambient proxies; auto mTLS for Pod-to-Pod with <strong>SPIFFE</strong>-format certs from <strong>SPIRE</strong>. <strong>cert-manager</strong> for cluster certs. <strong>Workload identity</strong> for cloud auth (IRSA / Workload Identity / Pod Identity). <strong>Zero static creds</strong> in images, env, or git.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How regulated platforms do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">Greenfield with Vault + ESO + Linkerd</p><p>A 50-engineer SaaS deploys: HashiCorp Vault as cluster-external secret store; ESO with per-namespace SecretStore + IRSA; Linkerd auto-mTLS cluster-wide. From day one: zero static creds; mesh-mTLS for everything; rotation = vault API call.</p></div>
+      <div class="scenario"><p class="scenario-name">Brownfield audit + ESO migration</p><p>A team audits 200 namespaces; finds 80 K8s Secrets created manually + ~12 with credentials in git (oops). 6-month migration: vault setup, ESO ExternalSecret per Secret, gradual cutover. Each Secret's replacement validated; old Secret deleted from git history (BFG).</p></div>
+      <div class="scenario"><p class="scenario-name">Istio ambient — lower overhead than sidecars</p><p>A 1000-Pod cluster previously ran sidecar Istio with ~50 MiB memory overhead per Pod. Migration to Istio ambient: per-node ztunnel + per-namespace waypoint proxies; per-Pod overhead drops to ~5 MiB. mTLS still automatic; same SPIFFE identity model.</p></div>
+      <div class="scenario"><p class="scenario-name">Outage — vault unreachable; cluster kept running</p><p>An ESO-backed cluster lost vault connectivity for 90 minutes. Existing K8s Secrets stayed in cluster; Pods kept running with last-fetched values. Pod restarts that needed fresh secrets failed PROVISIONING; queued. Vault returned; ESO reconciled in 2 minutes; queued Pods drained. <em>Local cache + ESO's reconciliation kept blast radius small.</em></p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Secret + mTLS path — fetched from external store; mesh enforces in transit</h2>
+    <p>External Secrets fetches; mesh signs in transit. Workload identity is the foundation.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 230" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="70" width="180" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="130" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">External Secrets Operator</text><text x="130" y="108" text-anchor="middle" font-size="9" fill="#6B6058">Vault / Secrets Manager</text>
+        <rect x="240" y="70" width="180" height="60" rx="6" fill="#5A6B81" stroke="#3F4A5E" stroke-width="1.5"/><text x="330" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Sealed K8s Secret</text><text x="330" y="108" text-anchor="middle" font-size="9" fill="#6B6058">in cluster, KMS-wrapped</text>
+        <rect x="440" y="70" width="280" height="60" rx="6" fill="#5DCAA5" stroke="#3F4A5E" stroke-width="1.5"/><text x="580" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2433">mTLS via service mesh (Istio / Linkerd)</text><text x="580" y="108" text-anchor="middle" font-size="9" fill="#6B6058">every Pod-to-Pod call signed + encrypted</text>
+        <rect x="40" y="160" width="680" height="50" rx="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1.5"/><text x="380" y="182" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">cert-manager + SPIFFE / SPIRE = workload identity foundation; rotation automated</text><text x="380" y="198" text-anchor="middle" font-size="9" fill="#6B6058">identity for every workload</text>
+        <g id="anim-pkg" opacity="0" transform="translate(125,100)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="vault">▶ secret + mTLS path</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> secrets + mTLS at scale.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "K8s Secrets are encrypted by default."</div><div class="misc-row misc-truth"><strong>Truth:</strong> K8s Secrets are <em>base64-encoded by default</em>, NOT encrypted. To encrypt at rest, configure <code>--encryption-provider-config</code> on the apiserver pointing to KMS. Without that, etcd stores plain (base64) values. Verify with <code>etcdctl get</code>.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Service mesh is overkill for small clusters."</div><div class="misc-row misc-truth"><strong>Truth:</strong> The mTLS + workload identity benefits apply at any size. Linkerd has the lightest footprint; Istio ambient mode is now competitive. The right question is "do we need Pod-to-Pod mTLS?" — for any cluster handling sensitive data, the answer is yes.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "SPIFFE / SPIRE adds complexity we don't need."</div><div class="misc-row misc-truth"><strong>Truth:</strong> If using a service mesh, you're using SPIFFE under the hood whether you know it or not. SPIRE explicit deployment matters when (a) you want workload identity for non-mesh workloads (databases, cloud APIs); (b) you need cross-cluster identity federation. For most teams, mesh-managed SPIFFE is enough.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does ESO do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Watches SecretStore + ExternalSecret CRs; polls external vault; creates/updates K8s Secrets in cluster. Per-namespace SecretStore + IRSA / Workload Identity = tenant-scoped sync.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Are K8s Secrets encrypted at rest by default?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>No.</strong> Base64-encoded only. Enable encryption-at-rest via <code>--encryption-provider-config</code> on apiserver pointing to KMS. Without it, etcd holds plain values.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does SPIFFE provide?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Workload identity standard. SPIFFE IDs (URIs like <code>spiffe://cluster/ns/X/sa/Y</code>) + short-lived X.509-SVID or JWT-SVID per workload. SPIRE is the reference implementation.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Sidecar vs ambient mode in service mesh?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Sidecar</strong>: Envoy proxy per Pod (~50 MiB memory each); per-Pod policy. <strong>Ambient</strong> (Istio / Linkerd new model): per-node ztunnel + per-namespace waypoint proxy; lower per-Pod overhead; same mTLS guarantees.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">cert-manager — what does it do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Automates X.509 cert issuance + rotation. Issuers (ACME / Vault / Venafi / CA / self-signed); Certificate + CertificateRequest CRDs; <code>renewBefore</code> auto-rotates.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Workload identity (IRSA / Workload Identity / Pod Identity) — what does it replace?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Long-lived AWS / GCP / Azure access keys baked into images / env vars. Replaced by federation: K8s SA token traded at cloud IAM for short-lived creds scoped per Pod.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Why per-namespace SecretStore in ESO?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Tenant isolation. A compromised namespace can't request other namespaces' vault paths. Each SecretStore uses a workload identity scoped to one namespace + one vault path / role.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When is auto-mTLS via mesh insufficient?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">When (a) workloads need cross-cluster mTLS (need cross-cluster mesh or SPIFFE federation); (b) workloads include non-K8s components (DBs, VM workloads — need explicit SPIRE agents); (c) regulated environments require key escrow or HSM-backed CA.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">Migrate a Helm chart with hardcoded DB password (in values.yaml committed to git) to ESO. Walk steps.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) <strong>Inventory</strong>: list every place the password lives — values.yaml, deployment env, Pod spec. (2) <strong>Move to vault</strong>: write secret in HashiCorp Vault at <code>secret/myapp/db</code>. (3) <strong>Set up ESO</strong>: SecretStore CR in the namespace using IRSA / Workload Identity that has <code>read</code> on <code>secret/myapp/*</code>; ExternalSecret CR mapping <code>secret/myapp/db</code> → K8s Secret <code>myapp-db</code>. (4) <strong>Update Helm chart</strong>: replace hardcoded value with <code>secretKeyRef: {name: myapp-db, key: password}</code>; remove the value from values.yaml. (5) <strong>Validate</strong>: deploy in dev; ESO creates Secret; Pod consumes it. (6) <strong>Rotate</strong>: change password in vault; ESO updates Secret; reloader (or app SDK) restarts Pods. (7) <strong>Clean git history</strong>: BFG or git-filter-repo to remove the leaked password from past commits; revoke the leaked password forever in DB.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A team objects to enabling mesh-mTLS — "too much overhead." What's the modern Istio path that addresses this?</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span><strong>Istio ambient mode</strong> removes the per-Pod sidecar overhead. Architecture: per-node <code>ztunnel</code> handles L4 mTLS for all Pods on the node; per-namespace <code>waypoint proxy</code> handles L7 if needed. <em>Per-Pod overhead</em> drops from ~50 MiB to ~5 MiB. <em>mTLS guarantees</em> stay (every Pod-to-Pod call signed). <em>Migration path</em>: deploy ambient alongside sidecars; flip workloads namespace-by-namespace; same Istio control plane. <em>Linkerd</em> uses similar architecture with even lower overhead. <em>Cilium Service Mesh</em> uses eBPF for the ambient role. <em>The performance argument no longer justifies skipping mesh-mTLS.</em></div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">A vendor demands a static AWS credential in a K8s Secret for their integration. Defend pushing back to workload identity.</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how the security architect rejected static creds</span>"<strong>A static AWS credential is exactly the failure mode workload identity removes.</strong> Three counter-points to argue for IRSA / Pod Identity: (1) <strong>Rotation</strong>: static credentials require rotation runbook + downtime risk. IRSA / Pod Identity rotate per-call automatically. (2) <strong>Blast radius</strong>: if the static credential leaks (image scan, log accident), it's usable from anywhere on the Internet. Workload-identity creds are scoped to the K8s cluster + the specific Pod's SA token + short TTL — usable only by that workload. (3) <strong>Compliance</strong>: PCI / HIPAA / SOC2 specifically call out long-lived credentials as a finding. <strong>Migration path for the vendor</strong>: ask their integration to support assume-role-with-web-identity (the standard for IRSA); if they can't today, set a 90-day deadline. <em>If absolutely required short-term</em>: store the credential in Vault, sync via ESO with rotation policy enforced by Vault's AWS-IAM secret engine. Even then, the credential is short-lived (vault rotates daily). <strong>Static creds are never the right answer in 2026.</strong>"</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">External Secrets Operator (ESO)</div><div class="gloss-def">K8s controller that syncs secrets from external vault to K8s Secrets via SecretStore + ExternalSecret CRs.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SecretStore CR</div><div class="gloss-def">Per-namespace ESO config naming the vault + auth method. IRSA / Workload Identity preferred.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ExternalSecret CR</div><div class="gloss-def">ESO CR mapping vault keys to K8s Secret keys; refreshInterval controls poll frequency.</div></div>
+      <div class="gloss-item"><div class="gloss-name">encryption-provider-config</div><div class="gloss-def">apiserver flag enabling encryption-at-rest for Secrets in etcd via KMS / aescbc / aesgcm.</div></div>
+      <div class="gloss-item"><div class="gloss-name">SPIFFE / SPIRE</div><div class="gloss-def">Workload identity standard (SPIFFE) + reference implementation (SPIRE). SVIDs (X.509 or JWT) issued per workload.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Service mesh sidecar</div><div class="gloss-def">Envoy / Linkerd-proxy injected per Pod to handle mTLS + traffic management. Per-Pod memory overhead.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Service mesh ambient mode</div><div class="gloss-def">Per-node ztunnel + per-namespace waypoint proxy; lower per-Pod overhead than sidecars; same mTLS.</div></div>
+      <div class="gloss-item"><div class="gloss-name">cert-manager</div><div class="gloss-def">K8s PKI operator. Issuer / Certificate / CertificateRequest CRDs; auto-rotation; ACME / Vault / CA / self-signed.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Workload identity</div><div class="gloss-def">Short-lived cloud creds via OIDC federation between K8s SA + cloud IAM. IRSA (AWS), Workload Identity (GCP), Pod Identity (Azure).</div></div>
+      <div class="gloss-item"><div class="gloss-name">Sealed Secrets / SOPS</div><div class="gloss-def">Alternative patterns — Sealed Secrets encrypts in git; SOPS encrypts files. Lighter than Vault but less powerful for rotation.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Secrets in external vault, synced via ESO, KMS-encrypted at rest. mTLS via mesh + SPIFFE/SPIRE workload identity. cert-manager + automated rotation. No long-lived static credentials anywhere.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module S6 complete</span>
+    <p>Secrets in external vault, synced via ESO with per-namespace tenant isolation, KMS-encrypted at rest. mTLS via mesh + SPIFFE identity. cert-manager for cluster PKI. Workload identity for cloud auth. Zero static credentials in source.</p>
+    <p class="recap-next"><strong>Next — S7: Audit log analytics + compliance evidence + IR.</strong> audit.k8s.io webhook → SIEM; PCI / HIPAA / FedRAMP / SOC2 / NIST 800-190 control mapping; break-glass IAM; incident response playbooks.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-ADV-SEC · Module S6 of 8 · grounded in kubernetes.io/docs/concepts/security</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "vault", "mode_label": "Mode: External Secrets \u2192 Sealed K8s Secret \u2192 mTLS", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> External Secrets Operator polls Vault / Secrets Manager.", "move_to": [125, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> Creates / updates K8s Secret (KMS-encrypted at rest).", "move_to": [330, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> Workload mounts; mesh sidecar wraps Pod-to-Pod calls in mTLS.", "move_to": [580, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> SPIFFE / SPIRE issues workload identity; cert-manager rotates everything.", "move_to": [380, 185], "duration_ms": 900, "pause_after_ms": 2200, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [125, 100];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

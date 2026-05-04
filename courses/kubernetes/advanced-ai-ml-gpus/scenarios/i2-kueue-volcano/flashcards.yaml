@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-AI I (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Kueue four concepts?
+    back: |
+      **ResourceFlavor** (capacity slice), **ClusterQueue** (cluster quota + cohort + preemption), **LocalQueue** (namespace-scoped), **Workload** (Kueue-tracked job).
+
+  - id: 2
+    front: |
+      What is gang scheduling?
+    back: |
+      All-or-nothing scheduling for multi-Pod jobs. N Pods (PodGroup min-member) start together or none start. Volcano implements.
+
+  - id: 3
+    front: |
+      MultiKueue what does it federate?
+    back: |
+      Workloads across worker Kueue clusters; control-plane Kueue routes per available capacity. Tenants see one queue; platform spans many clusters.
+
+  - id: 4
+    front: |
+      Cohort lending in Kueue?
+    back: |
+      Multiple ClusterQueues in same cohort can borrow idle quota from each other. Per-team quota stays the contract; bursts use cohort spare.
+
+  - id: 5
+    front: |
+      Workload kinds Kueue admits?
+    back: |
+      Job, JobSet, RayJob (KubeRay), MPIJob (MPI Operator), PyTorchJob / TFJob (Training Operator), plus custom CRDs via Kueue integration.
+
+  - id: 6
+    front: |
+      When use Volcano?
+    back: |
+      Multi-Pod jobs needing all-or-nothing (distributed training, MPI). Single-Pod jobs don't need it. Often run alongside kube-scheduler.
+
+  - id: 7
+    front: |
+      Kueue preemption?
+    back: |
+      Higher-priority Workload can preempt running lower-priority Workloads in the same cohort. Configurable per ClusterQueue.
+
+  - id: 8
+    front: |
+      Pattern for distributed training?
+    back: |
+      Kubeflow PyTorchJob / TFJob → Kueue admits → Volcano gang-schedules → training runs. End-to-end batch ML.

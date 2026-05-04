@@ -1,0 +1,21 @@
+# Quiz — K-ADV-PE P (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A 50-engineer team wants Backstage live in 30 days. Walk priorities.
+    answer: |
+      Week 1: deploy Backstage (Helm or hosted); enable GitHub/GitLab integration; catalog auto-discovery seeds. Week 2: install Kubernetes + Argo CD + PagerDuty plugins; configure org's SSO. Week 3: write 1-2 Scaffolder templates (new service, new namespace); write a TechDocs example for one repo + train teams. Week 4: rollout — every service team registers catalog-info.yaml + ships docs in repos. Measure NPS at 60 days; iterate next quarter.
+
+  - id: 2
+    prompt: |
+      A Scaffolder template needs to call Crossplane to create a new namespace + Postgres DB. Walk steps.
+    answer: |
+      Template steps: (1) `fetch:template` renders catalog-info.yaml + Postgres CR YAML. (2) Custom action `github:openPr` opens a PR in the GitOps repo with the namespace + Postgres CRs. (3) PR auto-merges (or human-approved). (4) Argo CD syncs; Crossplane reconciles; namespace + DB materialize. (5) Backstage shows status via Argo CD + Crossplane plugins on the new service's page.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership says: "why pay for Backstage when GitHub already shows ownership?" Defend.
+    answer: |
+      "**GitHub shows code ownership; Backstage shows operational reality.** Three reasons: (1) **Cross-tool surface**: GitHub is one tab; Backstage shows Argo CD deploy status + K8s cluster view + PagerDuty on-call + Datadog metrics + Snyk vulns + cost data on one service page. (2) **Doc + template surface**: TechDocs centralizes docs; Scaffolder enforces day-1 quality. GitHub does neither at scale. (3) **Searchable + queryable**: "all production-tier Java services owned by team-X with critical CVEs" answerable via Catalog API. GitHub can't. **Cost**: hosted Backstage ~$10-15/dev/mo; self-hosted is one engineer of operational time. **Value**: every developer's daily home page; the platform team's product surface."

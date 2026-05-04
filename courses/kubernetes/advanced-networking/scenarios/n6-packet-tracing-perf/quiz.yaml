@@ -1,0 +1,21 @@
+# Quiz — K-ADV-NET N (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team upgrades CNI; cluster latency tail jumps 30%. Walk diagnostic.
+    answer: |
+      (1) **Hubble flow latency histograms**: per-Service P99 — which paths regressed? (2) **Node-level perf top + eBPF**: kernel hotspots? Conntrack? Encap path? (3) **Compare CNI configs**: pre / post upgrade — new feature flags? Encap mode change? Kube-proxy-replacement enabled? (4) **kubectl-trace bpftrace**: what kernel functions are hot? (5) **Mitigation**: revert CNI version OR disable the new feature OR scale resource. (6) **Reproduce in dev**: kube-burner with same workload to confirm fix before prod.
+
+  - id: 2
+    prompt: |
+      A regulated cluster needs flow-level audit for every Pod-to-Pod call. Walk the design.
+    answer: |
+      (1) **Hubble flow logs**: emitted by Cilium eBPF; export to SIEM (Loki / Splunk) via Fluent Bit / Vector. (2) **Retention**: per-regime (1 year hot + S3 archive). (3) **Per-flow context**: namespace + workload + L7 verdict + drop reason — natively in Hubble events. (4) **SIEM rules**: alarm on "flow to known-bad CIDRs," "unexpected service-to-service flow," "NetworkPolicy denial spike." (5) **Compliance evidence**: queries answer "every flow into namespace X in past 90 days." (6) **Cost**: budget for Hubble retention; sampling for high-cardinality flows is OK if compliance allows.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees Pixie cost ($800/month) + asks to remove. Defend.
+    answer: |
+      "**Pixie pays for itself the first incident it shortens.** Three reasons: (1) **Zero-instrumentation L7 trace**: no PR to add OTel SDK to every app; instant value. (2) **Latency drift**: Pixie shows P99 per Service per upstream over time — drift surfaces before incidents. (3) **Cost framing**: $800/month is one engineer-day. The next P99 incident saved > one engineer-day. **Trim cost**: lower retention, sample high-cardinality services, scope to prod-only. **Don't remove a tool whose value is one incident.**"

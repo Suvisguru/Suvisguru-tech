@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-NET N (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three popular service meshes + their tradeoffs?
+    back: |
+      **Istio** (rich features + complexity), **Linkerd** (Rust micro-proxy + simple), **Cilium SM** (eBPF-native, Cilium-CNI integration). Plus Kuma (Envoy + multi-mesh).
+
+  - id: 2
+    front: |
+      What does NodeLocal DNSCache do?
+    back: |
+      DaemonSet running a CoreDNS instance on every node; intercepts DNS queries via iptables / IPVS; cache hits in-node = sub-ms. 5× reduction in CoreDNS Pod load.
+
+  - id: 3
+    front: |
+      ndots:1 vs ndots:5?
+    back: |
+      ndots:5 (default) tries cluster.local + namespace.svc + ... suffixes for short names = many DNS queries per resolution. ndots:1 + autoPath collapses to fewer queries. Cuts CoreDNS load.
+
+  - id: 4
+    front: |
+      IPv6 enablement layers?
+    back: |
+      **kubelet** (--cluster-dns dual), **apiserver** + **controller-manager** (--service-cluster-ip-range dual), **CNI** (per CNI config), **Service** (ipFamilyPolicy: PreferDualStack).
+
+  - id: 5
+    front: |
+      Common app-readiness IPv6 issue?
+    back: |
+      App binds only to `0.0.0.0` (v4); doesn't accept v6 traffic. Fix to `[::]` dual-bind or per-language equivalent. Audit before migration.
+
+  - id: 6
+    front: |
+      Sidecar vs ambient mesh mode?
+    back: |
+      **Sidecar**: Envoy / proxy per Pod; ~50 MiB per Pod; per-Pod policy. **Ambient**: per-node ztunnel + per-namespace waypoint proxy; ~5 MiB per Pod; same mTLS guarantees.
+
+  - id: 7
+    front: |
+      When add CoreDNS replicas?
+    back: |
+      After NodeLocal DNSCache is in place + ndots tuned. Replicas scale with node count; HPA on CoreDNS Pods. Per ~250 nodes, +1 CoreDNS replica is a baseline.
+
+  - id: 8
+    front: |
+      autoPath — what is it?
+    back: |
+      DNS feature in CoreDNS that resolves Pod-to-Service queries directly without iterating through search-path suffixes. Reduces CoreDNS load + cuts P99 DNS latency.

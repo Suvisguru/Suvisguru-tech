@@ -1,0 +1,21 @@
+# Quiz — K-ADV-NET N (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A 500-node cluster reports DNS-related connection failures during peak. Walk diagnostic + fix.
+    answer: |
+      (1) **Measure**: CoreDNS Pods' CPU + queries-per-second. (2) **Verify**: NodeLocal DNSCache deployed? (`kubectl get ds node-local-dns -n kube-system`). (3) If absent: **deploy NodeLocal DNSCache** first; expect 5× CoreDNS load reduction. (4) **Tune ndots** via PodDNSConfig at cluster level (kubelet) or per Service. (5) **Scale CoreDNS**: HPA min=2 + 1 per 250 nodes. (6) **Profile**: which queries dominate? Service-to-Service short names (use FQDN to avoid search-path) or external DNS (cache external responses longer). (7) **Mesh impact**: if Istio sidecars resolve frequently, configure mesh to use NodeLocal DNSCache too.
+
+  - id: 2
+    prompt: |
+      A team wants Istio for ambient mode's lower overhead. Walk the migration from sidecar.
+    answer: |
+      (1) **Upgrade Istio** to a release with ambient GA. (2) **Install ambient components**: ztunnel DaemonSet + waypoint proxies. (3) **Per-namespace migration**: label namespace `istio.io/dataplane-mode: ambient`; new Pods skip sidecar injection; existing Pods get rolled. (4) **Validate per-namespace**: mTLS still enforced; AuthorizationPolicy works; metrics still emit. (5) **Iterate**: namespace-by-namespace; expect 4-6 weeks for 30+ namespaces. (6) **Operational changes**: ambient debugging differs (no per-Pod sidecar logs); update runbooks. (7) **Decommission sidecars** per namespace as ambient validates.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees mesh sidecar memory cost ($1k/month at 1000 Pods). Asks to remove mesh. Defend.
+    answer: |
+      "**Mesh provides mTLS + retries + L7 observability — three things we'd need to rebuild without it.** Three reasons mesh stays: (1) **mTLS at scale**: replacing mesh-mTLS means handcrafting cert + workload identity per Service. Months of engineering for one already-solved problem. (2) **Retries + observability**: mesh emits per-Service metrics free; without mesh, every team instruments individually = inconsistent + incomplete. (3) **Operational regression**: lateral-movement defence comes from mTLS. Removing it = single-Pod compromise spreads cluster-wide. **The right move: migrate to ambient mode** ($1k → ~$100/month) instead of removing. Keep the value; cut the cost."

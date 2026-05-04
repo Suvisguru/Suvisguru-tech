@@ -1,0 +1,21 @@
+# Quiz — K-ADV-SEC S (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Migrate a Helm chart with hardcoded DB password (in values.yaml committed to git) to ESO. Walk steps.
+    answer: |
+      (1) **Inventory**: list every place the password lives — values.yaml, deployment env, Pod spec. (2) **Move to vault**: write secret in HashiCorp Vault at `secret/myapp/db`. (3) **Set up ESO**: SecretStore CR in the namespace using IRSA / Workload Identity that has `read` on `secret/myapp/*`; ExternalSecret CR mapping `secret/myapp/db` → K8s Secret `myapp-db`. (4) **Update Helm chart**: replace hardcoded value with `secretKeyRef: {name: myapp-db, key: password}`; remove the value from values.yaml. (5) **Validate**: deploy in dev; ESO creates Secret; Pod consumes it. (6) **Rotate**: change password in vault; ESO updates Secret; reloader (or app SDK) restarts Pods. (7) **Clean git history**: BFG or git-filter-repo to remove the leaked password from past commits; revoke the leaked password forever in DB.
+
+  - id: 2
+    prompt: |
+      A team objects to enabling mesh-mTLS — "too much overhead." What's the modern Istio path that addresses this?
+    answer: |
+      **Istio ambient mode** removes the per-Pod sidecar overhead. Architecture: per-node `ztunnel` handles L4 mTLS for all Pods on the node; per-namespace `waypoint proxy` handles L7 if needed. *Per-Pod overhead* drops from ~50 MiB to ~5 MiB. *mTLS guarantees* stay (every Pod-to-Pod call signed). *Migration path*: deploy ambient alongside sidecars; flip workloads namespace-by-namespace; same Istio control plane. *Linkerd* uses similar architecture with even lower overhead. *Cilium Service Mesh* uses eBPF for the ambient role. *The performance argument no longer justifies skipping mesh-mTLS.*
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      A vendor demands a static AWS credential in a K8s Secret for their integration. Defend pushing back to workload identity.
+    answer: |
+      "**A static AWS credential is exactly the failure mode workload identity removes.** Three counter-points to argue for IRSA / Pod Identity: (1) **Rotation**: static credentials require rotation runbook + downtime risk. IRSA / Pod Identity rotate per-call automatically. (2) **Blast radius**: if the static credential leaks (image scan, log accident), it's usable from anywhere on the Internet. Workload-identity creds are scoped to the K8s cluster + the specific Pod's SA token + short TTL — usable only by that workload. (3) **Compliance**: PCI / HIPAA / SOC2 specifically call out long-lived credentials as a finding. **Migration path for the vendor**: ask their integration to support assume-role-with-web-identity (the standard for IRSA); if they can't today, set a 90-day deadline. *If absolutely required short-term*: store the credential in Vault, sync via ESO with rotation policy enforced by Vault's AWS-IAM secret engine. Even then, the credential is short-lived (vault rotates daily). **Static creds are never the right answer in 2026.**"

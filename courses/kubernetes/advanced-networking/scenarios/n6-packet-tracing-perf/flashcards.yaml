@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-NET N (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does Hubble give you?
+    back: |
+      Per-flow events from Cilium eBPF — source/dest Pod, IP, port, verdict (Allowed/Dropped + reason), L7 metadata (HTTP / DNS / Kafka). UI + CLI + Grafana.
+
+  - id: 2
+    front: |
+      Pixie vs OTel SDKs?
+    back: |
+      Pixie uses eBPF probes — sees existing app traffic without code changes. OTel SDKs require code instrumentation but give richer custom metrics. Both useful; complementary.
+
+  - id: 3
+    front: |
+      When pick tcpdump?
+    back: |
+      Last resort. When higher-level tools (Hubble, Pixie, Tetragon, kubeshark) don't answer your question. Encap-debugging, MTU issues, raw-bytes inspection.
+
+  - id: 4
+    front: |
+      What is kube-burner?
+    back: |
+      Synthetic load generator — spin up N Pods + Services + CRDs + measure cluster behavior. CI-friendly perf testing.
+
+  - id: 5
+    front: |
+      MTU mismatch symptom?
+    back: |
+      Small requests work; large requests silently drop. Often paired with ICMP "Fragmentation needed" being filtered. Fix: Pod MTU = host MTU − encap overhead.
+
+  - id: 6
+    front: |
+      conntrack saturation symptom?
+    back: |
+      High connection-per-second cluster; nf_conntrack_count near nf_conntrack_max; SYN drops + retries. Fix: tune nf_conntrack_max + hashsize; switch to eBPF (Cilium kube-proxy-replacement).
+
+  - id: 7
+    front: |
+      cpu-manager-policy?
+    back: |
+      kubelet flag: `none` (default; CFS scheduler) or `static` (exclusive CPU per Guaranteed-QoS Pod). Static reduces context-switch + latency for latency-sensitive workloads.
+
+  - id: 8
+    front: |
+      Tetragon's enforce mode?
+    back: |
+      Tetragon can *kill* processes / block syscalls in kernel based on rules — runtime enforcement, not just observation. Reserve for tested rules; over-aggressive = self-DoS.

@@ -1,0 +1,61 @@
+# Intake brief — N5, K-ADV-NET
+# Topic: N5 · NetworkPolicy + Egress + Private + Hybrid
+# Module N5 · NetworkPolicy + Egress + Private
+
+lesson:
+  title: 'N5 · NetworkPolicy + Egress + Private + Hybrid'
+  slug: 'n5-networkpolicy-egress-private'
+  domain: 'kubernetes'
+  course_slug: 'advanced-networking'
+  position: 05
+  granularity: 'module'
+  brief_drafted_on: '2026-05-04'
+  central_metaphor: 'K-Highway · Customs + Tollbooth — The Customs + Tollbooth marks the cluster''s borders. A **federal customs office** (AdminNetworkPolicy) sets non-negotiable rules — no traffic to RFC-1918 from prod, no traffic from sandbox to prod eve'
+  module: 'Module N5 · NetworkPolicy + Egress + Private'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'At least one distribution course (K-EKS / K-AKS / K-GKE / K-OCP / K-VAN).'
+    - 'K-ADV-NET modules 1-4 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain adminNetworkPolicy + NetworkPolicy + Baseline.'
+  - 'Learner can explain the cluster''s posture is no traffic by default.'
+  - 'Learner can explain all cluster egress through one path; auditable.'
+
+sections:
+  - 'AdminNetworkPolicy + NetworkPolicy + Baseline'
+  - 'The cluster''s posture is no traffic by default'
+  - 'All cluster egress through one path; auditable'
+  - 'apiserver isolation + on-prem connectivity'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A 200-engineer org sets cluster-wide ANP: "deny ingress from sandbox-* to prod-*; deny egress to RFC-1918 from prod-*.'
+    - 'Stripe required allowlisting source IPs.'
+    - 'A regulated team''s GKE cluster has private apiserver + private nodes.'
+    - 'Egress gateway with single Pod replicas; OOM during traffic spike; cluster lost outbound for 4 minutes.'
+
+section_6_animated_svg:
+  modes_count: 1
+  description: 'See preview-kubernetes-adv-net-lesson-05.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-adv-net-lesson-05.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Default-deny ingress + egress at namespace; AdminNetworkPolicy for org-wide rules; egress gateway for audit trail; private cluster for apiserver isolation; hybrid VPN/DX for on-prem.**'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/kubernetes-networking'
+  - 'https://kubernetes.io/docs/'

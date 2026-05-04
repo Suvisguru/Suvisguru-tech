@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-ADV-AI I1 · GPU + DRA + MIG</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-ADV-AI module journey">
+  <span class="concept-rail-title">K-ADV-AI modules</span>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>I1 GPU + DRA + MIG</span><span class="concept-rail-here">← here</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>I2 Kueue + Volcano</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>I3 Ray + Kubeflow + KServe</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>I4 LLM serving</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>I5 AI Gateway</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>I6 RDMA + storage</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>I7 multi-tenant GPU + cost</span></div>
+  <div class="concept-rail-item"><span class="concept-rail-icon">○</span><span>I8 capstone observatory</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-ADV-AI · Module I1</span></a>
+    <span class="progress-pill">I1 · GPU + DRA + MIG</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🔭 K-Observatory array: <strong>Optics Bay</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Observatory map: I1">
+    <title>K-Observatory map · I1</title>
+    <desc>Stylised research observatory for Kubernetes AI / ML. Optics Bay highlighted.</desc>
+    <defs>
+      <linearGradient id="ko-night" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1F2433" stop-opacity="0.55"/><stop offset="100%" stop-color="#3F4A5E" stop-opacity="0.40"/></linearGradient>
+      <linearGradient id="ko-stars" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FAC775" stop-opacity="0.30"/><stop offset="100%" stop-color="#5DCAA5" stop-opacity="0.20"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#ko-night)" stroke="#1F2433" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · OBSERVATORY · AI / ML / GPUs</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">outer arrays — optics, queue, research, rendering, gateway</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">inner observatory — signal, sharing, capstone</text>
+    <g class="pin pin-anchor active" id="kai-array01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">I1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Optics Bay</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">GPU + DRA + MIG</text></g>
+    <g class="pin" id="kai-array02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observation Queue</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Kueue + Volcano</text></g>
+    <g class="pin" id="kai-array03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Research Hall</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Ray + Kubeflow + KServe</text></g>
+    <g class="pin" id="kai-array04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Model-Rendering Hall</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">vLLM + Triton + NIM</text></g>
+    <g class="pin" id="kai-array05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Triage Desk</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">AI Gateway</text></g>
+    <g class="pin" id="kai-array06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Signal Lines</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">RDMA + EFA + JuiceFS</text></g>
+    <g class="pin" id="kai-array07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Sharing Committee</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">multi-tenant + cost</text></g>
+    <g class="pin" id="kai-array08" transform="translate(380,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Operating Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor active"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+  </ol>
+  <p class="ktown-strip-label">🔭 <strong>Optics Bay</strong> <span>· I1 of 8</span><span class="visually-hidden">Module I1, Optics Bay.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module I1 · Optics Bay — GPUs as telescopes; slice + share</span>
+    <h1>I1 · GPU Nodes + NVIDIA Device Plugin / GPU Operator + MIG + DRA</h1>
+    <p class="hero-sub"><strong>GPU node</strong>: NVIDIA H100 / H200 / A100 / B200 / GH200; AMD MI300; Google TPU. <strong>NVIDIA device plugin</strong>: advertises <code>nvidia.com/gpu</code>. <strong>GPU Operator</strong>: bundles driver + container runtime + DCGM + MIG manager + node feature discovery. <strong>MIG (Multi-Instance GPU)</strong>: hardware-partition H100 / A100 into up to 7 isolated instances. <strong>DRA (Dynamic Resource Allocation)</strong>: K8s 1.32+ stable; multi-vendor structured parameters; replaces per-vendor device plugins for advanced scheduling.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GPU + device plugin + MIG + DRA."><rect x="20" y="20" width="720" height="160" rx="16" fill="#FBF7F0" stroke="#C8C2B6"/><text x="380" y="44" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="14" font-weight="700" fill="#3F4A5E">Optics Bay · K-Observatory — GPUs as telescopes; slice + share</text><rect x="40" y="70" width="170" height="100" rx="10" fill="#3F4A5E"/><text x="125" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#FBF1D6">GPU node</text><text x="125" y="108" text-anchor="middle" font-size="9" fill="#FBF1D6">H100 / A100 / B200</text><rect x="225" y="70" width="170" height="100" rx="10" fill="#5DCAA5"/><text x="310" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2433">device plugin / GPU Op</text><text x="310" y="108" text-anchor="middle" font-size="9" fill="#1F2433">advertises GPU resources</text><rect x="410" y="70" width="170" height="100" rx="10" fill="#FF9900"/><text x="495" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#1F2433">MIG slices</text><text x="495" y="108" text-anchor="middle" font-size="9" fill="#1F2433">7 instances / H100</text><rect x="595" y="70" width="125" height="100" rx="10" fill="#5A6B81"/><text x="657" y="92" text-anchor="middle" font-size="12" font-weight="700" fill="#FBF1D6">DRA</text><text x="657" y="108" text-anchor="middle" font-size="9" fill="#FBF1D6">multi-vendor</text></svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. ML team's training job stuck Pending — "no GPU available." Cluster has 8 H100s; 7 are running tiny inference workloads using whole GPUs. <em>Without MIG / DRA, every Pod takes a whole GPU; sharing is impossible.</em> Today's lesson: slice GPUs + use DRA so one telescope serves many observers.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>NVIDIA device plugin = baseline; GPU Operator = full stack; MIG = hardware partition for sharing; DRA = K8s-native multi-vendor advanced scheduling. Pick stack by GPU model + sharing needs.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · GPU node basics</span>
+    <h2>Driver + container runtime + node labels</h2>
+    <p>GPU node setup: NVIDIA driver (version-pinned per CUDA + framework); container runtime configured for GPU passthrough (containerd <code>nvidia</code> runtime class); node labels marking GPU model + count.</p>
+    <p>Per-cluster: separate GPU node pools (NodePool / MachineSet) labelled <code>accelerator: nvidia-h100</code>; nodeSelector / affinity in Pods picks the right pool.</p>
+    <p>Cloud-managed: AWS p5/p4d, GCP A3/A4, Azure ND/NV families. Bring-your-own: Bottlerocket / Ubuntu + GPU Operator handles driver + runtime.
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Why use GPU Operator over plain device plugin?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Performance.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Bundles driver + runtime + MIG manager + DCGM + RDMA — full stack vs baseline.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Required by NVIDIA.</button></li>
+      </ul>
+      <p class="pause-check-feedback">GPU Operator is opinionated all-in-one. Plain device plugin = just resource advertisement; you wire driver / runtime / MIG manager separately.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · NVIDIA device plugin + GPU Operator</span>
+    <h2>Baseline + full-stack</h2>
+    <p><strong>NVIDIA device plugin</strong> (DaemonSet): advertises <code>nvidia.com/gpu</code> resources to kubelet. Pod requests <code>resources.limits.nvidia.com/gpu: 1</code>; scheduler places.</p>
+    <p><strong>GPU Operator</strong>: opinionated bundle — installs driver (containerized), container runtime, DCGM (metrics), MIG manager, node feature discovery, GPUDirect Storage / RDMA. Recommended for any cluster that takes GPU work seriously.</p>
+    <p>Operator-managed driver = no host-level driver install drift; upgrades via Helm + node draining.
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · MIG (Multi-Instance GPU)</span>
+    <h2>Hardware partition H100 / A100 into shareable instances</h2>
+    <p><strong>MIG</strong>: H100 / A100-only feature. Hardware-partitions one GPU into up to 7 instances (H100: 1g.10gb / 2g.20gb / 3g.40gb / 7g.80gb). Each instance has dedicated SMs + memory + L2 cache; full isolation.</p>
+    <p>Configure via MIG manager (in GPU Operator) per node. Pod requests <code>nvidia.com/mig-1g.10gb: 1</code>; scheduler matches instance.</p>
+    <p>Trade: one GPU's aggregate compute = sum of slices; no oversubscription. Best for many small inference Pods + tenant isolation.
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · DRA (Dynamic Resource Allocation)</span>
+    <h2>K8s-native multi-vendor advanced scheduling</h2>
+    <p><strong>DRA</strong> (K8s 1.32 stable): the K8s-native replacement for per-vendor device plugins. Vendor ships a DRA driver; declares <em>structured parameters</em> for the device class (memory size, model, MIG profile, RDMA capability). Pods declare claims; scheduler matches.</p>
+    <p>Wins: <em>multi-vendor</em> (NVIDIA + AMD + TPU + custom accelerators all use DRA), <em>partial sharing</em> (multiple Pods can claim parts of one device), <em>complex placement</em> (NUMA, RDMA-enabled, same-NUMA Pods together).</p>
+    <p>Adoption: NVIDIA DRA driver, AMD DRA driver, GKE TPU DRA driver shipping. New cluster setup increasingly defaults to DRA over per-vendor device plugins.
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Which use case benefits most from MIG?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Single large training job.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Many small inference Pods sharing one H100 with isolation.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Bandwidth-heavy ETL.</button></li>
+      </ul>
+      <p class="pause-check-feedback">MIG hardware-partitions; each instance is isolated. Many small Pods + tenant isolation = perfect fit. Single large job = use whole GPU.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-MIG / DRA, every GPU Pod took a whole GPU. Underutilization rampant; cost / utilization mismatch; long pending queues for tiny inference jobs.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>MIG slices H100 into 7 instances; DRA structured parameters for advanced scheduling; GPU Operator manages full stack. One GPU serves many tenants; utilization rises 3-5×.</p></div>
+    </div>
+    <p class="ba-caption"><em>Slice + share + structured-schedule. Expensive GPUs deserve expensive utilization.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this array</h2>
+<p>The Optics Bay houses the observatory's telescopes (GPUs). Old practice: each astronomer booked a whole telescope for the night even if they only needed a wide-angle lens. New practice: <strong>MIG</strong> partitions each telescope into separate eyepieces — 7 astronomers can observe at once, each with isolated optics. <strong>DRA</strong> is the booking system that handles many telescope vendors (NVIDIA + AMD + TPU) with one form: "I need a 80GB-memory eyepiece on a node with low-latency to other observers in my project."</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes for AI / ML</th></tr></thead>
+        <tbody>
+          <tr><td>Telescope</td><td>GPU (H100 / A100 / B200 / TPU)</td></tr>
+          <tr><td>Observatory floor manager</td><td>GPU Operator</td></tr>
+          <tr><td>Telescope availability bell</td><td>NVIDIA device plugin</td></tr>
+          <tr><td>Eyepiece partitions</td><td>MIG instances (1g.10gb / 2g.20gb / etc.)</td></tr>
+          <tr><td>Multi-vendor booking system</td><td>DRA (Dynamic Resource Allocation)</td></tr>
+          <tr><td>Booking form fields</td><td>Structured parameters (memory / RDMA / NUMA)</td></tr>
+          <tr><td>Telescope nightly utilization</td><td>GPU utilization (DCGM metrics)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A real telescope has fixed optics; MIG instances are hardware-partitioned but configurable per-node. DRA is structured-API; vendors must ship drivers.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>One big telescope can be split into 7 eyepieces so 7 astronomers can use it at once. A booking system handles different telescope brands with one form.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p><strong>GPU node</strong>: NVIDIA driver + containerd runtime + node labels. <strong>NVIDIA device plugin</strong>: advertises GPU resources. <strong>GPU Operator</strong>: opinionated bundle (driver + runtime + DCGM + MIG mgr + RDMA). <strong>MIG</strong>: H100/A100 hardware partition (up to 7 instances). <strong>DRA</strong>: K8s-native multi-vendor structured parameters; replaces vendor device plugins for advanced scheduling.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How AI / ML teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">Inference fleet — MIG cuts cost 4×</p><p>Inference workload using one H100 per Pod (most Pods using &lt; 20% GPU). Migrate to MIG 1g.10gb per Pod; one H100 hosts 7 inference Pods; cost / Pod drops 4×.</p></div>
+      <div class="scenario"><p class="scenario-name">DRA — multi-vendor cluster</p><p>Cluster has NVIDIA + AMD GPUs. DRA: one ResourceClaim API for both vendors. Pod claims memory + framework requirement; scheduler picks matching device. Replaces 2 separate device plugins.</p></div>
+      <div class="scenario"><p class="scenario-name">GPU Operator simplifies driver lifecycle</p><p>Pre-Op: bare-metal driver install drift across nodes; CUDA version mismatches. Post-Op: containerized driver via Operator; Helm-managed; deterministic across nodes.</p></div>
+      <div class="scenario"><p class="scenario-name">Outage — driver mismatch</p><p>Pre-Op cluster: H100 driver upgraded on some nodes; CUDA 12.0 vs 12.2; some workloads crashed. Postmortem: install GPU Operator; consistent driver via Helm + DaemonSet.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>GPU node → device plugin → DRA → Pod</h2>
+    <p>GPU node advertises; DRA gives shared / multi-vendor slices; Pod requests + schedules.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 230" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="70" width="180" height="80" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="130" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">GPU node</text><text x="130" y="108" text-anchor="middle" font-size="9" fill="#6B6058">NVIDIA H100</text>
+        <rect x="240" y="70" width="180" height="80" rx="6" fill="#5DCAA5" stroke="#3F4A5E" stroke-width="1.5"/><text x="330" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2433">device plugin / GPU Op</text><text x="330" y="108" text-anchor="middle" font-size="9" fill="#6B6058">advertises GPU resources</text>
+        <rect x="440" y="70" width="180" height="80" rx="6" fill="#FF9900" stroke="#3F4A5E" stroke-width="1.5"/><text x="530" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2433">MIG / DRA</text><text x="530" y="108" text-anchor="middle" font-size="9" fill="#6B6058">slice GPU into eyepieces</text>
+        <rect x="640" y="70" width="80" height="80" rx="6" fill="#5A6B81" stroke="#3F4A5E" stroke-width="1.5"/><text x="680" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">Pod schedules</text><text x="680" y="108" text-anchor="middle" font-size="9" fill="#6B6058">with GPU</text>
+        <g id="anim-pkg" opacity="0" transform="translate(115,110)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="i1">▶ GPU scheduling walk</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> gpu node → device plugin → dra → pod.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "NVIDIA device plugin enough; skip GPU Operator."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Device plugin is one DaemonSet; Operator bundles driver + runtime + DCGM + MIG mgr + RDMA. Operator saves weeks of bespoke setup; recommended for any production cluster.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "DRA replaces GPU Operator."</div><div class="misc-row misc-truth"><strong>Truth:</strong> DRA replaces per-vendor device plugin's scheduling role. GPU Operator still handles driver + runtime + DCGM + MIG mgr — orthogonal concerns.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "MIG is always better than time-slicing."</div><div class="misc-row misc-truth"><strong>Truth:</strong> MIG is hardware-isolated; time-slicing is software-shared (lower isolation; QoS sensitive). Both are useful; MIG for isolation; time-slicing for elastic sharing where collisions are tolerable.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">What does NVIDIA device plugin do?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">DaemonSet advertising <code>nvidia.com/gpu</code> resources to kubelet. Pod requests; scheduler places.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">GPU Operator components?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Driver (containerized) + container runtime + DCGM (metrics) + MIG manager + Node Feature Discovery + GPUDirect Storage / RDMA.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">MIG profile syntax?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><code>nvidia.com/mig-Xg.Ygb</code> where X = compute slices (1-7 on H100), Y = memory GB. e.g., <code>nvidia.com/mig-1g.10gb: 1</code>.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">DRA — what's structured parameters?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Vendor declares device-specific spec (memory size, model, MIG profile, RDMA capability); Pod claims with parameters; scheduler matches. Multi-vendor friendly.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">MIG-supported GPU models?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">H100 (up to 7 partitions per GPU), A100 (up to 7), GH200. Not B200 (different architecture).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">DCGM exporter — what does it provide?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">GPU metrics (utilization, memory, power, temperature, ECC errors) → Prometheus. Foundation of GPU observability.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">When use time-slicing vs MIG?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>MIG</strong>: isolation matters; tenant security; predictable QoS. <strong>Time-slicing</strong>: elastic sharing; bursty workloads; lower-priority workloads.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">DRA vs device plugin — when each?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>DRA</strong> (K8s 1.32+ stable): multi-vendor + advanced scheduling + partial sharing. <strong>Device plugin</strong>: legacy + per-vendor; still works; will phase out.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">A team has 8× H100 cluster + many small inference Pods. Walk MIG setup.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) <strong>Install GPU Operator</strong> via Helm with MIG support enabled. (2) <strong>Configure MIG profile per node</strong>: e.g., 7× 1g.10gb instances per H100 → 56 inference slots cluster-wide. (3) <strong>Update Pod manifests</strong>: <code>resources.limits: nvidia.com/mig-1g.10gb: 1</code>. (4) <strong>Validate</strong>: DCGM metrics show per-instance utilization. (5) <strong>Production rollout</strong>: per-node-group MIG profile (some nodes 1g.10gb for inference; others whole-GPU for training); nodeSelector picks right pool. (6) <strong>Operational</strong>: tune MIG profile per workload mix; monitor underutilization.</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">Cluster has NVIDIA + AMD GPUs. Walk DRA adoption.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) <strong>Upgrade K8s</strong> to 1.32+ (DRA stable). (2) <strong>Install vendor DRA drivers</strong>: NVIDIA DRA driver + AMD DRA driver. (3) <strong>Define ResourceClass</strong> for each vendor or unified abstraction. (4) <strong>Update Pods</strong>: replace nodeSelector + device plugin requests with ResourceClaim referring to the structured params (memory, framework). (5) <strong>Scheduler</strong> matches Pods to devices via DRA. (6) <strong>Migrate gradually</strong>: per-workload, alongside legacy device plugin until full DRA cutover.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The CFO sees H100 cost: "why pay for H100 if we use 20%?" Defend.</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how the platform engineer defended H100 + MIG</span>"<strong>The H100 underutilization is fixable; H100 model isn't.</strong> Three options: (1) <strong>MIG</strong>: hardware-partition into 7 instances; one H100 → 7 inference Pods; utilization 4×; cost / Pod 4× lower. (2) <strong>Time-slicing</strong>: software-share GPU across multiple Pods; cheaper than MIG; lower isolation. (3) <strong>Right-size</strong>: maybe inference doesn't need H100; A10 / L40 / consumer GPUs cost 1/3 with adequate perf for many models. <strong>Investment</strong>: GPU Operator + MIG enablement + workload audit = 1 platform-engineer-week. <strong>Saves</strong>: 50%+ of GPU bill once optimised. <strong>Don't cancel H100; optimise it.</strong>"</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">NVIDIA device plugin</div><div class="gloss-def">DaemonSet advertising nvidia.com/gpu resources to kubelet.</div></div>
+      <div class="gloss-item"><div class="gloss-name">GPU Operator</div><div class="gloss-def">NVIDIA-published Operator bundling driver + runtime + DCGM + MIG manager + RDMA + GPUDirect Storage.</div></div>
+      <div class="gloss-item"><div class="gloss-name">MIG (Multi-Instance GPU)</div><div class="gloss-def">H100 / A100 hardware partition into up to 7 isolated instances.</div></div>
+      <div class="gloss-item"><div class="gloss-name">DRA</div><div class="gloss-def">Dynamic Resource Allocation; K8s 1.32+ stable; multi-vendor structured parameters.</div></div>
+      <div class="gloss-item"><div class="gloss-name">DCGM</div><div class="gloss-def">NVIDIA Data Center GPU Manager. Metrics exporter for Prometheus.</div></div>
+      <div class="gloss-item"><div class="gloss-name">time-slicing GPU</div><div class="gloss-def">Software-shared GPU across multiple Pods; lower isolation than MIG.</div></div>
+      <div class="gloss-item"><div class="gloss-name">ResourceClaim (DRA)</div><div class="gloss-def">Pod-attached claim referring to a ResourceClass with structured parameters.</div></div>
+      <div class="gloss-item"><div class="gloss-name">GPUDirect RDMA</div><div class="gloss-def">GPU memory directly accessible by RDMA NIC; eliminates host CPU copy for AI training collective ops.</div></div>
+      <div class="gloss-item"><div class="gloss-name">containerd nvidia runtime</div><div class="gloss-def">Container runtime mode passing GPU through to container; enabled per Pod via runtimeClassName.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Bottlerocket</div><div class="gloss-def">AWS minimal container OS; supports GPU via NVIDIA driver bundle.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>NVIDIA device plugin = baseline; GPU Operator = full stack; MIG = hardware partition for sharing; DRA = K8s-native multi-vendor advanced scheduling. Pick stack by GPU model + sharing needs.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module I1 complete</span>
+    <p>GPU node + GPU Operator (driver/runtime/DCGM/MIG/RDMA) + MIG (hardware partition) + DRA (multi-vendor scheduling). Slice + share + structured-schedule = high GPU utilization.</p>
+    <p class="recap-next"><strong>Next — I2: Kueue + MultiKueue + Volcano gang scheduling.</strong></p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-ADV-AI · Module I1 of 8 · grounded in kubernetes.io + nvidia.com/kubernetes + kubeflow.org</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "i1", "mode_label": "Mode: GPU resource scheduling", "initial_set_text": null, "phases": [{"readout": "<strong>Step 1.</strong> GPU node joins; NVIDIA driver + container runtime configured.", "move_to": [130, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 2.</strong> NVIDIA device plugin (or GPU Operator) advertises <code>nvidia.com/gpu</code> resources.", "move_to": [330, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 3.</strong> MIG (Multi-Instance GPU) or DRA slices GPU into shareable units.", "move_to": [530, 110], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Step 4.</strong> Pod requests <code>nvidia.com/gpu: 1</code> or DRA claim; scheduler places.", "move_to": [680, 110], "duration_ms": 900, "pause_after_ms": 2000, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [115, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

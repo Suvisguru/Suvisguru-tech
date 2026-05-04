@@ -1,0 +1,21 @@
+# Quiz — K-ADV-SEC S (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Design admission for a regulated cluster: every Pod must have resource requests + limits; certain namespaces must have NetworkPolicy + ResourceQuota; images must be from a list of registries; Service-to-Namespace targeting must be on an allow-list. Which rules go where?
+    answer: |
+      **Kyverno (mutate + validate)**: (a) mutate — Pods with no resource requests get sane defaults; new namespaces auto-generate default NetworkPolicy + ResourceQuota (generate rule). (b) validate — Pods MUST have resource limits (warn → enforce). **Kyverno verifyImages**: Cosign-verify images from approved registries (covered in S5; Kyverno-native). **Gatekeeper**: Service-to-Namespace allow-list (cross-resource lookup; Rego ConstraintTemplate "AllowedServiceTargets" with Constraint per Service group). **PolicyReport**: all engines write to it; compliance dashboard reads one CRD list. **Rollout**: audit each policy 2 weeks → warn 2 weeks → enforce; ship in waves so ops can absorb violations.
+
+  - id: 2
+    prompt: |
+      A team wrote a Gatekeeper Rego rule. Performance is poor — admission p99 hit 800ms. Walk through diagnostic + fix.
+    answer: |
+      (1) **Profile**: Gatekeeper exposes Prometheus metrics — `opa_evaluation_duration_seconds`; identify which ConstraintTemplate is slow. (2) **Read the Rego**: common slow patterns — wildcard matches across all resources, `data.inventory` queries that scan thousands of objects, deeply nested rule recursion. (3) **Tighten the match selector**: scope Constraint to specific Kinds + namespaces; OPA evaluates only matching requests. (4) **Index data references**: pre-compute mappings via Gatekeeper Sync + use indexed lookups in Rego. (5) **Move simple rules to ValidatingAdmissionPolicy + CEL**: webhook eliminated; latency drops to ~0ms. (6) **Final option**: rewrite the policy in Kyverno if Rego complexity isn't actually needed for that rule.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership says: "too many policies are slowing things down. Disable admission webhooks for the dev cluster." Defend keeping them on.
+    answer: |
+      "**Disabling admission in dev means dev becomes a test bed for misconfigurations that ship to prod.** Three reasons admission stays on dev: (1) **Catch issues early**: if a Pod is missing resource requests, dev is where we want to find that, not staging or prod. (2) **Train the developer feedback loop**: developers who see admission warnings in dev `kubectl apply` output learn the rules. Disabling means they ship YAMLs that fail in staging — slower iteration. (3) **Preserve dev / prod parity**: bugs that only manifest in prod because admission caught them in dev are real bugs we shouldn't paper over. **If admission is genuinely slow:** profile the policies (which Kyverno rule, which Gatekeeper Constraint), tighten match selectors, move simple rules to CEL inline. Latency budget is a tunable; security posture should not be the variable."

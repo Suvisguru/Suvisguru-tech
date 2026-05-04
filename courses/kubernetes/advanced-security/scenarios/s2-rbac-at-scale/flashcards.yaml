@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-SEC S (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three RBAC building blocks?
+    back: |
+      **Subject** (User / Group / ServiceAccount), **Role / ClusterRole** (verbs on resources), **RoleBinding / ClusterRoleBinding** (binds subject to role in scope).
+
+  - id: 2
+    front: |
+      Built-in ClusterRoles?
+    back: |
+      **cluster-admin** (everything; break-glass only), **admin** (everything in a namespace including RBAC), **edit** (read+write most resources, NO RBAC), **view** (read-only).
+
+  - id: 3
+    front: |
+      Why use ClusterRole + RoleBinding (not ClusterRoleBinding)?
+    back: |
+      Grants the ClusterRole's verbs *only within one namespace*. The most common safe pattern: `edit` ClusterRole + RoleBinding in dev / staging / prod-team namespace per developer group.
+
+  - id: 4
+    front: |
+      What does audit2rbac do?
+    back: |
+      Reads K8s audit logs and emits the minimum-viable RoleBinding (or ClusterRoleBinding) for the verbs/resources actually used by a subject during the audit window. Foundation of audit-driven narrowing.
+
+  - id: 5
+    front: |
+      Why bind to OIDC groups, not individuals?
+    back: |
+      (1) Reduces churn — joining a group → access lands instantly; leaving → revokes. (2) Smaller binding count. (3) Audit shows "all platform-engineers" not "alice + bob + ...". (4) Compliance evidence cleaner.
+
+  - id: 6
+    front: |
+      How does ClusterRole aggregation work?
+    back: |
+      A ClusterRole has `aggregationRule.clusterRoleSelectors` matching label selectors; apiserver merges all matching ClusterRoles' rules. Operators ship a small ClusterRole with `rbac.authorization.k8s.io/aggregate-to-edit: true` → automatically inherited by `edit`.
+
+  - id: 7
+    front: |
+      Projected ServiceAccount token vs static SA token?
+    back: |
+      **Projected**: short-lived (1 hour default), audience-bounded, auto-rotating; modern default. **Static**: long-lived (no expiry), persists in a Secret; legacy + dangerous if leaked. Set `automountServiceAccountToken` appropriately.
+
+  - id: 8
+    front: |
+      What does `kubectl auth can-i` do?
+    back: |
+      Tests whether the current (or specified) subject can perform a verb on a resource. Use as: `kubectl auth can-i get pods --as=system:serviceaccount:default:my-sa`. Foundation of RBAC testing in CI / runbooks.

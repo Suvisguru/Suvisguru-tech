@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K-ADV-AI I8 · Capstone</title>
+<style>
+  :root {
+    --bg: #FBF7F0; --bg-card: #FFFFFF; --bg-soft: #F5EFE3;
+    --ink: #2A2520; --ink-soft: #6B6058; --ink-faint: #9D9389;
+    --line: #E8DDC8; --accent: #3F4A5E; --accent-soft: #ECEFF5;
+    --warm: #D97757; --warm-soft: #FBE8DC; --warm-deep: #A04832;
+    --cool: #4A8FA8; --cool-soft: #E0EEF3;
+    --good: #5A9F7A; --good-soft: #E0EFE6;
+    --gold: #E8B547; --gold-soft: #FBF1D6;
+    --r-pill: 999px; --r-card: 16px; --r-soft: 10px;
+    --shadow-sm: 0 2px 8px rgba(42,37,32,0.06);
+    --shadow-md: 0 8px 24px rgba(42,37,32,0.08);
+    --ease: cubic-bezier(0.4,0,0.2,1);
+  }
+  [data-theme="dark"] {
+    --bg: #1B1814; --bg-card: #25201B; --bg-soft: #2D2722;
+    --ink: #F5EFE3; --ink-soft: #B8AC9D; --ink-faint: #8A7E70;
+    --line: #3A332C; --accent: #A4B4D0; --accent-soft: #2D3340;
+    --warm: #E89070; --warm-soft: #3A2820;
+    --cool: #7AB3CC; --cool-soft: #1F2E36;
+    --good: #7DBE9C; --good-soft: #1F3328;
+    --gold: #F0C268; --gold-soft: #382C18;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:80px}
+  body{margin:0;font-family:'ui-rounded','SF Pro Rounded',-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65;font-size:18px;transition:background .25s var(--ease),color .25s var(--ease)}
+  .topbar{position:sticky;top:0;background:rgba(251,247,240,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);z-index:100}
+  [data-theme="dark"] .topbar{background:rgba(27,24,20,.9)}
+  .topbar-inner{max-width:820px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:12px 24px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;color:var(--ink);text-decoration:none}
+  .brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--warm),var(--gold));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:12px;box-shadow:var(--shadow-sm)}
+  .brand .course{color:var(--ink-soft);font-weight:400;font-size:13px}
+  .progress-pill{margin-left:auto;font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:4px 10px;border-radius:var(--r-pill)}
+  .theme-toggle{background:var(--bg-card);border:1px solid var(--line);color:var(--ink);padding:6px 12px;border-radius:var(--r-pill);cursor:pointer;font-size:12px;font-family:inherit}
+  .theme-toggle:hover{background:var(--accent-soft)}
+  main{max-width:820px;margin:0 auto;padding:48px 24px 96px}
+  .hero{margin-bottom:48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--warm);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+  h1{font-size:38px;font-weight:700;line-height:1.18;letter-spacing:-0.6px;margin:0 0 18px;color:var(--ink)}
+  @media (max-width:600px){h1{font-size:28px}}
+  .hero-sub{font-size:20px;color:var(--ink-soft);max-width:640px;margin:0 auto 28px;line-height:1.5}
+  .hero-illu{margin:0 auto 16px;max-width:680px}
+  .hero-illu svg{display:block;width:100%;height:auto}
+  section.s{margin:64px 0;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-card);padding:36px;box-shadow:var(--shadow-sm)}
+  @media (max-width:600px){section.s{padding:24px}}
+  .s-eyebrow{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;background:var(--warm-soft);padding:4px 10px;border-radius:var(--r-pill)}
+  [data-theme="dark"] .s-eyebrow{color:var(--warm)}
+  .s h2{font-size:26px;font-weight:700;line-height:1.25;letter-spacing:-0.4px;margin:8px 0 18px;color:var(--ink)}
+  .s p{font-size:17px;line-height:1.65;margin:0 0 14px;color:var(--ink)}
+  .s p:last-child{margin-bottom:0}
+  .s strong{color:var(--ink);font-weight:600}
+  .s em{color:var(--warm-deep);font-style:normal;font-weight:600}
+  [data-theme="dark"] .s em{color:var(--warm)}
+  .s code{font-family:'ui-monospace',monospace;font-size:14.5px;background:var(--accent-soft);padding:1px 6px;border-radius:4px;color:var(--accent)}
+  .s ul, .s ol{font-size:16px;line-height:1.7;color:var(--ink);padding-left:22px;margin:8px 0 14px}
+  .s ul li, .s ol li{margin-bottom:6px}
+  .s ul code, .s ol code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.ba-grid{grid-template-columns:1fr}}
+  .ba{padding:20px;border-radius:var(--r-soft);border:2px solid}
+  .ba.before{background:var(--warm-soft);border-color:var(--warm)}
+  .ba.after{background:var(--good-soft);border-color:var(--good)}
+  .ba-label{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px;color:#fff}
+  .ba.before .ba-label{background:var(--warm)}
+  .ba.after .ba-label{background:var(--good)}
+  .ba p{font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .ba p:last-child{margin-bottom:0}
+  .ba code{font-family:'ui-monospace',monospace;font-size:13px;background:rgba(255,255,255,0.55);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  [data-theme="dark"] .ba code{background:rgba(0,0,0,0.25)}
+  .eli{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+  @media (max-width:600px){.eli{grid-template-columns:1fr}}
+  .eli-card{padding:22px;border-radius:var(--r-soft);background:var(--bg-soft);border:1px solid var(--line)}
+  .eli-tag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:3px 10px;border-radius:var(--r-pill);margin-bottom:10px}
+  .eli-tag.five{background:#FBF1D6;color:#8B5A00}
+  .eli-tag.ten{background:#D6E4F8;color:#1F4F8B}
+  .eli p{font-size:15px;margin:0;line-height:1.6}
+  .eli code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .scenarios{display:grid;gap:14px;margin-top:18px}
+  .scenario{background:var(--bg-soft);border-left:4px solid var(--accent);border-radius:0 var(--r-soft) var(--r-soft) 0;padding:16px 20px}
+  .scenario-name{font-weight:700;font-size:15px;color:var(--accent);margin:0 0 6px}
+  .scenario p{font-size:14.5px;line-height:1.6;margin:0;color:var(--ink)}
+  .scenario code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .flashcard-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:18px}
+  .flashcard{perspective:1000px;height:180px;cursor:pointer}
+  .flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s var(--ease);transform-style:preserve-3d}
+  .flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+  .flashcard-face{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--r-soft);padding:18px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13.5px;line-height:1.5}
+  .flashcard-front{background:var(--bg-soft);border:1.5px solid var(--accent);color:var(--ink);font-weight:600}
+  .flashcard-back{background:var(--accent);color:#fff;transform:rotateY(180deg);padding:14px;font-size:12.5px}
+  [data-theme="dark"] .flashcard-back{background:var(--accent-soft);color:var(--ink)}
+  .flashcard-hint{position:absolute;bottom:6px;right:8px;font-size:9px;color:var(--ink-faint);opacity:.7}
+  .quiz-grid{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .quiz-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-soft);padding:18px}
+  .quiz-prompt{font-weight:600;font-size:15px;margin:0 0 12px;color:var(--ink);line-height:1.55}
+  .quiz-prompt code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-reveal{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;animation:btn-bob 2.4s ease-in-out infinite}
+  [data-theme="dark"] .quiz-reveal{color:var(--bg)}
+  .quiz-reveal:hover{filter:brightness(1.1);animation:none}
+  .quiz-answer{display:none;margin-top:12px;padding:14px 16px;background:var(--good-soft);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14.5px;line-height:1.6}
+  .quiz-answer.show{display:block}
+  .quiz-answer code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .quiz-answer-tag{display:block;font-size:11px;font-weight:700;color:var(--good);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+  @keyframes btn-bob{0%,100%{transform:translateY(0);box-shadow:0 0 0 0 rgba(63,74,94,0)}50%{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(63,74,94,0.06)}}
+  .glossary{margin-top:32px;background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--r-card);padding:20px 24px}
+  .glossary summary{cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:10px;user-select:none}
+  .glossary summary::before{content:'\1F4DA';font-size:18px}
+  .glossary summary::after{content:'\203A';margin-left:auto;font-size:22px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+  .glossary[open] summary::after{transform:rotate(90deg)}
+  .glossary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:18px}
+  .gloss-item{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:12px 14px}
+  .gloss-name{font-weight:600;color:var(--accent);font-size:14px;margin-bottom:4px}
+  .gloss-def{font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .gloss-def code{font-family:'ui-monospace',monospace;font-size:12px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .recap{margin:48px 0 0;text-align:center;padding:32px 24px;background:linear-gradient(135deg,var(--good-soft) 0%,var(--bg-card) 100%);border:1px solid var(--good);border-radius:var(--r-card);box-shadow:var(--shadow-md)}
+  .recap-badge{display:inline-block;background:var(--good);color:#fff;padding:6px 14px;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:14px}
+  .recap p{font-size:19px;font-weight:600;line-height:1.4;color:var(--ink);margin:0 0 10px;max-width:560px;margin-left:auto;margin-right:auto}
+  .recap-next{font-size:14.5px;color:var(--ink-soft);font-weight:400;margin-top:14px}
+  .recap-next strong{color:var(--ink)}
+  footer{text-align:center;padding:28px 24px;color:var(--ink-faint);font-size:12px;margin-top:36px}
+  .role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:24px}
+  .role{background:var(--bg-card);border:1.5px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow-sm);border-top:5px solid var(--accent)}
+  .role.r1{border-top-color:#3F4A5E}
+  .role.r2{border-top-color:#5A9F7A}
+  .role.r3{border-top-color:#D97757}
+  .role.r4{border-top-color:#E8B547}
+  .role-icon{font-size:30px;line-height:1}
+  .role-name{font-weight:700;font-size:15px;margin:0;line-height:1.3}
+  .role.r1 .role-name{color:#3F4A5E}[data-theme="dark"] .role.r1 .role-name{color:var(--accent)}
+  .role.r2 .role-name{color:#3D7857}[data-theme="dark"] .role.r2 .role-name{color:var(--good)}
+  .role.r3 .role-name{color:#A04832}[data-theme="dark"] .role.r3 .role-name{color:var(--warm)}
+  .role.r4 .role-name{color:#8B5A00}[data-theme="dark"] .role.r4 .role-name{color:var(--gold)}
+  .role-tag{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0;line-height:1.3}
+  .role-desc{font-size:13.5px;color:var(--ink);line-height:1.55;margin:0}
+  .role-desc code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .role-who{font-size:12.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+  .am-table, .data-table{width:100%;border-collapse:collapse;margin-top:18px;font-size:14px;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .am-table th, .data-table th{background:var(--bg-soft);text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .am-table td, .data-table td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .am-table tr:last-child td, .data-table tr:last-child td{border-bottom:0}
+  .am-table code, .data-table code{font-family:'ui-monospace',monospace;font-size:12.5px;background:var(--accent-soft);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .district-line{max-width:820px;margin:0 auto;padding:14px 24px 0;font-size:14.5px;color:var(--ink-soft)}
+  .district-line strong{color:var(--accent);font-weight:600}
+  .ktown-map-wrap{max-width:820px;margin:0 auto 8px;padding:8px 24px}
+  .ktown-map{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .ktown-map .pin .pin-circle{transition:fill .25s var(--ease);fill:var(--ink-faint)}
+  .ktown-map .pin .pin-num{fill:var(--bg)}
+  .ktown-map .pin .pin-label,.ktown-map .pin .pin-sub{fill:var(--ink-soft)}
+  .ktown-map .pin-anchor:not(.active) .pin-circle{fill:var(--accent)}
+  .ktown-map .pin-anchor:not(.active) .pin-label{fill:var(--accent);font-weight:700}
+  .ktown-map .pin.active .pin-circle{fill:var(--warm)}
+  .ktown-map .pin.active .pin-label{fill:var(--ink);font-weight:700}
+  .ktown-map .pin.active .pin-halo{fill:var(--warm);opacity:.18}
+  [data-theme="dark"] .ktown-map .pin .pin-num{fill:var(--bg-card)}
+  .ktown-strip{list-style:none;padding:0;margin:0}
+  .ktown-strip,.ktown-strip-label{display:none}
+  @media (max-width:720px){
+    .ktown-map{display:none}
+    .ktown-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0;padding:0}
+    .ktown-strip-pin{width:10px;height:10px;border-radius:50%;background:var(--ink-faint);opacity:.55;transition:transform .15s var(--ease)}
+    .ktown-strip-pin.ktown-strip-anchor{background:var(--accent);opacity:1;width:13px;height:13px;align-self:center}
+    .ktown-strip-pin.active{background:var(--warm);opacity:1;box-shadow:0 0 0 3px rgba(217,119,87,.22);transform:scale(1.15)}
+    .ktown-strip-label{display:block;margin:10px 0 0;text-align:center;font-size:13px;color:var(--ink-soft)}
+    .ktown-strip-label strong{color:var(--ink);font-weight:600}
+    .ktown-strip-label span{color:var(--ink-faint)}
+  }
+  .nightmare{margin:0 0 16px}
+  .nightmare-box{background:var(--warm-soft);border:1px solid var(--warm);border-radius:var(--r-card);padding:18px 22px;color:var(--ink);text-align:left}
+  .nightmare-tag{display:block;font-size:13px;font-weight:600;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px}
+  [data-theme="dark"] .nightmare-tag{color:var(--warm)}
+  .nightmare-box p{margin:0;font-size:16px;line-height:1.6}
+  .stamp{margin:16px 0}
+  .stamp-box{background:var(--accent-soft);border:1.5px solid var(--accent);border-radius:var(--r-card);padding:18px 26px;text-align:center;font-size:18px;font-weight:600;line-height:1.45;color:var(--ink);margin:0}
+  .stamp-box strong{font-weight:700;color:var(--accent)}
+  [data-theme="dark"] .stamp-box,[data-theme="dark"] .stamp-box strong{color:var(--ink)}
+  .translation-legend{margin:20px 0 0;border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .translation-legend table{width:100%;border-collapse:collapse;font-size:15px}
+  .translation-legend th{text-align:left;padding:12px 16px;background:var(--bg-soft);font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--line)}
+  .translation-legend th:first-child{border-right:1px solid var(--line)}
+  .translation-legend td{padding:11px 16px;line-height:1.55;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  .translation-legend td:first-child{border-right:1px solid var(--line);width:48%;color:var(--ink-soft)}
+  .translation-legend tr:last-child td{border-bottom:0}
+  .translation-legend code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  @media (max-width:600px){
+    .translation-legend table,.translation-legend tbody,.translation-legend tr{display:block}
+    .translation-legend td{display:block;border-right:0!important;width:100%}
+    .translation-legend td:first-child{padding-bottom:4px;background:var(--bg-soft)}
+    .translation-legend td:first-child::before{content:'In the story \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend td:last-child::before{content:'\2026in Kubernetes \B7 ';font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-faint);display:block;margin-bottom:2px}
+    .translation-legend th{display:none}
+  }
+  .pause-check{margin:24px 0}
+  .pause-check-box{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:var(--r-soft);padding:16px 20px}
+  .pause-check-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--warm-deep);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+  [data-theme="dark"] .pause-check-tag{color:var(--gold)}
+  .pause-check-q{margin:0 0 12px;font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.55}
+  .pause-check-q code{font-family:'ui-monospace',monospace;font-size:14px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .pause-check-opts{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+  .pause-check-opt{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);padding:9px 12px;font-size:14.5px;font-family:inherit;color:var(--ink);cursor:pointer;transition:background .15s var(--ease),border-color .15s var(--ease)}
+  .pause-check-opt:hover:not(.correct):not(.wrong){background:var(--bg-soft);border-color:var(--accent)}
+  .pause-check-opt.correct{background:var(--good-soft);border-color:var(--good);color:var(--ink)}
+  .pause-check-opt.wrong{background:var(--warm-soft);border-color:var(--warm-deep);color:var(--ink)}
+  .pause-check-feedback{display:none;margin-top:10px;padding:10px 12px;background:var(--bg-card);border-left:3px solid var(--good);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .pause-check-feedback.show{display:block}
+  .pause-check-feedback strong{color:var(--ink);font-weight:600}
+  .misconceptions{margin:0 0 24px}
+  .misconceptions h3{font-size:18px;font-weight:700;margin:0 0 12px;color:var(--ink);letter-spacing:-0.2px}
+  .misconceptions-grid{display:grid;gap:10px}
+  .misc-card{border:1px solid var(--line);border-radius:var(--r-soft);overflow:hidden}
+  .misc-row{padding:11px 14px;font-size:14.5px;line-height:1.55}
+  .misc-myth{background:var(--warm-soft);color:var(--ink);border-bottom:1px solid var(--line)}
+  .misc-myth strong{color:var(--warm-deep);margin-right:6px}
+  [data-theme="dark"] .misc-myth strong{color:var(--warm)}
+  .misc-truth{background:var(--good-soft);color:var(--ink)}
+  .misc-truth strong{color:var(--good);margin-right:6px}
+  .misc-row code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--bg-card);padding:1px 5px;border-radius:3px;color:var(--accent)}
+  .analogy-stops{margin:18px 0 0;padding:11px 14px;background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:0 var(--r-soft) var(--r-soft) 0;font-size:14px;font-style:italic;color:var(--ink);line-height:1.55}
+  .skip-pill{display:inline-block;background:var(--bg-soft);color:var(--ink-faint);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;padding:2px 9px;border-radius:var(--r-pill);margin-right:8px;border:1px solid var(--line);vertical-align:1px}
+  .skip-block{opacity:.85}
+  .concept-rail{display:none;font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .concept-rail-title{font-size:11px;font-weight:700;color:var(--ink-faint);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:block}
+  .concept-rail-item{display:flex;align-items:flex-start;gap:8px;padding:3px 0}
+  .concept-rail-icon{flex:0 0 auto;width:14px;text-align:center;font-weight:700;color:var(--ink-faint)}
+  .concept-rail-item.done .concept-rail-icon{color:var(--good)}
+  .concept-rail-item.current .concept-rail-icon{color:var(--accent)}
+  .concept-rail-item.current{font-weight:600;color:var(--ink)}
+  .concept-rail-here{margin-left:6px;color:var(--warm);font-style:italic;font-size:11.5px}
+  .concept-rail-item.primer{font-style:italic;color:var(--ink-faint)}
+  @media (min-width:1240px){.concept-rail{display:block;position:fixed;top:96px;left:max(16px,calc(50vw - 600px));width:170px;z-index:50;max-height:calc(100vh - 110px);overflow-y:auto;padding-right:8px}}
+  .quiz-card.cyoa-quiz{background:linear-gradient(135deg,var(--gold-soft) 0%,var(--bg-soft) 100%);border-color:var(--gold)}
+  .cyoa-tag{display:inline-block;background:var(--bg-card);color:var(--accent);padding:3px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px;border:1px solid var(--line)}
+  .cyoa-quiz .quiz-prompt{font-style:italic}
+  .cyoa-quiz .quiz-answer{background:var(--bg-card);border-left-color:var(--accent)}
+  .cyoa-quiz .quiz-answer-tag{color:var(--accent)}
+  /* Animation */
+  .anim-wrap{margin-top:18px;background:var(--bg-soft);border-radius:var(--r-soft);padding:16px}
+  .anim-wrap svg{display:block;width:100%;height:auto;max-width:760px;margin:0 auto}
+  .anim-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap}
+  .anim-btn{background:var(--bg-card);border:1.5px solid var(--line);color:var(--ink);padding:7px 14px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .anim-btn:hover{background:var(--accent-soft);border-color:var(--accent)}
+  .anim-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  [data-theme="dark"] .anim-btn.active{color:var(--bg)}
+  .anim-readout{margin-top:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--line);border-radius:var(--r-soft);font-size:14px;color:var(--ink-soft);text-align:center;min-height:40px;display:flex;align-items:center;justify-content:center}
+  .anim-readout strong{color:var(--ink);margin-right:6px}
+  .anim-readout code{font-family:'ui-monospace',monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:3px;color:var(--accent)}
+</style>
+</head>
+<body data-theme="light">
+
+<aside class="concept-rail" aria-label="K-ADV-AI module journey">
+  <span class="concept-rail-title">K-ADV-AI modules</span>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>I1 GPU + DRA + MIG</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>I2 Kueue + Volcano</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>I3 Ray + Kubeflow + KServe</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>I4 LLM serving</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>I5 AI Gateway</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>I6 RDMA + storage</span></div>
+  <div class="concept-rail-item done"><span class="concept-rail-icon">✓</span><span>I7 multi-tenant GPU + cost</span></div>
+  <div class="concept-rail-item current"><span class="concept-rail-icon">▶</span><span>I8 capstone observatory</span><span class="concept-rail-here">← here</span></div>
+</aside>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">SG</span><span>Suvis Guru</span><span class="course"> · K-ADV-AI · Module I8</span></a>
+    <span class="progress-pill">I8 · capstone AI platform</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">🌙 Dark</button>
+  </div>
+</header>
+
+<p class="district-line">🔭 K-Observatory array: <strong>Operating Observatory</strong>.</p>
+
+<div class="ktown-map-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" class="ktown-map" role="img" aria-label="K-Observatory map: I8">
+    <title>K-Observatory map · I8</title>
+    <desc>Stylised research observatory for Kubernetes AI / ML. Operating Observatory highlighted.</desc>
+    <defs>
+      <linearGradient id="ko-night" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1F2433" stop-opacity="0.55"/><stop offset="100%" stop-color="#3F4A5E" stop-opacity="0.40"/></linearGradient>
+      <linearGradient id="ko-stars" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FAC775" stop-opacity="0.30"/><stop offset="100%" stop-color="#5DCAA5" stop-opacity="0.20"/></linearGradient>
+    </defs>
+    <rect x="20" y="20" width="760" height="360" rx="14" fill="url(#ko-night)" stroke="#1F2433" stroke-width="1"/>
+    <text x="400" y="38" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="10" font-weight="700" letter-spacing="3" fill="#9D9389">K · OBSERVATORY · AI / ML / GPUs</text>
+    <line x1="40" y1="130" x2="780" y2="130" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <line x1="40" y1="260" x2="780" y2="260" stroke="#5F5E5A" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.4"/>
+    <text x="48" y="120" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">outer arrays — optics, queue, research, rendering, gateway</text>
+    <text x="48" y="252" font-family="sans-serif" font-size="8" font-style="italic" fill="#9D9389">inner observatory — signal, sharing, capstone</text>
+    <g class="pin pin-anchor" id="kai-array01" transform="translate(100,70)"><circle class="pin-halo" r="22" fill="#D97757" opacity="0"/><circle class="pin-circle" r="14" fill="#3F4A5E" stroke="#FBF7F0" stroke-width="2.5"/><text class="pin-num" y="4" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="11" font-weight="700" fill="#FBF7F0">I1</text><text class="pin-label" y="34" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#3F4A5E" font-weight="700">Optics Bay</text><text class="pin-sub" y="46" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">GPU + DRA + MIG</text></g>
+    <g class="pin" id="kai-array02" transform="translate(240,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I2</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Observation Queue</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Kueue + Volcano</text></g>
+    <g class="pin" id="kai-array03" transform="translate(380,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I3</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Research Hall</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">Ray + Kubeflow + KServe</text></g>
+    <g class="pin" id="kai-array04" transform="translate(520,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I4</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Model-Rendering Hall</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">vLLM + Triton + NIM</text></g>
+    <g class="pin" id="kai-array05" transform="translate(660,70)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I5</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Triage Desk</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">AI Gateway</text></g>
+    <g class="pin" id="kai-array06" transform="translate(100,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I6</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Signal Lines</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">RDMA + EFA + JuiceFS</text></g>
+    <g class="pin" id="kai-array07" transform="translate(240,200)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I7</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Sharing Committee</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">multi-tenant + cost</text></g>
+    <g class="pin active" id="kai-array08" transform="translate(380,320)"><circle class="pin-halo" r="18" fill="#D97757" opacity="0"/><circle class="pin-circle" r="10" fill="#9D9389" stroke="#FBF7F0" stroke-width="2"/><text class="pin-num" y="3" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="9" font-weight="700" fill="#FBF7F0">I8</text><text class="pin-label" y="26" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#6B6058">Operating Observatory</text><text class="pin-sub" y="38" text-anchor="middle" font-family="sans-serif" font-size="9" font-style="italic" fill="#9D9389">capstone</text></g>
+  </svg>
+  <ol class="ktown-strip" aria-hidden="true">
+    <li class="ktown-strip-pin ktown-strip-anchor"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin"></li>
+    <li class="ktown-strip-pin active"></li>
+  </ol>
+  <p class="ktown-strip-label">🔭 <strong>Operating Observatory</strong> <span>· I8 of 8</span><span class="visually-hidden">Module I8, Operating Observatory.</span></p>
+</div>
+
+<main>
+
+  <section class="hero">
+    <span class="eyebrow">Module I8 · Operating Observatory — every K-ADV-AI concept woven</span>
+    <h1>I8 · Capstone — Production AI Inference Platform</h1>
+    <p class="hero-sub">Reference architecture: <strong>GPU nodes + DRA + GPU Operator + MIG</strong> for capacity; <strong>Kueue + Volcano + MultiKueue</strong> for batch + admission + gang + federation; <strong>KubeRay + Kubeflow + KServe + JobSet</strong> for the ML stack; <strong>vLLM / Triton / NIM</strong> for LLM serving; <strong>AI Gateway</strong> (Envoy AI) for L7 LLM features; <strong>RDMA / EFA + GPUDirect Storage + JuiceFS / Alluxio + OCI artifacts</strong> for fabric + storage; <strong>multi-tenant Quota + MIG isolation + Spot + chargeback + dashboards</strong> for governance + economics.</p>
+    <div class="hero-illu">
+<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Capstone AI inference platform."><rect x="20" y="20" width="720" height="180" rx="16" fill="#FBF7F0" stroke="#C8C2B6"/><text x="380" y="44" text-anchor="middle" font-family="ui-rounded,sans-serif" font-size="14" font-weight="700" fill="#3F4A5E">Operating Observatory · K-Observatory — every K-ADV-AI concept woven</text><rect x="40" y="70" width="130" height="60" rx="10" fill="#3F4A5E"/><text x="105" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">GPU + DRA</text><rect x="190" y="70" width="130" height="60" rx="10" fill="#5DCAA5"/><text x="255" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2433">Kueue + Volcano</text><rect x="340" y="70" width="130" height="60" rx="10" fill="#FF9900"/><text x="405" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2433">KServe + vLLM</text><rect x="490" y="70" width="130" height="60" rx="10" fill="#A04832"/><text x="555" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">AI Gateway</text><rect x="640" y="70" width="80" height="60" rx="10" fill="#5A6B81"/><text x="680" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">RDMA</text><rect x="40" y="160" width="680" height="60" rx="10" fill="#FBE8DC" stroke="#A04832"/><text x="380" y="182" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">+ JuiceFS + multi-tenant + Spot + cost dashboards + observability</text></svg>
+    </div>
+  </section>
+
+  <div class="nightmare">
+    <div class="nightmare-box">
+      <span class="nightmare-tag">🚨 The 3 AM Nightmare</span>
+      <p>It's 3 AM. New product launches in 6 hours; AI inference platform must serve 10K rps with 99.9% SLA + multi-tenant + cost-controlled + observable. <em>The capstone shows the assembly that makes that possible</em>.</p>
+    </div>
+  </div>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Operating Observatory: GPU + DRA + Kueue + Volcano + KServe + vLLM + AI Gateway + RDMA + JuiceFS + OCI artifacts + multi-tenant + Spot + chargeback. Every K-ADV-AI concept woven into one production AI inference platform.</strong></p>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.1 · capacity + scheduling</span>
+    <h2>GPU + Kueue + Volcano + MIG</h2>
+    <p><strong>GPU pools</strong>: H100 (training + large LLM), A100 (training + medium LLM), L40 / G5 (inference + light LLM), Spot G6 (fault-tolerant batch). DRA + MIG enabled cluster-wide.</p>
+    <p><strong>Kueue + Volcano</strong>: per-team ClusterQueue with cohort lending; gang scheduling for distributed training; MultiKueue federates training across regions for capacity.</p>
+    <p><strong>Per-tenant Quota</strong>: gold (10 H100) / silver (4) / bronze (1); MIG-sized inference quotas (1g.10gb).
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Why include both Kueue + Volcano in capstone?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Redundancy.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Kueue admits + manages quota; Volcano gang-schedules multi-Pod jobs. Different concerns; both required for batch ML at scale.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Required by NVIDIA.</button></li>
+      </ul>
+      <p class="pause-check-feedback">Kueue + Volcano are complementary. Kueue handles admission + cohort + preemption; Volcano handles gang scheduling. Together: batch admission + gang.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.2 · ML stack + serving</span>
+    <h2>KServe + vLLM + Kubeflow + KubeRay</h2>
+    <p><strong>Inference</strong>: KServe InferenceService wrapping vLLM ServingRuntime for LLMs; Triton ServingRuntime for non-LLM; autoscale via Knative or HPA.</p>
+    <p><strong>Training</strong>: Kubeflow Training Operator (PyTorchJob / TFJob / MPIJob); Kubeflow Pipelines for DAGs; Katib for HPO; Model Registry for versioning.</p>
+    <p><strong>Distributed compute</strong>: KubeRay (Ray Train / Tune / RLlib) for distributed Python.</p>
+    <p><strong>Multi-pod jobs</strong>: JobSet primitive integrated with Kueue + Volcano.
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.3 · L7 + fabric + storage</span>
+    <h2>AI Gateway + RDMA / EFA + JuiceFS + OCI</h2>
+    <p><strong>AI Gateway</strong>: Envoy AI Gateway in front of all LLM serving. Per-tenant token rate limit + cost budget; safety filters (Llama Guard); semantic cache (Redis + embedding); multi-provider failover (local LLM ↔ OpenAI ↔ Anthropic).</p>
+    <p><strong>RDMA / EFA</strong>: H100 nodes interconnected via EFA on AWS / IB on-prem. Distributed training collective ops at line rate.</p>
+    <p><strong>GPUDirect Storage + JuiceFS</strong>: large datasets streamed direct to GPU; models cached cluster-wide via JuiceFS.</p>
+    <p><strong>OCI artifacts</strong>: models + SBOM + Cosign signature in Harbor registry; pulled via init-container.
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 1.4 · governance + economics + ops</span>
+    <h2>Multi-tenant + Spot + chargeback + observability + runbooks</h2>
+    <p><strong>Multi-tenant</strong>: namespace + RBAC + NetPol + Quota + MIG isolation per K-ADV-SEC; AI Gateway per-tenant token budget.</p>
+    <p><strong>Cost</strong>: Spot fleet for fault-tolerant batch; Kubecost per-tenant chargeback; budget alerts; idle reclaim; right-sizing campaigns.</p>
+    <p><strong>Observability</strong>: DCGM metrics + Prometheus; per-Service KServe metrics (TTFT / TPOT / queue / cache hit); LLM-specific tracing via OpenTelemetry; Grafana / Datadog dashboards in Backstage per service.</p>
+    <p><strong>Runbooks</strong>: GPU-OOM; KV-cache exhaustion; collective op latency; AI Gateway rate limit hit; Spot interruption cascade. Tested via quarterly game days.</p>
+  </section>
+
+  <div class="pause-check">
+    <div class="pause-check-box">
+      <span class="pause-check-tag">⏸ Pause and check</span>
+      <p class="pause-check-q">Why per-tenant chargeback in capstone?</p>
+      <ul class="pause-check-opts">
+        <li><button type="button" class="pause-check-opt" data-correct="false">Cost only.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="true">Cost transparency drives tenant self-tuning (right-sizing / MIG / Spot adoption); aligns engineering + finance.</button></li>
+        <li><button type="button" class="pause-check-opt" data-correct="false">Required by HIPAA.</button></li>
+      </ul>
+      <p class="pause-check-feedback">GPUs are the most expensive resource. Without chargeback, tenants don't self-optimise; cost grows. Chargeback is the incentive layer.</p>
+    </div>
+  </div>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 2 · Before &amp; After</span>
+    <h2>What changes when you adopt this</h2>
+    <div class="ba-grid">
+      <div class="ba before"><span class="ba-label">Before</span><p>Pre-capstone: bespoke ML setups; per-team GPU sprawl; no quota; no isolation; no AI Gateway; cost surprises; outages frequent.</p></div>
+      <div class="ba after"><span class="ba-label">After</span><p>Operating Observatory: every K-ADV-AI concept woven. Multi-tenant ML platform with GPU sharing + Kueue admission + KServe inference + AI Gateway + RDMA fabric + Spot + chargeback. New tenant in &lt; 1 day; SLA met; cost controlled.</p></div>
+    </div>
+    <p class="ba-caption"><em>The architecture is the assembly; the operational rhythm is the discipline.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 3 · Analogy</span>
+    <h2>The story for this array</h2>
+<p>The Operating Observatory is K-Observatory at scale. Every telescope (GPU) is multi-tenant via MIG eyepieces; every astronomer's session is queue-managed (Kueue + Volcano); inference goes through the Triage Desk (AI Gateway); collective observations use the Optical Fiber Network (RDMA / EFA); the Cache Room (JuiceFS) holds star maps; the Sharing Committee bills per group + reclaims idle telescopes.</p>
+    <p>The Master Astronomer (you) reviews monthly cost reports + quarterly SLO retros + game-day exercises.</p>
+    <div class="translation-legend">
+      <table>
+        <thead><tr><th>In the story…</th><th>…in Kubernetes for AI / ML</th></tr></thead>
+        <tbody>
+          <tr><td>Telescope farm + eyepieces</td><td>GPU pools + MIG</td></tr>
+          <tr><td>Astronomer queue + admission</td><td>Kueue + Volcano</td></tr>
+          <tr><td>Research-hall workshops</td><td>KubeRay + Kubeflow</td></tr>
+          <tr><td>Rendering halls</td><td>KServe + vLLM</td></tr>
+          <tr><td>Triage desk</td><td>AI Gateway (Envoy AI)</td></tr>
+          <tr><td>Optical fibers</td><td>RDMA / EFA / IB</td></tr>
+          <tr><td>Shared star-map cache</td><td>JuiceFS / Alluxio</td></tr>
+          <tr><td>Catalogue cards</td><td>OCI artifacts (models)</td></tr>
+          <tr><td>Sharing Committee + bills</td><td>Multi-tenant Quota + chargeback</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="analogy-stops">⚠️ <em>A real observatory has fixed assets; AI infra evolves continuously — new GPU models, new servers, new gateways. The capstone is a snapshot.</em></p>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 4 · Two-level explanation</span>
+    <h2>Two ways to hear it</h2>
+    <div class="eli">
+      <div class="eli-card">
+        <span class="eli-tag five">ELI5 · explain like I'm 5</span>
+        <p>Big telescope farm + queue + research labs + rendering halls + triage desk + fast wires + shared cache + catalogue + bills + drills. Every piece works together.</p>
+      </div>
+      <div class="eli-card">
+        <span class="eli-tag ten">ELI10 · explain like I'm 10</span>
+        <p><strong>Capacity</strong>: GPU + DRA + GPU Operator + MIG. <strong>Scheduling</strong>: Kueue + Volcano + MultiKueue. <strong>ML stack</strong>: KubeRay + Kubeflow + KServe + JobSet. <strong>Serving</strong>: vLLM + Triton + NIM. <strong>L7</strong>: AI Gateway. <strong>Fabric</strong>: RDMA / EFA + GPUDirect Storage. <strong>Storage</strong>: JuiceFS / Alluxio. <strong>Distribution</strong>: OCI artifacts. <strong>Governance</strong>: multi-tenant Quota + MIG isolation + Spot + chargeback. <strong>Ops</strong>: DCGM + Prometheus + per-service dashboards + runbooks + game days.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 5 · Real-world scenarios</span>
+    <h2>How AI / ML teams do this</h2>
+    <div class="scenarios">
+      <div class="scenario"><p class="scenario-name">Production launch — 10K rps with full stack</p><p>LLM platform launches: vLLM behind KServe behind Envoy AI Gateway; H100 fleet with MIG for inference; Kueue admission; semantic cache; multi-provider failover. Day-1 SLA met; per-tenant chargeback in P&L.</p></div>
+      <div class="scenario"><p class="scenario-name">Multi-region failover via MultiKueue</p><p>us-east-1 GPU capacity exhausted; MultiKueue routes new training jobs to eu-west-1 H100 pool; tenants see no service interruption.</p></div>
+      <div class="scenario"><p class="scenario-name">Cost optimisation campaign</p><p>Quarterly review: top spenders right-sized via MIG; fault-tolerant training migrated to Spot; aggregate GPU bill dropped 35%.</p></div>
+      <div class="scenario"><p class="scenario-name">Game day — Spot interruption cascade</p><p>Simulated mass Spot reclaim; checkpointing + Kueue requeue + MultiKueue failover absorbed gracefully. Runbook validated.</p></div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 6 · Animation</span>
+    <h2>Operating Observatory — every K-ADV-AI concept</h2>
+    <p>Full reference AI inference platform.</p>
+    <div class="anim-wrap">
+      <svg viewBox="0 0 760 230" xmlns="http://www.w3.org/2000/svg" id="lesson-anim" role="img">
+        <text x="380" y="22" text-anchor="middle" font-size="13" font-weight="600" fill="#3F4A5E" id="anim-mode-label">Mode</text>
+        <rect x="40" y="70" width="130" height="60" rx="6" fill="#3F4A5E" stroke="#3F4A5E" stroke-width="1.5"/><text x="105" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">GPU + DRA</text><text x="105" y="108" text-anchor="middle" font-size="9" fill="#6B6058">I1</text>
+        <rect x="190" y="70" width="130" height="60" rx="6" fill="#5DCAA5" stroke="#3F4A5E" stroke-width="1.5"/><text x="255" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2433">Kueue + Volcano</text><text x="255" y="108" text-anchor="middle" font-size="9" fill="#6B6058">I2</text>
+        <rect x="340" y="70" width="130" height="60" rx="6" fill="#FF9900" stroke="#3F4A5E" stroke-width="1.5"/><text x="405" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#1F2433">KServe + JobSet</text><text x="405" y="108" text-anchor="middle" font-size="9" fill="#6B6058">I3</text>
+        <rect x="490" y="70" width="130" height="60" rx="6" fill="#A04832" stroke="#3F4A5E" stroke-width="1.5"/><text x="555" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">vLLM + NIM</text><text x="555" y="108" text-anchor="middle" font-size="9" fill="#6B6058">I4</text>
+        <rect x="640" y="70" width="80" height="60" rx="6" fill="#5A6B81" stroke="#3F4A5E" stroke-width="1.5"/><text x="680" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#FBF1D6">AI Gw</text><text x="680" y="108" text-anchor="middle" font-size="9" fill="#6B6058">I5</text>
+        <rect x="40" y="160" width="680" height="50" rx="6" fill="#FBE8DC" stroke="#A04832" stroke-width="1.5"/><text x="380" y="182" text-anchor="middle" font-size="11" font-weight="700" fill="#A04832">+ RDMA + JuiceFS + multi-tenant + cost optimization + observability</text><text x="380" y="198" text-anchor="middle" font-size="9" fill="#6B6058">I6 + I7 + ops</text>
+        <g id="anim-pkg" opacity="0" transform="translate(115,110)">
+          <circle r="9" fill="#D97757"/>
+          <text y="3" text-anchor="middle" font-size="9" fill="#FFF" font-weight="700">📦</text>
+        </g>
+      </svg>
+      <div class="anim-controls">
+        <button class="anim-btn active" type="button" data-mode="i8">▶ full reference observatory</button>
+      </div>
+      <div class="anim-readout" id="anim-readout"><strong>Watching:</strong> operating observatory — every k-adv-ai concept.</div>
+    </div>
+  </section>
+
+  <section class="s">
+    <span class="s-eyebrow">Section 7 · Misconceptions, flashcards &amp; quiz</span>
+    <h2>Lock it in</h2>
+    <p>A few common misconceptions to clear up first, then the flashcards and quiz.</p>
+    <div class="misconceptions">
+      <h3>Common Misconceptions</h3>
+      <div class="misconceptions-grid">
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "This is over-engineered for &lt; 10 GPU clusters."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Some pieces (DRA, MIG, AI Gateway, JuiceFS) earn at small scale. Skip what isn't needed; adopt as scale + tenancy + cost demands.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "AI infra is fundamentally different from K8s."</div><div class="misc-row misc-truth"><strong>Truth:</strong> AI infra extends K8s via operators + plugins. Same K8s primitives + AI-specific extensions. K8s is the substrate.</div></div>
+        <div class="misc-card"><div class="misc-row misc-myth"><strong>Myth:</strong> "Once built, the platform runs itself."</div><div class="misc-row misc-truth"><strong>Truth:</strong> Operational rhythm (game days + cost reviews + dashboards) is non-optional. Without rhythm, AI infra rots fast.</div></div>
+      </div>
+    </div>
+    <div class="flashcard-grid">
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Capstone's 8 layers?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back"><strong>Capacity</strong> (GPU + DRA + MIG), <strong>scheduling</strong> (Kueue + Volcano + MultiKueue), <strong>ML stack</strong> (Ray + Kubeflow + KServe + JobSet), <strong>serving</strong> (vLLM / Triton / NIM), <strong>L7</strong> (AI Gateway), <strong>fabric</strong> (RDMA / EFA / GDS), <strong>storage</strong> (JuiceFS / Alluxio + OCI), <strong>governance</strong> (multi-tenant + Spot + chargeback).</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Per-tenant isolation primitives?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Namespace + RBAC + NetPol + GPU Quota + MIG isolation + node taints + AI Gateway token budget.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Operational rhythm in capstone?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Quarterly game days (Spot cascade + GPU OOM + AI Gateway throttle) + monthly cost review + quarterly SLO retro + tenant chargeback.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">Multi-region pattern?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">MultiKueue federates training across regions; KServe per-region inference + global LB routing.</div></div></div>
+      <div class="flashcard"><div class="flashcard-inner"><div class="flashcard-face flashcard-front">LLM serving path in capstone?<div class="flashcard-hint">tap to flip</div></div><div class="flashcard-face flashcard-back">Client → AI Gateway (auth + budget + safety + cache) → KServe InferenceService → vLLM / Triton / NIM → response stream.</div></div></div>
+    </div>
+    <div class="quiz-grid" style="margin-top:24px">
+      <div class="quiz-card"><p class="quiz-prompt">Walk a new ML engineer through the capstone in 5 min.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>"GPU fleet has H100 (large LLM + training) and L40/G5 (inference + light LLM). MIG splits H100s for inference Pods. Kueue admits jobs per team's quota; Volcano gang-schedules distributed training; MultiKueue federates across regions. KubeRay for distributed Python; Kubeflow for training operators + Pipelines + HPO. KServe wraps vLLM / Triton / NIM as InferenceService. AI Gateway in front: per-tenant token budget + safety + semantic cache + multi-provider failover. RDMA / EFA between H100 nodes for collective ops. JuiceFS shared model cache. OCI artifacts for distribution. Cost dashboards per tenant; chargeback monthly; quarterly game days exercise the runbooks. Backstage shows it all in one place."</div></div>
+      <div class="quiz-card"><p class="quiz-prompt">A new tenant onboarded; their training jobs underperform. Walk diagnostic.</p><button class="quiz-reveal" type="button">Show answer</button><div class="quiz-answer"><span class="quiz-answer-tag">answer</span>(1) <strong>Quota check</strong>: tenant's ClusterQueue full? Cohort spare available? (2) <strong>RDMA</strong>: training using EFA/IB transport? Verify NCCL config. (3) <strong>Storage</strong>: data loading bottleneck? GPUDirect Storage enabled? JuiceFS cache warm? (4) <strong>Gang scheduling</strong>: Volcano PodGroup correct? min-member set? (5) <strong>GPU sharing</strong>: tenant on shared GPUs? Migrate to dedicated for prod. (6) <strong>Profile</strong>: NCCL + CUDA + DCGM utilization to find hotspot.</div></div>
+      <div class="quiz-card cyoa-quiz"><span class="cyoa-tag">🎬 Choose Your Own Adventure</span><p class="quiz-prompt">The CFO sees AI infra cost: "why so much?" Defend.</p><button class="quiz-reveal" type="button">Show what happened</button><div class="quiz-answer"><span class="quiz-answer-tag">how the platform engineer answered the CFO</span>"<strong>AI infra is expensive because GPUs are expensive — but the architecture optimises within that constraint.</strong> Three reasons cost is well-managed: (1) <strong>MIG sharing</strong>: H100 cost amortised across 7 tenants per GPU. (2) <strong>Spot fleet</strong>: 60-90% discount for fault-tolerant batch. (3) <strong>Chargeback</strong>: per-tenant visibility drives self-tuning. (4) <strong>RIs/SP</strong>: baseline at 30-50% discount. <strong>Without these</strong>: cost would be 2-3× higher. <strong>Right answer is right-sizing + sharing + chargeback, not cancelling AI</strong>."</div></div>
+    </div>
+  </section>
+
+  <details class="glossary">
+    <summary>Words from this module · open if you want a quick reference</summary>
+    <div class="glossary-grid">
+      <div class="gloss-item"><div class="gloss-name">Operating Observatory</div><div class="gloss-def">Capstone AI inference platform; every K-ADV-AI concept woven.</div></div>
+      <div class="gloss-item"><div class="gloss-name">GPU pool</div><div class="gloss-def">NodeGroup of GPUs of one model; nodeSelector picks per workload.</div></div>
+      <div class="gloss-item"><div class="gloss-name">MIG inference pool</div><div class="gloss-def">H100 partitioned to 1g.10gb instances; serves many small inference Pods.</div></div>
+      <div class="gloss-item"><div class="gloss-name">Spot training fleet</div><div class="gloss-def">Cheaper preemptible GPU fleet; checkpointing handles interruption.</div></div>
+      <div class="gloss-item"><div class="gloss-name">multi-region MultiKueue</div><div class="gloss-def">Federate training across regions; route per capacity.</div></div>
+      <div class="gloss-item"><div class="gloss-name">per-tenant token budget</div><div class="gloss-def">AI Gateway enforces per-tenant tokens-per-minute + monthly cost cap.</div></div>
+      <div class="gloss-item"><div class="gloss-name">game day (AI)</div><div class="gloss-def">Quarterly exercise: GPU OOM, KV-cache exhaustion, Spot cascade, AI Gateway throttle.</div></div>
+      <div class="gloss-item"><div class="gloss-name">chargeback (AI)</div><div class="gloss-def">GPU cost allocated to consuming team; visible in P&L.</div></div>
+      <div class="gloss-item"><div class="gloss-name">DCGM dashboard</div><div class="gloss-def">GPU utilization metrics; foundation of right-sizing + idle detection.</div></div>
+      <div class="gloss-item"><div class="gloss-name">model rollout</div><div class="gloss-def">KServe canary traffic split for new model versions; auto-promote on SLO.</div></div>
+    </div>
+  </details>
+
+  <div class="stamp">
+    <p class="stamp-box">🎯 <strong>If you remember nothing else:</strong> <strong>Operating Observatory: GPU + DRA + Kueue + Volcano + KServe + vLLM + AI Gateway + RDMA + JuiceFS + OCI artifacts + multi-tenant + Spot + chargeback. Every K-ADV-AI concept woven into one production AI inference platform.</strong></p>
+  </div>
+
+  <section class="recap">
+    <span class="recap-badge">✓ Module I8 complete</span>
+    <p>Capstone: GPU + DRA + MIG + Kueue + Volcano + KubeRay + Kubeflow + KServe + vLLM + AI Gateway + RDMA / EFA + JuiceFS + OCI artifacts + multi-tenant Quota + Spot + chargeback + observability + runbooks. Production AI inference platform.</p>
+    <p class="recap-next"><strong>K-ADV-AI complete.</strong> 8 modules. From GPU + DRA (I1) to operating observatory (I8). Next K-ADV: <em>K-ADV-DR</em> (K-Lifeboat) — disaster recovery + business continuity.</p>
+  </section>
+
+</main>
+
+<footer>Suvis Guru · K-ADV-AI · Module I8 of 8 · grounded in kubernetes.io + nvidia.com/kubernetes + kubeflow.org</footer>
+
+
+<script>
+  // Each setup block is isolated so a failure in one (e.g. localStorage
+  // blocked on file:// origins in Safari) does not kill the others —
+  // notably the animation IIFE that the generator appends below.
+  function safeStorageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+  function safeStorageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+  try {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+      const stored = safeStorageGet('lesson-theme');
+      if (stored) {
+        document.body.setAttribute('data-theme', stored);
+        themeToggle.textContent = stored === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+      }
+      themeToggle.addEventListener('click', () => {
+        const cur = document.body.getAttribute('data-theme');
+        const next = cur === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', next);
+        themeToggle.textContent = next === 'dark' ? '\u2600 Light' : '\ud83c\udf19 Dark';
+        safeStorageSet('lesson-theme', next);
+      });
+    }
+  } catch (e) { console.warn('theme toggle setup failed', e); }
+
+  try {
+    document.querySelectorAll('.flashcard').forEach(card => card.addEventListener('click', () => card.classList.toggle('flipped')));
+  } catch (e) { console.warn('flashcard setup failed', e); }
+
+  try {
+    document.querySelectorAll('.quiz-reveal').forEach(btn => {
+      const showText = btn.textContent;
+      const hideText = showText.replace(/^Show/, 'Hide');
+      btn.addEventListener('click', () => {
+        const ans = btn.parentElement.querySelector('.quiz-answer');
+        const open = ans.classList.toggle('show');
+        btn.textContent = open ? hideText : showText;
+      });
+    });
+  } catch (e) { console.warn('quiz reveal setup failed', e); }
+
+  try {
+    document.querySelectorAll('.pause-check-box').forEach(box => {
+      const opts = box.querySelectorAll('.pause-check-opt');
+      const fb = box.querySelector('.pause-check-feedback');
+      opts.forEach(opt => opt.addEventListener('click', () => {
+        opts.forEach(o => o.classList.remove('correct','wrong'));
+        opt.classList.add(opt.dataset.correct === 'true' ? 'correct' : 'wrong');
+        fb.classList.add('show');
+      }));
+    });
+  } catch (e) { console.warn('pause-check setup failed', e); }
+
+  // -------- Animation --------
+  // _scope: in individual lesson HTML, no course-section ancestor exists -
+  // _scope falls back to document. In combined-course HTML, document.currentScript
+  // is inside a per-lesson section.course-section element - _scope is that section.
+  // This keeps each combined-view lesson animation isolated to its own DOM subtree.
+  try { (function() {
+    const _scope = (document.currentScript && document.currentScript.closest && document.currentScript.closest('section.course-section')) || document;
+    // _byId: use attribute selector ([id="..."]) instead of #id selector to
+    // force tree-walking of _scope. The #id selector goes via the document
+    // id-element-map and would return null if the first matching element
+    // in the document isn't a descendant of _scope (which happens in
+    // combined-course view where every lesson section has its own
+    // anim-pkg / anim-readout / anim-mode-label with the same id).
+    const _byId = id => _scope.querySelector('[id="' + id + '"]');
+    const SCENES = [{"mode_id": "i8", "mode_label": "Mode: capstone AI platform", "initial_set_text": null, "phases": [{"readout": "<strong>Phase A.</strong> GPU nodes + DRA + GPU Operator.", "move_to": [105, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Phase B.</strong> Kueue admission + Volcano gang scheduling + MultiKueue federation.", "move_to": [255, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Phase C.</strong> KServe inference + JobSet batch + Kubeflow pipelines.", "move_to": [405, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Phase D.</strong> vLLM / Triton / NIM serving with autoscale.", "move_to": [555, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Phase E.</strong> AI Gateway: per-model auth + rate + safety + observability.", "move_to": [680, 100], "duration_ms": 900, "pause_after_ms": 1500, "set_text": null, "set_attr": null}, {"readout": "<strong>Phase F.</strong> RDMA + JuiceFS + multi-tenant Quota + Spot + cost dashboards.", "move_to": [380, 185], "duration_ms": 900, "pause_after_ms": 2400, "set_text": null, "set_attr": null}]}];
+    const INITIAL_XY = [115, 110];
+    const animModeLabel = _byId('anim-mode-label');
+    const animReadout = _byId('anim-readout');
+    const animPkg = _byId('anim-pkg');
+    const modeBtns = _scope.querySelectorAll('.anim-btn[data-mode]');
+    if (!animPkg) return;
+
+    let timer = null;
+    let currentXY = INITIAL_XY.slice();
+
+    function clearTimer() { if (timer) { clearTimeout(timer); timer = null; } }
+
+    function setText(pairs) {
+      if (!pairs) return;
+      pairs.forEach(p => {
+        const el = _byId(p[0]);
+        if (el) el.textContent = p[1];
+      });
+    }
+    function setAttr(triples) {
+      if (!triples) return;
+      triples.forEach(t => {
+        const el = _byId(t[0]);
+        if (el) el.setAttribute(t[1], t[2]);
+      });
+    }
+
+    function moveTo(end, duration, done) {
+      const start = currentXY.slice();
+      animPkg.setAttribute('opacity', '1');
+      const t0 = performance.now();
+      function frame(t) {
+        const k = Math.min((t - t0) / duration, 1);
+        const e = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k+2, 2)/2;
+        const x = start[0] + (end[0] - start[0]) * e;
+        const y = start[1] + (end[1] - start[1]) * e;
+        animPkg.setAttribute('transform', 'translate(' + x + ',' + y + ')');
+        if (k < 1) requestAnimationFrame(frame);
+        else { currentXY = [end[0], end[1]]; if (done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function runScene(modeId) {
+      clearTimer();
+      const scene = SCENES.find(s => s.mode_id === modeId);
+      if (!scene) return;
+      if (animModeLabel) animModeLabel.textContent = scene.mode_label;
+      setText(scene.initial_set_text);
+      // Reset packet to start
+      currentXY = INITIAL_XY.slice();
+      animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')');
+      animPkg.setAttribute('opacity', '0');
+
+      let i = 0;
+      function nextPhase() {
+        if (i >= scene.phases.length) { i = 0; currentXY = INITIAL_XY.slice(); animPkg.setAttribute('opacity', '0'); animPkg.setAttribute('transform', 'translate(' + INITIAL_XY[0] + ',' + INITIAL_XY[1] + ')'); timer = setTimeout(nextPhase, 800); return; }
+        const p = scene.phases[i++];
+        animReadout.innerHTML = p.readout;
+        setText(p.set_text);
+        setAttr(p.set_attr);
+        if (p.move_to) {
+          moveTo(p.move_to, p.duration_ms, () => { timer = setTimeout(nextPhase, p.pause_after_ms); });
+        } else {
+          timer = setTimeout(nextPhase, p.pause_after_ms);
+        }
+      }
+      nextPhase();
+    }
+
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        runScene(btn.dataset.mode);
+      });
+    });
+    // Auto-start first scene
+    if (SCENES.length) runScene(SCENES[0].mode_id);
+  })(); } catch (e) { console.warn('animation setup failed', e); }
+
+</script>
+
+</body>
+</html>

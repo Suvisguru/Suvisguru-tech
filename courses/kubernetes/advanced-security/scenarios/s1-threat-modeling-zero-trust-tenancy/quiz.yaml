@@ -1,0 +1,21 @@
+# Quiz — K-ADV-SEC S (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Walk a STRIDE exercise for a payment-processing Service that calls Stripe + writes to Postgres + reads JWT-auth'd HTTP requests. Name one defence per STRIDE category.
+    answer: |
+      **Spoofing**: short-lived projected JWT for Pod identity + IRSA for AWS access; mTLS for outbound to Stripe (Stripe's server identity verified). **Tampering**: Cosign-signed image + GitOps source-of-truth + SBOM tracking. **Repudiation**: audit.k8s.io with full Request body retention; immutable storage. **Info disclosure**: Stripe API key in External Secrets / Vault; KMS-encrypted at rest; mesh-mTLS in transit; log redaction for card data. **DoS**: ResourceQuota + LimitRange on the namespace; rate limiting at the API gateway; HPA tied to request count. **Elevation**: PSA Restricted (no privileged / hostPath); RBAC tightly scoped (only Stripe webhook handler can call its API); Falco rule alerting on unusual syscalls.
+
+  - id: 2
+    prompt: |
+      A team has soft multi-tenancy across 30 namespaces. Audit asks them to harden tenancy. What's the upgrade path that doesn't require migrating every workload?
+    answer: |
+      (1) **Tighten the soft layer first**: NetworkPolicy default-deny + explicit allow per consumer; PSA Restricted enabled cluster-wide; ResourceQuota + LimitRange per namespace; tighter RBAC (no cluster-admin to tenant SAs). (2) **Add layered controls**: External Secrets per namespace; Falco runtime detection; mesh-mTLS for east-west. (3) **For specific high-risk tenants**: migrate to vCluster — they get a virtual control plane while sharing host nodes. Migration is namespace-by-namespace; existing manifests still apply. (4) **Per-cluster only for the highest-risk tenants** (regulated PHI, untrusted code, jurisdiction). Layered approach lets risk drive cost.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CISO says "adopt zero-trust by next quarter." Defend a phased plan that prioritises risk + reversibility.
+    answer: |
+      "**Zero-trust isn't a switch — it's a posture across many controls.** Phased plan ordered by risk reduction per week of effort: **Week 1-2:** audit.k8s.io to SIEM + RBAC review (find over-broad bindings). **Week 3-4:** NetworkPolicy default-deny + explicit allow per Service (foundation for everything else). **Week 5-8:** mesh-mTLS rollout (Istio or Linkerd) — turn on for one critical Service path first; expand. **Week 9-10:** short-lived projected SA tokens cluster-wide; remove auto-mount on default SAs. **Week 11-12:** PSA Restricted enforce on non-privileged namespaces + Falco / Tetragon runtime alerting. **Quarter 2:** External Secrets + signed-image admission. **Each step is reversible** via feature flags or staged rollout; **each step independently reduces blast radius**; the team owns the operational impact at every phase. Big-bang zero-trust always fails; layered always succeeds."

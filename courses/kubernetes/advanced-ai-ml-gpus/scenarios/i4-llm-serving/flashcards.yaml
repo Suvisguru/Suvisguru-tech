@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-AI I (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      vLLM's two key innovations?
+    back: |
+      **PagedAttention** (KV-cache paged like virtual memory; reduces fragmentation) + **continuous batching** (requests batch dynamically; higher GPU util).
+
+  - id: 2
+    front: |
+      TGI vs vLLM?
+    back: |
+      **TGI** = HF-ecosystem-native; easier HF model integration. **vLLM** = higher throughput at peak; broader optimization toolkit.
+
+  - id: 3
+    front: |
+      When pick Triton?
+    back: |
+      Multi-framework fleet (TF / PyTorch / ONNX / Triton custom) or TensorRT-LLM optimised LLMs. Production-grade for mixed-model serving.
+
+  - id: 4
+    front: |
+      NIM Operator — what does it provide?
+    back: |
+      Pre-optimised model containers (per GPU model); operator deploys + autoscales + monitors; commercial NVIDIA support.
+
+  - id: 5
+    front: |
+      llm-d — what makes it K8s-native?
+    back: |
+      Built around K8s primitives — Service / Deployment / HPA + LLM-specific autoscaling (queue depth + KV-cache fullness). Newer; open-source.
+
+  - id: 6
+    front: |
+      LLM quantization options?
+    back: |
+      **AWQ** (Activation-aware Weight Quantization), **GPTQ**, **FP8**, **INT4 / INT8**. Trade accuracy for memory + throughput.
+
+  - id: 7
+    front: |
+      Tensor parallel — what does it solve?
+    back: |
+      Splits one model across multiple GPUs for memory + speed. Tensor parallel = layers split; pipeline parallel = stages split. Combine for very large models.
+
+  - id: 8
+    front: |
+      KServe + LLM serving?
+    back: |
+      ServingRuntime wraps vLLM / TGI / Triton / NIM as K8s-native InferenceService. Adds autoscale + canary + multi-model serving.

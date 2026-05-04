@@ -1,0 +1,21 @@
+# Quiz — K-ADV-AI I (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Walk a new ML engineer through the capstone in 5 min.
+    answer: |
+      "GPU fleet has H100 (large LLM + training) and L40/G5 (inference + light LLM). MIG splits H100s for inference Pods. Kueue admits jobs per team's quota; Volcano gang-schedules distributed training; MultiKueue federates across regions. KubeRay for distributed Python; Kubeflow for training operators + Pipelines + HPO. KServe wraps vLLM / Triton / NIM as InferenceService. AI Gateway in front: per-tenant token budget + safety + semantic cache + multi-provider failover. RDMA / EFA between H100 nodes for collective ops. JuiceFS shared model cache. OCI artifacts for distribution. Cost dashboards per tenant; chargeback monthly; quarterly game days exercise the runbooks. Backstage shows it all in one place."
+
+  - id: 2
+    prompt: |
+      A new tenant onboarded; their training jobs underperform. Walk diagnostic.
+    answer: |
+      (1) **Quota check**: tenant's ClusterQueue full? Cohort spare available? (2) **RDMA**: training using EFA/IB transport? Verify NCCL config. (3) **Storage**: data loading bottleneck? GPUDirect Storage enabled? JuiceFS cache warm? (4) **Gang scheduling**: Volcano PodGroup correct? min-member set? (5) **GPU sharing**: tenant on shared GPUs? Migrate to dedicated for prod. (6) **Profile**: NCCL + CUDA + DCGM utilization to find hotspot.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees AI infra cost: "why so much?" Defend.
+    answer: |
+      "**AI infra is expensive because GPUs are expensive — but the architecture optimises within that constraint.** Three reasons cost is well-managed: (1) **MIG sharing**: H100 cost amortised across 7 tenants per GPU. (2) **Spot fleet**: 60-90% discount for fault-tolerant batch. (3) **Chargeback**: per-tenant visibility drives self-tuning. (4) **RIs/SP**: baseline at 30-50% discount. **Without these**: cost would be 2-3× higher. **Right answer is right-sizing + sharing + chargeback, not cancelling AI**."

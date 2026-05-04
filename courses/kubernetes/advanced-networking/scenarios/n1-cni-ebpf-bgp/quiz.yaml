@@ -1,0 +1,21 @@
+# Quiz — K-ADV-NET N (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team's GKE cluster is fine but their on-prem K8s cluster has 4× higher P99 latency. Diagnose with the CNI + eBPF + BGP framework.
+    answer: |
+      Three checks in order. (1) **kube-proxy / Service LB**: is on-prem still iptables-based? Service-LB latency at scale is the most common culprit. Switch to Cilium kube-proxy-replacement or Calico eBPF. (2) **Routing**: is on-prem using overlay (VXLAN / IP-in-IP)? If the fabric supports BGP, configure peering — eliminate encap. Run tcpdump to confirm packets aren't encapsulated. (3) **MTU + conntrack**: tcpdump for fragmentation; check `nf_conntrack_count` vs `nf_conntrack_max`; resize if near limit. **Hubble flow logs** (or equivalent) on each cluster reveal latency per flow + verdict; comparing surfaces the gap quickly.
+
+  - id: 2
+    prompt: |
+      A team adopted Cilium for the eBPF wins but kept Calico for NetworkPolicy because "Cilium NetPol is too new." Defend or refute.
+    answer: |
+      **Refute (gently).** Cilium NetworkPolicy is GA + mature; the cluster running two CNIs is the riskier setup. Two CNIs means: (a) routing rules from both, often conflicting; (b) NetPol from both, with one likely silently shadowing the other; (c) two failure modes, two debugging tool sets, two operational teams. **The path**: pick one CNI; trust its NetPol implementation; if Cilium NetPol has a feature gap, file an upstream issue (Cilium responds quickly). The Calico-as-only-NetPol pattern is a transition state, not a long-term architecture. **Cilium NetPol gives more**: L7 policy (HTTP method / path), DNS-based egress, ClusterMesh policy across clusters — all things vanilla NetPol doesn't do.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees "$2k/month for Hubble" and asks to disable it. Defend.
+    answer: |
+      "**Hubble pays for itself in time-to-debug.** Three reasons: (1) **Per-flow visibility**: when a Service is misbehaving, Hubble shows verdict per flow (allowed / dropped + reason) without packet capture or app changes. The next outage saves more than $2k in engineer hours. (2) **NetworkPolicy debugging**: "why is Pod A failing to reach Pod B?" Hubble answers in seconds — Hubble shows the policy verdict directly. Without it: tcpdump + manual rule walk = hours. (3) **Compliance**: regulated workloads need flow logs. Without Hubble, we're building bespoke logging. **Trim instead**: lower retention from 7 days to 1 day; cut cost ~70% while keeping live debugging. **Don't disable a debug tool to save what one outage costs.**"

@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-SEC S (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      STRIDE — what does it stand for?
+    back: |
+      **S**poofing, **T**ampering, **R**epudiation, **I**nfo disclosure, **D**oS, **E**levation of privilege. Walk every Service through each category.
+
+  - id: 2
+    front: |
+      Zero-trust in one sentence?
+    back: |
+      No implicit trust at any boundary; every request authenticates + authorises every time regardless of network position.
+
+  - id: 3
+    front: |
+      Three multi-tenancy models?
+    back: |
+      **Soft** (Namespace + RBAC + NetPol + PSA + Quota — high-trust), **Hard via vCluster** (virtual control plane per tenant — untrusted code), **Hard via per-cluster** (one cluster per tenant — strongest, highest cost).
+
+  - id: 4
+    front: |
+      Four concentric K-Citadel layers?
+    back: |
+      **Perimeter** (Ingress + WAF), **Identity** (OIDC + mTLS + SA tokens + RBAC), **Tenant zone** (Namespace + NetPol + PSA + Quota), **Vault** (Secrets + KMS + audit + signed images).
+
+  - id: 5
+    front: |
+      What does mesh-mTLS prevent?
+    back: |
+      Lateral movement between Pods after one is compromised. Without mTLS, an attacker calls any Service freely; with mesh-mTLS + workload identity, the attacker's call is unsigned and rejected.
+
+  - id: 6
+    front: |
+      Why soft multi-tenancy isn't enough for untrusted code?
+    back: |
+      Namespaces share the host kernel. A kernel-level CVE (container escape) crosses namespace boundaries. vCluster gives a separate apiserver but still shares the kernel — mitigation includes Kata Containers / gVisor for kernel-level isolation. Per-cluster is the only fully-isolated option.
+
+  - id: 7
+    front: |
+      Why audit.k8s.io is foundational, not optional?
+    back: |
+      Repudiation defence + compliance evidence + IR detection all require audit logs. Without audit, a breach has no forensic trail and compliance can't be evidenced. Wire it before the first prod cluster ships.
+
+  - id: 8
+    front: |
+      Workload identity — what does IRSA / Workload Identity / Pod Identity replace?
+    back: |
+      Long-lived AWS / GCP / Azure credentials baked into images or env vars. Replaced by short-lived tokens scoped per Pod via federation between K8s ServiceAccount and cloud IAM. No static creds in images / config.

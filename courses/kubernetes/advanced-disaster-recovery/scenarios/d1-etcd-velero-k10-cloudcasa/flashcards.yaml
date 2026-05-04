@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-DR D (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      etcd snapshot — when needed?
+    back: |
+      Self-managed clusters; foundation for total-cluster-loss rebuild. Managed K8s (EKS / GKE / AKS) = cloud handles.
+
+  - id: 2
+    front: |
+      Velero backup what?
+    back: |
+      K8s objects (Deployment / Service / Secret / etc.) + PVCs (via CSI snapshot or Restic / Kopia).
+
+  - id: 3
+    front: |
+      BackupStorageLocation — what is it?
+    back: |
+      Velero CR pointing at S3 / Azure Blob / GCS bucket for backup destination.
+
+  - id: 4
+    front: |
+      Restic vs Kopia in Velero?
+    back: |
+      **Restic**: longer history; widely deployed. **Kopia**: newer; faster; recommended default in modern Velero.
+
+  - id: 5
+    front: |
+      Kasten K10 differentiator?
+    back: |
+      App-aware (knows DB quiescing); commercial support; richer policies; multi-cluster aggregation.
+
+  - id: 6
+    front: |
+      CloudCasa — what does it offer?
+    back: |
+      SaaS DR; agent-based; managed by CloudCasa team; hosted simplicity vs self-host.
+
+  - id: 7
+    front: |
+      Restore-test cadence?
+    back: |
+      Quarterly minimum; semi-annually for critical clusters. Find issues before real loss.
+
+  - id: 8
+    front: |
+      What backup doesn't cover?
+    back: |
+      External managed services (RDS / Vault / S3 / SaaS) — those have their own DR. Backup your K8s state; align with managed-service DR for the full picture.

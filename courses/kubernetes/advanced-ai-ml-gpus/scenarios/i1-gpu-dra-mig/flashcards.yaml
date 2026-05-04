@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-AI I (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does NVIDIA device plugin do?
+    back: |
+      DaemonSet advertising `nvidia.com/gpu` resources to kubelet. Pod requests; scheduler places.
+
+  - id: 2
+    front: |
+      GPU Operator components?
+    back: |
+      Driver (containerized) + container runtime + DCGM (metrics) + MIG manager + Node Feature Discovery + GPUDirect Storage / RDMA.
+
+  - id: 3
+    front: |
+      MIG profile syntax?
+    back: |
+      `nvidia.com/mig-Xg.Ygb` where X = compute slices (1-7 on H100), Y = memory GB. e.g., `nvidia.com/mig-1g.10gb: 1`.
+
+  - id: 4
+    front: |
+      DRA — what's structured parameters?
+    back: |
+      Vendor declares device-specific spec (memory size, model, MIG profile, RDMA capability); Pod claims with parameters; scheduler matches. Multi-vendor friendly.
+
+  - id: 5
+    front: |
+      MIG-supported GPU models?
+    back: |
+      H100 (up to 7 partitions per GPU), A100 (up to 7), GH200. Not B200 (different architecture).
+
+  - id: 6
+    front: |
+      DCGM exporter — what does it provide?
+    back: |
+      GPU metrics (utilization, memory, power, temperature, ECC errors) → Prometheus. Foundation of GPU observability.
+
+  - id: 7
+    front: |
+      When use time-slicing vs MIG?
+    back: |
+      **MIG**: isolation matters; tenant security; predictable QoS. **Time-slicing**: elastic sharing; bursty workloads; lower-priority workloads.
+
+  - id: 8
+    front: |
+      DRA vs device plugin — when each?
+    back: |
+      **DRA** (K8s 1.32+ stable): multi-vendor + advanced scheduling + partial sharing. **Device plugin**: legacy + per-vendor; still works; will phase out.

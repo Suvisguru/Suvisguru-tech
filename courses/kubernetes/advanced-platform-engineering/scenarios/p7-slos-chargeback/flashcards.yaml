@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-PE P (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Five typical platform SLOs?
+    back: |
+      Cluster availability per tier; deploy latency P95 < 5 min; capacity headroom ≥ 20%; onboarding latency P95 < 1 day; IR detect < 5min / contain < 15min.
+
+  - id: 2
+    front: |
+      OpenCost vs Kubecost?
+    back: |
+      **OpenCost**: CNCF open-source foundation. **Kubecost**: commercial product on top with richer dashboards + chargeback + recommendations + forecasting.
+
+  - id: 3
+    front: |
+      Chargeback vs showback?
+    back: |
+      **Showback**: visible cost; no real bill exchange. **Chargeback**: real $$ allocated to consuming teams. Showback first; chargeback when org ready.
+
+  - id: 4
+    front: |
+      Cost optimisation playbook?
+    back: |
+      Right-size requests (VPA recommend); Spot/Preemptible; scale-to-zero (Knative/KEDA); ARM64/Graviton; RIs/SP/CUDs; storage tiering.
+
+  - id: 5
+    front: |
+      Why cost-center labels on every Pod?
+    back: |
+      OpenCost / Kubecost allocate cost using labels. Without label, cost goes to "unallocated" bucket; chargeback breaks. Mutating webhook injects label if missing.
+
+  - id: 6
+    front: |
+      VPA advisory mode?
+    back: |
+      Vertical Pod Autoscaler reads usage + recommends per-Pod requests/limits. Use in advisory (not auto-apply) to surface right-sizing opportunities to tenants.
+
+  - id: 7
+    front: |
+      SLO breach → what happens?
+    back: |
+      Postmortem (NIST 800-61 style for non-incident perf misses); roadmap items added; quarterly stakeholder review tracks closure. SLOs drive backlog priority.
+
+  - id: 8
+    front: |
+      Capacity headroom — why ≥ 20%?
+    back: |
+      Below 20%, autoscaler can't respond to spikes; saturation cascades. 20% is the empirical threshold for "new Pod can schedule fast"; headroom is the proactive buffer.

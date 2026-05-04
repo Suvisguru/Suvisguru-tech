@@ -1,0 +1,21 @@
+# Quiz — K-ADV-AI I (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Design AI Gateway for multi-tenant LLM platform.
+    answer: |
+      (1) **Envoy AI Gateway** deployed via Gateway API. (2) **Per-tenant JWT auth**: tenant ID extracted; rate limit + budget keyed by tenant. (3) **AIGatewayRoute per model**: gpt-4 → openai backend; llama-3-70b → local vLLM. (4) **Redis token counters**: TPM enforcement per tenant per model. (5) **Safety filters**: input PII redaction (regex + classifier); output moderation via Llama Guard. (6) **Semantic cache**: Redis + embedding model; 0.95 similarity threshold for chat. (7) **Failover**: OpenAI primary; Anthropic fallback per model class. (8) **Observability**: Prometheus metrics (TPM / cost / cache-hit / safety-trigger); Loki for prompt audit logs (PII-redacted).
+
+  - id: 2
+    prompt: |
+      A tenant complains: "my budget hit but the response was the same as cached." Walk diagnostic.
+    answer: |
+      (1) **Cache logic check**: was this prompt in semantic cache? Why not? Embedding similarity threshold maybe too tight. (2) **Cost accounting**: did the gateway log the cache HIT but still deduct tokens? Bug in the budget logic. (3) **Fix**: cache HIT should not deduct tokens; only cache MISS does. (4) **Adjust similarity threshold**: if 0.99 too tight, lower to 0.95 for chat; raise for code-gen. (5) **Audit**: per-tenant cache-hit ratio dashboard; tune per workload. *Caching alignment with billing is the most common AI Gateway bug.*
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees Portkey cost; "build it ourselves with Envoy AI Gateway." Defend / refute.
+    answer: |
+      "**Build-vs-buy on AI Gateway: Portkey is hosted; Envoy AI Gateway is open-source self-hosted.** Three considerations: (1) **Engineering time**: Portkey live in days; self-build = months. (2) **Multi-provider**: Portkey supports 200+ models with normalised API; self-build = bespoke per provider. (3) **Observability**: Portkey ships dashboards; self-build = wire Prometheus + Loki. **Where build wins**: niche compliance requirements; specific providers Portkey doesn't support; cost at very large scale (Portkey is per-token pricing). **Right answer per team**: small/medium → Portkey for time-to-value. Large with strict compliance → Envoy AI Gateway. Hybrid: Portkey for non-critical routing; Envoy AI Gateway for compliance-bound paths."

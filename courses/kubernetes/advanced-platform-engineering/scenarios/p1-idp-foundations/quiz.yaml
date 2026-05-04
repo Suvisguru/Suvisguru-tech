@@ -1,0 +1,21 @@
+# Quiz — K-ADV-PE P (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A 100-engineer org with no IDP wants to bootstrap one in 6 months. Walk the priority order.
+    answer: |
+      (1) **Backstage portal** month 1: catalog every service; one or two templates; TechDocs from existing repos. Quick value. (2) **Crossplane self-service namespace** month 2: tenant onboarding form + Crossplane Claim + GitOps. (3) **Argo CD ApplicationSets** month 3: fleet GitOps deploy. (4) **OPA / Kyverno guardrails** month 4: PR-time + admission policy gates. (5) **OpenCost + SLOs** month 5: cost transparency + platform contract. (6) **Iterate on developer NPS** month 6+: quarterly survey drives next features. *Each step delivers value; sequential adoption avoids big-bang risk.*
+
+  - id: 2
+    prompt: |
+      A platform team is buried in tickets — every team files "please add label X / open SG / create namespace." Walk the path out.
+    answer: |
+      (1) **Categorise tickets**: top 80% are self-serviceable patterns. Build self-service for those. (2) **Template the recurring 80%**: namespace creation, label additions, NetPol changes, SG changes — each becomes a Crossplane Claim or Backstage Scaffolder template. (3) **Migrate ticket flow**: "file ticket" replaced by "submit Backstage form"; ticket queue drains. (4) **Reserve human review** for the 20% novel cases. (5) **Measure**: ticket count drops; developer NPS rises; platform team capacity opens for roadmap work. *The mindset is: every recurring ticket is a self-service feature you haven't built.*
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership says: "why pay for an IDP team when we already have platform admins?" Defend.
+    answer: |
+      "**The IDP team produces leverage; admins produce throughput.** Three reasons: (1) **Scale**: admins' work scales linearly with head-count + ticket volume. IDP team's work scales with template adoption — once a golden path ships, every team consumes it without admin intervention. 100 teams onboarded by one template ≠ 100 admin-tickets. (2) **Quality consistency**: bespoke per-team setup drifts; templated setup is uniform. Compliance audits, security findings, incident patterns all benefit from uniformity. (3) **Developer productivity**: time-to-first-deploy drops from weeks to hours. The cost of delay across 100 engineers is enormous; the IDP team's salary is small in comparison. **Reframe**: IDP team is product team building leverage; admin team is the IDP's past tense. Both can coexist short-term while migrating ticket queue → self-service."

@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-AI I (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does RDMA do?
+    back: |
+      Remote Direct Memory Access — NIC writes directly to remote memory bypassing CPU + kernel. Foundation of distributed training fabric.
+
+  - id: 2
+    front: |
+      EFA vs InfiniBand vs RoCE?
+    back: |
+      **EFA** (AWS): RDMA-equivalent on p5 / hpc instances. **InfiniBand** (NVIDIA Quantum-2): on-prem dedicated fabric. **RoCE**: RDMA over Converged Ethernet. All achieve similar perf.
+
+  - id: 3
+    front: |
+      GPUDirect Storage — what does it do?
+    back: |
+      NVMe / S3 reads land directly in GPU memory; no host bounce. 2-3× IO throughput for training.
+
+  - id: 4
+    front: |
+      JuiceFS vs Alluxio — what differs?
+    back: |
+      **JuiceFS**: POSIX-compatible distributed FS with object-storage backend. **Alluxio**: data orchestration layer; caches across nodes; supports many backends. Both = shared model cache patterns.
+
+  - id: 5
+    front: |
+      OCI artifacts for models — tools?
+    back: |
+      **ORAS** (OCI Registry As Storage), **KitOps** (modelpack standard), **Cosign** (signing), **Harbor / ECR / GCR** (registries).
+
+  - id: 6
+    front: |
+      When use RDMA?
+    back: |
+      Distributed training (multi-GPU collective ops). Single-GPU inference doesn't need it. Threshold: training at 4+ GPUs across nodes.
+
+  - id: 7
+    front: |
+      K8s RDMA device plugin?
+    back: |
+      Per-node DaemonSet advertising `rdma/hca` or `nvidia.com/efa` resources to kubelet. Pods request; placement aware.
+
+  - id: 8
+    front: |
+      modelpack standard?
+    back: |
+      KitOps modelpack — OCI artifact format standardising model + dataset + code + LICENSE bundling. Open standard for model distribution.

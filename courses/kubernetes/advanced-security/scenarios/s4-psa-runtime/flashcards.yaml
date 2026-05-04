@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-SEC S (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three PSA profiles?
+    back: |
+      **privileged** (no restriction; legacy / system), **baseline** (no privileged / hostPath / hostNet / privilege-escalation), **restricted** (drop ALL caps, runAsNonRoot, seccompProfile required).
+
+  - id: 2
+    front: |
+      How is PSA configured per namespace?
+    back: |
+      Namespace labels: `pod-security.kubernetes.io/enforce: restricted`, `...warn: restricted`, `...audit: restricted`. Three modes orthogonal.
+
+  - id: 3
+    front: |
+      Migration order from privileged → restricted?
+    back: |
+      **Audit** cluster (find offenders) → **warn baseline** per namespace → fix → **enforce baseline** → **warn restricted** → fix non-root issues → **enforce restricted**. Cluster default last.
+
+  - id: 4
+    front: |
+      What does Falco watch?
+    back: |
+      Linux syscalls (via eBPF or kernel module) + K8s audit events + container events. Rules engine matches against built-in + custom rules; emits alerts.
+
+  - id: 5
+    front: |
+      Tetragon advantage over Falco?
+    back: |
+      (1) Pure eBPF — lower kernel overhead at high syscall volumes. (2) Can *enforce* — kill process, block syscall — not just observe. (3) Cilium-native — integrates with Cilium NetworkPolicy + Hubble. Trade: newer, smaller rule library.
+
+  - id: 6
+    front: |
+      Common Falco rules to enable?
+    back: |
+      Shell spawned in container; mount() inside container; write to /etc /bin /sbin; ptrace inside container; capability NET_RAW used; outbound to unexpected CIDR; suspicious process names (miners, scanners).
+
+  - id: 7
+    front: |
+      Why audit + warn + enforce phases for PSA?
+    back: |
+      Audit finds workloads that would fail without breaking them. Warn surfaces failures to teams via kubectl output for self-service fix. Enforce blocks. Skip phases = production outages from policy that's right in theory + wrong in practice.
+
+  - id: 8
+    front: |
+      Falcosidekick — what is it?
+    back: |
+      Event router for Falco. Receives Falco events; routes to 50+ destinations (Slack / Teams / PagerDuty / Loki / Splunk / Kafka / S3 / etc.). Glue between detection + alert pipelines.

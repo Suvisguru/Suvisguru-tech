@@ -1,0 +1,21 @@
+# Quiz — K-ADV-AI I (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Design GPU multi-tenancy + cost for a 50-engineer ML org.
+    answer: |
+      (1) **Per-team namespace** + RBAC + NetPol. (2) **GPU Quota per tier** (gold = 10 H100 / silver = 4 / bronze = 1). (3) **MIG-enabled nodes**: H100s partitioned 7×1g.10gb for inference; whole-H100 for training; nodeSelector picks pool. (4) **Kueue admission** per tenant + cohort lending. (5) **Spot fleet** for fault-tolerant training (G5/G6). (6) **OpenCost / Kubecost**: per-tenant chargeback. (7) **Budget alerts**: 75% / 95% / 100% of monthly. (8) **Idle reclaim**: DCGM monitoring + alert + auto-reclaim DaemonSet.
+
+  - id: 2
+    prompt: |
+      A tenant's prod inference is unstable on time-sliced GPUs. Walk fix.
+    answer: |
+      (1) **Symptom**: time-sliced GPU OOMs cascade across sibling Pods. (2) **Root cause**: time-slicing shares GPU memory; one Pod's leak crashes all. (3) **Fix**: migrate prod to MIG instances (hardware-isolated). Inference Pods → 1g.10gb / 2g.20gb. (4) **Validate**: stress-test one Pod's OOM; sibling Pods unaffected. (5) **Operational**: time-slicing reserved for dev / experimental; MIG for prod.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO asks: "why GPU bill 60% over forecast?" Walk diagnostic.
+    answer: |
+      "**Walk Kubecost dashboards top-down.** (1) **Per-tenant cost**: which tenants drove the spike? (2) **Per-Pod cost**: which Pods? Sustained or burst? (3) **DCGM utilization**: are Pods using GPUs (or wasting expensive resources)? (4) **Workload class**: inference / training / experimental? (5) **Action**: right-size (MIG) for low-util; Spot for fault-tolerant; quotas tightened for runaway tenant. **Outcome**: typical 30-40% reduction within a quarter via right-sizing + Spot adoption + idle reclaim. **The 60% overage is fixable; the GPU model isn't the issue — utilization + sharing strategy is.**"

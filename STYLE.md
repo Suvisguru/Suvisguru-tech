@@ -772,6 +772,101 @@ These are job titles for whichever entity is being discussed, not new cast membe
 - District-line emoji and strip emoji both render `⚓` (anchor); reused — no separate strip emoji as in K-VAN.
 - **Vocabulary canonicalization** for ECS: the canonical terms are *Task* (not "pod"), *Task Definition* (not "manifest"), *Service* (the ECS Service object — long-running task scheduler), *Cluster* (an ECS cluster, not a K8s cluster), *Capacity Provider* (not "node group"), *Service Connect* (preferred over App Mesh patterns). Lessons use these throughout body text and quiz answers; K8s-equivalent terms (Pod, Deployment, Service-the-K8s-object) appear in parentheses on first mention only as a gloss for K-EKS-trained readers, never as the standalone term.
 
+### K-ADV — Advanced specializations (post-K-COM, post-distribution-course)
+
+K-ADV-* are *advanced specialization* courses for learners who already have K-COM (and at least one distribution course) under their belt. Five tracks, role-aligned: Security Architect, Networking Architect, Platform Engineering, AI / ML / GPUs, Disaster Recovery + BC. Each gets its own universe, on top of the same K-Town foundations — the universes overlay K8s primitives (Pods, Deployments, Services) with role-specific metaphor; they don't replace them. Pin prefixes follow the `kPREFIX-suffix` pattern so all five are unique against the existing 7 courses.
+
+| Course | Letter | Universe | Emoji | Pin prefix | Modules |
+|---|---|---|---|---|---|
+| K-ADV-SEC | S | **K-Citadel** | 🏰 | `ksec-bastion` | 8 |
+| K-ADV-NET | N | **K-Highway** | 🛣️ | `knet-junction` | 7 |
+| K-ADV-PE | P | **K-Workshop** | 🛠️ | `kpe-bench` | 8 |
+| K-ADV-AI | I | **K-Observatory** | 🔭 | `kai-array` | 8 |
+| K-ADV-DR | D | **K-Lifeboat** | 🛟 | `kdr-cell` | 5 |
+
+Total: 36 modules. Each module ≈ 5-10 hours of advanced content; courses are designed for 40-80 hours each.
+
+#### Unified analogical universe — K-ADV-SEC (K-Citadel)
+
+K-Citadel is a fortified citadel — walls, gates, sentries, an armored vault, an identity bureau, audit archives, a war-room. The K-COM cast (Mayor Katie / Podrick) appears as visitors who must pass through the citadel's controls; new K-Citadel roles (titles, not characters): **Captain of the Watch** (the security architect, you), **Sentry** (admission controllers + RBAC), **Vault Master** (Secrets / KMS / signing). Pin prefix `ksec-bastion`.
+
+| Module | Bastion | Topic |
+|---|---|---|
+| S1 | **Threat Map Room** *(anchor)* | Threat modeling + zero-trust + multi-tenant isolation |
+| S2 | Authorization Desk | RBAC design at scale |
+| S3 | Checkpoint Gates | Admission policy architecture (Kyverno + Gatekeeper hybrid) |
+| S4 | Mandatory-Helmet Zones | PSA Restricted migration playbook + runtime detection (Falco / Tetragon) |
+| S5 | Seal Workshop | Image signing + SBOM + SLSA L3+ + in-toto + VEX in CI/CD |
+| S6 | Armored Vault | Secrets at scale + mTLS + service-mesh security |
+| S7 | Audit Archives + War Room | Audit log analytics + compliance evidence (PCI / HIPAA / FedRAMP / SOC2 / NIST 800-190) + break-glass + IR playbooks |
+| S8 | The Defendable Citadel | Capstone — regulated platform for finance / healthcare |
+
+#### Unified analogical universe — K-ADV-NET (K-Highway)
+
+K-Highway is the interstate highway system — lanes, exits, intersections, bridges between cities, customs at borders, traffic helicopters. Tasks (Pods) are vehicles; Services are carpool stops; Gateways are main intersections; the CNI is the road builder. New roles: **Highway Engineer** (you), **Traffic Cop** (NetworkPolicy enforcement), **Customs Officer** (egress gateways). Pin prefix `knet-junction`.
+
+| Module | Junction | Topic |
+|---|---|---|
+| N1 | **Highway HQ** *(anchor)* | CNI internals + eBPF + BGP at scale |
+| N2 | Main Intersection | Service routing + Gateway API at fleet scale |
+| N3 | Inter-City Bridges | Multi-cluster networking (Submariner / Skupper / Cilium ClusterMesh / Istio multi-cluster) |
+| N4 | Carpool + Express Lanes | Service mesh selection + DNS scaling + IPv6 / dual-stack at scale |
+| N5 | Customs Border + Tollbooth | NetworkPolicy at scale + egress gateways + private clusters + hybrid connectivity |
+| N6 | Traffic Helicopter | Packet tracing + performance tuning |
+| N7 | Multi-Region Highway Map | Capstone — multi-cluster network across EKS + AKS + GKE + on-prem + OpenShift / Tanzu |
+
+#### Unified analogical universe — K-ADV-PE (K-Workshop)
+
+K-Workshop is a master craftsperson's workshop — golden tools, master blueprints, apprentice intake, batch-crafting jigs, workshop accounting. New roles: **Master Craftsperson** (platform engineer, you), **Apprentice** (developer), **Foreman** (the operator running the platform). Pin prefix `kpe-bench`.
+
+| Module | Bench | Topic |
+|---|---|---|
+| P1 | **Master Blueprint Library** *(anchor)* | IDP foundations + golden paths + self-service namespaces |
+| P2 | Catalog Drawer System | Backstage (catalog, TechDocs, Scaffolder, plugins) |
+| P3 | Composition Workbench | Crossplane v2 (Providers, Compositions, XRDs, Functions, ConfigurationPackages) |
+| P4 | Batch-Crafting Jig | Argo CD ApplicationSets + OPA / Kyverno guardrails |
+| P5 | Apprentice Intake | Tenant onboarding + resource templates + cost controls + service catalogs |
+| P6 | Standard Tool Set | Workload abstractions: Score, KubeVela / OAM, Radius, Humanitec |
+| P7 | Workshop Accounting | Platform SLOs + chargeback / showback (OpenCost / Kubecost) |
+| P8 | The Equipped Workshop | Capstone — self-service IDP with namespace provisioning, RBAC, quotas, NetworkPolicy, GitOps, app templates, observability, cost labels, policy guardrails |
+
+#### Unified analogical universe — K-ADV-AI (K-Observatory)
+
+K-Observatory is a research observatory with telescope arrays, computation core, model-rendering halls, signal-line corridors. GPUs are *telescopes*; MIG slices are *eyepieces*; vLLM / Triton / NIM are *rendering halls*. New roles: **Astronomer** (ML / data scientist), **Optics Engineer** (you), **Patron** (the team paying for the observatory). Pin prefix `kai-array`.
+
+| Module | Array | Topic |
+|---|---|---|
+| I1 | **Optics Bay** *(anchor)* | GPU nodes + NVIDIA device plugin / GPU Operator + MIG + DRA for GPUs |
+| I2 | Observation Queue | Kueue + MultiKueue + Volcano gang scheduling |
+| I3 | Research Hall | Ray on Kubernetes (KubeRay) + Kubeflow + KServe + JobSet |
+| I4 | Model-Rendering Halls | LLM serving — vLLM, TGI, NVIDIA Triton, NIM Operator, llm-d |
+| I5 | Triage Desk | AI / LLM Gateway patterns (Envoy AI Gateway, Kong AI Gateway) |
+| I6 | High-Speed Signal Lines | RDMA, EFA, storage throughput, JuiceFS / Alluxio, OCI artifacts for models |
+| I7 | Telescope-Sharing Committee | GPU sharing + multi-tenant GPU security + cost optimization |
+| I8 | The Operating Observatory | Capstone — production AI inference platform with GPU scheduling + autoscaling + model rollout + observability + cost controls + tenant isolation |
+
+#### Unified analogical universe — K-ADV-DR (K-Lifeboat)
+
+K-Lifeboat is the emergency-drill universe — lifeboats, ship rebuild kits, mirror-ships in other harbors, total-loss restoration. New roles: **Drill Master** (DR architect, you), **Quartermaster** (backup operator), **Cargo Officer** (stateful-data steward). Pin prefix `kdr-cell`.
+
+| Module | Cell | Topic |
+|---|---|---|
+| D1 | **Drill Square** *(anchor)* | etcd backup + Velero (CSI snapshots / Kopia / Restic) + Kasten K10 + CloudCasa |
+| D2 | Ship Rebuild Yard | GitOps-driven recovery + cluster rebuild + application restore |
+| D3 | Mirror-Ship Harbor | Cross-region DR + RPO / RTO + backup validation + restore testing |
+| D4 | Cargo Recovery Office | Secret recovery + DNS failover + stateful workload DR + managed-service DR limitations |
+| D5 | Total-Loss Drill | Capstone — destroy + rebuild a complete production cluster from Git + backups + registry + secrets + DNS + storage snapshots |
+
+**K-ADV implementation rules**
+
+- Every K-ADV module opens with `{universe-emoji} {Universe-Name} {district-kind}: **[District Name]**.` matching the established pattern.
+- Every K-ADV module includes the universe map graphic with the current district highlighted.
+- Map viewBox: 800×400 (matches K-Frontier / K-Skyline / K-Campus / K-Garden / K-Harbor — fewer modules than K-COM).
+- Map renders by `scripts/k_adv_*_lesson_generator.py` via the shared `multi_course_renderer.py` (post-refactor pattern).
+- Strip dot count = total module count (8 / 7 / 8 / 8 / 5 per course).
+- Per CLAUDE.md "very advanced topics with super easy to understand illustrations and animations": each K-ADV lesson\'s hero illustration uses *simple shapes + clear labels* of the chosen metaphor (e.g., a citadel cross-section with labelled gates), not technical schematics. Animations show the metaphor in motion (e.g., a request entering the citadel passes a gate → a checkpoint → the vault) so a learner sees *the analogy enacted* before they see the technical mapping.
+- Vocabulary canonicalization for each course honors the underlying K8s domain (Pods + Deployments + Services + RBAC + NetworkPolicy + admission webhooks + CRDs are the canonical terms; the universe metaphor is the wrapper, not a replacement).
+
 ## What never changes
 
 - The packet/request motion track follows the visible cable/connection trajectory exactly. No exceptions.
@@ -782,4 +877,5 @@ These are job titles for whichever entity is being discussed, not new cast membe
 - Every lesson ships with the layman-first scaffolding (Nightmare, stamp, district line, pause-and-checks, Translation Legend, Misconceptions, concept rail).
 - Every Kubernetes lesson lives inside K-Town and uses its assigned district.
 - K-ECS is the lone non-Kubernetes K-* course — it lives in K-Harbor and uses ECS vocabulary, not K8s vocabulary.
+- K-ADV-* courses overlay role-specific metaphors (citadel / highway / workshop / observatory / lifeboat) on top of K8s primitives — the metaphor is the wrapper, the K8s vocabulary is canonical.
 - The 800th lesson must look like the 1st.

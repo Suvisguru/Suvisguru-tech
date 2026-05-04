@@ -1,0 +1,61 @@
+# Intake brief — D2, K-ADV-DR
+# Topic: D2 · GitOps-Driven Recovery + Cluster Rebuild
+# Module D2 · GitOps Recovery
+
+lesson:
+  title: 'D2 · GitOps-Driven Recovery + Cluster Rebuild'
+  slug: 'd2-gitops-recovery'
+  domain: 'kubernetes'
+  course_slug: 'advanced-disaster-recovery'
+  position: 02
+  granularity: 'module'
+  brief_drafted_on: '2026-05-04'
+  central_metaphor: 'K-Lifeboat · Ship Rebuild Yard — Ship Rebuild Yard: when a ship is lost, the yard rebuilds from blueprints (IaC) + cargo manifests (Git) + cargo backups (Velero). The Drill Master practices quarterly so the rebuild flows in < 30 min.'
+  module: 'Module D2 · GitOps Recovery'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'At least one distribution course (K-EKS / K-AKS / K-GKE / K-OCP / K-VAN).'
+    - 'K-ADV-DR modules 1-1 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain terraform / Crossplane / Pulumi.'
+  - 'Learner can explain argo CD / Flux re-creates everything.'
+  - 'Learner can explain pVCs + Secrets + ConfigMaps.'
+
+sections:
+  - 'Terraform / Crossplane / Pulumi'
+  - 'Argo CD / Flux re-creates everything'
+  - 'PVCs + Secrets + ConfigMaps'
+  - 'Tested quarterly; RTO measured'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'Quarterly disaster drill: destroy non-prod cluster; rebuild from Terraform + Argo CD + Velero.'
+    - 'Bad upgrade corrupted prod cluster; rebuild via runbook in 28 min; tenants noticed brief degradation; full recovery within RTO.'
+    - 'Initial recovery attempt failed; apps referenced CRDs not yet created.'
+    - 'Backup existed but restore failed (StorageClass mismatch new cluster vs old).'
+
+section_6_animated_svg:
+  modes_count: 1
+  description: 'See preview-kubernetes-adv-dr-lesson-02.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-adv-dr-lesson-02.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**Recovery order: cluster IaC → CRDs → operators → apps (GitOps) → Velero restore. Tested via quarterly drill. RTO < 30 min for well-built systems.**'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/kubernetes-dr'
+  - 'https://kubernetes.io/docs/'

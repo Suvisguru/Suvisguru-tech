@@ -1,0 +1,21 @@
+# Quiz — K-ADV-AI I (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Design end-to-end ML platform: data prep → train → eval → serve.
+    answer: |
+      (1) **Kubeflow Pipelines**: DAG. (2) **Step 1: data prep** = container reading from S3, transforming, writing to S3. (3) **Step 2: train** = PyTorchJob (Kubeflow Training Operator) or RayJob (KubeRay) gang-scheduled by Volcano + admitted by Kueue. (4) **Step 3: HPO** = Katib Experiment with PyTorchJob trial template. (5) **Step 4: eval** = container; metrics to Model Registry. (6) **Step 5: deploy** = KServe InferenceService update; canary 10% then 100%. (7) **Observability**: Pipelines UI shows DAG; KServe metrics + traces.
+
+  - id: 2
+    prompt: |
+      ML team's training jobs are bespoke shell scripts on EC2. Walk migration to Kubeflow.
+    answer: |
+      (1) **Identify training framework**: PyTorch / TF / MPI? Pick matching Kubeflow operator. (2) **Containerise**: training script in Docker image with framework + deps. (3) **PyTorchJob YAML** with replicas + GPU spec + S3-mounted data. (4) **Kueue** admission to GPU pool. (5) **Volcano** gang-schedule for multi-pod. (6) **Pipeline**: wrap in Kubeflow Pipelines for reproducibility. (7) **Validate**: same training accuracy + faster iteration loop.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees Kubeflow + KubeRay + KServe overhead. Defend.
+    answer: |
+      "**Each operator solves a class of bespoke work — bespoke means slow + error-prone.** Three reasons stack stays: (1) **Reproducibility**: Pipelines DAGs reproducible across environments; bespoke scripts are not. (2) **HPO**: Katib runs 100s of trials in parallel; bespoke would run sequentially or skip HPO entirely. (3) **Production serving**: KServe canary + autoscale built-in; bespoke serving = roll-your-own-Ingress + bugs. **Operator overhead**: each is one Helm chart + few CRDs; minor. **Saved engineer-time**: data scientists write models, not boto3."

@@ -1,0 +1,21 @@
+# Quiz — K-ADV-PE P (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A new product team needs a tenant. Walk the day-1 setup.
+    answer: |
+      (1) Team fills **Backstage form**: name, owner, tier=silver, cost-center=B-205. (2) **Crossplane Claim** renders namespace + RBAC (binds team's OIDC group) + NetPol default-deny + ResourceQuota silver-tier (20vCPU, 40GiB) + LimitRange + cost label + Backstage entry. (3) **GitOps PR**: opened, policy gates run (Kyverno + conftest), auto-merge for trusted. (4) **Argo CD**: ApplicationSet picks up; reconciles; namespace ready in 5 min. (5) **Team starts deploying**: Backstage Scaffolder "new Go service" template. **Total time: ~30 min from form to first deploy.**
+
+  - id: 2
+    prompt: |
+      Tenant's monthly bill projects 2× budget mid-month. Walk the response.
+    answer: |
+      (1) **OpenCost alarm** fires at 75%; team gets Slack notification. (2) **Investigation**: Kubecost dashboard shows top spenders by Pod/Deployment; identify runaway. (3) **Mitigation**: scale down / right-size requests / fix bug. (4) **If continued**: 95% threshold pages on-call; ResourceQuota stops new Pods at 100%; tenant's deployments halted (graceful — not retroactive). (5) **Postmortem**: tenant + platform review; right-size tier (silver → gold? or actually need bronze?); update Claim if appropriate.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership says: "why pay OpenCost? cloud provider's billing is enough." Defend.
+    answer: |
+      "**Cloud bills aggregate by service; OpenCost allocates by Pod / namespace / tenant.** Three reasons: (1) **Allocation**: cloud bill says "$40k for EC2"; OpenCost says "$15k tenant-A, $10k tenant-B, $15k platform." Without OpenCost no chargeback. (2) **Real-time**: cloud bills are end-of-month; OpenCost is hourly. Catch runaway in hours, not month-end. (3) **Behavior change**: tenants who see their cost change behavior. Hidden cost = no incentive. **OpenCost is free (CNCF open-source); the install + dashboards are an engineer-week.**"

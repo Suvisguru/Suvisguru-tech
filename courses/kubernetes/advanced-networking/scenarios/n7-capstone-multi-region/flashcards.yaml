@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-NET N (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Capstone bridge selection per peer pattern?
+    back: |
+      **Same-CNI same-org peers**: Cilium ClusterMesh. **Cross-CNI peers**: Submariner. **Cross-org / firewall-segmented**: Skupper. **Mesh-heavy already**: Istio multi-cluster.
+
+  - id: 2
+    front: |
+      Capstone observability stack?
+    back: |
+      **Hubble Relay** aggregates per-cluster Hubble; multi-cluster service map. **Pixie** per cluster + L7 trace. **Tetragon** per cluster + SIEM aggregation. **kube-burner** in CI for perf regressions.
+
+  - id: 3
+    front: |
+      Region failover RTO target?
+    back: |
+      P95 < 90 seconds for stateless workloads via global LB health checks; stateful workloads depend on replication strategy + acceptable RPO.
+
+  - id: 4
+    front: |
+      ApplicationSet pattern for fleet?
+    back: |
+      Argo CD ApplicationSet generates Application per cluster from a generator (clusters / git directories / list); same chart deployed everywhere with per-cluster values from cluster labels.
+
+  - id: 5
+    front: |
+      Per-bridge runbook scope?
+    back: |
+      ClusterMesh apiserver rebuild; Submariner gateway failover; Skupper TLS re-establish; Gateway controller rollback. Each tested quarterly.
+
+  - id: 6
+    front: |
+      Hybrid connectivity choices?
+    back: |
+      **AWS Direct Connect** + DX Gateway + Transit Gateway. **Azure ExpressRoute** + ER Gateway + vWAN. **GCP Cloud Interconnect** + Cloud Router. **VPN** for backup.
+
+  - id: 7
+    front: |
+      Drill cadence?
+    back: |
+      **Quarterly**: region-failover drill. **Semi-annually**: cross-cloud failover drill. **Annually**: partner-integration regression. Time-to-detect + time-to-recover measured.
+
+  - id: 8
+    front: |
+      Why ANP fleet-wide?
+    back: |
+      Org-wide rules can't be enforced if each cluster manages NP locally. ANP via GitOps = single source of truth; rule changes propagate to all clusters via ApplicationSet; compliance evidence is fleet-level.

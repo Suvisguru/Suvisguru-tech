@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-NET N (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      K8s NetworkPolicy hierarchy?
+    back: |
+      **AdminNetworkPolicy (ANP)** > **NetworkPolicy (NP)** > **BaselineAdminNetworkPolicy (BANP)**. ANP cluster-scoped with priority + Allow/Pass/Deny; NP namespaced; BANP cluster defaults.
+
+  - id: 2
+    front: |
+      Default-deny baseline — what does it look like?
+    back: |
+      Per-namespace base NetworkPolicy: `policyTypes: [Ingress, Egress]` with empty `ingress:` + empty `egress:`. All traffic denied; explicit allow rules added per consumer.
+
+  - id: 3
+    front: |
+      FQDN egress — who supports it?
+    back: |
+      Cilium + Calico extensions support `toFQDNs` in NetworkPolicy. Resolves DNS + tracks IPs; allows egress to specific external services without enumerating IPs.
+
+  - id: 4
+    front: |
+      Egress gateway — three implementation patterns?
+    back: |
+      **Cilium egress gateway** (per-Pod-selector SNAT through designated nodes); **Istio egress gateway** (mesh L7 + TLS origination); **cloud-native** (NAT gateway + per-workload allowlist).
+
+  - id: 5
+    front: |
+      Private cluster components per cloud?
+    back: |
+      **EKS**: endpointPrivateAccess + endpointPublicAccess=false. **GKE**: private cluster + Private Service Connect. **AKS**: private cluster + Private Endpoint.
+
+  - id: 6
+    front: |
+      Hybrid connectivity options?
+    back: |
+      **AWS Direct Connect** (+ DX Gateway + Transit Gateway), **Azure ExpressRoute**, **GCP Cloud Interconnect**. **VPN** for backup or lower-bandwidth.
+
+  - id: 7
+    front: |
+      Why egress through a gateway helps compliance?
+    back: |
+      (1) Single source IP for partner allowlists. (2) Full audit log of egress destinations. (3) Blocklist enforcement at one place. (4) L7 inspection (mesh-based). All map to compliance controls (PCI 1.2 / 1.3, HIPAA §164.312(e)).
+
+  - id: 8
+    front: |
+      ANP priority ordering?
+    back: |
+      ANP rules ordered by numeric `priority`; lower number = higher precedence. Explicit Pass / Allow / Deny actions; Pass defers to NP.

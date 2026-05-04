@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-DR D (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Recovery order from total cluster loss?
+    back: |
+      (1) Cluster IaC; (2) Argo CD / Flux; (3) CRDs (sync wave -2); (4) Operators (sync wave -1); (5) Apps; (6) Velero restore PVCs + Secrets; (7) Validate; (8) DNS swap.
+
+  - id: 2
+    front: |
+      Cluster IaC tools?
+    back: |
+      **Terraform**, **Crossplane**, **Pulumi**. Pick by team's ecosystem; same outcome (cluster rebuilt to spec).
+
+  - id: 3
+    front: |
+      Sync wave annotation?
+    back: |
+      `argocd.argoproj.io/sync-wave: "N"`. Lower N = sooner. Use -2 for CRDs, -1 for operators, 0+ for apps.
+
+  - id: 4
+    front: |
+      Velero restore command?
+    back: |
+      `velero restore create --from-backup <name>` + optional flags: --namespace-mappings + --include-resources + --restore-volumes.
+
+  - id: 5
+    front: |
+      Why runbook?
+    back: |
+      Numbered steps; per cluster shape; tested. Eliminates panic-driven misordering during real incidents.
+
+  - id: 6
+    front: |
+      RTO target for well-built K8s recovery?
+    back: |
+      P95 < 30 min for managed K8s + GitOps + Velero. Slower (60-120 min) for self-managed with etcd restore.
+
+  - id: 7
+    front: |
+      DNS swap during recovery?
+    back: |
+      Route 53 / Azure DNS / Cloud DNS health-check + manual or automated swap to new cluster's LB.
+
+  - id: 8
+    front: |
+      What's NOT covered by GitOps + Velero?
+    back: |
+      External managed services (RDS / Vault / S3 / SaaS). Each has own DR; coordinate timelines.

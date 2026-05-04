@@ -1,0 +1,61 @@
+# Intake brief — I5, K-ADV-AI
+# Topic: I5 · AI / LLM Gateway Patterns
+# Module I5 · AI Gateway
+
+lesson:
+  title: 'I5 · AI / LLM Gateway Patterns'
+  slug: 'i5-ai-gateway'
+  domain: 'kubernetes'
+  course_slug: 'advanced-ai-ml-gpus'
+  position: 05
+  granularity: 'module'
+  brief_drafted_on: '2026-05-04'
+  central_metaphor: 'K-Observatory · Triage Desk — The Triage Desk at K-Observatory routes requests to the right rendering hall. Customers arrive with requests + budgets + permits (tokens + auth). The triage clerk checks budget (token rate limit), rou'
+  module: 'Module I5 · AI Gateway'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'At least one distribution course (K-EKS / K-AKS / K-GKE / K-OCP / K-VAN).'
+    - 'K-ADV-AI modules 1-4 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain beyond L7 — model routing + tokens + safety.'
+  - 'Learner can explain gateway API + LLM-specific extensions.'
+  - 'Learner can explain kong-based + commercial LLM access layer.'
+
+sections:
+  - 'Beyond L7 — model routing + tokens + safety'
+  - 'Gateway API + LLM-specific extensions'
+  - 'Kong-based + commercial LLM access layer'
+  - 'Per-tenant routing + safety + observability'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'One tenant''s prompt-flood maxed out shared LLM; AI Gateway with per-tenant TPM rate limit blocks; other tenants unaffected.'
+    - 'OpenAI degraded; AI Gateway auto-failover to Anthropic for the same logical model; users notice nothing.'
+    - 'Customer-support chat had 70% prompt similarity (FAQ-style).'
+    - 'Pre-AI-Gateway, jailbreak prompts produced harmful outputs; reputational risk.'
+
+section_6_animated_svg:
+  modes_count: 1
+  description: 'See preview-kubernetes-adv-ai-lesson-05.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-adv-ai-lesson-05.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**AI Gateway = L7 LLM ingress with model routing + per-tenant token budgets + safety filters + multi-provider failover. Envoy AI Gateway / Kong AI Gateway / Portkey.**'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/kubernetes-ai-ml'
+  - 'https://kubernetes.io/docs/'

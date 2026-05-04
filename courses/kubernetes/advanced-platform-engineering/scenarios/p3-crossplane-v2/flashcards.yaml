@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-PE P (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Crossplane four core concepts?
+    back: |
+      **XRD** (CompositeResourceDefinition; user-facing CRD + Claim), **Composition** (render logic), **Functions** (pluggable pipeline), **Providers** (cloud + SaaS controllers).
+
+  - id: 2
+    front: |
+      What does an XRD declare?
+    back: |
+      The user-facing CRD schema + Claim type. Tenants create Claims; XR controller reconciles per Composition.
+
+  - id: 3
+    front: |
+      Composition Function options?
+    back: |
+      **function-kcl**, **function-pkl**, **function-go-templating**, **function-patch-and-transform**, **function-cel**. Pluggable; pick per ergonomics.
+
+  - id: 4
+    front: |
+      Provider auth pattern?
+    back: |
+      ProviderConfig CR with credentials reference. Best practice: IRSA / Workload Identity for least-privilege; not static cloud keys.
+
+  - id: 5
+    front: |
+      What's a ConfigurationPackage?
+    back: |
+      OCI artifact bundling XRDs + Compositions + Function refs + Provider refs. Distributed via OCI registry; installable on any cluster.
+
+  - id: 6
+    front: |
+      Crossplane vs Terraform — when each?
+    back: |
+      **Terraform**: one-shot bootstrap (VPC / cluster). **Crossplane**: continuous reconciliation of runtime resources (DBs / queues / IAM / SaaS). Often used together.
+
+  - id: 7
+    front: |
+      Multiple Compositions per XRD — what enables?
+    back: |
+      Same user-facing API across clouds (XPostgresInstance → AWS RDS / Azure Database / GCP CloudSQL). Selector at Claim picks the right Composition.
+
+  - id: 8
+    front: |
+      Crossplane drift handling?
+    back: |
+      Continuous reconciliation. Manual cloud-console edits are detected + reverted to spec. Surprising if not expected; alarm on drift events for visibility.

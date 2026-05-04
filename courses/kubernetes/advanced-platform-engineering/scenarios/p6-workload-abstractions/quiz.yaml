@@ -1,0 +1,21 @@
+# Quiz — K-ADV-PE P (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A 200-engineer org wants to adopt a workload abstraction. How to choose?
+    answer: |
+      (1) **Map team needs**: portability across targets? Score. Typed app model? OAM. Graph thinking + Azure? Radius. Hosted PaaS? Humanitec. (2) **Pilot**: pick 1-2 services on the candidate; measure developer-time-to-first-deploy + maintenance burden. (3) **Ecosystem fit**: does the abstraction integrate with our Backstage + Argo CD + Crossplane? (4) **Roadmap**: how active is the project? Score is CNCF Sandbox (newer); KubeVela / OAM more mature; Radius backed by Microsoft. (5) **Decision**: pick + commit; migrating between abstractions later is expensive.
+
+  - id: 2
+    prompt: |
+      A team adopts OAM but finds platform team drowning in Trait maintenance. What's the path?
+    answer: |
+      (1) **Audit Traits**: how many are bespoke per team? Reduce + standardize. (2) **Component over Trait**: if 3+ teams need the same pattern, make it a Component, not 3 Traits. (3) **Trait registry**: small canonical set with stewardship; tenant requests for new = PR + review. (4) **OAM upstream**: contribute reusable Traits back; less custom maintenance. (5) **Re-evaluate**: if maintenance > benefit, consider lighter abstraction (Score).
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees Humanitec's $10/dev/mo: "build it ourselves; cheaper." Defend Humanitec.
+    answer: |
+      "**Build-vs-buy on platform: Humanitec is 1-2 platform engineers' year of work, hosted from day-1.** Three reasons: (1) **Time-to-value**: Humanitec live in days; self-build = months. Developers wait for platform vs already producing. (2) **Total cost**: $10/dev/mo for 100 devs = $12k/yr. One platform engineer is $200k+. Humanitec is cheaper for any team < 1500 devs. (3) **Ongoing maintenance**: Humanitec updates abstractions + handles K8s upgrades; we'd own that work otherwise. **When build wins**: huge org with platform-team economies of scale; specific compliance requirement that hosted can't meet. **For us, hosted wins until we're too big to fit.**"

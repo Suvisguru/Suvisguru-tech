@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-NET N (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Four multi-cluster bridge options?
+    back: |
+      **Cilium ClusterMesh** (same-CNI eBPF), **Submariner** (L4 IPsec, CNI-agnostic), **Skupper** (L7 app-layer VAN, no-IP-route), **Istio multi-cluster** (mesh extends; primary-remote / multi-primary).
+
+  - id: 2
+    front: |
+      ClusterMesh — when does it shine?
+    back: |
+      Same operator, all Cilium, low-latency required, eBPF observability + NetPol naturally extend. Common in same-org multi-region deployments.
+
+  - id: 3
+    front: |
+      Submariner Service discovery?
+    back: |
+      **Lighthouse** — multicluster DNS plugin. Services resolve via `my-svc.my-ns.svc.clusterset.local` (or per-cluster). Works across CNIs.
+
+  - id: 4
+    front: |
+      Skupper VAN — what is it?
+    back: |
+      Application-level Virtual Application Network. Per-namespace router connects to other-cluster routers via TLS (egress only). Services exposed across VAN; no L3 routing involved.
+
+  - id: 5
+    front: |
+      Istio multi-cluster patterns?
+    back: |
+      **primary-remote** (one control plane manages others) and **multi-primary** (per-cluster control planes, replicated state). SPIFFE federation = unified workload identity.
+
+  - id: 6
+    front: |
+      When is L7-only (Skupper) the right answer?
+    back: |
+      Cross-organization integration, security-domain-segmented architectures, partners that won't allow VPN / peering. Egress-only TLS suffices.
+
+  - id: 7
+    front: |
+      Pod CIDR overlap — what bridge handles it?
+    back: |
+      **Submariner Globalnet** + **Cilium ClusterMesh global services** handle overlap via NAT or virtual CIDRs. Skupper / Istio multi-cluster sidestep at L7.
+
+  - id: 8
+    front: |
+      Multi-cluster failure mode?
+    back: |
+      Bridge gateway single point of failure (Submariner gateway Pod restart). Always deploy 2+ gateways or HA mode. Bridge endpoint health monitoring + alarms.

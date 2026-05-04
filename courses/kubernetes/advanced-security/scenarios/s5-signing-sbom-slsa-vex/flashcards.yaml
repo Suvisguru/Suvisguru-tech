@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-SEC S (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does Cosign keyless replace?
+    back: |
+      Long-lived signing keys. Identity comes from OIDC (CI runner's token); Sigstore Fulcio issues a short-lived cert; signature logged in Rekor public transparency log. No keys to rotate or leak.
+
+  - id: 2
+    front: |
+      Two main SBOM formats?
+    back: |
+      **CycloneDX** (OWASP — broader ecosystem support) and **SPDX** (Linux Foundation — older + ISO-standard). Most tools support both.
+
+  - id: 3
+    front: |
+      What does SLSA L3 require?
+    back: |
+      (1) Provenance is generated. (2) Build runs in isolated, hardened CI (no human tampering during build). (3) Provenance is non-falsifiable (signed + logged). Practical: GitHub Actions reusable workflow + ephemeral runners hits L3.
+
+  - id: 4
+    front: |
+      What is in-toto?
+    back: |
+      Supply-chain integrity framework. Defines step-by-step layouts (required steps + signers); runtime evidence verifies each step happened. SLSA provenance is one in-toto attestation type.
+
+  - id: 5
+    front: |
+      Four VEX statuses?
+    back: |
+      **not_affected** (with reason), **affected**, **fixed**, **under_investigation**. OpenVEX (CISA) + CSAF VEX (OASIS) are the two formats.
+
+  - id: 6
+    front: |
+      How does cluster admission verify signatures?
+    back: |
+      Kyverno `verifyImages` rule references the expected `identities[].issuer` + `subject` (keyless) or `publicKey` (keyed). Admission rejects images without matching attestation.
+
+  - id: 7
+    front: |
+      Where do attestations live?
+    back: |
+      As **OCI referrers** in the same registry, alongside the image. Cosign attaches them via `cosign attest` + `cosign sign`. Tools query the registry for referrers.
+
+  - id: 8
+    front: |
+      Why is Rekor public?
+    back: |
+      Public transparency log = signatures are immutable + auditable by anyone. If a signature is forged or backdated, Rekor's history shows the discrepancy. Replaces trust-the-CA with trust-the-log.

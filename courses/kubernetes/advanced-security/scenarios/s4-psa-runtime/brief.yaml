@@ -1,0 +1,61 @@
+# Intake brief — S4, K-ADV-SEC
+# Topic: S4 · PSA Restricted + Runtime Detection
+# Module S4 · PSA + Runtime
+
+lesson:
+  title: 'S4 · PSA Restricted + Runtime Detection'
+  slug: 's4-psa-runtime'
+  domain: 'kubernetes'
+  course_slug: 'advanced-security'
+  position: 04
+  granularity: 'module'
+  brief_drafted_on: '2026-05-04'
+  central_metaphor: 'K-Citadel · Mandatory-Helmet Zones — The Mandatory-Helmet Zones mark every quarter of the citadel where standard kit must be worn. The **privileged area** is the staff-only zone (kube-system) where workers carry tools that would be dange'
+  module: 'Module S4 · PSA + Runtime'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'At least one distribution course (K-EKS / K-AKS / K-GKE / K-OCP / K-VAN).'
+    - 'K-ADV-SEC modules 1-3 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain privileged, baseline, restricted.'
+  - 'Learner can explain privileged → baseline → restricted, namespace by namespace.'
+  - 'Learner can explain eBPF syscall watch + alert pipeline.'
+
+sections:
+  - 'privileged, baseline, restricted'
+  - 'privileged → baseline → restricted, namespace by namespace'
+  - 'eBPF syscall watch + alert pipeline'
+  - 'From eBPF event to on-call action'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - 'A new cluster ships with cluster-wide default `enforce: restricted`; `kube-system` + monitoring exempt to `privileged`.'
+    - 'A 100-engineer org with 90 prod namespaces.'
+    - 'A compromised dev image silently launched a crypto-miner.'
+    - 'A team flipped enforce: restricted on a namespace whose images ran as root.'
+
+section_6_animated_svg:
+  modes_count: 1
+  description: 'See preview-kubernetes-adv-sec-lesson-04.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-adv-sec-lesson-04.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**PSA migration: privileged → baseline → restricted, namespace by namespace, audit → warn → enforce. Falco / Tetragon eBPF for runtime detection at scale. Admission stops misconfig; runtime stops escape attempts. Both layers are required for production-grade clusters.**'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/kubernetes-security'
+  - 'https://kubernetes.io/docs/'

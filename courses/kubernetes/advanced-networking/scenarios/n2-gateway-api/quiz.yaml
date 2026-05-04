@@ -1,0 +1,21 @@
+# Quiz — K-ADV-NET N (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team has 30 NGINX Ingresses with annotation soup. Walk through migration to Gateway API.
+    answer: |
+      (1) **Pick controller**: NGINX Gateway Fabric (familiar) or Envoy Gateway (cleaner). (2) **Install GatewayClass**: cluster-scoped, references the chosen controller. (3) **Create shared Gateway**: same listeners as existing Ingress (port 443, hostname, cert). (4) **Convert per-Ingress**: `ingress2gateway` CLI emits HTTPRoute YAML; review for annotation-specific behaviors (auth, rate limit, regex paths). (5) **Test in dev**: deploy Gateway + HTTPRoute alongside Ingress; flip a small traffic share; observe behavior. (6) **Stage**: switch traffic gradually via DNS or per-route. (7) **Decommission Ingress** per route after a stability window. (8) **Update CI / IaC** to ship Gateway API by default. *Total time: 2-4 weeks for 30 Ingresses depending on annotation complexity.*
+
+  - id: 2
+    prompt: |
+      A tenant team in namespace `team-a` wants to route to a backend Service in namespace `shared-services`. Walk what's required.
+    answer: |
+      (1) **Gateway in infra namespace** already exists and accepts routes from any namespace. (2) **HTTPRoute in `team-a`**: `parentRefs` → infra Gateway; `backendRefs: [{name: shared-svc, namespace: shared-services}]`. (3) **ReferenceGrant in `shared-services`**: `from: [{group: gateway.networking.k8s.io, kind: HTTPRoute, namespace: team-a}]`, `to: [{group: "", kind: Service, name: shared-svc}]`. (4) Without ReferenceGrant, the HTTPRoute attaches but reports condition=ResolvedRefs=False; traffic 503s. (5) *Audit pattern*: shared-services namespace audits ReferenceGrants quarterly; revokes unused grants.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO asks why we don't just stay on Ingress. Defend Gateway API.
+    answer: |
+      "**Three reasons Gateway API beats Ingress over time:** (1) **Role separation**: as the cluster grows past 5 app teams, infra-owns-Gateway / teams-own-HTTPRoutes prevents the bottleneck where every route change needs infra. Faster team velocity. (2) **Typed config**: schema-validated CRDs catch typos at apply-time. Annotation typos broke routing in last quarter's incident; that class disappears. (3) **Multi-cluster + L4 protocols**: Gateway API handles TCPRoute / TLSRoute / multi-cluster cleanly; Ingress can't. **Migration cost is moderate** (ingress2gateway + 2-4 weeks of staged migration); **ongoing benefit is permanent**. The K8s ecosystem is moving in this direction; new features (BackendTLSPolicy, GRPCRoute, multi-cluster) only land in Gateway API. **Staying on Ingress is staying on a deprecated path.**"

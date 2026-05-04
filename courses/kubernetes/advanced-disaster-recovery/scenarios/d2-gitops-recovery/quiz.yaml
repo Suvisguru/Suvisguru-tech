@@ -1,0 +1,21 @@
+# Quiz — K-ADV-DR D (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Walk total-cluster-loss recovery for an EKS cluster.
+    answer: |
+      (1) **Trigger runbook**: cluster destroyed (real or drill). (2) **Provision new EKS cluster** via Terraform (~10 min). (3) **Install Argo CD** via Helm (~2 min). (4) **Argo CD ApplicationSet** auto-discovers new cluster + syncs Apps. (5) **Sync wave order**: CRDs (-2) → operators like cert-manager / ESO (-1) → apps (0+) → ~10 min. (6) **Velero restore**: per-namespace; high-priority first. (7) **External Secrets**: ESO re-syncs from Vault (kept external). (8) **DNS swap**: Route 53 record points at new ALB. (9) **Validate**: SLO metrics return; tenant tests pass. (10) **Postmortem**: timeline + RTO measured + runbook updates.
+
+  - id: 2
+    prompt: |
+      A team's drill reveals 90-min rebuild (target 30 min). Walk improvement.
+    answer: |
+      (1) **Profile each phase**: cluster IaC (15 min), CRDs (5 min), operators (15 min), apps (10 min), Velero (40 min — bottleneck), DNS swap (5 min). (2) **Optimise Velero**: parallel restore; CSI snapshots faster than Restic / Kopia for large volumes; smaller backup units (per-namespace). (3) **Pre-warm cluster**: keep DR cluster warm with same cluster shape; on disaster, just sync apps + restore data — skip cluster IaC. (4) **Iterate**: drill again next quarter; measure improvement.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO asks: "why pay for DR engineering + drills?" Defend.
+    answer: |
+      "**Without tested DR, an outage is open-ended; with tested DR, RTO is bounded.** Three reasons: (1) **Customer expectations**: enterprise customers want 99.9-99.99% SLA; without DR, single failure breaks SLA. (2) **Compliance**: SOC2 / HIPAA / PCI all require tested DR. (3) **Cost of bad outage**: customer churn + lawsuits + reputation. **DR engineering cost**: ~1-2 engineers + Velero / K10 + drill time. **Cost of one severe outage**: orders of magnitude more."

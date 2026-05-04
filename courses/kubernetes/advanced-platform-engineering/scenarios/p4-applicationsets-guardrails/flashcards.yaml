@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-PE P (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Five ApplicationSet generators?
+    back: |
+      **List** (explicit), **Cluster** (registered clusters), **Git** (repo dirs/files), **Matrix** (cross of two), **Merge** (overlay precedence).
+
+  - id: 2
+    front: |
+      Cluster generator output?
+    back: |
+      One Argo CD App per registered cluster. Cluster labels surface as template variables for per-cluster values.
+
+  - id: 3
+    front: |
+      Three policy gate layers?
+    back: |
+      **PR-time** (kyverno-cli / conftest in CI), **admission** (Kyverno / Gatekeeper webhook), **sync** (Argo CD PreSync hook). Catches drift + late additions + render-time issues.
+
+  - id: 4
+    front: |
+      Sync waves — what do they do?
+    back: |
+      Annotation `argocd.argoproj.io/sync-wave: N` orders resource sync. Lower N = sooner. Use for CRDs (-1), operators (0), apps (1).
+
+  - id: 5
+    front: |
+      ProgressiveSync — what does it add?
+    back: |
+      Staged per-cluster rollout with health gates. Apply to dev → staging → prod; abort on first unhealthy. Replaces big-bang ApplicationSet deploy.
+
+  - id: 6
+    front: |
+      ApplicationSet RBAC pattern?
+    back: |
+      Platform team owns ApplicationSets; tenants own per-app values via Git PRs. ApplicationSet template + tenant values = per-cluster App.
+
+  - id: 7
+    front: |
+      Matrix generator — when use?
+    back: |
+      When per-cluster + per-app combinations needed (e.g., 5 clusters × 10 apps = 50 Apps). Each combination becomes one App.
+
+  - id: 8
+    front: |
+      Why is OPA conftest useful at PR-time?
+    back: |
+      Conftest runs Rego against any structured config (YAML / JSON / HCL); fast feedback in CI before merge; catches policy violations earlier than admission.

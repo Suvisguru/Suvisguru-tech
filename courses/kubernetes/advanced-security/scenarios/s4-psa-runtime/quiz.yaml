@@ -1,0 +1,21 @@
+# Quiz — K-ADV-SEC S (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A new namespace is added for a third-party software vendor that requires hostPath mounts. The cluster default is restricted. How do you handle this cleanly?
+    answer: |
+      (1) **Confirm the requirement**: hostPath is rare; verify the vendor genuinely needs it (often requested out of habit; alternatives like CSI volumes, projected volumes, EmptyDir suffice). (2) **Quarantine namespace**: label the new namespace with `pod-security.kubernetes.io/enforce: privileged` + `warn: privileged` — vendor workload runs; rest of cluster stays restricted. (3) **Compensating controls**: tighter NetworkPolicy on the namespace; runtime detection rules tuned for the vendor's expected behaviour; audit log monitoring for unexpected actions. (4) **Document**: a per-namespace exception register tracked in Git; re-review quarterly. (5) **Push back**: if the vendor adds capabilities later, can it migrate to baseline or restricted? Most vendors can with image rebuilds.
+
+  - id: 2
+    prompt: |
+      A Falco alert fires: "shell spawned in container." On-call investigates. Walk through diagnostic steps.
+    answer: |
+      (1) **Read the alert detail**: pod, namespace, parent process, command. (2) **Source check**: was this an authorised `kubectl exec` by an SRE? Falco includes the K8s context — if exec by an authenticated SRE during business hours, suppress; consider scoping the rule to exclude exec by named groups. (3) **If unexpected**: `kubectl describe pod` + check recent deploys; was a new image pushed? Pull the audit log for the namespace. (4) **Isolate**: cordon the node? `kubectl exec` into the Pod with the runbook's investigative kit (or use ECS Exec equivalent in cluster) — check process list, network connections, file changes. (5) **Containment**: if compromise confirmed, scale Service to zero, snapshot the Pod's state for forensics, replace from clean image. (6) **Postmortem**: how did the attacker get shell? Image vuln? Exposed credential? Update controls.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership asks: "PSA Restricted blocks too many workloads — let's set the default to baseline cluster-wide and call it done." Defend pushing through to restricted.
+    answer: |
+      "**Baseline catches the worst — privileged, hostPath, hostNet — but leaves real attack surface open.** Three reasons restricted is worth the migration cost: (1) **Capabilities**: baseline still allows containers to add capabilities like NET_RAW or SYS_ADMIN that enable attacks. Restricted drops all by default; teams add specific ones with justification. (2) **Run-as-root**: baseline doesn't require runAsNonRoot. Many container CVEs need root inside the container to exploit; running as non-root substantially reduces blast radius. (3) **seccompProfile**: restricted requires explicit seccomp; many syscalls are filtered out by default — closes another exploit class. **The migration cost**: image rebuilds for non-root user, capability narrowing, seccomp profile picking. Real work, but: (a) it's one-time, (b) baseline has accumulated tech debt anyway, (c) every restricted-passing image is a clean image. **The right framing: baseline is the price of entry to operating a K8s cluster; restricted is the operational standard for workloads. We aim for restricted by quarter's end.**"

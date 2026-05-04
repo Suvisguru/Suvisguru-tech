@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-SEC S (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Top 3 layers a defendable citadel must wire on day-1?
+    back: |
+      **(1) audit.k8s.io → SIEM** (foundation of all evidence). **(2) RBAC narrowing + admission policy** (Kyverno + Gatekeeper + verifyImages). **(3) Network + secret separation** (NetPol default-deny + ESO + mesh-mTLS).
+
+  - id: 2
+    front: |
+      Game-day frequency target?
+    back: |
+      Quarterly minimum. Each game day exercises one IR runbook + measures time-to-detect + time-to-contain. New runbooks tested within 30 days of creation.
+
+  - id: 3
+    front: |
+      Why break-glass JIT replaces standing cluster-admin?
+    back: |
+      (1) Audit evidence: every elevation logged + alarmed. (2) Blast radius: if a credential leaks, it's short-lived. (3) Compliance: "no standing privileged access" is a common control — JIT proves it.
+
+  - id: 4
+    front: |
+      Compliance-as-code value vs annual audit-prep?
+    back: |
+      Continuous evidence + 6× faster audit cycle + earlier detection of control drift (Slack alert vs annual finding). Cost: detection-as-code + compliance-as-code in Git + nightly CI.
+
+  - id: 5
+    front: |
+      What does the threat-model wheel sit at the centre of?
+    back: |
+      Every other security control. Threat model produces the questions; STRIDE walks the categories; each category maps to specific K8s controls (RBAC, NetPol, PSA, signed images, etc.).
+
+  - id: 6
+    front: |
+      Soft + hard multi-tenancy mix — when to mix?
+    back: |
+      When tenants vary in trust. Untrusted code (third-party SaaS, partner integrations) → hard via vCluster + Kata. Trusted internal teams → soft via namespace. Match the isolation cost to the risk.
+
+  - id: 7
+    front: |
+      Why audit + Falco are both needed?
+    back: |
+      audit.k8s.io captures API-level events (RBAC changes, Secret reads). Falco captures runtime events (syscalls, container behaviour). Different attack stages — admission vs running container. Both required.
+
+  - id: 8
+    front: |
+      The capstone's most-overlooked element?
+    back: |
+      Operational rhythm — game days, compliance dashboards, runbook exercise, break-glass review. The architecture is widely-known; the discipline of operating it is the differentiator.

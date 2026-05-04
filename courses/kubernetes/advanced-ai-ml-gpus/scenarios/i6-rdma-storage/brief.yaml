@@ -1,0 +1,61 @@
+# Intake brief — I6, K-ADV-AI
+# Topic: I6 · RDMA / EFA + Storage Throughput + JuiceFS / Alluxio + OCI Artifacts
+# Module I6 · RDMA + Storage
+
+lesson:
+  title: 'I6 · RDMA / EFA + Storage Throughput + JuiceFS / Alluxio + OCI Artifacts'
+  slug: 'i6-rdma-storage'
+  domain: 'kubernetes'
+  course_slug: 'advanced-ai-ml-gpus'
+  position: 06
+  granularity: 'module'
+  brief_drafted_on: '2026-05-04'
+  central_metaphor: 'K-Observatory · Signal Lines — Signal Lines run between every telescope (GPU) + every storage vault (NVMe / S3 / model cache). **RDMA / EFA**: dedicated low-latency optical fibers between telescopes — astronomers compare observatio'
+  module: 'Module I6 · RDMA + Storage'
+
+learner_profile:
+  prerequisites:
+    - 'K-COM curriculum complete (L01-L44).'
+    - 'At least one distribution course (K-EKS / K-AKS / K-GKE / K-OCP / K-VAN).'
+    - 'K-ADV-AI modules 1-5 (cumulative).'
+  assumed_zero_knowledge_of: []
+
+learning_outcomes:
+  - 'Learner can explain low-latency GPU-to-GPU interconnect.'
+  - 'Learner can explain nVMe / S3 → GPU memory; bypass CPU.'
+  - 'Learner can explain distributed shared model cache.'
+
+sections:
+  - 'Low-latency GPU-to-GPU interconnect'
+  - 'NVMe / S3 → GPU memory; bypass CPU'
+  - 'Distributed shared model cache'
+  - 'Models as OCI images; standardised tooling'
+
+section_5_real_world:
+  count: 4
+  examples:
+    - '32 H100 distributed training migrated from TCP to AWS EFA.'
+    - 'Pre-cache: 70B model from S3 every Pod restart ~10 min.'
+    - 'Models pushed as OCI artifacts to Harbor; Cosign-signed; pulled by Pods via init-container.'
+    - 'Pre-RDMA: distributed training slowed unpredictably during peak network use.'
+
+section_6_animated_svg:
+  modes_count: 1
+  description: 'See preview-kubernetes-adv-ai-lesson-06.html Section 6 for the live animation.'
+
+section_7_flashcards_quiz:
+  flashcards: 8
+  quiz_questions: 3
+
+shared_artifacts:
+  preview_page: { file: '/preview-kubernetes-adv-ai-lesson-06.html' }
+  lesson_md: { file: 'lesson.md' }
+  flashcards: { file: 'flashcards.yaml', count: 8 }
+  quiz: { file: 'quiz.yaml', count: 3 }
+
+bar:
+  - '**RDMA / EFA = required fabric for distributed training. GPUDirect Storage = NVMe → GPU bypasses CPU. JuiceFS / Alluxio = shared model cache. OCI artifacts = standardised model distribution.**'
+
+fact_check_anchors:
+  - 'https://kubernetes.io/docs/concepts/kubernetes-ai-ml'
+  - 'https://kubernetes.io/docs/'

@@ -1180,3 +1180,47 @@ The Harbor Office is the K-Harbor anchor — every captain (operator) checks in 
 **Alternatives considered:** Skip the K-Harbor universe; use K-Skyline with renamed "floors" → "piers" — rejected; K-Skyline's metaphor is K8s-tower (floors as namespaces, elevators as kubectl, etc.); reusing for non-K8s ECS would create cognitive collision. Ship K-ECS under a new top-level prefix (AWS-ECS / not K-* family) — rejected; the K- prefix is platform branding (Suvis Guru container/orchestration courseware), not a K8s claim; renaming would create directory-structure / build-helper / audit special cases for one course; the non-K8s designation is enforced by content + STYLE.md + this entry, not by the URL prefix. Bundle ECS as a section inside K-EKS instead of a standalone course — rejected; ECS is its own product family with 9+ modules of unique surface area; section-inside-K-EKS would balloon K-EKS to 20+ modules (largest course) and dilute its EKS focus. Keep the K-COM cast (Mayor Katie / Podrick / Thermostat) for K-ECS — rejected; the cast is K-Town-specific (K8s-specific by design); reusing in ECS would mislead readers who associate Podrick with the K8s Pod object specifically.
 
 **Revisit when:** Adding a fourth distinct AWS-container course (already EKS + ECS + Lambda? Add App Runner standalone?) — at that point K-Harbor's metaphor might need extension. Or: if a future course adds non-K8s + non-AWS content (Cloud Run? Container Apps standalone?) — review whether the K- prefix should split into K-/C-/etc. series. Until then, K-ECS stands as the sole non-K8s course in the K-* family with the disclaimer enforced consistently.
+
+## 2026-05-03 — K-ADV family: 5 advanced specialization courses + 5 universes
+
+**Context:** Founder asked for 5 K-ADV-* specialization courses. Each is 40-80 hours of advanced Kubernetes content for learners post-K-COM + at least one distribution course. The five tracks: Security Architect, Networking Architect, Platform Engineering, AI / ML / GPUs, Disaster Recovery + BC. Total 36 modules across the family. The user explicitly directed: "very advanced topics with super easy to understand illustrations and animations."
+
+**Decision:** Ship 5 separate courses with 5 separate universes, each on the post-refactor multi-course-renderer pattern. Each course is structurally identical to the K-ECS / K-GKE / K-OCP shape (CourseConfig + thin generator + thin audit + per-module LessonSpec + animations.py). The 5 universes are role-shaped overlays on top of K8s — the metaphor is the wrapper; K8s vocabulary stays canonical inside the lessons (Pods, Deployments, etc.).
+
+**Sub-decision A — five universes, role-shaped.**
+
+| Course | Universe | Metaphor | Why |
+|---|---|---|---|
+| K-ADV-SEC | K-Citadel 🏰 | fortified citadel — walls, gates, vault, sentries, audit archives, war room | Security architects think in terms of perimeter + zones + identity + audit. Citadel maps cleanly. |
+| K-ADV-NET | K-Highway 🛣️ | interstate highway — lanes, exits, intersections, bridges, customs, traffic helicopter | Networking is about routing + flow + boundaries. Highway is the universal traffic metaphor. |
+| K-ADV-PE | K-Workshop 🛠️ | master craftsperson workshop — golden tools, blueprints, apprentice paths, jigs | Platform engineers build platforms; workshop captures the "build the thing that builds the things." |
+| K-ADV-AI | K-Observatory 🔭 | research observatory — telescope arrays, computation core, model-rendering halls, signal lines | AI/ML compute is about telescopes + models + signal — observatory unifies GPU as instrument and inference as observation. |
+| K-ADV-DR | K-Lifeboat 🛟 | emergency drills — lifeboats, rebuild kits, mirror-ships, total-loss restoration | DR is about practicing total loss + restore. Lifeboat captures both readiness and exercise. |
+
+**Sub-decision B — module counts** match the user's brief: SEC=8, NET=7, PE=8, AI=8, DR=5 (total 36). The brief enumerated topic bullets + capstone for each; lesson counts equal that count exactly. Strip dot counts + audit `total_lessons` mirror this.
+
+**Sub-decision C — course letters + pin prefixes:**
+- SEC: letter `S`, prefix `ksec-bastion`
+- NET: letter `N`, prefix `knet-junction`
+- PE: letter `P`, prefix `kpe-bench`
+- AI: letter `I` (for AI/Inference; AKS already owns `A`), prefix `kai-array`
+- DR: letter `D`, prefix `kdr-cell`
+
+All unique vs prior 7 courses. Prefixes use the `course-suffix-style` pattern (3-4 letter prefix) to clearly distinguish K-ADV courses from foundation courses (`kt-` / `kf-` / `ks-` / `kc-` / `kg-` / `ko-` / `kh-`).
+
+**Sub-decision D — all courses use the multi-course-renderer pattern.** Per generator: ~80 lines (CourseConfig + atlas pins + rail + run_course_main). Per audit: ~25 lines. Per lesson: ~200-220 lines (LessonSpec + hero SVG). Per animations module: ~400 lines (one Animation per module). Build helpers (scenario folders) one per course. **No new renderer code needed** — the post-refactor architecture absorbs all 5 K-ADV courses with config-only changes.
+
+**Sub-decision E — vocabulary canon.** K-ADV-* lessons use **K8s canonical vocabulary** in body text, quizzes, glossary. The universe metaphor is the *wrapper* (district line, hero illustration, analogy section, animation framing). Inside the technical content, terms are: Pod, Deployment, Service, Ingress, Gateway, NetworkPolicy, RBAC, ServiceAccount, admission webhook, CRD, Operator, etc. — same canon as K-COM. *The metaphor never replaces the term*; it appears alongside it for accessibility.
+
+**Sub-decision F — "very advanced topics with super easy to understand illustrations":** Per founder direction, every K-ADV lesson:
+- Hero illustration uses 4-6 simple labelled shapes of the metaphor (gate / vault / lane / telescope / lifeboat) — NOT technical schematics with K8s YAML or boxes labelled "kube-apiserver."
+- Animation walks the request / data through the metaphor (visitor enters citadel → passes the gate → reaches the vault) before the lesson body explains the K8s mapping.
+- Translation Legend in Section 3 is the bridge — left column is the metaphor, right column is the canonical K8s term.
+
+**Sub-decision G — eight separate audits today; thirteen tomorrow.** Adding 5 K-ADV audits brings the total to 13 (K-COM mech + K-COM v2 + 7 distributions + 5 K-ADV). Each is ~25 lines (CourseAuditConfig caller). The shared `audit_lessons_shared.audit_course()` covers all checks. No proliferation of logic — only of config files.
+
+**Reasoning:** Five universes simultaneously is a metaphor-density spike, but: (a) K-ADV is the *advanced* track — learners arriving have already absorbed K-Town / K-Frontier / K-Skyline / K-Campus / K-Garden / K-Foundry / K-Harbor; another universe per role-track is a small marginal cognitive cost vs the value of role-shaped framing. (b) The five universes each map to a *different layer* of operational concern (security, networking, platform-build, AI/ML compute, DR) — the metaphors don't overlap at the conceptual level even though the K8s primitives underneath all five are the same. (c) The metaphor-as-wrapper rule (Sub-decision E + F) keeps the technical content portable — a learner who arrives at K-ADV-SEC L4 having forgotten the citadel metaphor still gets correct K8s technical content from the lesson body.
+
+**Alternatives considered:** Single K-ADV universe with 5 sub-districts — rejected; the universes pull in opposite directions (citadel = closed, highway = flowing, workshop = building, observatory = observing, lifeboat = recovering); collapsing them would weaken each. Skip the universe convention for K-ADV — rejected; the layman-first scaffolding (Nightmare opener + stamp + analogy + Translation Legend) requires a metaphor; without one, advanced lessons become walls of jargon. Bundle SEC + NET + PE into one course — rejected; each is genuinely 40-80 hours of distinct content; bundling would be 200+ hours and impossible to navigate.
+
+**Revisit when:** A sixth K-ADV-* course is added (K-ADV-COST? K-ADV-EDGE?). At that point the metaphor pool may need rules to prevent invention-creep. For now, five role-shaped universes match the five role-shaped tracks.

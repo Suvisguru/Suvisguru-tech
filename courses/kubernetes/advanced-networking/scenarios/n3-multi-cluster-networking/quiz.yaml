@@ -1,0 +1,21 @@
+# Quiz — K-ADV-NET N (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team runs 3 Cilium-on-EKS clusters + 1 partner Calico-on-OCP cluster. Cross-cluster traffic between the EKS clusters is high; the partner needs only one Service exposed. Design.
+    answer: |
+      **Two bridges.** (1) **Cilium ClusterMesh** across the 3 EKS clusters: low-latency native routing, unified identity, Hubble cross-cluster observability. (2) **Skupper** from the partner cluster to one of the EKS clusters: L7 VAN exposes only the specific Service to the partner; egress-only TLS; no VPN. *The two bridges coexist on the same cluster*; ClusterMesh handles internal east-west, Skupper handles partner-org integration. Avoid: trying to use one bridge for both — wrong tool for half the use case.
+
+  - id: 2
+    prompt: |
+      An on-call engineer reports cross-cluster latency spike via Cilium ClusterMesh. Walk diagnostic steps.
+    answer: |
+      (1) **Hubble flow logs**: cross-cluster flows show source/dest cluster; identify the impacted path. (2) **Cluster-mesh-apiserver health**: `cilium clustermesh status` on each cluster; etcd replication healthy? (3) **Underlying network**: cross-region cloud network — provider issue (AWS Health Dashboard, GCP Cloud Status)? (4) **Encap path**: if cross-cloud, encap is unavoidable; check MTU + packet drops via tcpdump on a transit node. (5) **BGP / route table**: Pod-CIDR routes correctly advertised? (6) **Workload contention**: high CPU on the gateway / mesh proxy path? (7) **Mitigation**: shift traffic to a healthier cluster region; engage cloud provider if their fabric. Postmortem documents which signal led to root cause; updates runbook.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      A team wants to migrate from Submariner (CNI-agnostic, working) to Cilium ClusterMesh for performance. Defend whether to migrate or stay.
+    answer: |
+      "**Migrate only if perf gains justify the effort + you can standardise on Cilium across all clusters.** Three considerations: (1) **CNI homogeneity**: ClusterMesh requires Cilium everywhere. If on-prem is Calico for compliance reasons, you can't migrate the on-prem path; you'd run two bridges. (2) **Perf delta**: Submariner adds tunnel + IPsec overhead; ClusterMesh native routing is materially faster (5-10ms vs 15-25ms cross-region — depends on path). For latency-sensitive paths the migration pays. (3) **Migration cost**: gradual via dual-bridge period (both up; shift Service-by-Service); validation per workload; teams need ClusterMesh training. **If the perf gain is > 10% of P95 SLO budget, migrate**; otherwise the current Submariner is fine. The bridge that works is the bridge that stays."

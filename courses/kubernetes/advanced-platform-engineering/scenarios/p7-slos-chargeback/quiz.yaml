@@ -1,0 +1,21 @@
+# Quiz — K-ADV-PE P (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Roll out OpenCost + showback in a 100-engineer org. Walk steps.
+    answer: |
+      (1) **Cost-center labels**: Kyverno mutating webhook injects on every Pod / Service / PVC. (2) **Install OpenCost**: Helm chart in monitoring namespace. (3) **Configure cloud-billing integration**: AWS Cost + Usage Reports / Azure Cost Management / GCP BigQuery export. (4) **Validate**: per-namespace cost reports match cloud-billing aggregates ±10%. (5) **Backstage plugin**: surface per-service cost in service page. (6) **Weekly Slack reports**: top spenders + week-over-week. (7) **Optimisation playbook**: published; teams self-tune. (8) **Quarterly review**: aggregate cost trends + biggest savings.
+
+  - id: 2
+    prompt: |
+      A tenant asks: "why does our team's bill keep rising?" Walk an analysis.
+    answer: |
+      (1) **Open Kubecost dashboard**: per-namespace cost over time. (2) **Drill down**: top Pods by cost; growing? new workloads? (3) **Right-size check**: VPA recommendations show over-provisioned. (4) **Workload class check**: any moved from Spot to On-Demand? (5) **Storage check**: PVC growth? log archive policy? (6) **Recommendation**: specific Pods to right-size; Spot opportunities; storage tiering; ARM64 candidates. (7) **Track**: target % cost reduction; review in 30 days.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO asks why we don't just rate-limit clusters by quota and skip chargeback. Defend.
+    answer: |
+      "**Quota caps + chargeback aren't either-or.** Quota = hard cap (preventive); chargeback = behavior change (proactive). Three reasons we run both: (1) **Within-quota optimisation**: a team at 90% Quota with right-sizing could be at 60% — cheaper for the org without changing Quota. Chargeback drives this. (2) **Cross-team comparison**: chargeback surfaces team-X is 3× team-Y for similar workloads — anomaly investigation. (3) **Finance alignment**: cloud cost in team P&L = engineering accountable to budget. Quota alone says "can't exceed"; chargeback says "this is yours". Together: sane caps + sane usage."

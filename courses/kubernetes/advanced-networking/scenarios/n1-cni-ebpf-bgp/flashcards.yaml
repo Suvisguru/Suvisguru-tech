@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-NET N (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      What does CNI hand to a Pod?
+    back: |
+      A network interface (typically veth) + IP via IPAM + routes + DNS config. The CNI plugin is invoked by kubelet on Pod create/delete with a JSON config.
+
+  - id: 2
+    front: |
+      Three CNI families + what differentiates them?
+    back: |
+      **Cilium** (eBPF-native, rich features), **Calico** (BGP heritage, NetworkPolicy mature), **cloud-managed** (AWS VPC CNI / Azure CNI / GKE DPv2 — cloud-integrated).
+
+  - id: 3
+    front: |
+      What does eBPF replace at K8s scale?
+    back: |
+      **iptables** chains for kube-proxy Service load balancing + NetworkPolicy enforcement. eBPF maps are O(1) lookups; iptables walks are O(N) per chain.
+
+  - id: 4
+    front: |
+      When can you use BGP?
+    back: |
+      When you control the fabric (bare-metal / on-prem) or your cloud allows BGP advertisements. Cloud-managed clusters (AWS / Azure / GCP) don't accept your BGP peers; they have their own routing.
+
+  - id: 5
+    front: |
+      Three IPAM patterns?
+    back: |
+      **CIDR-per-node** (each node a /24 slice), **cluster-pool dynamic** (CNI requests sub-CIDR on demand), **cloud ENI per Pod** (AWS VPC CNI; each Pod gets a VPC IP).
+
+  - id: 6
+    front: |
+      What is Hubble?
+    back: |
+      Cilium's eBPF-based observability layer. Per-flow logs (source/dest, verdict, latency) without sidecars or packet capture. Foundation of cluster-wide network visibility.
+
+  - id: 7
+    front: |
+      MTU pitfall in CNI?
+    back: |
+      If Pod MTU = host MTU but the CNI uses encap (VXLAN / Geneve), encap header pushes packet over host MTU → fragmentation or drops. Set Pod MTU explicitly = host MTU − encap overhead.
+
+  - id: 8
+    front: |
+      Conntrack saturation symptom + fix?
+    back: |
+      High connection setup rate (CPS) overflows nf_conntrack_max → SYN drops + retries. Fix: tune `nf_conntrack_max` + `hashsize`; consider eBPF (which doesn't use conntrack for some flows).

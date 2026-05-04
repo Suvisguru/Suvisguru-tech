@@ -1,0 +1,21 @@
+# Quiz — K-ADV-NET N (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team has flat NetworkPolicy across 30 namespaces. Audit asks for default-deny + explicit allow. Walk migration steps.
+    answer: |
+      (1) **Audit traffic**: Hubble / Cilium flow logs collected over 2 weeks; per-namespace ingress / egress patterns. (2) **Generate baseline NetworkPolicies**: per namespace, default-deny + observed-allow rules. (3) **Stage in dev**: roll one namespace; observe broken paths; refine. (4) **Add ANP at cluster level**: org-wide deny rules (no prod ingress from sandbox; no egress to RFC-1918 from prod). (5) **BANP defaults**: "all Pods can egress to kube-system DNS" so teams don't re-declare. (6) **Roll prod**: per-namespace; observe; iterate. (7) **Tooling**: NetworkPolicy generator from observed flows (network-policy-generator, krew np-viewer).
+
+  - id: 2
+    prompt: |
+      A compromised Pod attempts egress to a crypto-miner pool. The cluster has default-deny egress + egress gateway. Walk the detection + response.
+    answer: |
+      (1) **NetworkPolicy** blocks the egress at namespace boundary; Pod gets connection-refused; logs the failure. (2) **Egress gateway** (if Pod's namespace allows egress to gateway): gateway logs the destination IP / hostname; matched against blocklist (Spamhaus / threat intel feeds); blocked at gateway too. (3) **Hubble flow log** records the dropped flow + verdict reason. (4) **SIEM rule** on "egress denied to threat-intel-listed CIDR" alerts on-call. (5) **IR runbook**: cordon node, isolate Pod via NP drop-all, snapshot for forensics, replace from clean image. **Layered defence**: NetPol catches at namespace; egress gateway catches at cluster; SIEM catches as alert; IR runbook closes the loop.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      A team wants to skip the ANP layer — "NetworkPolicy is enough." Defend ANP.
+    answer: |
+      "**NetworkPolicy alone has two failure modes that ANP closes.** (1) **Team-scoped vs org-wide**: NP is per-namespace; if a team makes a permissive NP, no cluster-wide enforcement says "actually, you can't allow that." ANP gives platform a non-negotiable layer. (2) **Compliance posture**: regulators want "the org enforces X"; per-team NPs are "each team enforces their own X" — much weaker evidence. ANP makes the org-level posture explicit + auditable. (3) **Default + override pattern**: BANP provides cluster defaults; teams override via NP; ANP enforces what teams cannot override. **The 3-tier hierarchy mirrors how org IT actually works**: org policy + team config + sane defaults. NP-only collapses this into one layer that doesn't scale."

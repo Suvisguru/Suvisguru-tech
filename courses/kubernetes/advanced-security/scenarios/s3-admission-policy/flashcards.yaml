@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-SEC S (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three K8s admission engines and when to pick each?
+    back: |
+      **Kyverno**: K8s-native YAML + JMESPath, mutate/validate/generate (ergonomic, K8s-shape rules). **Gatekeeper**: OPA + Rego (formal-logic, cross-resource correlation). **ValidatingAdmissionPolicy + CEL**: inline no-webhook (hot-path latency-sensitive).
+
+  - id: 2
+    front: |
+      Three rollout phases for a new policy?
+    back: |
+      **Audit** (record violations, don't block) → **Warn** (return warnings in kubectl output) → **Enforce** (block). 1-2 weeks per phase typical.
+
+  - id: 3
+    front: |
+      What does Kyverno mutate look like?
+    back: |
+      ClusterPolicy with `rules: [{name, match, mutate: {patchStrategicMerge: ...}}]`. Adds defaults / labels / sidecars to admission requests before persisting.
+
+  - id: 4
+    front: |
+      ConstraintTemplate vs Constraint in Gatekeeper?
+    back: |
+      **ConstraintTemplate**: defines the schema + Rego logic for a class of policy. **Constraint**: an instance of the template with parameters + match selector. Templates are reusable; Constraints are specific.
+
+  - id: 5
+    front: |
+      What does Kyverno generate do?
+    back: |
+      Auto-creates downstream resources triggered by parent. Pattern: "new Namespace → generate default NetworkPolicy + ResourceQuota." Replaces manual onboarding scripts.
+
+  - id: 6
+    front: |
+      PolicyReport CRD — what's the win?
+    back: |
+      Unified results from Kyverno + Gatekeeper + (any other PolicyReport-aware engine). One CRD list to query for compliance evidence; one feed to ship to SIEM. Replaces engine-specific dashboards.
+
+  - id: 7
+    front: |
+      When use ValidatingAdmissionPolicy + CEL?
+    back: |
+      (1) Hot-path rules where webhook latency matters. (2) Simple rules that don't need cross-resource lookups. (3) Reducing webhook count for ops simplicity. (4) Avoid for complex / cross-resource — those go to Kyverno or Gatekeeper.
+
+  - id: 8
+    front: |
+      Why is Rego harder than Kyverno YAML?
+    back: |
+      Rego is a logic-programming language with set semantics; learning curve is real. Pays off for complex policies (cross-resource correlation, set membership, transitive checks). Don't use Rego for trivial "label must exist" — too much overhead.

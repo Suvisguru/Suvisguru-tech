@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-DR D (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      External Vault — why for DR?
+    back: |
+      Survives cluster loss. Cross-region HA + raft replication. KMS for seal keys cross-region replicated. ESO re-syncs on new cluster.
+
+  - id: 2
+    front: |
+      DNS failover tools per cloud?
+    back: |
+      **AWS Route 53** + health check. **Azure DNS** + Traffic Manager. **GCP Cloud DNS** + Global LB. Lower TTL (30-60s) for fast failover.
+
+  - id: 3
+    front: |
+      DB DR options self-managed?
+    back: |
+      Multi-AZ streaming replication; cross-region read replica; backups to S3 (pg_basebackup / wal-g / pgbackrest); CSI snapshots.
+
+  - id: 4
+    front: |
+      Aurora Global Database vs cross-region read replica?
+    back: |
+      **Aurora Global**: dedicated cross-region replication; RPO < 1s; faster promote (~1 min). **Cross-region read replica**: standard async; RPO seconds-minutes; promote takes longer.
+
+  - id: 5
+    front: |
+      Cosmos DB consistency levels?
+    back: |
+      **Strong** (linearizable; highest cost), **Bounded Staleness**, **Session**, **Consistent Prefix**, **Eventual** (lowest cost).
+
+  - id: 6
+    front: |
+      External-DNS K8s controller?
+    back: |
+      Watches Service / Ingress; syncs records to managed DNS (Route 53 / Cloud DNS / etc.). Automates DNS lifecycle.
+
+  - id: 7
+    front: |
+      Spanner DR shapes?
+    back: |
+      **Regional** (single region); **multi-region** (5+ regions; strong consistency; expensive).
+
+  - id: 8
+    front: |
+      K8s DB operators?
+    back: |
+      **CloudNativePG** (CNCF), **Zalando postgres-operator**, **Strimzi** (Kafka). Handle replication + backup lifecycle.

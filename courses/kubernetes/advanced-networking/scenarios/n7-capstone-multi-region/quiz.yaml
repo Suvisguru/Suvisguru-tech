@@ -1,0 +1,21 @@
+# Quiz — K-ADV-NET N (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Walk a new team through the multi-cluster capstone in 5 minutes.
+    answer: |
+      "Five clusters across AWS + Azure + GCP + on-prem; each Cilium where the cloud allows. Bridges: ClusterMesh between cloud peers; Submariner to OCP; Skupper for partners. Each cluster has Gateway API at the edge; global LB / DNS routes between regions for failover. AdminNetworkPolicy is GitOps-deployed cluster-wide via ApplicationSets — fleet-uniform org rules. Per-team NetworkPolicy + mesh AuthorizationPolicy. Hubble Relay aggregates flow logs across clusters; Pixie per-cluster L7 trace; Tetragon to SIEM. Private clusters + DX/ER/CI for hybrid. Egress gateways per cluster. kube-burner in CI catches perf regressions before deploy. Quarterly region-failover drills + per-bridge runbooks. Onboarding day-1: Service Catalog template ships you a workload pre-wired with NetPol + mesh + Hubble + observability — you don't configure networking; you consume the platform."
+
+  - id: 2
+    prompt: |
+      A new region (Tokyo) is needed. Walk the rollout in this architecture.
+    answer: |
+      (1) **Provision EKS cluster** in ap-northeast-1 via Crossplane + Cilium installation. (2) **Connect to ClusterMesh** with existing EKS pair; Pod CIDRs allocated to avoid overlap. (3) **Wire AdminNetworkPolicy**: ApplicationSet picks up new cluster; org rules apply automatically. (4) **Gateway API** per region; cert-manager issues TLS; global LB adds Tokyo as healthy target. (5) **Hubble** + Pixie + Tetragon: agents deploy via DaemonSet through the platform template. (6) **kube-burner CI** baseline for new cluster. (7) **Runbook update**: per-bridge failure modes for Tokyo paths. (8) **Game day**: simulated region outage to validate failover from Tokyo to nearest cluster. *Time: 1 week of platform work; 1 week of validation; ready for production traffic.*
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      Leadership says: "this multi-cloud architecture is 30% more expensive than single-cloud. Pick one cloud + simplify." Defend.
+    answer: |
+      "**Multi-cloud is insurance against region + cloud + vendor failure modes.** Three reasons it stays: (1) **Cloud-region failure**: 2024 saw 4 multi-hour AWS region outages + 2 Azure region outages. Single-cloud customers lost. Multi-cloud customers shifted in < 90s. (2) **Vendor pricing leverage**: when AWS raises prices or changes terms, we have negotiation power because we can shift workloads. Single-cloud has no leverage. (3) **Compliance + jurisdictions**: data residency rules force GCP for EU customers, Azure for Microsoft-shop customers, on-prem for regulated. Multi-cloud is the consequence of customer needs, not architecture aesthetics. **The 30% cost premium is the price of resilience + leverage + customer reach**. Trim where you can (right-size, Spot, autoscale, S3 IA archive) but don't cut the architecture that lets us survive a cloud outage."

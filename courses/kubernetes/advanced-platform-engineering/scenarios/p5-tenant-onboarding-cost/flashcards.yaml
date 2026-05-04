@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-PE P (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Tenant onboarding pipeline?
+    back: |
+      Backstage form → Crossplane Claim → GitOps PR → Argo CD ApplicationSet → namespace materializes.
+
+  - id: 2
+    front: |
+      What's in a tier definition?
+    back: |
+      ResourceQuota + LimitRange + NetworkPolicy default + PriorityClass + observability defaults + SLO + cost estimate. Per-tier (gold / silver / bronze).
+
+  - id: 3
+    front: |
+      Cost label enforcement?
+    back: |
+      Mutating Kyverno webhook injects `cost-center` + `tenant` labels on every Pod / Service / PVC. Required for OpenCost allocation.
+
+  - id: 4
+    front: |
+      OpenCost vs Kubecost?
+    back: |
+      **OpenCost** = open-source CNCF project; foundational. **Kubecost** = vendor product on top with richer dashboards + chargeback features. Both compatible.
+
+  - id: 5
+    front: |
+      Budget alert thresholds?
+    back: |
+      **50%** info, **75%** Slack, **95%** page on-call, **100%** hard alarm. Per-tenant budgets monthly.
+
+  - id: 6
+    front: |
+      Service catalog entries — what they list?
+    back: |
+      Schema (XRD spec), tier defaults, cost estimate per tier, owning team, runbook link, last-updated date. Backstage Catalog entries.
+
+  - id: 7
+    front: |
+      Hard cap vs alert?
+    back: |
+      **ResourceQuota** = hard cap (preventive — apiserver rejects new resource if over). **Budget alert** = informational. Both required.
+
+  - id: 8
+    front: |
+      Tier promotion — what's the path?
+    back: |
+      PR to update Claim spec.tier; Argo CD reconciles; quota + defaults upgrade. ~10 minutes; reversible.

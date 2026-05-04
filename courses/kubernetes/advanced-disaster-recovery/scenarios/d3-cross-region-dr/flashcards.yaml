@@ -1,0 +1,50 @@
+# Flashcards — K-ADV-DR D (count: 8)
+
+cards:
+  - id: 1
+    front: |
+      Three DR shapes?
+    back: |
+      **Active-passive** (DR cold; cheapest), **warm standby** (DR running minimal), **active-active** (both serve; most expensive).
+
+  - id: 2
+    front: |
+      RPO vs RTO?
+    back: |
+      **RPO**: max acceptable data loss (window between snapshots). **RTO**: max acceptable recovery time.
+
+  - id: 3
+    front: |
+      Per-tier RPO/RTO targets?
+    back: |
+      Tier-1 gold: RPO 5min / RTO 5min. Tier-2 silver: RPO 1h / RTO 30min. Tier-3 bronze: RPO 24h / RTO 4h.
+
+  - id: 4
+    front: |
+      Backup validation steps?
+    back: |
+      (1) Bit-rot check (checksum re-read), (2) Test-restore to non-prod, (3) Synthetic transactions post-restore, (4) Time-bounded restore-time SLO.
+
+  - id: 5
+    front: |
+      Restore-test cadence?
+    back: |
+      **Quarterly**: full rebuild. **Monthly**: per-namespace. **Semi-annual**: tabletop drill (paper-walk).
+
+  - id: 6
+    front: |
+      Cross-region replication options?
+    back: |
+      Cloud DB (Aurora Global / Spanner / Cosmos DB Global) + Velero cross-region BackupStorageLocation + S3 cross-region replication.
+
+  - id: 7
+    front: |
+      Why tabletop drill in addition to live?
+    back: |
+      Tabletop catches gaps in runbook + decision points before live drill burns time. Cheaper to find issues; faster iteration.
+
+  - id: 8
+    front: |
+      When is active-active overkill?
+    back: |
+      Tier-2 / tier-3 workloads where users tolerate 5-30 min recovery. Active-active cost premium isn't justified.

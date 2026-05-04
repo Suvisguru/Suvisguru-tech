@@ -1,0 +1,21 @@
+# Quiz — K-ADV-AI I (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      A team has 8× H100 cluster + many small inference Pods. Walk MIG setup.
+    answer: |
+      (1) **Install GPU Operator** via Helm with MIG support enabled. (2) **Configure MIG profile per node**: e.g., 7× 1g.10gb instances per H100 → 56 inference slots cluster-wide. (3) **Update Pod manifests**: `resources.limits: nvidia.com/mig-1g.10gb: 1`. (4) **Validate**: DCGM metrics show per-instance utilization. (5) **Production rollout**: per-node-group MIG profile (some nodes 1g.10gb for inference; others whole-GPU for training); nodeSelector picks right pool. (6) **Operational**: tune MIG profile per workload mix; monitor underutilization.
+
+  - id: 2
+    prompt: |
+      Cluster has NVIDIA + AMD GPUs. Walk DRA adoption.
+    answer: |
+      (1) **Upgrade K8s** to 1.32+ (DRA stable). (2) **Install vendor DRA drivers**: NVIDIA DRA driver + AMD DRA driver. (3) **Define ResourceClass** for each vendor or unified abstraction. (4) **Update Pods**: replace nodeSelector + device plugin requests with ResourceClaim referring to the structured params (memory, framework). (5) **Scheduler** matches Pods to devices via DRA. (6) **Migrate gradually**: per-workload, alongside legacy device plugin until full DRA cutover.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees H100 cost: "why pay for H100 if we use 20%?" Defend.
+    answer: |
+      "**The H100 underutilization is fixable; H100 model isn't.** Three options: (1) **MIG**: hardware-partition into 7 instances; one H100 → 7 inference Pods; utilization 4×; cost / Pod 4× lower. (2) **Time-slicing**: software-share GPU across multiple Pods; cheaper than MIG; lower isolation. (3) **Right-size**: maybe inference doesn't need H100; A10 / L40 / consumer GPUs cost 1/3 with adequate perf for many models. **Investment**: GPU Operator + MIG enablement + workload audit = 1 platform-engineer-week. **Saves**: 50%+ of GPU bill once optimised. **Don't cancel H100; optimise it.**"

@@ -1,0 +1,21 @@
+# Quiz — K-ADV-AI I (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Design AI infra for 100-GPU H100 cluster.
+    answer: |
+      (1) **EFA / InfiniBand fabric**: H100 nodes interconnected; per-node RDMA device plugin. (2) **GPUDirect Storage** (NVIDIA driver + library) + WekaIO / Lustre filesystem for training data. (3) **JuiceFS** shared cache for models + datasets; load-once across cluster. (4) **OCI registry** (Harbor) for model artifacts; Cosign-signed; SBOM-attached. (5) **NCCL config** per workload: EFA transport for AWS / IB transport on-prem. (6) **Benchmark**: nccl-tests baseline; per-workload benchmarks; tune.
+
+  - id: 2
+    prompt: |
+      Inference fleet scales out; new Pods take 10 min loading model from S3. Walk fix.
+    answer: |
+      (1) **JuiceFS or Alluxio**: distributed cache between S3 + Pods. (2) **Cluster setup**: DaemonSet + PVC; Pods mount cache; first Pod warms cache; subsequent hit cache. (3) **Validation**: time-to-first-inference for new Pods drops to ~30s. (4) **Tune**: cache size + eviction; warm cache via init-container on cluster bootstrap.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees AWS EFA cost. Defend.
+    answer: |
+      "**EFA cost is small vs the cost of slower training.** Without EFA, 32×H100 training takes 5× longer = 5× GPU-hours = 5× cost. Plus delayed model launches. EFA cost = ~10% premium on instance; saves 5× on training time. Net: 4-5× cheaper to use EFA. **For inference fleets**: EFA optional (single-GPU inference doesn't need). For training fleets: non-optional."

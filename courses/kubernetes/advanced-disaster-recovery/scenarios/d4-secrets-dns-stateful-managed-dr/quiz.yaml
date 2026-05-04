@@ -1,0 +1,21 @@
+# Quiz — K-ADV-DR D (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Design DR for an app with Postgres + Redis + Vault secrets + Route 53 DNS.
+    answer: |
+      (1) **Postgres**: CloudNativePG operator + cross-region streaming replica + pgbackrest to S3 + restore-tested quarterly. (2) **Redis**: Redis cluster mode + cross-region replication; ephemeral data accepts loss; alternative: Elasticache cross-region. (3) **Vault**: HA in 3 regions; auto-unseal via KMS (cross-region replicated). (4) **DNS**: Route 53 health check on app endpoint; auto-failover to DR LB; TTL 60s. (5) **Coordination**: runbook orders restore: Vault first → DB replicas promote → app + ESO syncs secrets → DNS swap. (6) **Drill quarterly**: measure end-to-end RTO.
+
+  - id: 2
+    prompt: |
+      A team uses RDS multi-AZ. Region outage. Walk failover.
+    answer: |
+      (1) **RDS multi-AZ alone**: synchronous standby in same region; doesn't help cross-region. (2) **If cross-region read replica configured**: `aws rds promote-read-replica` in DR region; takes 5-15 min. (3) **App reconfigure**: connection strings point at promoted replica's endpoint. (4) **Aurora Global Database** would have been faster (~1 min promotion). (5) **Postmortem**: upgrade to Aurora Global for tier-1; document promote runbook + drill.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      The CFO sees Aurora Global cost premium (~30% over standard). Defend.
+    answer: |
+      "**Aurora Global Database is the difference between 1-min RTO + 2h RTO during region failure.** Three considerations: (1) **Tier-1 workloads**: 30% premium = small vs cost of 2h customer-facing outage. (2) **Synchronous replication**: RPO < 1s vs minutes for standard cross-region. (3) **Auto-promote**: graceful failover without scripts. **For tier-2 / tier-3**: standard cross-region read replica is fine. **Cost-by-tier**: tier-1 gold = Aurora Global; tier-2 silver = standard async; tier-3 bronze = backup-only."

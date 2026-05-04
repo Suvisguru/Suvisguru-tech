@@ -1,0 +1,21 @@
+# Quiz — K-ADV-SEC S (count: 3)
+
+questions:
+  - id: 1
+    prompt: |
+      Walk through enabling Cosign keyless + SLSA L3+ + admission verification for a Go service in GitHub Actions, end to end.
+    answer: |
+      (1) **CI workflow**: use the SLSA-3 reusable workflow `slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml` — builds image, pushes, generates + signs SLSA L3+ provenance attestation. (2) **SBOM**: separate step runs Syft → emits CycloneDX → `cosign attest --type cyclonedx --predicate sbom.json <image>`. (3) **Cosign keyless signature**: SLSA workflow already signs; OIDC identity = the workflow's token; verifiable. (4) **Cluster admission**: Kyverno ClusterPolicy with `verifyImages` rule: `identities: [{issuer: "https://token.actions.githubusercontent.com", subjectRegExp: "^https://github.com/your-org/.*"}]` + `verifyAttestations: [{predicateType: "https://slsa.dev/provenance/v1"}]`. (5) **Audit + warn + enforce rollout**: 4 weeks total. (6) **VEX**: integrate VEX-Hub or vexctl for triaging false positives.
+
+  - id: 2
+    prompt: |
+      A vuln scanner shows 200 CVEs across 50 images. The team can't triage manually. What's the operational pattern that scales?
+    answer: |
+      (1) **Sort by exploitability**: Trivy + Grype both support EPSS (Exploit Prediction Scoring System) scoring + KEV (CISA Known Exploited Vulnerabilities) tagging. Filter the 200 to the ~20 with EPSS > 0.1 or KEV-listed. (2) **Triage the 20**: per CVE, check whether the image's runtime actually exercises the vulnerable code path. Many CVEs are in libraries the image carries but doesn't use. (3) **Write OpenVEX statements** for not_affected + reason; attach to images via Cosign. (4) **For affected CVEs**: schedule remediation per severity (KEV → 24h; high EPSS → 1 week; medium → 30d). (5) **Automate**: VEX statements in Git; CI workflow re-attaches on image rebuild. (6) **Measure**: "open CVEs > 30 days" trends down; team's actual workload trends down.
+
+  - id: 3
+    type: 'cyoa'
+    prompt: |
+      A new exec asks: "why are we doing all this supply-chain work? CVEs aren't trending up." Defend the investment.
+    answer: |
+      "**Supply-chain attacks are the highest-leverage attacks because they hit thousands of consumers per breach.** Three reasons the seals are non-optional: (1) **Real attacks at scale**: SolarWinds (2020), Codecov (2021), Log4Shell amplification through downstream packages, dozens of NPM/PyPI typosquats per quarter. We're not preparing for hypothetical risk; we're preparing for documented attack patterns. (2) **Regulatory inevitability**: US EO 14028, EU CRA, NIST SSDF, FedRAMP — all require signed builds + SBOMs. Costs of catching up at audit are massively higher than building it now. (3) **Operational quality**: SBOMs + VEX make vuln triage 10× faster. SLSA-isolated builds remove insider-threat surface. Sigstore replaces key rotation pain. **The seals make the day-job easier, not harder, after the initial setup.** The investment pays in operational dividend within a quarter; the security upside is on top."
