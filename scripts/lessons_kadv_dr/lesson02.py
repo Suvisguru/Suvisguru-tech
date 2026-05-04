@@ -109,4 +109,44 @@ LESSON = LessonSpec(
     ],
     recap_lead="GitOps recovery: cluster IaC → CRDs (sync wave) → operators → apps → Velero restore PVCs / Secrets → DNS swap → validate. Quarterly drill measures + improves RTO.",
     recap_next='<strong>Next — D3: Cross-region DR + RPO/RTO + restore testing.</strong>',
+    architecture_svg='''<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GitOps recovery: cluster IaC → Argo CD → CRDs → operators → apps → Velero restore → DNS swap.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#1A6FA8"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">GITOPS RECOVERY · NUMBERED RUNBOOK · &lt; 30 MIN RTO</text>
+  <rect x="20" y="50" width="110" height="65" rx="6" fill="#A04832"/>
+  <text x="75" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">cluster lost</text>
+  <text x="75" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">total loss</text>
+  <text x="75" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">runbook fires</text>
+  <line x1="130" y1="82" x2="155" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aD2)"/>
+  <defs><marker id="aD2" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="155" y="50" width="120" height="65" rx="6" fill="#3F4A5E"/>
+  <text x="215" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">cluster IaC</text>
+  <text x="215" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Terraform / Crossplane</text>
+  <text x="215" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">~10 min</text>
+  <line x1="275" y1="82" x2="300" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aD2)"/>
+  <rect x="300" y="50" width="120" height="65" rx="6" fill="#5DCAA5"/>
+  <text x="360" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Argo CD sync</text>
+  <text x="360" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">CRDs → ops → apps</text>
+  <text x="360" y="100" text-anchor="middle" font-size="8" fill="#1F2433">sync waves -2 / -1 / 0</text>
+  <line x1="420" y1="82" x2="445" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aD2)"/>
+  <rect x="445" y="50" width="120" height="65" rx="6" fill="#FF9900"/>
+  <text x="505" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Velero restore</text>
+  <text x="505" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">PVCs + Secrets</text>
+  <text x="505" y="100" text-anchor="middle" font-size="8" fill="#1F2433">CSI snapshots</text>
+  <line x1="565" y1="82" x2="590" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aD2)"/>
+  <rect x="590" y="50" width="150" height="65" rx="6" fill="#5A6B81"/>
+  <text x="665" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">validate + DNS swap</text>
+  <text x="665" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">SLO metrics return</text>
+  <text x="665" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">Route 53 record update</text>
+  <rect x="20" y="130" width="350" height="55" rx="6" fill="#5E4A8E"/>
+  <text x="195" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">External Vault HA</text>
+  <text x="195" y="166" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">survives cluster loss; ESO re-syncs to new cluster</text>
+  <text x="195" y="178" text-anchor="middle" font-size="8" fill="#FBE8DC">cross-region replicated · KMS keys replicated</text>
+  <rect x="380" y="130" width="360" height="55" rx="6" fill="#FAC775"/>
+  <text x="560" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">Operational rhythm</text>
+  <text x="560" y="166" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">quarterly full drill · monthly per-namespace · semi-annual tabletop</text>
+  <text x="560" y="178" text-anchor="middle" font-size="8" fill="#5A4F45">RTO measured per-phase · runbook delta after each drill</text>
+  <rect x="20" y="195" width="720" height="30" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">Sources outside the dead cluster: Git + Velero backups + OCI registry + Vault + DNS — without all 5, rebuild fails</text>
+</svg>''',
+    architecture_caption='Numbered recovery runbook: cluster IaC (Terraform / Crossplane) → Argo CD sync waves (CRDs -2 → operators -1 → apps 0) → Velero restore PVCs/Secrets → external Vault re-syncs → DNS swap → validate. RTO &lt; 30 min for managed K8s + warm DR. Quarterly drill mandatory.',
 )

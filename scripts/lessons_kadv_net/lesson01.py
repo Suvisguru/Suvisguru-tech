@@ -190,4 +190,39 @@ LESSON = LessonSpec(
     ],
     recap_lead="Three layers: CNI (Pod\'s network), eBPF (in-kernel datapath replacing iptables), BGP (native fabric routing eliminating encap tax). Pick by features, scale, control. Tune MTU + conntrack + DNS at scale.",
     recap_next='<strong>Next — N2: Gateway API at fleet scale.</strong> GatewayClass + Gateway + HTTPRoute / GRPCRoute / TCPRoute; cross-namespace routing via ReferenceGrant; BackendTLSPolicy; Ingress migration; controller choice (Envoy Gateway, Istio, Cilium, NGINX).',
+    architecture_svg='''<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CNI + eBPF + BGP packet path: Pod veth → CNI plugin → eBPF datapath → BGP-routed fabric.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">PACKET PATH · POD → CNI → eBPF → BGP FABRIC</text>
+  <rect x="20" y="50" width="160" height="65" rx="6" fill="#5DCAA5"/>
+  <text x="100" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Pod (netns)</text>
+  <text x="100" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">veth pair</text>
+  <text x="100" y="100" text-anchor="middle" font-size="8" fill="#1F2433">on-ramp to host</text>
+  <line x1="180" y1="82" x2="210" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aN1)"/>
+  <defs><marker id="aN1" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="210" y="50" width="160" height="65" rx="6" fill="#3878B5"/>
+  <text x="290" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">CNI plugin</text>
+  <text x="290" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Cilium / Calico / VPC CNI</text>
+  <text x="290" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">routing + IPAM + policy</text>
+  <line x1="370" y1="82" x2="400" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aN1)"/>
+  <rect x="400" y="50" width="160" height="65" rx="6" fill="#FAC775"/>
+  <text x="480" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">eBPF datapath</text>
+  <text x="480" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">in-kernel programs</text>
+  <text x="480" y="100" text-anchor="middle" font-size="8" fill="#1F2433">O(1) Service LB</text>
+  <line x1="560" y1="82" x2="590" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aN1)"/>
+  <rect x="590" y="50" width="150" height="65" rx="6" fill="#5A6B81"/>
+  <text x="665" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">BGP fabric</text>
+  <text x="665" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">node ↔ ToR ↔ DC</text>
+  <text x="665" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">native routing · no encap</text>
+  <rect x="20" y="130" width="350" height="55" rx="6" fill="#FF9900"/>
+  <text x="195" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Hubble (eBPF flow logs)</text>
+  <text x="195" y="166" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">L4 + L7 verdicts · service map · multi-cluster</text>
+  <text x="195" y="178" text-anchor="middle" font-size="8" fill="#1F2433">replaces tcpdump for most debug paths</text>
+  <rect x="380" y="130" width="360" height="55" rx="6" fill="#5E4A8E"/>
+  <text x="560" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">IPAM patterns</text>
+  <text x="560" y="166" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">CIDR-per-node · cluster-pool dynamic · cloud ENI per Pod</text>
+  <text x="560" y="178" text-anchor="middle" font-size="8" fill="#FBE8DC">+ awsvpc trunking for density</text>
+  <rect x="20" y="195" width="720" height="30" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">Tune at scale: MTU = host − encap · conntrack saturation · NodeLocal DNSCache · cpu-manager-policy=static</text>
+</svg>''',
+    architecture_caption='Packet leaves Pod via veth pair → CNI plugin handles routing/IPAM/policy → eBPF datapath in-kernel (replaces iptables; O(1) Service LB) → BGP fabric routes Pod CIDRs natively to ToR. Hubble eBPF flow logs replace tcpdump for most debug paths.',
 )

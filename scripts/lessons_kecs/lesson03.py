@@ -204,4 +204,37 @@ LESSON = LessonSpec(
     ],
     recap_lead="ECS networking pivots on awsvpc — ENI + SG per Task. Service Connect for east-west. ALB target type IP for north-south. VPC Lattice for cross-VPC + cross-account. Bridge / host modes are EC2-launch legacy; migrate when possible.",
     recap_next='<strong>Next — C4: IAM and Security.</strong> Task execution role vs task role; Secrets Manager / SSM Parameter Store injection; KMS; ECR auth; private registry auth; SGs; Fargate platform versions and patching; VPC endpoints; compliance (PCI, HIPAA, FedRAMP).',
+    architecture_svg='''<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ECS networking: awsvpc ENI per Task, Service Connect east-west, ALB target type IP north-south, VPC Lattice cross-VPC.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#3878B5"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">ECS NETWORKING · awsvpc + SERVICE CONNECT + ALB</text>
+  <rect x="20" y="50" width="160" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="100" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Internet client</text>
+  <text x="100" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">https://api.app.com</text>
+  <line x1="180" y1="80" x2="210" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aC3)"/>
+  <defs><marker id="aC3" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="210" y="50" width="180" height="60" rx="6" fill="#FF9900"/>
+  <text x="300" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">ALB / NLB</text>
+  <text x="300" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">target type: IP (awsvpc)</text>
+  <text x="300" y="100" text-anchor="middle" font-size="8" fill="#1F2433">SG-protected listener</text>
+  <line x1="390" y1="80" x2="420" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aC3)"/>
+  <rect x="420" y="50" width="180" height="60" rx="6" fill="#5DCAA5"/>
+  <text x="510" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Task ENI (awsvpc)</text>
+  <text x="510" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">ENI per Task · SG per Task</text>
+  <text x="510" y="100" text-anchor="middle" font-size="8" fill="#1F2433">private IP in VPC subnet</text>
+  <rect x="620" y="50" width="120" height="60" rx="6" fill="#5E4A8E"/>
+  <text x="680" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Service Connect</text>
+  <text x="680" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">east-west L7</text>
+  <text x="680" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">retries + metrics</text>
+  <rect x="20" y="125" width="350" height="55" rx="6" fill="#A04832"/>
+  <text x="195" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">VPC Lattice</text>
+  <text x="195" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">cross-VPC + cross-account application networking</text>
+  <text x="195" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">no peering required · IAM-auth</text>
+  <rect x="380" y="125" width="360" height="55" rx="6" fill="#FAC775"/>
+  <text x="560" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">Cloud Map (legacy DNS) + ECS Service Discovery</text>
+  <text x="560" y="161" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">A records per Task ENI · L4 only</text>
+  <text x="560" y="174" text-anchor="middle" font-size="8" fill="#5A4F45">used where Service Connect not enabled</text>
+  <rect x="20" y="195" width="720" height="35" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">Network modes: awsvpc (recommended) · bridge (EC2 legacy) · host (EC2 legacy) · none</text>
+</svg>''',
+    architecture_caption='awsvpc gives every Task its own ENI + SG. ALB target type IP for north-south; Service Connect (sidecar Envoy) for east-west L7; Cloud Map for DNS-only legacy; VPC Lattice for cross-VPC + cross-account without peering.',
 )

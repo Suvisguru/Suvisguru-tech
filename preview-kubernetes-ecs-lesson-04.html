@@ -356,7 +356,42 @@
     </div>
   </section>
 
-
+  <section class="arch-block">
+    <span class="arch-tag">📐 Architecture diagram</span>
+    <h2>How it actually wires together</h2>
+    <div class="arch-svg">
+<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ECS IAM + security: execution role vs task role; Secrets Manager + KMS; VPC endpoints; ECR auth.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#A04832"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">ECS IAM · TWO ROLES + KMS-ENCRYPTED SECRETS + VPC ENDPOINTS</text>
+  <rect x="20" y="50" width="200" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="120" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">execution role</text>
+  <text x="120" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">launch-time · agent uses</text>
+  <text x="120" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">ECR pull + Secrets fetch + logs</text>
+  <line x1="220" y1="80" x2="250" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aC4)"/>
+  <defs><marker id="aC4" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="250" y="50" width="200" height="60" rx="6" fill="#FF9900"/>
+  <text x="350" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">ECR + Secrets Manager + SSM</text>
+  <text x="350" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">image · creds · API keys</text>
+  <text x="350" y="100" text-anchor="middle" font-size="8" fill="#1F2433">customer KMS keys</text>
+  <line x1="450" y1="80" x2="480" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aC4)"/>
+  <rect x="480" y="50" width="260" height="60" rx="6" fill="#5DCAA5"/>
+  <text x="610" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Task running with task role</text>
+  <text x="610" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">runtime · ECS metadata endpoint</text>
+  <text x="610" y="100" text-anchor="middle" font-size="8" fill="#1F2433">app→S3/DynamoDB/SQS</text>
+  <rect x="20" y="125" width="350" height="55" rx="6" fill="#5A6B81"/>
+  <text x="195" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">VPC endpoints</text>
+  <text x="195" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">ECR.api · ECR.dkr · S3 · Logs · STS · SSM · SecretsManager</text>
+  <text x="195" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">disconnected VPCs require these</text>
+  <rect x="380" y="125" width="360" height="55" rx="6" fill="#5E4A8E"/>
+  <text x="560" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">KMS — root of trust</text>
+  <text x="560" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">customer-managed keys for Secrets + ECR + ephemeralStorage</text>
+  <text x="560" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">execution role needs kms:Decrypt (most-forgotten policy)</text>
+  <rect x="20" y="195" width="720" height="30" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">Compliance: PCI · HIPAA-eligible · FedRAMP (GovCloud) — map to specific role / KMS / VPC endpoint config</text>
+</svg>
+    </div>
+<p class="arch-caption">Two roles, two lifecycles: execution role at launch (ECR pull + Secrets fetch + logs); task role at runtime (app's AWS calls). KMS protects everything; execution role needs kms:Decrypt on customer-managed keys. VPC endpoints keep traffic private.</p>
+  </section>
 
   <div class="nightmare">
     <div class="nightmare-box">

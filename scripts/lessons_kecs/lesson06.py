@@ -211,4 +211,43 @@ LESSON = LessonSpec(
     ],
     recap_lead="Three deployment controllers; rolling default + circuit breaker is the safe baseline. Blue/green for richer rollback. Service Auto Scaling for Task count; capacity providers for cluster sizing. Placement strategies + constraints encode operational intent.",
     recap_next='<strong>Next — C7: ECS Observability.</strong> CloudWatch Container Insights for ECS; ECS Exec for interactive shell; FireLens (Fluent Bit / Fluentd) for log routing; ADOT for metrics + traces; AWS X-Ray.',
+    architecture_svg='''<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ECS deployment + scaling: deployment controllers (rolling / blue-green / external), Service Auto Scaling, Capacity Providers, placement.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#3878B5"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">ECS DEPLOY + SCALE · CONTROLLERS + AUTO SCALING + CAPACITY</text>
+  <rect x="20" y="50" width="170" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="105" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">deploymentController</text>
+  <text x="105" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">ECS / CODE_DEPLOY / EXTERNAL</text>
+  <text x="105" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">+ circuit breaker</text>
+  <rect x="200" y="50" width="170" height="60" rx="6" fill="#FF9900"/>
+  <text x="285" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">deploymentConfiguration</text>
+  <text x="285" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">minHealthy% / maxPercent</text>
+  <text x="285" y="100" text-anchor="middle" font-size="8" fill="#1F2433">healthCheckGracePeriod</text>
+  <rect x="380" y="50" width="170" height="60" rx="6" fill="#5DCAA5"/>
+  <text x="465" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Service Auto Scaling</text>
+  <text x="465" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">target tracking / step / scheduled</text>
+  <text x="465" y="100" text-anchor="middle" font-size="8" fill="#1F2433">CPU / Memory / RPS / queue</text>
+  <rect x="560" y="50" width="180" height="60" rx="6" fill="#5E4A8E"/>
+  <text x="650" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Capacity Provider strategy</text>
+  <text x="650" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">Fargate base + Spot weight</text>
+  <text x="650" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">EC2 ASG + managed scaling</text>
+  <rect x="20" y="125" width="170" height="55" rx="6" fill="#A04832"/>
+  <text x="105" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">CodeDeploy blue/green</text>
+  <text x="105" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">two ALB target groups</text>
+  <text x="105" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">listener swap + alarms</text>
+  <rect x="200" y="125" width="170" height="55" rx="6" fill="#FAC775"/>
+  <text x="285" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">placementConstraints</text>
+  <text x="285" y="161" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">distinctInstance · memberOf</text>
+  <text x="285" y="174" text-anchor="middle" font-size="8" fill="#5A4F45">EC2 launch only</text>
+  <rect x="380" y="125" width="170" height="55" rx="6" fill="#5A6B81"/>
+  <text x="465" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">placementStrategies</text>
+  <text x="465" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">binpack · spread · random</text>
+  <text x="465" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">e.g., spread by AZ</text>
+  <rect x="560" y="125" width="180" height="55" rx="6" fill="#1F8A60"/>
+  <text x="650" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Cluster Auto Scaling</text>
+  <text x="650" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">capacity providers + managed</text>
+  <text x="650" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">ASG fits pending Tasks</text>
+  <rect x="20" y="195" width="720" height="30" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">deploymentCircuitBreaker { enable: true, rollback: true } — non-optional on every Service</text>
+</svg>''',
+    architecture_caption='Three deployment controllers (ECS rolling / CODE_DEPLOY blue-green / EXTERNAL); Service Auto Scaling target-tracks load; Capacity Provider strategy blends Fargate base + Spot. Placement strategies + constraints govern host selection. Circuit breaker is non-optional.',
 )

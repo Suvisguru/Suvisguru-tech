@@ -206,4 +206,42 @@ LESSON = LessonSpec(
     ],
     recap_lead="Four observability layers — Container Insights, ECS Exec, FireLens, ADOT + X-Ray. Wire them before incidents. Container Insights for at-a-glance health. ECS Exec for live debug. FireLens for log destination flexibility. ADOT + X-Ray for distributed tracing.",
     recap_next='<strong>Next — C8: ECS Anywhere and Hybrid.</strong> ECS control plane managing on-prem / edge servers; SSM agent + ECS agent registration; networking + storage limits on external instances; use cases (regulated, edge processing, gradual cloud migration).',
+    architecture_svg='''<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ECS observability: Container Insights, ECS Exec, FireLens, ADOT, X-Ray.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#3F4A5E"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">ECS OBSERVABILITY · METRICS · LOGS · TRACES · LIVE DEBUG</text>
+  <rect x="20" y="50" width="170" height="60" rx="6" fill="#5DCAA5"/>
+  <text x="105" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">ECS Task</text>
+  <text x="105" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">app + sidecars</text>
+  <text x="105" y="100" text-anchor="middle" font-size="8" fill="#1F2433">stdout · /metrics · OTel</text>
+  <line x1="190" y1="80" x2="220" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aC7)"/>
+  <defs><marker id="aC7" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="220" y="50" width="170" height="60" rx="6" fill="#FF9900"/>
+  <text x="305" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">FireLens sidecar</text>
+  <text x="305" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">Fluent Bit / Fluentd</text>
+  <text x="305" y="100" text-anchor="middle" font-size="8" fill="#1F2433">routes anywhere</text>
+  <line x1="390" y1="80" x2="420" y2="80" stroke="#5A4F45" stroke-width="2" marker-end="url(#aC7)"/>
+  <rect x="420" y="50" width="320" height="60" rx="6" fill="#3F4A5E"/>
+  <text x="580" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">CloudWatch · S3 · Kinesis · OpenSearch · Splunk · Datadog</text>
+  <text x="580" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">multi-destination logs</text>
+  <text x="580" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">CloudWatch live · S3 archive</text>
+  <rect x="20" y="125" width="170" height="55" rx="6" fill="#A04832"/>
+  <text x="105" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Container Insights</text>
+  <text x="105" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">CPU / mem / net / I/O</text>
+  <text x="105" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">cluster + service + task</text>
+  <rect x="200" y="125" width="170" height="55" rx="6" fill="#5E4A8E"/>
+  <text x="285" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">ECS Exec</text>
+  <text x="285" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">SSM-backed shell</text>
+  <text x="285" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">no SSH; CloudTrail-audited</text>
+  <rect x="380" y="125" width="170" height="55" rx="6" fill="#5A6B81"/>
+  <text x="465" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">ADOT collector</text>
+  <text x="465" y="161" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">OpenTelemetry</text>
+  <text x="465" y="174" text-anchor="middle" font-size="8" fill="#FBE8DC">metrics + traces</text>
+  <rect x="560" y="125" width="180" height="55" rx="6" fill="#FAC775"/>
+  <text x="650" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">AWS X-Ray</text>
+  <text x="650" y="161" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">distributed tracing</text>
+  <text x="650" y="174" text-anchor="middle" font-size="8" fill="#5A4F45">segments + subsegments</text>
+  <rect x="20" y="195" width="720" height="30" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">Wire all four before incidents · Service Connect emits per-service rps + latency + 5xx automatically</text>
+</svg>''',
+    architecture_caption='Four ECS observability layers: Container Insights for cluster/service/task metrics; ECS Exec for live debug shell (SSM-backed; no SSH); FireLens routes logs anywhere; ADOT + X-Ray for OTel metrics + traces. Wire all four before incidents.',
 )

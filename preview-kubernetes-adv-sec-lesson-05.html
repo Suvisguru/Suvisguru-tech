@@ -352,7 +352,57 @@
     </div>
   </section>
 
-
+  <section class="arch-block">
+    <span class="arch-tag">📐 Architecture diagram</span>
+    <h2>How it actually wires together</h2>
+    <div class="arch-svg">
+<svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Supply chain pipeline: build → SBOM + SLSA → Cosign sign → Rekor log → registry → Kyverno verify → admission → deploy.">
+  <rect x="10" y="10" width="740" height="220" rx="12" fill="#FBF7F0" stroke="#FF9900"/>
+  <text x="380" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#3F4A5E" letter-spacing="1">SUPPLY-CHAIN PIPELINE · 5 SEALS ON EVERY IMAGE</text>
+  <rect x="20" y="50" width="100" height="65" rx="6" fill="#5DCAA5"/>
+  <text x="70" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">CI build</text>
+  <text x="70" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">isolated</text>
+  <text x="70" y="100" text-anchor="middle" font-size="8" fill="#1F2433">SLSA L3+</text>
+  <line x1="120" y1="82" x2="145" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aS5)"/>
+  <defs><marker id="aS5" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><polygon points="0 0, 10 5, 0 10" fill="#5A4F45"/></marker></defs>
+  <rect x="145" y="50" width="100" height="65" rx="6" fill="#FF9900"/>
+  <text x="195" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#1F2433">Syft SBOM</text>
+  <text x="195" y="86" text-anchor="middle" font-size="8" fill="#1F2433" font-style="italic">CycloneDX</text>
+  <text x="195" y="100" text-anchor="middle" font-size="8" fill="#1F2433">/ SPDX</text>
+  <line x1="245" y1="82" x2="270" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aS5)"/>
+  <rect x="270" y="50" width="100" height="65" rx="6" fill="#3F4A5E"/>
+  <text x="320" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Cosign sign</text>
+  <text x="320" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">keyless OIDC</text>
+  <text x="320" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">via Fulcio</text>
+  <line x1="370" y1="82" x2="395" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aS5)"/>
+  <rect x="395" y="50" width="100" height="65" rx="6" fill="#5E4A8E"/>
+  <text x="445" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Rekor log</text>
+  <text x="445" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">public</text>
+  <text x="445" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">transparency</text>
+  <line x1="495" y1="82" x2="520" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aS5)"/>
+  <rect x="520" y="50" width="100" height="65" rx="6" fill="#5A6B81"/>
+  <text x="570" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">OCI registry</text>
+  <text x="570" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">image + sigs</text>
+  <text x="570" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">+ SBOM + VEX</text>
+  <line x1="620" y1="82" x2="645" y2="82" stroke="#5A4F45" stroke-width="2" marker-end="url(#aS5)"/>
+  <rect x="645" y="50" width="95" height="65" rx="6" fill="#A04832"/>
+  <text x="692" y="70" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">Kyverno</text>
+  <text x="692" y="86" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">verifyImages</text>
+  <text x="692" y="100" text-anchor="middle" font-size="8" fill="#FBE8DC">at admission</text>
+  <rect x="20" y="130" width="350" height="55" rx="6" fill="#FAC775"/>
+  <text x="195" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#5A4F45">VEX (vuln disposition)</text>
+  <text x="195" y="166" text-anchor="middle" font-size="8" fill="#5A4F45" font-style="italic">OpenVEX / CSAF VEX — not_affected reasons</text>
+  <text x="195" y="178" text-anchor="middle" font-size="8" fill="#5A4F45">cuts scanner noise from 4000s to dozens</text>
+  <rect x="380" y="130" width="360" height="55" rx="6" fill="#1F8A60"/>
+  <text x="560" y="150" text-anchor="middle" font-size="10" font-weight="700" fill="#FBF1D6">in-toto attestations</text>
+  <text x="560" y="166" text-anchor="middle" font-size="8" fill="#FBE8DC" font-style="italic">step-by-step supply chain framework</text>
+  <text x="560" y="178" text-anchor="middle" font-size="8" fill="#FBE8DC">SLSA provenance is one in-toto attestation type</text>
+  <rect x="20" y="195" width="720" height="30" rx="6" fill="#FBE8DC" stroke="#A04832"/>
+  <text x="380" y="215" text-anchor="middle" font-size="10" font-weight="700" fill="#A04832">5 seals: signature · SBOM · SLSA · in-toto · VEX — all attached as OCI referrers next to the image</text>
+</svg>
+    </div>
+<p class="arch-caption">Supply chain pipeline: CI build (SLSA L3+) → Syft SBOM → Cosign keyless sign → Rekor public log → OCI registry holds image + sigs + SBOM + VEX → Kyverno verifyImages at admission. VEX cuts scanner noise; in-toto wraps the framework.</p>
+  </section>
 
   <div class="nightmare">
     <div class="nightmare-box">
